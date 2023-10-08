@@ -1,0 +1,30 @@
+#logreg-content{
+  box-sizing: border-box;
+  width: 35%;
+  min-height: 100vh;
+}
+#logreg-image{
+  box-sizing: border-box;
+  width: 65%;
+  min-height: 100vh;
+}
+.google-logo{
+  width: 20px;
+  height: 20px;
+}
+.logreg input{
+  width: 22rem;
+  transition: all .2s ease-in-out;
+}
+.logreg input:focus{
+  padding-top: 1rem;
+  outline: none;
+  transition: all .2s;
+  border-bottom: 2px solid #4D5F6E;
+}
+.input-btn{
+  width: 22rem;
+}
+.login-form-container{
+  min-height: 80vh;
+}

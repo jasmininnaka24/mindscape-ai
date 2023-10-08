@@ -1,0 +1,25 @@
+.main-page{
+  height: 80vh;
+  margin-top: 1.9rem;
+}
+.third-child{
+  display: flex;
+  justify-content: center;
+  margin-top: .4rem;
+}
+.big-line{
+  height: 7px;
+  width: 55%;
+  border-radius: 5rem;
+  opacity: .9;
+}
+.boxes .box{
+  border: 2px solid #d3d1d1;
+}
+.main-page-image{
+  max-height: 15rem;
+  min-height: 15rem;
+}
+.inner-box{
+  border-top: 2px solid #d3d1d1;
+}

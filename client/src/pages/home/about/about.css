@@ -1,0 +1,15 @@
+.about-page{
+  height: 34rem;
+  margin-bottom: .8rem;
+  margin-top: 1.9rem;
+}
+.box-border-left{
+  width: 40%;
+}
+.box-border-right{
+  width: 60%;
+}
+.box-border-left img{
+  width: 78%;
+  overflow-x: auto
+}

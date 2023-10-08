@@ -1,0 +1,14 @@
+.grouproom{
+  min-height: 100vh;
+}
+.inside-group-room{
+  min-height: 94vh;
+  box-shadow: 0 2px 20px #a5a1a1;
+}
+.inlines{
+  height: 20vh;
+}
+
+.shadows{
+  box-shadow: 0 2px 10px #bcb8b8;
+}

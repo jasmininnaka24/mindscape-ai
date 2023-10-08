@@ -1,0 +1,167 @@
+.scroll-box {
+  height: 98%; /* Adjust the height as needed */
+  overflow-y: auto;
+  text-align: justify;
+  width: 100%;
+}
+.pdf-form {
+  max-width: 400px;
+  margin: 0 auto;
+  padding: 20px;
+  border-radius: 5px;
+}
+
+.form-group {
+  margin-bottom: 15px;
+}
+
+label {
+  display: block;
+  font-weight: bold;
+  margin-bottom: 5px;
+}
+
+input[type="file"],
+input[type="number"] {
+  width: 100%;
+  padding: 8px;
+  border: 2px solid #6f7b7e;
+  border-radius: 5px;
+}
+
+.generate-btn {
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 5px;
+  cursor: pointer;
+  width: 100%;
+}
+.drop-area {
+  border: 2px dashed #6f7b7e;
+  padding: 20px;
+  text-align: center;
+  cursor: pointer;
+}
+
+.drop-area p {
+  margin: 0;
+}
+
+.drop-area.active {
+  border-color: #4D5F6E;
+}
+.dropzone{
+  height: 100%;
+}
+
+/* Customize the scrollbar */
+.scroll-box::-webkit-scrollbar {
+  width: 8px; /* Width of the scrollbar */
+}
+
+.scroll-box::-webkit-scrollbar-thumb {
+  background-color: #4D5F6E; /* Color of the thumb */
+  border-radius: 2px; /* Rounded corners of the thumb */
+}
+
+.scroll-box::-webkit-scrollbar-thumb:hover {
+  background-color: #e6ecee; /* Color of the thumb on hover */
+}
+
+.scroll-box::-webkit-scrollbar-track {
+  background-color: #e6ecee; /* Color of the track */
+}
+
+
+
+
+/* generated AI result */
+.generated-box{
+  /* border: #6f7b7e solid 2px; */
+  border-radius: 5px;
+}
+.generatedResult{
+  width: 80%;
+}
+
+/* correct and wrong options design */
+.wrong-bg{
+  background-color: #8a8f90;
+  color: #fff;
+}
+.correct-bg{
+  background-color: #4D5F6E;
+  color: #fff;
+}
+.options{
+  width: 40%;
+}
+.grid-result{
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+}
+.border{
+  border: #4D5F6E solid 3px;
+  border-radius: 8px;
+  box-shadow: 0 3px 10px #d2d0d0 inset;
+}
+.gen-box{
+  height: 34rem;
+}
+.gen-box .box1, .gen-box .box2{
+  height: 100%;
+}
+.gen-box .box1{
+  border-right: #4D5F6E solid 2px
+}
+.gen-box .box2{
+  border-left: #4D5F6E solid 2px;
+}
+
+.generatedResult li input:focus{
+  outline: none;
+  border: solid 2px #4D5F6E;
+  background: #fff;
+  border-radius: 5px;
+  transition: all .2s;
+  color: #4D5F6E;
+  font-weight: 500;
+}
+.generatedResult .wrong-bg:focus{
+  outline: none;
+  border: solid 2px #4D5F6E;
+  background: #fff;
+  border-radius: 5px;
+  transition: all .2s;
+  color: #4D5F6E;
+  font-weight: 500;
+}
+.deleteChoiceBtn{
+  z-index: 100;
+}
+/* .addAChoice{
+  outline: none;
+  border: solid 2px #4D5F6E;
+  background: #fff;
+  border-radius: 5px;
+  transition: all .2s;
+  color: #4D5F6E;
+  font-weight: 500;
+} */
+.addAChoice:focus{
+  outline: none;
+  border: solid 2px #4D5F6E;
+  background: #fff;
+  border-radius: 5px;
+  transition: all .2s;
+  color: #4D5F6E;
+  font-weight: 500;
+}
+textarea{
+  transition: all .2s ease-in-out;
+}
+textarea:focus{
+  padding-top: 1rem;
+  border-bottom: #4D5F6E solid 2px;
+}

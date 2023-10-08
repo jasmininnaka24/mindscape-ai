@@ -1,0 +1,16 @@
+.main-home-page{
+  height: 40vh;
+  width: 100%;
+  border-bottom-right-radius: 5rem;
+  border-bottom-left-radius: 5rem;
+  z-index: -1;
+}
+.mainpage-inside{
+  z-index: 1000;
+}
+
+.mainpage-room{
+  min-height: 35vh;
+  /* border: #95a2a4 solid 2px; */
+  box-shadow: 0 0 10px #968c8c;
+}

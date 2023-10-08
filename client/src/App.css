@@ -1,0 +1,265 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@100;200;300;400;500;600;700;800;900&family=Quicksand:wght@300;400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html {
+  scroll-behavior: smooth;
+}
+/* *{
+  font-family: 'Poppins', sans-serif;
+  color: #406167;
+} */
+.poppins{
+  font-family: 'Poppins', sans-serif;
+}
+
+body {
+  background-color: #FBFBFB;
+  min-height: 100vh;
+}
+.max-width{
+  max-width: 1280px;
+  width: 90%;
+}
+
+
+.mbg-100{
+  background: #FFFFFF;
+}
+.mcolor-100{
+  color: #FFFFFF;
+}
+
+.mbg-200{
+  background: #F1F5F7;
+}
+.mcolor-200{
+  color: #F1F5F7;
+}
+
+.mbg-300{
+  background: #D9E1E7;
+}
+.mcolor-300{
+  color: #D9E1E7;
+}
+
+.mbg-400{
+  background: #B3C5D4;
+}
+.mcolor-400{
+  color: #B3C5D4;
+}
+
+.mbg-500{
+  background: #99B2C6;
+}
+.mcolor-500{
+  color: #99B2C6;
+}
+
+.mbg-600{
+  background: #809FB8;
+}
+.mcolor-600{
+  color: #809FB8;
+}
+
+.mbg-700{
+  background: #667F93;
+}
+.mcolor-700{
+  color: #667F93;
+}
+
+.mbg-800{
+  background: #4D5F6E;
+}
+.mcolor-800{
+  color: #4D5F6E;
+}
+
+.mbg-900{
+  background: #33404A;
+}
+.mcolor-900{
+  color: #33404A;
+}
+
+.mbg-1000{
+  background: #1A2025;
+}
+.mcolor-1000{
+  color: #1A2025;
+}
+
+
+
+/* borders */
+.border-thin-1000-scale{
+  border: #1A2025 1px solid;
+  transition: all .1s ease-in-out;
+}
+.border-medium-1000-scale{
+  border: #1A2025 2px solid;
+  transition: all .1s ease-in-out;
+}
+.border-medium-800-scale{
+  border: #4D5F6E 2px solid;
+  transition: all .1s ease-in-out;
+}
+.border-hard-1000-scale{
+  border: #1A2025 3px solid;
+  transition: all .1s ease-in-out;
+}
+.border-thin-900-scale{
+  border: #33404A 1px solid;
+  transition: all .1s ease-in-out;
+}
+
+
+.border-thin-1000-scale:focus{
+  border: #1A2025 3px solid;
+  scale: 1.01;
+  outline: none;
+}
+.border-medium-1000-scale:focus{
+  border: #1A2025 4px solid;
+  scale: 1.01;
+  outline: none;
+}
+.border-medium-800-scale:focus{
+  border: #4D5F6E 2px solid;
+  scale: 1.01;
+  outline: none;
+}
+.border-hard-1000-scale:focus{
+  border: #1A2025 5px solid;
+  scale: 1.01;
+  outline: none;
+}
+.border-thin-900-scale:focus{
+  border: #33404A 3px solid;
+  scale: 1.01;
+  outline: none;
+}
+
+
+.border-medium-900{
+  border: #33404A 2px solid;
+}
+.border-hard-900{
+  border: #33404A 3px solid;
+}
+.border-thin-800{
+  border: #4D5F6E 1px solid;
+}
+.border-medium-800{
+  border: #4D5F6E 2px solid;
+}
+.border-hard-800{
+  border: #4D5F6E 3px solid;
+}
+.border-thin-700{
+  border: #667F93 1px solid;
+}
+.border-medium-700{
+  border: #667F93 2px solid;
+}
+.border-hard-700{
+  border: #667F93 3px solid;
+}
+
+.border-bottom-thin{
+  border-bottom: #33404A solid 1px;
+}
+.border-bottom-medium{
+  border-bottom: #4D5F6E solid 2px;
+}
+
+.border-bottom-thin-scale{
+  border-bottom: #33404A solid 1px;
+}
+.border-bottom-medium-scale{
+  border-bottom: #4D5F6E solid 2px;
+}
+
+.border-bottom-thin-scale:focus{
+  scale: 1.3;
+  border-bottom: #4D5F6E solid 3px;
+}
+.border-bottom-medium-scale:focus{
+  scale: 1.3;
+  border-bottom: #4D5F6E solid 3px;
+}
+
+.modal-bg{
+  background-color: rgba(51, 64, 74, .8);
+}
+
+input{
+  outline: none;
+}
+textarea{
+  outline: none;
+  border: 0px solid #fff;
+}
+/* input{
+  transition: all .2s ease-in-out;
+}
+input:focus{
+  padding-top: 1rem;
+  border-bottom: #33404A solid 2px;
+} */
+
+.line{
+  background-color: #D9E1E7;
+  height: 2px;
+  width: 15%;
+}
+
+.custom-radio {
+  width: 20px; 
+  height: 20px;
+  margin-right: 8px; 
+}
+.custom-radio:checked {
+  background-color: #809FB8;
+}
+
+
+/* background red shades */
+.bg-red{
+  background-color: rgb(175, 66, 66);
+}
+.bg-red-500{
+  background-color: rgb(247, 215, 215);
+}
+.text-red{
+  color: rgb(200, 107, 107);
+}
+::-webkit-scrollbar {
+  width: 10px;
+}
+
+/* Scrollbar thumb (draggable part) */
+::-webkit-scrollbar-thumb {
+  background-color: #3a4f53; /* Scrollbar thumb color */
+  border-radius: 3px;
+}
+
+/* Scrollbar thumb on hover */
+::-webkit-scrollbar-thumb:hover {
+  background-color: #555; /* Scrollbar thumb color on hover */
+}
+
+/* Scrollbar track (background) */
+::-webkit-scrollbar-track {
+  background-color: #f1f1f1; /* Scrollbar track color */
+  border-radius: 3px;
+}
+#root{
+  height: 100vh;
+}
