@@ -41,15 +41,15 @@ export const StudyAreaGP = (props) => {
   const [isCodeCopied, setIsCodeCopied] = useState("");
   const [isGroupNameChanged, setIsGroupNameChanged] = useState("");
   const [prevGroupName, setPrevGroupName] = useState("");
-
   const [savedGroupNotif, setSavedGroupNotif] = useState('hidden');
+  const [userList, setUserList] = useState([]);
 
   const [isExpanded, setIsExpanded] = useState(true);
   const [expandedCategories, setExpandedCategories] = useState({}); 
 
   const toggleExpand = () => {
     setIsExpanded(!isExpanded);
-  };
+  };  
 
   const addToModalList = () => {
     if(currentModalVal !== '') {
@@ -183,13 +183,18 @@ export const StudyAreaGP = (props) => {
       studyMaterialPersonalLink = `http://localhost:3001/studyMaterial/study-material-category/${categoryFor}/${groupNameId}/${UserId}`;
     }
 
-    categoryFor === 'Group' && (
+    if(categoryFor === 'Group') {
       axios.get(`http://localhost:3001/studyGroup/extract-all-group/${groupNameId}`).then((response) => {
         setCode(response.data.code);
         setGroupName(response.data.groupName);
         setPrevGroupName(response.data.groupName);
       })
-    )
+
+      axios.get(`http://localhost:3001/studyGroupMembers/get-members/${groupNameId}`).then((response) => {
+        setUserList(response.data);
+        console.log(response.data);
+      });      
+    }
     
     axios.get(studyMaterialCatPersonalLink).then((response) => {
       setMaterialCategories(response.data);
@@ -390,8 +395,15 @@ export const StudyAreaGP = (props) => {
                 </div>
                 {isGroupNameChanged !== '' && (
                   <p className='text-center mcolor-700 my-3'>{isGroupNameChanged}</p>
-                )}
+                  )}
 
+                <br />
+                  <p className='mcolor-900 my-3'>Group Members:</p>
+                  <ul>
+                    {userList.map((member, index) => {
+                      return <li key={index}>{member.id}</li>
+                    })}
+                  </ul>
               </div>
 
             )}
@@ -498,7 +510,7 @@ export const StudyAreaGP = (props) => {
 
 
         <div>
-          {lastMaterial !== null && (
+          {lastMaterial !== null ? (
             <div className='relative'>
               <p className='text-xl mcolor-900 mb-3'>Latest Uploaded Reviewer: {lastMaterial.title} from {materialCategory}</p>
 
@@ -557,6 +569,8 @@ export const StudyAreaGP = (props) => {
                 <Link to={`/main/${categoryForToLower}/study-area/group-review/${groupNameId}/${lastMaterial.id}`} className='mbg-800 mcolor-100 rounded-[5px] px-12 py-2'>View Reviewer</Link>
               </div>
             </div>
+          ) : (
+            <div className='pt-10 text-center text-xl'>No Uploaded Reviewer Appears.</div>
           )}
         </div>
       </div>

@@ -15,6 +15,7 @@ export const CreateGroupComp = (props) => {
   const [listedData, setListedData] = useState([]);
   const [searchTermApp, setSearchTermApp] = useState('');
   const [groupNameInp, setGroupNameInp] = useState('');
+  const UserId = 1;
 
 
   const handleSearch = (searchTerm) => {
@@ -79,7 +80,7 @@ export const CreateGroupComp = (props) => {
         const groupMemberData = {
           role: 'Member',
           StudyGroupId: id,
-          UserId: item.UserId,
+          UserId: UserId,
         }
         axios.post('http://localhost:3001/studyGroupMembers/add-member', groupMemberData).then((response) => {
           console.log('Saved!');
@@ -111,9 +112,6 @@ export const CreateGroupComp = (props) => {
   // console.log(searchTermApp);
   // console.log(data);
   // console.log(chosenData);
-
-
-  const UserId = 1;
 
   const fetchFollowerData = async () => {
     try {
