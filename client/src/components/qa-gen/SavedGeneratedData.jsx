@@ -36,6 +36,7 @@ export const SavedGeneratedData = (props) => {
           setStudyMaterialCategoryId(response.data[0].id);
         }
       })
+      
   },[groupNameId, materialFor]);
   
   function generateRandomString() {
@@ -64,9 +65,9 @@ export const SavedGeneratedData = (props) => {
     return randomString;
   }
   
-  const saveGeneratedDataBtn = (event) => {
+  const saveGeneratedDataBtn = async (event) => {
     event.preventDefault();
-
+  
     const studyMaterialsData = {
       title: studyMaterialTitle,
       body: pdfDetails,
@@ -77,33 +78,45 @@ export const SavedGeneratedData = (props) => {
       StudyMaterialsCategoryId: studyMaterialCategoryId,
       UserId: userId
     };
-    
-    
   
-    if(studyMaterialsData.title !== "" && studyMaterialsData.StudyMaterialsCategoryId !== "" &&studyMaterialsData.body !== "" && studyMaterialsData.UserId !== "") {
+    if (
+      studyMaterialsData.title !== "" &&
+      studyMaterialsData.StudyMaterialsCategoryId !== "" &&
+      studyMaterialsData.body !== "" &&
+      studyMaterialsData.UserId !== ""
+    ) {
       let hasEmptyFields = false;
-
+  
       for (let i = 0; i < genQAData.length; i++) {
         const qaData = {
           question: genQAData[i].question,
           answer: genQAData[i].answer,
         };
-        
+  
         const qaDataRev = {
           question: genQADataRev[i].question,
           answer: genQADataRev[i].answer,
-        }
-      
-        if (qaData.question === "" || qaData.answer === "" || qaDataRev.question === "" || qaDataRev.answer === "") {
+        };
+  
+        if (
+          qaData.question === "" ||
+          qaData.answer === "" ||
+          qaDataRev.question === "" ||
+          qaDataRev.answer === ""
+        ) {
           hasEmptyFields = true;
-          alert("Cannot have empty fields.")
+          alert("Cannot have empty fields.");
           break; // Exit the loop if any empty field is found
         }
       }
-
+  
       if (!hasEmptyFields) {
-
-        axios.post('http://localhost:3001/studyMaterial', studyMaterialsData).then((smResponse) => {
+        try {
+          const smResponse = await axios.post(
+            'http://localhost:3001/studyMaterial',
+            studyMaterialsData
+          );
+  
           for (let i = 0; i < genQAData.length; i++) {
             const qaData = {
               question: genQAData[i].question,
@@ -111,53 +124,58 @@ export const SavedGeneratedData = (props) => {
               StudyMaterialId: smResponse.data.id,
               UserId: smResponse.data.UserId,
             };
-
+  
             const qaDataRev = {
               question: genQADataRev[i].question,
               answer: genQADataRev[i].answer,
               StudyMaterialId: smResponse.data.id,
               UserId: smResponse.data.UserId,
+            };
+  
+            const qaResponse = await axios.post(
+              'http://localhost:3001/quesAns',
+              qaData
+            );
+  
+            for (let j = 0; j < genQAData[i].distractors.length; j++) {
+              let qacData = {
+                choice: genQAData[i].distractors[j],
+                QuesAnId: qaResponse.data.id,
+                StudyMaterialId: smResponse.data.id,
+                UserId: smResponse.data.UserId,
+              };
+  
+              if (qacData.choice !== "") {
+                await axios.post(
+                  'http://localhost:3001/quesAnsChoices',
+                  qacData
+                );
+                console.log("Saved!");
+              }
             }
-
-              axios.post('http://localhost:3001/quesAns', qaData).then((qaResponse) => {
-                for (let j = 0; j < genQAData[i].distractors.length; j++) {
-                  let qacData = {
-                    choice: genQAData[i].distractors[j],
-                    QuesAnId: qaResponse.data.id,
-                    StudyMaterialId: smResponse.data.id,
-                    UserId: smResponse.data.UserId,
-                  };
-                  if(qacData.choice !== ""){
-                    axios.post('http://localhost:3001/quesAnsChoices', qacData).then((response) => {
-                      console.log("Saved!");
-                    });
-                  }
-                }
-              });
-
-              axios.post('http://localhost:3001/quesRev', qaDataRev).then(() => {
-                console.log('Saved rev!');
-              })
+  
+            await axios.post('http://localhost:3001/quesRev', qaDataRev);
+            console.log('Saved rev!');
           }
-          event.preventDefault();
-        });
-        setStudyMaterialTitle("");
-        setStudyMaterialCategoryId("");
-        setGeneratedQA({})
-        setPDFDetails("")
-        setNumInp("");
-        
-        // Back to Personal Study Area
-        if (materialFor === 'Personal') {
-          navigate(`/main/personal/study-area?reload`);
-        } else if (materialFor === 'Group') {
-          navigate(`/main/group/study-area/${groupNameId}?reload`);
+  
+          setStudyMaterialTitle('');
+          setStudyMaterialCategoryId('');
+          setGeneratedQA({});
+          setPDFDetails('');
+          setNumInp('');
+  
+          // Back to Personal Study Area
+          if (materialFor === 'Personal') {
+            navigate(`/main/personal/study-area?reload`);
+          } else if (materialFor === 'Group') {
+            navigate(`/main/group/study-area/${groupNameId}?reload`);
+          }
+        } catch (error) {
+          console.error('Error saving study material:', error);
         }
-
-
-      } 
+      }
     } else {
-      alert("Title/Category/PDF Details/Number of items input value missing.")
+      alert('Title/Category/PDF Details/Number of items input value missing.');
     }
   };
   

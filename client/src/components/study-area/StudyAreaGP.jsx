@@ -4,7 +4,7 @@ import { Navbar } from '../navbar/logged_navbar/navbar';
 import { Link, useLocation } from 'react-router-dom';
 import { useNavigate, useParams } from 'react-router-dom';
 import CategoryIcon from '@mui/icons-material/Category';
-
+import MoreVertIcon from '@mui/icons-material/MoreVert';
 
 
 export const StudyAreaGP = (props) => {
@@ -26,25 +26,20 @@ export const StudyAreaGP = (props) => {
   const [activeButton, setActiveButton] = useState(1);
   const [studyMaterialsCategory, setSudyMaterialsCategory] = useState([]);
   const [lastMaterial, setLastMaterial] = useState(null);
-  const [materialMCQ, setMaterialMCQ] = useState({});
+  const [, setMaterialMCQ] = useState({});
   const [materialRev, setMaterialRev] = useState({});
   const [materialMCQChoices, setMaterialMCQChoices] = useState([]);
   const [materialCategory, setMaterialCategory] = useState('');
   const [materialCategories, setMaterialCategories] = useState([]); 
   const [hidden, setHidden] = useState("hidden");
-  const [addCategory, setAddCategory] = useState("")
-  const [addMember, setAddMember] = useState("");
   const [currentModalVal, setCurrentModalVal] = useState("");
   const [modalList, setModalList] = useState([]);
   const [categoryModal, setCategoryModal] = useState("hidden")
   const [groupMemberModal, setGroupMemberModal] = useState("hidden")
   const [code, setCode] = useState("");
+  const [isCodeCopied, setIsCodeCopied] = useState("");
 
   const [savedGroupNotif, setSavedGroupNotif] = useState('hidden');
-  const [data, setData] = useState([]);
-  const [listedData, setListedData] = useState([]);
-  const [searchTermApp, setSearchTermApp] = useState('');
-  const [groupNameInp, setGroupNameInp] = useState('');
 
   const [isExpanded, setIsExpanded] = useState(true);
   const [expandedCategories, setExpandedCategories] = useState({}); 
@@ -102,8 +97,12 @@ export const StudyAreaGP = (props) => {
   const copyGroupCode = () => {
     navigator.clipboard.writeText(code)
       .then(() => {
-        // Success message
-        alert('Text copied to clipboard: ' + code);
+        setTimeout(() => {
+          setIsCodeCopied("Copied to clipboard")
+        }, 100);
+        setTimeout(() => {
+          setIsCodeCopied("")
+        }, 2000);
       })
       .catch(err => {
         // Error handling
@@ -225,7 +224,7 @@ export const StudyAreaGP = (props) => {
       initialExpandedState[category.id] = true;
     });
     setExpandedCategories(initialExpandedState);
-  }, [UserId, categoryFor, groupNameId, navigate, currentModalVal, modalList]);
+  }, [UserId, categoryFor, groupNameId, navigate, currentModalVal, modalList, isCodeCopied]);
 
   const choicesById = {};
 
@@ -318,11 +317,14 @@ export const StudyAreaGP = (props) => {
             </div>
           </div>
 
-          <div className={`${groupMemberModal}`}>
+          <div className={`${groupMemberModal} mt-5`}>
             <div className='w-full flex items-center'>
               <input type="text" value={code} disabled className='mbg-200 border-thin-800 text-center w-full py-2 rounded-[3px]' />
               <button onClick={copyGroupCode} className='px-4 py-2 mbg-800 mcolor-100 rounded-[3px] border-thin-800'>Copy</button>
             </div>
+            {isCodeCopied !== '' && (
+              <p className='text-center mcolor-700 mt-2'>{isCodeCopied}</p>
+            )}
           </div>
     
           </div>
@@ -407,14 +409,14 @@ export const StudyAreaGP = (props) => {
           }}>Create Reviewer</button>
 
           <div>
-            <button className='mx-2 mbg-300 mcolor-800 px-6 py-2 rounded-[5px] font-medium font-lg' onClick={() => {
+            <button className='mx-1 mbg-300 mcolor-800 px-6 py-2 rounded-[5px] font-medium font-lg' onClick={() => {
               setHidden("")
               setCategoryModal("")
               }}>Add Category</button>
-            <button className='mx-2 mcolor-800 px-6 py-2 rounded-[5px] font-medium font-lg' onClick={() => {
+            <button className='mcolor-800 py-2 rounded-[5px] font-medium font-lg' onClick={() => {
               setHidden("")
               setGroupMemberModal("")
-              }}>:</button>
+              }}><MoreVertIcon fontSize='medium' /></button>
           </div>
         </div>
 
