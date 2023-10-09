@@ -5,7 +5,7 @@ import { Link, useLocation } from 'react-router-dom';
 import { useNavigate, useParams } from 'react-router-dom';
 import CategoryIcon from '@mui/icons-material/Category';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
-
+import SettingsIcon from '@mui/icons-material/Settings';
 
 export const StudyAreaGP = (props) => {
   const navigate = useNavigate();
@@ -37,7 +37,10 @@ export const StudyAreaGP = (props) => {
   const [categoryModal, setCategoryModal] = useState("hidden")
   const [groupMemberModal, setGroupMemberModal] = useState("hidden")
   const [code, setCode] = useState("");
+  const [groupName, setGroupName] = useState("");
   const [isCodeCopied, setIsCodeCopied] = useState("");
+  const [isGroupNameChanged, setIsGroupNameChanged] = useState("");
+  const [prevGroupName, setPrevGroupName] = useState("");
 
   const [savedGroupNotif, setSavedGroupNotif] = useState('hidden');
 
@@ -109,6 +112,48 @@ export const StudyAreaGP = (props) => {
         console.error('Failed to copy text: ', err);
       });
   };
+
+  const changeGroupName = () => {
+    if (groupName.trim() !== '') {
+      if(groupName !== prevGroupName) {
+        const updateGroupName = async () => {
+          let groupId = groupNameId;
+          try {
+            const response = await axios.put(`http://localhost:3001/studyGroup/update-group/${groupId}`, {
+              groupName: groupName,
+            });
+    
+            console.log(groupName);
+            setGroupName(response.data.groupName); 
+            setPrevGroupName(response.data.groupName);
+  
+            setTimeout(() => {
+              setIsGroupNameChanged(`Group name is changed to ${response.data.groupName}`);
+            }, 500);
+            
+            setTimeout(() => {
+              setIsGroupNameChanged('');
+            }, 1800);
+            
+          } catch (error) {
+            console.error('Error updating group name:', error);
+            // Handle error if needed
+          }
+        };
+        updateGroupName();
+      } else {
+        setTimeout(() => {
+          setIsGroupNameChanged(`The group name remains unchanged. Cannot apply any changes.`);
+        }, 500);
+        
+        setTimeout(() => {
+          setIsGroupNameChanged('');
+        }, 5000);
+      }
+    } else {
+      alert('Cannot save an empty group name.');
+    }
+  };
   
 
   useEffect(() => {
@@ -117,7 +162,11 @@ export const StudyAreaGP = (props) => {
 
     if (reloadParamExists) {    
       window.location.reload();
-      navigate(`/main/group/study-area/${id}`)
+      if(categoryFor === 'Personal') {
+        navigate(`/main/personal/study-area/`)
+      } else {
+        navigate(`/main/group/study-area/${id}`)
+      }
     }
 
     let studyMaterialCatPersonalLink = '';
@@ -134,9 +183,13 @@ export const StudyAreaGP = (props) => {
       studyMaterialPersonalLink = `http://localhost:3001/studyMaterial/study-material-category/${categoryFor}/${groupNameId}/${UserId}`;
     }
 
-    axios.get(`http://localhost:3001/studyGroup/extract-all-group/${groupNameId}`).then((response) => {
-      setCode(response.data.code);
-    })
+    categoryFor === 'Group' && (
+      axios.get(`http://localhost:3001/studyGroup/extract-all-group/${groupNameId}`).then((response) => {
+        setCode(response.data.code);
+        setGroupName(response.data.groupName);
+        setPrevGroupName(response.data.groupName);
+      })
+    )
     
     axios.get(studyMaterialCatPersonalLink).then((response) => {
       setMaterialCategories(response.data);
@@ -262,79 +315,96 @@ export const StudyAreaGP = (props) => {
 
   return (
     <div className="relative poppins mcolor-900 flex justify-start items-start">
-
+      
       {/* modal */}
-      <div className={`${hidden} absolute pt-32 top-0 left-0 modal-bg w-full h-full`}>
-        <div className='flex justify-center'>
-          <div className='mbg-100 min-h-[45vh] w-1/3 z-10 relative p-10 rounded-[5px]'>
+        <div style={{ zIndex: 1000 }} className={`${hidden} absolute pt-32 top-0 left-0 modal-bg w-full h-full`}>
+          <div className='flex justify-center'>
+            <div className='mbg-100 min-h-[45vh] w-1/3 z-10 relative p-10 rounded-[5px]'>
 
-          <button className='absolute right-4 top-3 text-xl' onClick={() => {
-            setHidden("hidden");
-            setCategoryModal("hidden");
-            setGroupMemberModal("hidden");
-            }}>
-            ✖
-          </button>
+            <button className='absolute right-4 top-3 text-xl' onClick={() => {
+              setHidden("hidden");
+              setCategoryModal("hidden");
+              setGroupMemberModal("hidden");
+              }}>
+              ✖
+            </button>
 
-          <div className={categoryModal}>
-            <p className='text-center text-2xl font-medium mcolor-800 my-5'>Add a category</p>
-            <div className="groupName flex flex-col">
+            <div className={categoryModal}>
+              <p className='text-center text-2xl font-medium mcolor-800 my-5'>Add a category</p>
+              <div className="groupName flex flex-col">
 
-              <div className='relative'>
-                <input type="text" placeholder='Group name...' className='border-medium-800-scale px-5 py-2 w-full rounded-[5px] outline-none border-none' onChange={(event) => {setCurrentModalVal(event.target.value)}} value={currentModalVal === '' ? '' : currentModalVal} />
-                <button onClick={addToModalList} className='absolute right-5 top-1 text-3xl'>+</button>
+                <div className='relative'>
+                  <input type="text" placeholder='Group name...' className='border-medium-800-scale px-5 py-2 w-full rounded-[5px] outline-none border-none' onChange={(event) => {setCurrentModalVal(event.target.value)}} value={currentModalVal === '' ? '' : currentModalVal} />
+                  <button onClick={addToModalList} className='absolute right-5 top-1 text-3xl'>+</button>
+                </div>
+
+                <ul className='mt-3'>
+                  {/* list of members that will be added */}
+                  {
+                    modalList.length > 0 && (
+                      modalList.map((item, index) => {
+                        return (
+                          <div className='relative flex items-center my-2 text-lg' key={index}>
+                            <span>
+                              <CategoryIcon fontSize='small' /> <span className='ml-1'>{item}</span>
+                            </span>
+                            <button
+                              className='absolute right-4 text-xl'
+                              onClick={() => {
+                                const updatedList = modalList.filter((_, i) => i !== index);
+                                setModalList(updatedList);
+                              }}
+                            >
+                              ✖
+                            </button>
+                          </div>
+                        );
+                      })
+                    )
+                  }
+
+                </ul>
+  
+                <button onClick={saveCategories} className='mt-3 mbg-800 mcolor-100 py-2 rounded-[5px]'>Add</button>
+
+              </div>
+            </div>
+
+            {categoryFor === 'Group' && (
+
+              <div className={`${groupMemberModal} mt-5`}>
+                <p className='mb-2 text-lg mcolor-900'>Group Code:</p>
+                <div className='w-full flex items-center'>
+                  <input type="text" value={code} disabled className='mbg-200 border-thin-800 text-center w-full py-2 rounded-[3px]' />
+                  <button onClick={copyGroupCode} className='px-7 py-2 mbg-800 mcolor-100 rounded-[3px] border-thin-800'>Copy</button>
+                </div>
+                {isCodeCopied !== '' && (
+                  <p className='text-center mcolor-700 mt-2'>{isCodeCopied}</p>
+                )}
+
+                <br />
+                <p className='mb-2 text-lg mcolor-900'>Group Name:</p>
+                <div className='flex items-center'>
+                  <input type="text" value={groupName} className='border-thin-800 text-center w-full py-2 rounded-[3px]' onChange={(event) => setGroupName(event.target.value)} />
+                  <button onClick={changeGroupName} className='px-4 py-2 mbg-800 mcolor-100 rounded-[3px] border-thin-800'>Change</button>
+                </div>
+                {isGroupNameChanged !== '' && (
+                  <p className='text-center mcolor-700 my-3'>{isGroupNameChanged}</p>
+                )}
+
               </div>
 
-              <ul className='mt-3'>
-                {/* list of members that will be added */}
-                {
-                  modalList.length > 0 && (
-                    modalList.map((item, index) => {
-                      return (
-                        <div className='relative flex items-center my-2 text-lg' key={index}>
-                          <span>
-                            <CategoryIcon fontSize='small' /> <span className='ml-1'>{item}</span>
-                          </span>
-                          <button
-                            className='absolute right-4 text-xl'
-                            onClick={() => {
-                              const updatedList = modalList.filter((_, i) => i !== index);
-                              setModalList(updatedList);
-                            }}
-                          >
-                            ✖
-                          </button>
-                        </div>
-                      );
-                    })
-                  )
-                }
-
-              </ul>
- 
-              <button onClick={saveCategories} className='mt-3 mbg-800 mcolor-100 py-2 rounded-[5px]'>Add</button>
-
-            </div>
-          </div>
-
-          <div className={`${groupMemberModal} mt-5`}>
-            <div className='w-full flex items-center'>
-              <input type="text" value={code} disabled className='mbg-200 border-thin-800 text-center w-full py-2 rounded-[3px]' />
-              <button onClick={copyGroupCode} className='px-4 py-2 mbg-800 mcolor-100 rounded-[3px] border-thin-800'>Copy</button>
-            </div>
-            {isCodeCopied !== '' && (
-              <p className='text-center mcolor-700 mt-2'>{isCodeCopied}</p>
             )}
-          </div>
-    
+      
+            </div>
           </div>
         </div>
-      </div>
-
+   
       {/* Side */}
       <div className={`flex flex-col justify-between min-h-[100vh] w-1/4 p-5 sidebar mbg-300 mcolor-900`}>
         <div className="my-5 shelf-categories">
-          <p className="text-2xl mb-10 font-bold text-center opacity-90">{categoryForToUpper} SHELF</p>
+          
+          <p className="text-2xl mb-10 font-bold text-center opacity-90">{categoryFor === 'Group' ? `${groupName.toUpperCase()}'S ` : 'PERSONAL'} SHELF</p>
           <div>
             {materialCategories.length > 0 ? (
               <div>
@@ -413,10 +483,14 @@ export const StudyAreaGP = (props) => {
               setHidden("")
               setCategoryModal("")
               }}>Add Category</button>
-            <button className='mcolor-800 py-2 rounded-[5px] font-medium font-lg' onClick={() => {
-              setHidden("")
-              setGroupMemberModal("")
-              }}><MoreVertIcon fontSize='medium' /></button>
+            {categoryFor === 'Group' && (
+              <button className='mcolor-800 py-2 rounded-[5px] font-medium font-lg' onClick={() => {
+                setHidden("")
+                setGroupMemberModal("")
+                }}>
+                  <MoreVertIcon fontSize='medium' />
+              </button>
+            )}
           </div>
         </div>
 
@@ -481,7 +555,6 @@ export const StudyAreaGP = (props) => {
               </section>
               <div className='flex items-center justify-end absolute right-0 bottom-[-.8rem]'>
                 <Link to={`/main/${categoryForToLower}/study-area/group-review/${groupNameId}/${lastMaterial.id}`} className='mbg-800 mcolor-100 rounded-[5px] px-12 py-2'>View Reviewer</Link>
-                {/* /main/group/study-area/group-review/ */}
               </div>
             </div>
           )}

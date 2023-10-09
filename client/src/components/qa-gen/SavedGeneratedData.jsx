@@ -17,6 +17,9 @@ export const SavedGeneratedData = (props) => {
 
   const navigate = useNavigate();
 
+
+
+
   useEffect(() => {
     let studyMaterialCatPersonalLink = '';
 
@@ -64,7 +67,7 @@ export const SavedGeneratedData = (props) => {
     }
     return randomString;
   }
-  
+
   const saveGeneratedDataBtn = async (event) => {
     event.preventDefault();
   
@@ -73,7 +76,7 @@ export const SavedGeneratedData = (props) => {
       body: pdfDetails,
       numInp: numInp,
       materialFor: materialFor,
-      code: generateRandomString(),
+      code: materialFor === 'Group' ? generateRandomString() : "None",
       StudyGroupId: materialFor === 'Group' ? groupNameId : null,
       StudyMaterialsCategoryId: studyMaterialCategoryId,
       UserId: userId
@@ -164,6 +167,7 @@ export const SavedGeneratedData = (props) => {
           setPDFDetails('');
           setNumInp('');
   
+          
           // Back to Personal Study Area
           if (materialFor === 'Personal') {
             navigate(`/main/personal/study-area?reload`);

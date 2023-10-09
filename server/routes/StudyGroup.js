@@ -22,16 +22,22 @@ router.post('/create-group', async (req, res) => {
 })
 
 // updating group name
-router.put('/update-group', async (req, res) => {
-  const groupId = req.body.id;
+router.put('/update-group/:id', async (req, res) => {
+  const groupId = req.params.id;
   const { groupName } = req.body;
 
-  const updatedGroupName = await StudyGroup.findByPk(groupId);
-  updatedGroupName.groupName === groupName;
+  try {
+    const updatedGroupName = await StudyGroup.findByPk(groupId);
+    updatedGroupName.groupName = groupName; // Assign the new groupName value here
 
-  await updatedGroupName.save();
-  res.json(updatedGroupName);
-})
+    await updatedGroupName.save();
+    res.json(updatedGroupName);
+  } catch (error) {
+    console.error('Error updating group name:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
 
 // deleting a group
 router.delete('/delete-group/:id', async (req, res) => {
