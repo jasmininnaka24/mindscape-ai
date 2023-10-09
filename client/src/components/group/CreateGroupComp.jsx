@@ -39,10 +39,37 @@ export const CreateGroupComp = (props) => {
   })
   }
 
+  function generateRandomString() {
+    const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+    const numbers = '0123456789';
+  
+    let randomString = '';
+  
+    // Generate 3 random letters
+    for (let i = 0; i < 5; i++) {
+      const randomLetter = letters.charAt(Math.floor(Math.random() * letters.length));
+      randomString += randomLetter;
+    }
+    
+    // Generate 4 random numbers
+    for (let i = 0; i < 5; i++) {
+      const randomNumber = numbers.charAt(Math.floor(Math.random() * numbers.length));
+      randomString += randomNumber;
+    }
+    
+    // Generate 5 random letters
+    for (let i = 0; i < 5; i++) {
+      const randomLetter = letters.charAt(Math.floor(Math.random() * letters.length));
+      randomString += randomLetter;
+    }
+    return randomString;
+  }
+
   const createGroupBtn = () => {
     const groupData = {
       groupName: groupNameInp,
       role: 'Super Admin', 
+      code: generateRandomString(),
       UserId: UserId
     }
 
@@ -52,7 +79,7 @@ export const CreateGroupComp = (props) => {
         const groupMemberData = {
           role: 'Member',
           StudyGroupId: id,
-          UserId: item
+          UserId: item.UserId,
         }
         axios.post('http://localhost:3001/studyGroupMembers/add-member', groupMemberData).then((response) => {
           console.log('Saved!');

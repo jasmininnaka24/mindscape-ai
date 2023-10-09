@@ -8,6 +8,10 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.TEXT,
       allowNull: false,
     },
+    code: {
+      type: DataTypes.TEXT,
+      allowNull: false,
+    },
   });
 
   StudyGroup.associate = (models) => {

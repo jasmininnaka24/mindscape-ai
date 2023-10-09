@@ -3,7 +3,9 @@ import React, { useEffect, useState } from 'react';
 import { Navbar } from '../navbar/logged_navbar/navbar';
 import { Link, useLocation } from 'react-router-dom';
 import { useNavigate, useParams } from 'react-router-dom';
-// import './ExpandableCollapsible.css';
+import CategoryIcon from '@mui/icons-material/Category';
+
+
 
 export const StudyAreaGP = (props) => {
   const navigate = useNavigate();
@@ -29,6 +31,20 @@ export const StudyAreaGP = (props) => {
   const [materialMCQChoices, setMaterialMCQChoices] = useState([]);
   const [materialCategory, setMaterialCategory] = useState('');
   const [materialCategories, setMaterialCategories] = useState([]); 
+  const [hidden, setHidden] = useState("hidden");
+  const [addCategory, setAddCategory] = useState("")
+  const [addMember, setAddMember] = useState("");
+  const [currentModalVal, setCurrentModalVal] = useState("");
+  const [modalList, setModalList] = useState([]);
+  const [categoryModal, setCategoryModal] = useState("hidden")
+  const [groupMemberModal, setGroupMemberModal] = useState("hidden")
+  const [code, setCode] = useState("");
+
+  const [savedGroupNotif, setSavedGroupNotif] = useState('hidden');
+  const [data, setData] = useState([]);
+  const [listedData, setListedData] = useState([]);
+  const [searchTermApp, setSearchTermApp] = useState('');
+  const [groupNameInp, setGroupNameInp] = useState('');
 
   const [isExpanded, setIsExpanded] = useState(true);
   const [expandedCategories, setExpandedCategories] = useState({}); 
@@ -37,6 +53,63 @@ export const StudyAreaGP = (props) => {
     setIsExpanded(!isExpanded);
   };
 
+  const addToModalList = () => {
+    if(currentModalVal !== '') {
+      setModalList([...modalList, currentModalVal]);
+      setCurrentModalVal("")
+    } else {
+      alert("Does not accept empty field.")
+    }
+  }
+  
+  const saveCategories = () => {
+    if (modalList.length > 0) {
+      modalList.forEach((item, index) => {
+        let categoryData = {
+          category: item,
+          categoryFor: categoryFor,
+          StudyGroupId: groupNameId,
+          UserId: UserId,
+        };
+  
+        axios.post(`http://localhost:3001/studyMaterialCategory/`, categoryData)
+          .then(response => {
+            // Handle success if needed
+          })
+          .catch(error => {
+            // Handle error if needed
+          });
+      });
+  
+      setHidden("hidden")
+      setModalList([]);
+      setCurrentModalVal("");
+      setCategoryModal("hidden");
+      
+      setTimeout(() => {
+        setSavedGroupNotif("")
+      }, 500);
+      setTimeout(() => {
+        setSavedGroupNotif("hidden")
+        window.location.reload();
+      }, 1800);
+    } else {
+      alert("Cannot save empty field.");
+    }
+
+  };
+
+  const copyGroupCode = () => {
+    navigator.clipboard.writeText(code)
+      .then(() => {
+        // Success message
+        alert('Text copied to clipboard: ' + code);
+      })
+      .catch(err => {
+        // Error handling
+        console.error('Failed to copy text: ', err);
+      });
+  };
   
 
   useEffect(() => {
@@ -62,7 +135,10 @@ export const StudyAreaGP = (props) => {
       studyMaterialPersonalLink = `http://localhost:3001/studyMaterial/study-material-category/${categoryFor}/${groupNameId}/${UserId}`;
     }
 
-
+    axios.get(`http://localhost:3001/studyGroup/extract-all-group/${groupNameId}`).then((response) => {
+      setCode(response.data.code);
+    })
+    
     axios.get(studyMaterialCatPersonalLink).then((response) => {
       setMaterialCategories(response.data);
     });
@@ -149,7 +225,7 @@ export const StudyAreaGP = (props) => {
       initialExpandedState[category.id] = true;
     });
     setExpandedCategories(initialExpandedState);
-  }, [UserId, categoryFor, groupNameId, navigate]);
+  }, [UserId, categoryFor, groupNameId, navigate, currentModalVal, modalList]);
 
   const choicesById = {};
 
@@ -186,18 +262,88 @@ export const StudyAreaGP = (props) => {
 
 
   return (
-    <div className="poppins mcolor-900 flex justify-start items-start">
+    <div className="relative poppins mcolor-900 flex justify-start items-start">
+
+      {/* modal */}
+      <div className={`${hidden} absolute pt-32 top-0 left-0 modal-bg w-full h-full`}>
+        <div className='flex justify-center'>
+          <div className='mbg-100 min-h-[45vh] w-1/3 z-10 relative p-10 rounded-[5px]'>
+
+          <button className='absolute right-4 top-3 text-xl' onClick={() => {
+            setHidden("hidden");
+            setCategoryModal("hidden");
+            setGroupMemberModal("hidden");
+            }}>
+            ✖
+          </button>
+
+          <div className={categoryModal}>
+            <p className='text-center text-2xl font-medium mcolor-800 my-5'>Add a category</p>
+            <div className="groupName flex flex-col">
+
+              <div className='relative'>
+                <input type="text" placeholder='Group name...' className='border-medium-800-scale px-5 py-2 w-full rounded-[5px] outline-none border-none' onChange={(event) => {setCurrentModalVal(event.target.value)}} value={currentModalVal === '' ? '' : currentModalVal} />
+                <button onClick={addToModalList} className='absolute right-5 top-1 text-3xl'>+</button>
+              </div>
+
+              <ul className='mt-3'>
+                {/* list of members that will be added */}
+                {
+                  modalList.length > 0 && (
+                    modalList.map((item, index) => {
+                      return (
+                        <div className='relative flex items-center my-2 text-lg' key={index}>
+                          <span>
+                            <CategoryIcon fontSize='small' /> <span className='ml-1'>{item}</span>
+                          </span>
+                          <button
+                            className='absolute right-4 text-xl'
+                            onClick={() => {
+                              const updatedList = modalList.filter((_, i) => i !== index);
+                              setModalList(updatedList);
+                            }}
+                          >
+                            ✖
+                          </button>
+                        </div>
+                      );
+                    })
+                  )
+                }
+
+              </ul>
+ 
+              <button onClick={saveCategories} className='mt-3 mbg-800 mcolor-100 py-2 rounded-[5px]'>Add</button>
+
+            </div>
+          </div>
+
+          <div className={`${groupMemberModal}`}>
+            <div className='w-full flex items-center'>
+              <input type="text" value={code} disabled className='mbg-200 border-thin-800 text-center w-full py-2 rounded-[3px]' />
+              <button onClick={copyGroupCode} className='px-4 py-2 mbg-800 mcolor-100 rounded-[3px] border-thin-800'>Copy</button>
+            </div>
+          </div>
+    
+          </div>
+        </div>
+      </div>
+
       {/* Side */}
       <div className={`flex flex-col justify-between min-h-[100vh] w-1/4 p-5 sidebar mbg-300 mcolor-900`}>
         <div className="my-5 shelf-categories">
           <p className="text-2xl mb-10 font-bold text-center opacity-90">{categoryForToUpper} SHELF</p>
           <div>
-            <div>
-              <span>{categoryFor === 'Personal' ? 'My' : 'Our'} Study Material</span>
-              <button onClick={toggleExpand} className='ml-2'>{!isExpanded ? <i className="fa-solid fa-chevron-down"></i> : <i className="fa-solid fa-chevron-up"></i>}</button>
-            </div>
+            {materialCategories.length > 0 ? (
+              <div>
+                <span>{categoryFor === 'Personal' ? 'My' : 'Our'} Study Material</span>
+                <button onClick={toggleExpand} className='ml-2'>{!isExpanded ? <i className="fa-solid fa-chevron-down"></i> : <i className="fa-solid fa-chevron-up"></i>}</button>
+              </div>
+              ) : (
+                <p className='text-center'>No materials saved.</p>
+              )}
             <div className={`expandable-container ${isExpanded ? 'expanded' : ''}`}>
-              {materialCategories.length > 0 ? (
+              {materialCategories.length > 0 && (
                 isExpanded && materialCategories.map((category) => (
                 <div className="shelf-category my-5" key={category.id}>
                   <div className="shadows mbg-100 mt-2 mcolor-900 p-4 rounded-[5px]">
@@ -233,8 +379,6 @@ export const StudyAreaGP = (props) => {
                   </div>
                 </div>
                 ))
-              ) : (
-                <p className='text-center'>No materials saved.</p>
               )}
             </div>
           </div>
@@ -250,10 +394,32 @@ export const StudyAreaGP = (props) => {
 
       <div className='py-6 px-10 w-3/4 '>
         <Navbar linkBack={`/main/${categoryForToLower}/`} linkBackName={`${categoryFor} Study Area`} currentPageName={'Study Area'} username={'Jennie Kim'}/>
+        
 
-        <Link to={`/main/${categoryForToLower}/study-area/qa-gen/${categoryFor === 'Group' ? groupNameId : ''}`}>
-          <button className='my-10 rounded-[8px] px-6 py-2 font-medium font-lg mbg-800 mcolor-100'>Create Reviewer</button>
-        </Link>
+        <div className='flex justify-between items-center mt-10 mb-6'>
+
+          <button className='rounded-[8px] px-6 py-2 font-medium font-lg mbg-800 mcolor-100' onClick={() => {
+            materialCategories.length > 0 ? (
+              navigate(`/main/${categoryForToLower}/study-area/qa-gen/${categoryFor === 'Group' ? groupNameId : ''}`)
+            ) : (
+              alert('No category saved. Add a category first.')
+            )
+          }}>Create Reviewer</button>
+
+          <div>
+            <button className='mx-2 mbg-300 mcolor-800 px-6 py-2 rounded-[5px] font-medium font-lg' onClick={() => {
+              setHidden("")
+              setCategoryModal("")
+              }}>Add Category</button>
+            <button className='mx-2 mcolor-800 px-6 py-2 rounded-[5px] font-medium font-lg' onClick={() => {
+              setHidden("")
+              setGroupMemberModal("")
+              }}>:</button>
+          </div>
+        </div>
+
+        <p className={`${savedGroupNotif} my-5 py-2 mbg-300 mcolor-800 text-center rounded-[5px] text-lg`}>New categories added!</p>
+
 
         <div>
           {lastMaterial !== null && (
