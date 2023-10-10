@@ -32,6 +32,7 @@ export const CreateGroupComp = (props) => {
     }
   }
 
+
   const removeSelectedUser = (itemId) => {
   const updatedChosenData = chosenData.filter((id) => id !== itemId);  
   setChosenData(updatedChosenData);
@@ -66,6 +67,31 @@ export const CreateGroupComp = (props) => {
     return randomString;
   }
 
+  const fetchFollowerData = async () => {
+    try {
+      const response = await axios.get(`http://localhost:3001/followers/get-follower-list/${UserId}`);
+      let responseData = response.data;
+  
+      // Create an array to store all the Axios requests
+      const axiosRequests = responseData.map((item) =>
+        axios.get(`http://localhost:3001/users/get-user/${item.FollowingId}`)
+      );
+
+      Promise.all(axiosRequests)
+        .then((responses) => {
+          const names = responses.map((response) => response.data);
+          const uniqueNames = Array.from(new Set(names));
+          setData(uniqueNames);
+          setListedData(uniqueNames);
+        })
+        .catch((error) => {
+          console.error('Error fetching user data:', error);
+        });
+    } catch (error) {
+      console.error('Error fetching follower list:', error);
+    }
+  };
+
   const createGroupBtn = () => {
     const groupData = {
       groupName: groupNameInp,
@@ -80,11 +106,11 @@ export const CreateGroupComp = (props) => {
         const groupMemberData = {
           role: 'Member',
           StudyGroupId: id,
-          UserId: UserId,
+          UserId: item,
         }
         axios.post('http://localhost:3001/studyGroupMembers/add-member', groupMemberData).then((response) => {
           console.log('Saved!');
-          setChosenData([]);
+          // setChosenData([]);
           setHidden('hidden');
           setGroupNameInp('')
 
@@ -113,30 +139,7 @@ export const CreateGroupComp = (props) => {
   // console.log(data);
   // console.log(chosenData);
 
-  const fetchFollowerData = async () => {
-    try {
-      const response = await axios.get(`http://localhost:3001/followers/get-follower-list/${UserId}`);
-      let responseData = response.data;
-  
-      // Create an array to store all the Axios requests
-      const axiosRequests = responseData.map((item) =>
-        axios.get(`http://localhost:3001/users/get-user/${item.FollowingId}`)
-      );
-  
-      Promise.all(axiosRequests)
-        .then((responses) => {
-          const names = responses.map((response) => response.data);
-          const uniqueNames = Array.from(new Set(names));
-          setData(uniqueNames);
-          setListedData(uniqueNames);
-        })
-        .catch((error) => {
-          console.error('Error fetching user data:', error);
-        });
-    } catch (error) {
-      console.error('Error fetching follower list:', error);
-    }
-  };
+
 
   useEffect(() => {
     // Call the fetchFollowerData function

@@ -25,13 +25,29 @@ router.get('/get-members/:groupNameId', async (req, res) => {
 });
 
 
-// remove a member from a group
-router.delete('/remove-member/:id', async (req, res) => {
-  const groupMemberId = req.params.id;
-  const deletedGroupMember = await StudyGroupMembers.findByPk(groupMemberId);
-  await deletedGroupMember.destroy();
-  res.json(deletedGroupMember);
-})
+
+router.delete('/remove-member/:groupNameId/:itemId', async (req, res) => {
+  const { groupNameId, itemId } = req.params;
+
+  try {
+    const deletedGroupMember = await StudyGroupMembers.destroy({
+      where: {
+        UserId: itemId,
+        StudyGroupId: groupNameId
+      }
+    });
+
+    if (deletedGroupMember > 0) {
+      res.json({ message: 'Group member removed successfully.' });
+    } else {
+      res.status(404).json({ error: 'Group member not found.' });
+    }
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Internal server error.' });
+  }
+});
+
 
 
 module.exports = router;

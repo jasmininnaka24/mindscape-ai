@@ -169,8 +169,9 @@ export const GroupReviewerPage = () => {
   
 
 const joinRoom = () => {
-  let points = 2;
-  socket.emit("join_room", { room, username, userId, points, questionIndex, shuffledChoices, userList });
+  let points = 0;
+  setFailCount(2)
+  socket.emit("join_room", { room, username, userId, points, questionIndex, shuffledChoices, userList, failCount });
   setInputs(false);
   setIsJoined(true);
 

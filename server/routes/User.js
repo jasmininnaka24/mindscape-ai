@@ -13,6 +13,14 @@ router.get('/get-user/:id', async (req, res) => {
   res.json(extractedUserDetails)
 })
 
+// router.get('/get-user-userid/:id', async (req, res) => {
+//   const {userId} = req.params;
+//   const extractedUserDetails = await User.findAll({
+//     where: {}
+//   });
+//   res.json(extractedUserDetails)
+// })
+
 router.post('/', async (req, res) => {
   const user = req.body; 
   const sevedUserData = await User.create(user);

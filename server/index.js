@@ -32,7 +32,7 @@ let userListValExt = []
 
 io.on('connection', (socket) => {
   socket.on('join_room', (data) => {
-    const { room, username, userId, points, questionIndex, shuffledChoices, userList} = data;
+    const { room, username, userId, points, questionIndex, shuffledChoices, userList, failCount} = data;
     socket.join(room);
     if (!rooms[room]) {
       rooms[room] = [];
@@ -46,11 +46,12 @@ io.on('connection', (socket) => {
     io.to(room).emit('userList', userListValExt);
     io.to(room).emit('received_next_user_join', userTurnSer);
     io.to(room).emit('received_selected_choice_join', selectedChoiceValCurr);
-    io.to(room).emit('received_current_fail_val', currentFailCountVal);
+    io.to(room).emit('received_current_fail_val', failCount);
     io.to(room).emit('next_qa_join', nextQA);
     io.to(room).emit('current_QA_index', questionIndex);
     io.to(room).emit('shuffled_join', shuffledChoices);
     shuffledChoicesVal = shuffledChoices;
+    currentFailCountVal = failCount;
   });
 
   socket.on('next_turn', ({ nextUser, room }) => {

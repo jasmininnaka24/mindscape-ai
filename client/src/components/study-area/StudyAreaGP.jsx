@@ -43,6 +43,9 @@ export const StudyAreaGP = (props) => {
   const [prevGroupName, setPrevGroupName] = useState("");
   const [savedGroupNotif, setSavedGroupNotif] = useState('hidden');
   const [userList, setUserList] = useState([]);
+  const [tempUserList, setTempUserList] = useState([]);
+  const [isUserListUpdated, setIsUserListUpdated] = useState("");
+  const [groupMemberIndex, setGroupMemberIndex] = useState("");
 
   const [isExpanded, setIsExpanded] = useState(true);
   const [expandedCategories, setExpandedCategories] = useState({}); 
@@ -123,7 +126,7 @@ export const StudyAreaGP = (props) => {
               groupName: groupName,
             });
     
-            console.log(groupName);
+            // console.log(groupName);
             setGroupName(response.data.groupName); 
             setPrevGroupName(response.data.groupName);
   
@@ -154,8 +157,25 @@ export const StudyAreaGP = (props) => {
       alert('Cannot save an empty group name.');
     }
   };
-  
 
+  console.log(groupMemberIndex);
+  const removeSelectedUser = (itemId, groupNameId) => {
+    const updatedTempUserList = tempUserList.filter(user => user.id !== itemId);
+
+    const updatedUserList = userList.filter(user => user.id !== itemId);  
+    setTempUserList(updatedTempUserList);
+    setUserList(updatedUserList);
+
+    axios.delete(`http://localhost:3001/studyGroupMembers/remove-member/${groupNameId}/${itemId}`).then(response => {
+      // console.log(response.data); 
+    }).catch(error => {
+      console.error(error);
+    });
+  };
+
+
+  // console.log(groupMemberIndex);
+  console.log(tempUserList);
   useEffect(() => {
     
     const reloadParamExists = searchParams.has('reload');
@@ -190,10 +210,38 @@ export const StudyAreaGP = (props) => {
         setPrevGroupName(response.data.groupName);
       })
 
-      axios.get(`http://localhost:3001/studyGroupMembers/get-members/${groupNameId}`).then((response) => {
-        setUserList(response.data);
-        console.log(response.data);
-      });      
+      const getUserListNames = async () => {
+
+        await axios.get(`http://localhost:3001/studyGroupMembers/get-members/${groupNameId}`).then((response) => {
+
+          setGroupMemberIndex(response.data);
+  
+          let userListResponse = response.data;
+
+          const allUserResponses = [];
+
+          userListResponse.forEach((user, index) => {
+            axios.get(`http://localhost:3001/users/get-user/${user.UserId}`)
+              .then((response) => {
+                allUserResponses.push(response.data); 
+
+                if (allUserResponses.length === userListResponse.length) {
+                  setUserList(allUserResponses); 
+                  setTempUserList(allUserResponses); 
+                }
+              })
+              .catch((error) => {
+                console.error("Error fetching user data:", error);
+              });
+          });
+          
+
+        });  
+
+
+      }
+
+      getUserListNames();
     }
     
     axios.get(studyMaterialCatPersonalLink).then((response) => {
@@ -322,7 +370,7 @@ export const StudyAreaGP = (props) => {
     <div className="relative poppins mcolor-900 flex justify-start items-start">
       
       {/* modal */}
-        <div style={{ zIndex: 1000 }} className={`${hidden} absolute pt-32 top-0 left-0 modal-bg w-full h-full`}>
+        <div style={{ zIndex: 1000 }} className={`${hidden} absolute py-24 top-0 left-0 bottom-0 modal-bg w-full h-full`}>
           <div className='flex justify-center'>
             <div className='mbg-100 min-h-[45vh] w-1/3 z-10 relative p-10 rounded-[5px]'>
 
@@ -399,11 +447,49 @@ export const StudyAreaGP = (props) => {
 
                 <br />
                   <p className='mcolor-900 my-3'>Group Members:</p>
-                  <ul>
-                    {userList.map((member, index) => {
-                      return <li key={index}>{member.id}</li>
+                  <ul className='mt-5'>
+                  {Array.isArray(groupMemberIndex) &&
+                    groupMemberIndex.map((user, indexGroup) => {
+                      let targetValue = user.UserId;
+                      let filteredData = tempUserList.filter(item => item.id === targetValue);
+
+                      // Check if the user is found in tempUserList
+                      if (!filteredData[0]) {
+                        // User not found, skip rendering this list item
+                        return null;
+                      }
+
+                      return (
+                        <li key={indexGroup} className='flex justify-between my-2'>
+                          <span>
+                            <i className="fa-regular fa-user mr-3"></i>@{filteredData[0]?.username}
+                          </span>
+                          <button
+                            onClick={() => {
+                              if (window.confirm('Are you sure you want to delete this user?')) {
+                                removeSelectedUser(filteredData[0]?.id, groupNameId);
+                              }
+                            }}
+                            className='text-lg'
+                          >
+                            <i className="fa-solid fa-xmark"></i>
+                          </button>
+                        </li>
+                      );
                     })}
+
+
+
                   </ul>
+                  {/* {userList !== tempUserList && (
+                    <div>
+                      <button onClick={updateUserList} className='mt-2 mbg-800 mcolor-100 w-full py-2 rounded-[5px]'>Update User List</button>
+
+                      {isUserListUpdated !== "" && (
+                        <p className='text-center mcolor-700 my-3'>{isUserListUpdated}</p>
+                      )}
+                    </div>
+                  )} */}
               </div>
 
             )}
