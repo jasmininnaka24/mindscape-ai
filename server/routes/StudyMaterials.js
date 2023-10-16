@@ -36,6 +36,24 @@ router.get('/study-material/:materialFor/:StudyGroupId/:UserId/:id', async(req, 
   res.json(latestMaterial);
 });
 
+
+
+router.get('/study-material-personal/:materialFor/:UserId/:id', async(req,res) => {
+  const { materialFor, UserId, id} = req.params;
+  const personalStudyMaterial = await StudyMaterials.findByPk(id, {
+    where: { 
+      materialFor: materialFor,
+      UserId: UserId
+    },
+    order: [['id', 'DESC']]
+  });
+
+  res.json(personalStudyMaterial);
+
+})
+
+
+
 router.get('/study-material-category/:materialFor/:StudyGroupId/:UserId', async(req, res) => {
   const { materialFor, StudyGroupId, UserId} = req.params;
   const latestMaterial = await StudyMaterials.findAll({
@@ -63,6 +81,7 @@ router.get('/study-material-category/:materialFor/:UserId', async(req, res) => {
 
   res.json(latestMaterial);
 });
+
 
 
 

@@ -21,11 +21,12 @@ import { GroupRoom } from './pages/rooms/group/GroupRoom';
 import { GroupStudyArea } from './pages/rooms/group/study_area/GroupStudyArea';
 import { GroupQAGenerator } from './pages/rooms/group/study_area/GroupQAGenerator';
 import { GroupTasks } from './pages/rooms/group/task/GroupTasks';
-import { GroupReviewPage } from './pages/rooms/group/study_area/GroupReviewPage';
+import { GroupReviewerPage } from './pages/rooms/group/study_area/GroupReviewerPage'
 
 import { PersonalRoom } from './pages/rooms/personal/PersonalRoom';
 import { PersonalStudyArea } from './pages/rooms/personal/study_area/PersonalStudyArea';
 import { PersonalQAGenerator } from './pages/rooms/personal/study_area/PersonalQAGenerator'
+import { PersonalReviewerPage } from './pages/rooms/personal/study_area/PersonalReviewerPage';
 
 // dependecies
 import AOS from 'aos';
@@ -62,13 +63,14 @@ function App() {
             <Route path='/main/group/study-area/:id' element={<GroupStudyArea />} /> 
             <Route path='/main/group/study-area/qa-gen/:id' element={<GroupQAGenerator />} /> 
             <Route path='/main/group/study-area/tasks' element={<GroupTasks />} /> 
-            <Route path='/main/group/study-area/group-review' element={<GroupReviewPage />} /> 
-            <Route path='/main/group/study-area/group-review/:groupId/:materialId' element={<GroupReviewPage />} />
+            {/* <Route path='/main/group/study-area/group-review' element={<GroupReviewPage />} />  */}
+            <Route path='/main/group/study-area/group-review/:groupId/:materialId' element={<GroupReviewerPage />} />
 
             {/* Personal Study Room Routes */}
             <Route path='/main/personal/' element={<PersonalRoom />} /> 
             <Route path='/main/personal/study-area' element={<PersonalStudyArea />} /> 
             <Route path='/main/personal/study-area/qa-gen' element={<PersonalQAGenerator />} /> 
+            <Route path='/main/personal/study-area/personal-review/:materialId' element={<PersonalReviewerPage />} />
               
             {/* If page does not exist */}
             <Route path='*' element={<h1 className='text-center text-4xl font-bold primary-text-color pt-40'>404: Page Not Found</h1>} /> 

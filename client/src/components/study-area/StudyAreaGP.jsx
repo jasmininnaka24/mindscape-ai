@@ -600,7 +600,7 @@ export const StudyAreaGP = (props) => {
             <div className='relative'>
               <p className='text-xl mcolor-900 mb-3'>Latest Uploaded Reviewer: {lastMaterial.title} from {materialCategory}</p>
 
-              <section className="border scroll-box max-h-[63vh]">
+              <section className="border scroll-box max-h-[63vh] min-h-[63vh]">
                 <div className='gap-2 flex justify-between items-start'>
                   <button
                     onClick={() => showContent(1)}
@@ -652,7 +652,7 @@ export const StudyAreaGP = (props) => {
                 </div>
               </section>
               <div className='flex items-center justify-end absolute right-0 bottom-[-.8rem]'>
-                <Link to={`/main/${categoryForToLower}/study-area/group-review/${groupNameId}/${lastMaterial.id}`} className='mbg-800 mcolor-100 rounded-[5px] px-12 py-2'>View Reviewer</Link>
+                <Link to={`/main/${categoryForToLower}/study-area/${categoryFor.toLowerCase()}-review/${groupNameId !== undefined ? groupNameId + '/' : ''}${lastMaterial.id}`} className='mbg-800 mcolor-100 rounded-[5px] px-12 py-2'>View Reviewer</Link>
               </div>
             </div>
           ) : (
