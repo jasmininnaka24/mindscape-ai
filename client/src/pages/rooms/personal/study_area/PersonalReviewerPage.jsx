@@ -1,20 +1,19 @@
 import React, { useEffect, useState } from 'react'
 import { Navbar } from '../../../../components/navbar/logged_navbar/navbar'
-import { PersonalReviewerPageComp } from '../../../../components/personal/PersonalReviewerPageComp';
 import { useParams } from 'react-router-dom';
 import axios from 'axios';
+import { Link } from 'react-router-dom';
 
-export const PersonalReviewerPage = (props) => {
+
+export const PersonalReviewerPage = () => {
 
   const { materialId } = useParams();
   const UserId = 1;
 
-  const [showPreReviewPage, SetShowPreReviewPage] = useState(true);
   const [showNotesReviewer, SetShowNotesReviewer] = useState(true);
   const [showLessonContext, SetShowLessonContext] = useState(false);
   const [notesReviewer, setNotesReviewer] = useState([]);
   const [lessonContext, setLessonContext] = useState("");
-  const [typeOfLearner, setTypeOfLearner] = useState("");
 
   useEffect(() => {
     axios.get(`http://localhost:3001/quesRev/study-material-rev/${materialId}`).then((response) => {
@@ -27,23 +26,18 @@ export const PersonalReviewerPage = (props) => {
     })
   },[materialId])
 
-  const startStudySession = () => {
-    SetShowPreReviewPage(false)
-  }
-
   return (
     <div className='container py-8 poppins'>
-      <Navbar linkBack={`/main/personal/study-area`} linkBackName={`Study Area`} currentPageName={'Reviewer Page'} username={'Jennie Kim'}/>
+      <Navbar linkBack={`/main/personal/study-area`} linkBackName={`Study Area`} currentPageName={'Reviewer Page Preview'} username={'Jennie Kim'}/>
 
-      {/*  */}
-      {showPreReviewPage === true ? (
-        <div>
+      <div>
           <div className='flex justify-between items-center my-5 py-3'>
             <button className='px-6 py-2 rounded-[5px] text-lg mbg-200 mcolor-800 border-thin-800 font-normal'>Delete Material</button>
             <div className='flex justify-between items-center gap-4'>
               <div className='flex items-center gap-2'>
-                <input type="text" className='border-thin-800 px-3 py-2 rounded-[5px]' placeholder='Type of learner...' onChange={(event) => {setTypeOfLearner(event.target.value)}} />
-                <button className='px-6 py-2 rounded-[5px] text-lg mbg-200 mcolor-800 border-thin-800 font-normal' onClick={startStudySession}>Start Study Session</button>
+                <Link to={`/main/personal/study-area/personal-review-start/${materialId}`}>
+                  <button className='px-6 py-2 rounded-[5px] text-lg mbg-200 mcolor-800 border-thin-800 font-normal'>Start Study Session</button>
+                </Link>
               </div>
               <button className='px-6 py-2 rounded-[5px] text-lg mbg-800 mcolor-100 font-normal'>Take Assessment</button>
             </div>
@@ -51,11 +45,11 @@ export const PersonalReviewerPage = (props) => {
 
           <div className='border-medium-800 scroll-box max-h-[70vh] min-h-[70vh] rounded-[5px]'>
             <div className='flex items-center gap-1'>
-              <button className='w-full py-4 mbg-300 mcolor-800 rounded-[8px] text-lg font-medium' onClick={() => {
+              <button className={`w-full py-4 rounded-[8px] text-lg font-medium mcolor-800 ${showNotesReviewer === false ? 'mbg-300' : ''}`} onClick={() => {
                 SetShowLessonContext(false)
                 SetShowNotesReviewer(true)
               }}>Notes Reviewer</button>
-              <button className='w-full py-4 mbg-300 mcolor-800 rounded-[8px] text-lg font-medium' onClick={() => {
+              <button className={`w-full py-4 rounded-[8px] text-lg font-medium mcolor-800 ${showLessonContext === false ? 'mbg-300' : ''}`} onClick={() => {
                 SetShowLessonContext(true)
                 SetShowNotesReviewer(false)
               }}>Lesson Context</button>
@@ -84,11 +78,6 @@ export const PersonalReviewerPage = (props) => {
 
           </div>
         </div>
-      ) : (
-        <div>
-          <PersonalReviewerPageComp typeOfLearner={typeOfLearner} materialId={materialId} />
-        </div>
-      )}
 
 
     </div>

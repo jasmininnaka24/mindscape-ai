@@ -8,6 +8,16 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.TEXT,
       allowNull: false,
     },
+    response_state: {
+      type: DataTypes.TEXT,
+      allowNull: false,
+      defaultValue: 'Unattempted',
+    },
+    stoppedAt: {
+      type: DataTypes.TEXT,
+      allowNull: false,
+      defaultValue: '0',
+    },
   });
 
   QuesAns.associate = (models) => {
