@@ -66,19 +66,6 @@ export const PersonalReviewerStart = () => {
   useEffect(() => {
     async function fetchData() {
       try {
-        // const materialResponse = await axios.get(`http://localhost:3001/quesAns/study-material-mcq/${materialId}`);
-        // const fetchedQA = materialResponse.data;
-  
-        // if (filteredDataValue === "Correct") {
-        //   filteredFetchedQA = fetchedQA.filter(item => item.response_state === 'Correct');
-        // } else if (filteredDataValue === "Wrong") {
-        //   filteredFetchedQA = fetchedQA.filter(item => item.response_state === 'Wrong');
-        // } else if (filteredDataValue === "Unattempted") {
-        //   filteredFetchedQA = fetchedQA.filter(item => item.response_state === 'Unattempted');
-        // } else {
-        //   filteredFetchedQA = fetchedQA;
-        // }
-
 
 
         if (filteredDataValue !== 'Correct' && filteredDataValue !== 'Wrong' && filteredDataValue !== 'Unattempted') {
