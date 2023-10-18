@@ -17,6 +17,17 @@ router.get('/study-material-mcq/:studyMaterialID', async(req, res) => {
   res.json(studyMaterial);
 });
 
+router.get('/study-material-mcq/:studyMaterialID/:response_state', async(req, res) => {
+  const studyMaterialID = req.params.studyMaterialID;
+  const { response_state } = req.params;
+
+  const studyMaterial = await QuesAns.findAll({
+    where: { StudyMaterialId: studyMaterialID, response_state: response_state }
+  });
+
+  res.json(studyMaterial);
+});
+
 router.put('/update-response-state/:studyMaterialID/:id', async (req, res) => {
   const id = req.params.id;
   const { response_state } = req.body; // Use response_state instead of responseState

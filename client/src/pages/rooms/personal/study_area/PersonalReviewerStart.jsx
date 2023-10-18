@@ -66,61 +66,215 @@ export const PersonalReviewerStart = () => {
   useEffect(() => {
     async function fetchData() {
       try {
-        const materialResponse = await axios.get(`http://localhost:3001/quesAns/study-material-mcq/${materialId}`);
-        const fetchedQA = materialResponse.data;
+        // const materialResponse = await axios.get(`http://localhost:3001/quesAns/study-material-mcq/${materialId}`);
+        // const fetchedQA = materialResponse.data;
   
-        let filteredFetchedQA = [];
-        if (filteredDataValue === "Correct") {
-          filteredFetchedQA = fetchedQA.filter(item => item.response_state === 'Correct');
-        } else if (filteredDataValue === "Wrong") {
-          filteredFetchedQA = fetchedQA.filter(item => item.response_state === 'Wrong');
-        } else if (filteredDataValue === "Unattempted") {
-          filteredFetchedQA = fetchedQA.filter(item => item.response_state === 'Unattempted');
-        } else {
-          filteredFetchedQA = fetchedQA;
-        }
-  
-        // Ensure questionIndex does not exceed the number of filtered questions
-        const newIndex = Math.max(0, Math.min(questionIndex, filteredFetchedQA.length - 1));
-        setQuestionIndex(newIndex);
-        setQA(filteredFetchedQA);
-        console.log(filteredFetchedQA);
-        console.log(newIndex);
+        // if (filteredDataValue === "Correct") {
+        //   filteredFetchedQA = fetchedQA.filter(item => item.response_state === 'Correct');
+        // } else if (filteredDataValue === "Wrong") {
+        //   filteredFetchedQA = fetchedQA.filter(item => item.response_state === 'Wrong');
+        // } else if (filteredDataValue === "Unattempted") {
+        //   filteredFetchedQA = fetchedQA.filter(item => item.response_state === 'Unattempted');
+        // } else {
+        //   filteredFetchedQA = fetchedQA;
+        // }
 
 
-        if (filteredFetchedQA[newIndex].stoppedAt === '1') {
-          const foundIndex = filteredFetchedQA.findIndex(question => question.id === filteredFetchedQA[newIndex].id);
-          if (foundIndex !== -1) {
-            setQuestionIndex(foundIndex);
-          } else {
-            console.error('Question not found in filteredFetchedQA array');
-          }
-        }
+
+        if (filteredDataValue !== 'Correct' && filteredDataValue !== 'Wrong' && filteredDataValue !== 'Unattempted') {
+
+          console.log('All items');
+          
+          const materialResponse = await axios.get(`http://localhost:3001/quesAns/study-material-mcq/${materialId}`);
+          const fetchedQA = materialResponse.data;
+          
+          setQA(fetchedQA)
+
+
+          if(fetchedQA.length > 0) {
+            const filteredQuestions = fetchedQA.filter(question => question.stoppedAt === '1');
+          
+            if (filteredQuestions.length > 0) {
+              const questionIndexGet = filteredQuestions[0].id;
+              const foundIndex = fetchedQA.findIndex(question => question.id === questionIndexGet);
+              if (foundIndex !== -1) {
+                setQuestionIndex(foundIndex);
+              } else {
+                setQuestionIndex(0);
+              }
+            } else {
+              setQuestionIndex(0);
+            } 
+
+          
+          
+          
+            const choicesResponse = await axios.get(`http://localhost:3001/quesAnsChoices/study-material/${materialId}/${fetchedQA[questionIndex].id}`);
+            setChoices(choicesResponse.data);
   
-        if (filteredFetchedQA.length > 0) {
-          const currentQuestion = filteredFetchedQA[newIndex];
-          if (currentQuestion) {
-            const choicesResponse = await axios.get(`http://localhost:3001/quesAnsChoices/study-material/${materialId}/${currentQuestion.id}`);
-            const choices = choicesResponse.data;
-            const shuffledArray = shuffleArray([...choices, { choice: currentQuestion.answer }]);
-            setChoices(choices);
+            let shuffledArray = shuffleArray([...choicesResponse.data, { choice: fetchedQA[questionIndex].answer }])
             setShuffledChoices(shuffledArray);
-  
-            const unattemptedCount = filteredFetchedQA.filter(question => question.response_state === 'Unattempted').length;
-            const correctCount = filteredFetchedQA.filter(question => question.response_state === 'Correct').length;
-            const wrongCount = filteredFetchedQA.filter(question => question.response_state === 'Wrong').length;
-            setUnattemptedCounts(unattemptedCount);
-            setCorrectAnswerCounts(correctCount);
-            setWrongAnswerCounts(wrongCount);
-  
-
-          } else {
-            console.error("Current question is undefined.");
-            // Handle this case according to your application logic (e.g., show a message to the user, reset to a default state)
           }
+  
+          const unattemptedCount = fetchedQA.filter(question => question.response_state === 'Unattempted').length;
+          const correctCount = fetchedQA.filter(question => question.response_state === 'Correct').length;
+          const wrongCount = fetchedQA.filter(question => question.response_state === 'Wrong').length;
+          setUnattemptedCounts(unattemptedCount);
+          setCorrectAnswerCounts(correctCount);
+          setWrongAnswerCounts(wrongCount);
+
+
+
+          
+
+        } 
+        
+        // this is for correct answers
+        else if(filteredDataValue === 'Correct') {
+
+          console.log('correct items');
+
+          const materialResponse = await axios.get(`http://localhost:3001/quesAns/study-material-mcq/${materialId}/${filteredDataValue}`);
+
+          
+          const fetchedQA = materialResponse.data;
+          setQA(fetchedQA)
+
+          
+          if(fetchedQA.length > 0) {
+            const filteredQuestions = fetchedQA.filter(question => question.stoppedAt === '1');
+          
+            if (filteredQuestions.length > 0) {
+              const questionIndexGet = filteredQuestions[0].id;
+              const foundIndex = fetchedQA.findIndex(question => question.id === questionIndexGet);
+              if (foundIndex !== -1) {
+                setQuestionIndex(foundIndex);
+              } else {
+                setQuestionIndex(0);
+              }
+            } else {
+              setQuestionIndex(0);
+            } 
+
+          
+          
+          
+            const choicesResponse = await axios.get(`http://localhost:3001/quesAnsChoices/study-material/${materialId}/${fetchedQA[questionIndex].id}`);
+            setChoices(choicesResponse.data);
+  
+            let shuffledArray = shuffleArray([...choicesResponse.data, { choice: fetchedQA[questionIndex].answer }])
+            setShuffledChoices(shuffledArray);
+          }
+
+
+
+
+
+          setCorrectAnswerCounts(fetchedQA.length);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        } else if(filteredDataValue === 'Wrong') { 
+
+          console.log('Wrong clicked');
+          const materialResponse = await axios.get(`http://localhost:3001/quesAns/study-material-mcq/${materialId}/${filteredDataValue}`);
+
+          
+          const fetchedQA = materialResponse.data;
+          setQA(fetchedQA)
+
+          
+          if(fetchedQA.length > 0) {
+            const filteredQuestions = fetchedQA.filter(question => question.stoppedAt === '1');
+          
+            if (filteredQuestions.length > 0) {
+              const questionIndexGet = filteredQuestions[0].id;
+              const foundIndex = fetchedQA.findIndex(question => question.id === questionIndexGet);
+              if (foundIndex !== -1) {
+                setQuestionIndex(foundIndex);
+              } else {
+                setQuestionIndex(0);
+              }
+            } else {
+              setQuestionIndex(0);
+            } 
+
+          
+          
+          
+            const choicesResponse = await axios.get(`http://localhost:3001/quesAnsChoices/study-material/${materialId}/${fetchedQA[questionIndex].id}`);
+            setChoices(choicesResponse.data);
+  
+            let shuffledArray = shuffleArray([...choicesResponse.data, { choice: fetchedQA[questionIndex].answer }])
+            setShuffledChoices(shuffledArray);
+          }
+
+
+
+          setWrongAnswerCounts(fetchedQA.length);
+
+
+
+
+          
+          
+        } else if(filteredDataValue === 'Unattempted') { 
+
+
+          console.log('Unattempted clicked');
+          const materialResponse = await axios.get(`http://localhost:3001/quesAns/study-material-mcq/${materialId}/${filteredDataValue}`);
+
+          
+          const fetchedQA = materialResponse.data;
+          setQA(fetchedQA)
+
+          
+          if(fetchedQA.length > 0) {
+            const filteredQuestions = fetchedQA.filter(question => question.stoppedAt === '1');
+          
+            if (filteredQuestions.length > 0) {
+              const questionIndexGet = filteredQuestions[0].id;
+              const foundIndex = fetchedQA.findIndex(question => question.id === questionIndexGet);
+              if (foundIndex !== -1) {
+                setQuestionIndex(foundIndex);
+              } else {
+                setQuestionIndex(0);
+              }
+            } else {
+              setQuestionIndex(0);
+            } 
+
+          
+          
+          
+            const choicesResponse = await axios.get(`http://localhost:3001/quesAnsChoices/study-material/${materialId}/${fetchedQA[questionIndex].id}`);
+            setChoices(choicesResponse.data);
+  
+            let shuffledArray = shuffleArray([...choicesResponse.data, { choice: fetchedQA[questionIndex].answer }])
+            setShuffledChoices(shuffledArray);
+          }
+
+
+
+
+
+          setUnattemptedCounts(fetchedQA.length);
+
         } else {
           console.error("No questions available or invalid question index.");
-          // Handle this case according to your application logic (e.g., show a message to the user, reset to a default state)
         }
       } catch (error) {
         console.error("Error fetching data: ", error);
@@ -128,11 +282,10 @@ export const PersonalReviewerStart = () => {
     }
   
     fetchData();
-    // Clean up the speech synthesis on component unmount or when question changes
     return () => {
       speechSynthesis.cancel();
     };
-  }, [materialId, filteredDataValue, questionIndex, speechSynthesis]);
+  }, [materialId, filteredDataValue, questionIndex, speechSynthesis, correctAnswerCounts, wrongAnswerCounts, unattemptedCounts]);
   
   
   
