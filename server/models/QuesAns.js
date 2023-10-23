@@ -8,6 +8,10 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.TEXT,
       allowNull: false,
     },
+    quizType: {
+      type: DataTypes.TEXT,
+      allowNull: false,
+    },
     response_state: {
       type: DataTypes.TEXT,
       allowNull: false,

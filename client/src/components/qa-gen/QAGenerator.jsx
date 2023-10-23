@@ -24,11 +24,17 @@ export const QAGenerator = (props) => {
   const [addedChoices, setAddedChoices] = useState([]);
   const [showMCQAs, setShowMCQAs] = useState(true);
   const [showGenReviewer, setShowGenReviewer] = useState(false);
+  const [showTrueOrFalseSentences, setShowTrueOrFalseSentences] = useState(false);
+  const [showFillInTheBlanks, setShowFillInTheBlanks] = useState(false);
+  const [showIdentification, setShowIdentification] = useState(false)
   const [activeButton, setActiveButton] = useState(1); 
   const [activeBtnMCQAs, setActiveBtnMCQAs] = useState(true); 
   const [activeBtnRev, setActiveBtnRev] = useState(true); 
   const [revQues, setRevQues] = useState("");
   const [revAns, setRevAns] = useState("");
+  const [addedTrueSentence, setAddedTrueSentence] = useState("");
+  const [addedFITBSentence, setAddedFITBSentence] = useState("");
+  const [addedFITBAnswer, setAddedFITBAnswer] = useState("");
 
   useEffect(() => {
     // Check if there is data in generatedQA
@@ -56,20 +62,119 @@ export const QAGenerator = (props) => {
     updatedPairs[index].answer = event.target.value;
     setGeneratedQA({ ...generatedQA, reviewer_ques_pairs: updatedPairs });
   };
+
+  
+  const addSentenceToTheList = () => {
+    if (addedTrueSentence.trim() === "") {
+      return;
+    }
+  
+    const updatedTS = [addedTrueSentence, ...generatedQA.true_or_false_sentences];
+    setGeneratedQA({ ...generatedQA, true_or_false_sentences: updatedTS });
+  
+    setAddedTrueSentence("");
+  };
   
   
+  
+
+  const trueSentenceChange = (event, index) => {
+    const updatedTS = [...generatedQA.true_or_false_sentences];
+    updatedTS[index] = event.target.value;
+    setGeneratedQA({ ...generatedQA, true_or_false_sentences: updatedTS });
+  };
+
+
+  const deleteTrueSentenceItem = (index) => {
+    const updatedTS = generatedQA.true_or_false_sentences.filter((item, i) => i !== index);
+    setGeneratedQA({ ...generatedQA, true_or_false_sentences: updatedTS });
+  }
+
+
+
+  const addSentenceAndAnswerToTheList = () => {
+    if (addedFITBSentence.trim() === "" || addedFITBAnswer.trim() === "") {
+      return;
+    }
+  
+    const updatedSentences = [addedFITBSentence, ...generatedQA.fill_in_the_blanks.sentences];
+    const updatedAnswers = [addedFITBAnswer, ...generatedQA.fill_in_the_blanks.answer];
+    
+    const updatedFITB = {
+      ...generatedQA.fill_in_the_blanks,
+      sentences: updatedSentences,
+      answer: updatedAnswers,
+    };
+  
+    setGeneratedQA({ ...generatedQA, fill_in_the_blanks: updatedFITB });
+  
+    setAddedFITBSentence("");
+    setAddedFITBAnswer("");
+  };
+  
+  // console.log(generatedQA.question_answer_pairs[0].distractors.length);
+
+
+  const fillInTheBlankSentenceChange = (event, index) => {
+    const updatedFITB = {
+      ...generatedQA.fill_in_the_blanks,
+      sentences: [...generatedQA.fill_in_the_blanks.sentences]
+    };
+    updatedFITB.sentences[index] = event.target.value;
+    setGeneratedQA({ ...generatedQA, fill_in_the_blanks: updatedFITB });
+  };
+
+   
+  const fillInTheBlankAnswerChange = (event, index) => {
+    const updatedFITB = {
+      ...generatedQA.fill_in_the_blanks,
+      answer: [...generatedQA.fill_in_the_blanks.answer]
+    };
+    updatedFITB.answer[index] = event.target.value;
+    setGeneratedQA({ ...generatedQA, fill_in_the_blanks: updatedFITB });
+  };
+
+
+  const deleteFITBItem = (index) => {
+    const updatedSentences = [...generatedQA.fill_in_the_blanks.sentences];
+    const updatedAnswers = [...generatedQA.fill_in_the_blanks.answer];
+  
+    // Remove the sentence and answer at the specified index
+    updatedSentences.splice(index, 1);
+    updatedAnswers.splice(index, 1);
+  
+    // Update the state with the modified arrays
+    setGeneratedQA({
+      ...generatedQA,
+      fill_in_the_blanks: {
+        sentences: updatedSentences,
+        answer: updatedAnswers,
+      },
+    });
+  };
+
+
 
   const showContent = (contentNumber) => {
     setActiveButton(contentNumber);
     // Hide all divs first
     setShowMCQAs(false);
     setShowGenReviewer(false);
+    setShowTrueOrFalseSentences(false);
+    setShowFillInTheBlanks(false);
+    setShowIdentification(false);
 
     // Show the selected div
     if (contentNumber === 1) {
       setShowMCQAs(true);
     } else if (contentNumber === 2) {
       setShowGenReviewer(true);
+    } else if (contentNumber === 3) {
+      setShowTrueOrFalseSentences(true);
+    } else if (contentNumber === 4) {
+      setShowFillInTheBlanks(true);
+    } else if (contentNumber === 5) {
+      setShowIdentification(true);
     } 
   };
 
@@ -110,7 +215,6 @@ export const QAGenerator = (props) => {
     }
   };
 
-
   function handleDeleteChoice(indexToDelete) {
     setAddedChoices((prevChoices) => {
       const updatedChoices = prevChoices.filter((_, index) => index !== indexToDelete);
@@ -145,7 +249,6 @@ export const QAGenerator = (props) => {
       alert('Field cannot be empty');
     }
   
-    console.log(generatedQA.reviewer_ques_pairs);
   };
   
   
@@ -190,13 +293,16 @@ export const QAGenerator = (props) => {
                 {/* tabs */}
                 <br />
                 <div className='flex justify-center items-center mb-12 rounded-[5px]'>
-                  <button className={`w-1/2 text-center py-3 ${activeButton === 1 ? 'mbg-300 rounded-[5px] border-medium-800' : 'border-bottom-medium'}`} onClick={() => showContent(1)}>Generated MCQAs</button>
-                  <button className={`w-1/2 text-center py-3 ${activeButton === 2 ? 'mbg-300 rounded-[5px] border-medium-800' : 'border-bottom-medium'}`} onClick={() => showContent(2)}>Generated Notes Reviewer</button>
+                  <button className={`w-full text-center py-3 ${activeButton === 1 ? 'mbg-300 rounded-[5px] border-medium-800' : 'border-bottom-medium border-r border-solid border-gray-500'}`} onClick={() => showContent(1)}>MCQAs</button>
+                  <button className={`w-full text-center py-3 ${activeButton === 2 ? 'mbg-300 rounded-[5px] border-medium-800' : 'border-bottom-medium border-r border-solid border-gray-500'}`} onClick={() => showContent(2)}>Notes Reviewer</button>
+                  <button className={`w-full text-center py-3 ${activeButton === 3 ? 'mbg-300 rounded-[5px] border-medium-800' : 'border-bottom-medium border-r border-solid border-gray-500'}`} onClick={() => showContent(3)}>True  Sentences</button>
+                  <button className={`w-full text-center py-3 ${activeButton === 4 ? 'mbg-300 rounded-[5px] border-medium-800' : 'border-bottom-medium'}`} onClick={() => showContent(4)}>Fill In The Blank</button>
+                  <button className={`w-full text-center py-3 ${activeButton === 5 ? 'mbg-300 rounded-[5px] border-medium-800' : 'border-bottom-medium'}`} onClick={() => showContent(5)}>Identification</button>
                 </div>
 
 
                 {showMCQAs && 
-                  <div>
+                  <div className='min-w-90vh'>
     
                     {/* Add item */}
                     <div className='mb-14 mt-10'>
@@ -341,82 +447,62 @@ export const QAGenerator = (props) => {
     
                     {shuffleArray(generatedQA.question_answer_pairs).map((pair, index) => (
                       <li key={index} className="mb-8">
-                        <div className='flex justify-end'>
-                          {/* Delete button */}
-                          <button className='bg-red mcolor-100 py-1 px-5 rounded-[5px]'
-                            onClick={() => {
-                              setGeneratedQA((prevGeneratedQA) => {
-                                const updatedPairs = prevGeneratedQA.question_answer_pairs.filter((p) => p !== pair);
-                                return {
-                                  ...prevGeneratedQA,
-                                  question_answer_pairs: updatedPairs,
-                                };
-                              });
-                            }}
-                          >
-                            Delete
-                          </button>
-                        </div>
-                        <div className='my-2'>
-                          {/* Input for the question */}
-                          <input
-                            type="text"
-                            className='mb-4 brd-btn border-bottom-thin  addAChoice w-full bg-transparent border-transparent text-center py-3'
-                            value={pair.question}
-                            onChange={(event) => {
-                              let val = event.target.value;
-                              setGeneratedQA((prevGeneratedQA) => {
-                                const updatedPairs = [...prevGeneratedQA.question_answer_pairs];
-                                const pairToUpdate = updatedPairs.find((p) => p === pair);
-                                if (pairToUpdate) {
-                                  const itemIndex = updatedPairs.indexOf(pairToUpdate);
-                                  const updatedItem = { ...pairToUpdate };
-                                  updatedItem.question = val;
-                                  updatedPairs[itemIndex] = updatedItem;
-                                }
-                                return {
-                                  ...prevGeneratedQA,
-                                  question_answer_pairs: updatedPairs,
-                                };
-                              });
-                            }}
-                          />
-                        </div>
-                        {/* You can add the distractors here */}
-                        <ul className="grid-result gap-4">
-                          {/* Input for the answer */}
-                          <li className="correct-bg rounded-[5px] text-center my-2">
-                            <input
-                              type="text"
-                              className='w-full py-4 bg-transparent border-transparent text-center'
-                              value={pair.answer}
-                              onChange={(event) => {
-                                let val = event.target.value;
-                                setGeneratedQA((prevGeneratedQA) => {
-                                  const updatedPairs = [...prevGeneratedQA.question_answer_pairs];
-                                  const pairToUpdate = updatedPairs.find((p) => p === pair);
-                                  if (pairToUpdate) {
-                                    const itemIndex = updatedPairs.indexOf(pairToUpdate);
-                                    const updatedItem = { ...pairToUpdate };
-                                    updatedItem.answer = val;
-                                    updatedPairs[itemIndex] = updatedItem;
-                                  }
-                                  return {
-                                    ...prevGeneratedQA,
-                                    question_answer_pairs: updatedPairs,
-                                  };
-                                });
-                              }}
-                            />
-                          </li>
-    
-                            {/* render */}
-                            {pair.distractors.map((distractor, distractorIndex) => (
-                              <li className="relative wrong-bg rounded-[5px] text-center my-2 flex" key={distractorIndex}>
+
+
+                        {generatedQA.question_answer_pairs[index].distractors.length > 0 && (
+                          <div>
+                            <div className='flex justify-end'>
+                              {/* Delete button */}
+                              <button className='bg-red mcolor-100 py-1 px-5 rounded-[5px]'
+                                onClick={() => {
+                                  setGeneratedQA((prevGeneratedQA) => {
+                                    const updatedPairs = prevGeneratedQA.question_answer_pairs.filter((p) => p !== pair);
+                                    return {
+                                      ...prevGeneratedQA,
+                                      question_answer_pairs: updatedPairs,
+                                    };
+                                  });
+                                }}
+                              >
+                                Delete
+                              </button>
+                            </div>
+
+
+                            <div className='my-2'>
+                              {/* Input for the question */}
+                              <input
+                                type="text"
+                                className='mb-4 brd-btn border-bottom-thin  addAChoice w-full bg-transparent border-transparent text-center py-3'
+                                value={pair.question}
+                                onChange={(event) => {
+                                  let val = event.target.value;
+                                  setGeneratedQA((prevGeneratedQA) => {
+                                    const updatedPairs = [...prevGeneratedQA.question_answer_pairs];
+                                    const pairToUpdate = updatedPairs.find((p) => p === pair);
+                                    if (pairToUpdate) {
+                                      const itemIndex = updatedPairs.indexOf(pairToUpdate);
+                                      const updatedItem = { ...pairToUpdate };
+                                      updatedItem.question = val;
+                                      updatedPairs[itemIndex] = updatedItem;
+                                    }
+                                    return {
+                                      ...prevGeneratedQA,
+                                      question_answer_pairs: updatedPairs,
+                                    };
+                                  });
+                                }}
+                              />
+                            </div>
+
+                            {/* You can add the distractors here */}
+                            <ul className="grid-result gap-4">
+                              {/* Input for the answer */}
+                              <li className="correct-bg rounded-[5px] text-center my-2">
                                 <input
                                   type="text"
                                   className='w-full py-4 bg-transparent border-transparent text-center'
-                                  value={distractor}
+                                  value={pair.answer}
                                   onChange={(event) => {
                                     let val = event.target.value;
                                     setGeneratedQA((prevGeneratedQA) => {
@@ -425,7 +511,7 @@ export const QAGenerator = (props) => {
                                       if (pairToUpdate) {
                                         const itemIndex = updatedPairs.indexOf(pairToUpdate);
                                         const updatedItem = { ...pairToUpdate };
-                                        updatedItem.distractors[distractorIndex] = val;
+                                        updatedItem.answer = val;
                                         updatedPairs[itemIndex] = updatedItem;
                                       }
                                       return {
@@ -435,47 +521,78 @@ export const QAGenerator = (props) => {
                                     });
                                   }}
                                 />
-                                <div className='absolute right-5 top-3 mbg-100 px-2 rounded-[20px]'>
-                                  <button
-                                    className='mcolor-900 deleteChoiceBtn relative text-3xl'
-                                    onClick={() => {
-                                      const updatedDistractors = generatedQA.question_answer_pairs[index].distractors.filter((distractor, idx) => {
-                                        return idx !== distractorIndex;
-                                      });
-                                      
-                                      // Update the state with the new array
-                                      generatedQA.question_answer_pairs[index].distractors = updatedDistractors;
-                                      setGeneratedQA({ ...generatedQA });
-                                    }}
-                                    >
-                                    ×
-                                  </button>
-                                </div>
-    
                               </li>
-                            ))}
-    
-                            {/* Add a choice */}
-                            <div className='my-2 relative' key={index}>
-                              <input
-                                type="text"
-                                className='brd-btn border-bottom-thin  addAChoice w-full py-4 bg-transparent border-transparent text-center rounded-[5px]'
-                                placeholder='Add a choice'
-                                onChange={(event) => choiceHandleInput(event, index)}
-                                value={inputValues[index] || ''} // Use the corresponding value from the array
-                                required
-                              />
-    
-                              <div className='absolute right-5 top-3 mbg-100 px-2 rounded-[20px]'>
-                                <button
-                                  className='deleteChoiceBtn relative text-3xl'
-                                  onClick={() => addChoiceBtnFunc(index)}
-                                >
-                                  +
-                                </button>
-                              </div>
-                            </div>
-                        </ul>
+        
+                                {/* render */}
+                                {pair.distractors.map((distractor, distractorIndex) => (
+                                  <li className="relative wrong-bg rounded-[5px] text-center my-2 flex" key={distractorIndex}>
+                                    <input
+                                      type="text"
+                                      className='w-full py-4 bg-transparent border-transparent text-center'
+                                      value={distractor}
+                                      onChange={(event) => {
+                                        let val = event.target.value;
+                                        setGeneratedQA((prevGeneratedQA) => {
+                                          const updatedPairs = [...prevGeneratedQA.question_answer_pairs];
+                                          const pairToUpdate = updatedPairs.find((p) => p === pair);
+                                          if (pairToUpdate) {
+                                            const itemIndex = updatedPairs.indexOf(pairToUpdate);
+                                            const updatedItem = { ...pairToUpdate };
+                                            updatedItem.distractors[distractorIndex] = val;
+                                            updatedPairs[itemIndex] = updatedItem;
+                                          }
+                                          return {
+                                            ...prevGeneratedQA,
+                                            question_answer_pairs: updatedPairs,
+                                          };
+                                        });
+                                      }}
+                                    />
+                                    <div className='absolute right-5 top-3 mbg-100 px-2 rounded-[20px]'>
+                                      <button
+                                        className='mcolor-900 deleteChoiceBtn relative text-3xl'
+                                        onClick={() => {
+                                          const updatedDistractors = generatedQA.question_answer_pairs[index].distractors.filter((distractor, idx) => {
+                                            return idx !== distractorIndex;
+                                          });
+                                          
+                                          // Update the state with the new array
+                                          generatedQA.question_answer_pairs[index].distractors = updatedDistractors;
+                                          setGeneratedQA({ ...generatedQA });
+                                        }}
+                                        >
+                                        ×
+                                      </button>
+                                    </div>
+        
+                                  </li>
+                                ))}
+        
+                                {/* Add a choice */}
+                                <div className='my-2 relative' key={index}>
+                                  <input
+                                    type="text"
+                                    className='brd-btn border-bottom-thin  addAChoice w-full py-4 bg-transparent border-transparent text-center rounded-[5px]'
+                                    placeholder='Add a choice'
+                                    onChange={(event) => choiceHandleInput(event, index)}
+                                    value={inputValues[index] || ''} // Use the corresponding value from the array
+                                    required
+                                  />
+        
+                                  <div className='absolute right-5 top-3 mbg-100 px-2 rounded-[20px]'>
+                                    <button
+                                      className='deleteChoiceBtn relative text-3xl'
+                                      onClick={() => addChoiceBtnFunc(index)}
+                                    >
+                                      +
+                                    </button>
+                                  </div>
+                                </div>
+                            </ul>
+                          </div>
+                        )}
+
+
                       </li>
                     ))}
                   </div>
@@ -483,7 +600,7 @@ export const QAGenerator = (props) => {
 
 
                 {showGenReviewer && (
-                  <div>
+                  <div className='min-w-90vh'>
                     <br />
 
                     <div>
@@ -530,28 +647,273 @@ export const QAGenerator = (props) => {
                           <button onClick={() => deleteRevQues(index)} className='bg-red mcolor-100 px-5 py-1 rounded-[5px]'>Delete</button>
                         </div>
 
-                        <textarea
-                          className='w-1/2 pb-1 p-2 outline-none addAChoice bg-transparent brd-btn'
-                          value={pair && pair.question ? `${pair.question}` : ''}
-                          onChange={(event) => revNoteQuestionChange(event, index)}
-                          rows={4} // Set the number of visible rows as needed
-                          cols={50} // Set the number of visible columns as needed
-                        />
-                        <textarea
-                          className='w-1/2 font-medium p-2 outline-none addAChoice bg-transparent brd-btn'
-                          value={pair && pair.answer ? `${pair.answer}` : ''}
-                          onChange={(event) => revNoteAnswerChange(event, index)}
-                          rows={4} // Set the number of visible rows as needed
-                          cols={50} // Set the number of visible columns as needed
-                        />
+                        <div className='mr-2 inline'>
+                          <textarea
+                            className='py-5 px-2 outline-none addAChoice wrong-bg brd-btn rounded-[5px] text-center overflow-auto resize-none'
+                            value={pair && pair.question ? `${pair.question}` : ''}
+                            onChange={(event) => revNoteQuestionChange(event, index)}
+                            cols={50} 
+                            rows={Math.ceil((pair && pair.answer ? pair.answer.length : 0) / 50)}
+
+                            />
+                        </div>
+
+                        <div className='ml-2 inline'>
+                          <textarea
+                            className='font-medium py-5 px-2 outline-none addAChoice brd-btn rounded-[5px] text-center overflow-auto resize-none correct-bg opacity-75'
+                            value={pair && pair.answer ? `${pair.answer}` : ''}
+                            onChange={(event) => revNoteAnswerChange(event, index)}
+                            cols={50}
+                            rows={Math.ceil((pair && pair.answer ? pair.answer.length : 0) / 50)}
+                          />
+                        </div>
                       </li>
                     ))}
+
+
+
+
+     
                   </div>
                 )}
 
 
 
 
+
+                {showTrueOrFalseSentences && (
+                  <div className='min-w-90vh'>
+                    <div className='flex items-center mb-10'>
+                      <input
+                        type="text"
+                        className='w-full mb-5 brd-btn border-bottom-thin w-full bg-transparent border-transparent text-center py-3'
+                        placeholder='Sentence...'
+                        onChange={(event) => {
+                          setAddedTrueSentence(event.target.value);
+                        }}
+                        value={addedTrueSentence}
+                      />
+                      <button className='mcolor-100 mbg-800 px-10 py-1 ml-4 rounded-[5px]' onClick={addSentenceToTheList}>Add</button>
+                    </div>
+                    <table className='w-full'>
+                      <thead>
+                        <tr className='text-lg'>
+                          <th className='pr-5 text-start'>#</th>
+                          <th className='text-start'>Sentence</th>
+                          <th>Action</th>
+                        </tr>
+                      </thead>
+                      {generatedQA.true_or_false_sentences.map((item, index) => (
+                        <tr key={index}>
+                          <td className='pr-5'>{index+1}</td>
+                          <td>
+                            <textarea
+                              key={index}
+                              value={item || ''}
+                              onChange={(event) => trueSentenceChange(event, index)}
+                              className='w-full px-5 pt-4 text-start mcolor-800 text-lg'
+                            ></textarea>
+                          </td>
+                          <td className='flex items-end justify-center pt-6'>
+                            <button className='text-center text-lg bg-red mcolor-100 px-4 py-1 rounded-[5px]' onClick={() => {deleteTrueSentenceItem(index)}}>Remove</button>
+                          </td>
+                        </tr>
+                      ))}
+                    </table>
+                  </div>
+                )}
+
+
+
+
+
+                {showFillInTheBlanks && (
+                  <div className='min-w-90vh'>
+                    <div className='flex items-center mb-10'>
+                      <input
+                        type="text"
+                        className='w-full mb-5 brd-btn border-bottom-thin bg-transparent border-transparent px-5 py-3'
+                        placeholder='Sentence...'
+                        onChange={(event) => {
+                          setAddedFITBSentence(event.target.value);
+                        }}
+                        value={addedFITBSentence}
+                      />
+                      <input
+                        type="text"
+                        className='w-1/2 ml-4 mb-5 brd-btn border-bottom-thin bg-transparent border-transparent px-5 py-3'
+                        placeholder='Answer...'
+                        onChange={(event) => {
+                          setAddedFITBAnswer(event.target.value);
+                        }}
+                        value={addedFITBAnswer}
+                      />
+                      <button className='mcolor-100 mbg-800 px-10 py-1 ml-4 rounded-[5px]' onClick={addSentenceAndAnswerToTheList}>Add</button>
+                    </div>
+                    <table className='w-full'>
+                      <thead>
+                        <tr className='text-lg'>
+                          <th className='pr-5 text-start'>#</th>
+                          <th className='pr-5 text-start px-5'>Sentence</th>
+                          <th className='pb-5 text-start px-3'>Answer</th>
+                        </tr>
+                      </thead>
+                      {Array.isArray(generatedQA.fill_in_the_blanks.sentences) &&
+                        generatedQA.fill_in_the_blanks.sentences.map((item, index) => (
+                          <tr key={index}>
+                            <td className='pr-5'>{index+1}</td>
+                            <td className='pr-5 w-3/4 text-justify text-start mcolor-800 text-lg pb-5 px-5'>
+                            <textarea
+                              key={index}
+                              value={item || ''} 
+                              onChange={(event) => fillInTheBlankSentenceChange(event, index)}
+                              className='w-full px-5 pt-4 text-start mcolor-800 text-lg'
+                              rows={Math.ceil((generatedQA.fill_in_the_blanks.sentences[index] || '').length / 50) + 1}
+                            ></textarea>
+                            </td>
+                            <td className='text-center mcolor-800 text-lg flex gap-5'>   
+                              <input
+                                key={index} 
+                                type="text" 
+                                value={generatedQA.fill_in_the_blanks.answer[index] || ''}
+                                onChange={(event) => fillInTheBlankAnswerChange(event, index)}
+                                className='text-center'
+                              />
+                              <button className='text-center text-lg bg-red mcolor-100 px-4 py-1 rounded-[5px]' onClick={() => {deleteFITBItem(index)}}>Remove</button>
+                            </td>
+                          </tr>
+                        ))}
+                    </table>
+                  </div>
+                )}
+
+
+
+
+
+                {showIdentification && (
+                  <div>
+                    <div className='flex items-center mb-10'>
+                      <input
+                        type="text"
+                        className='w-full mb-5 brd-btn border-bottom-thin bg-transparent border-transparent px-5 py-3'
+                        placeholder='Question...'
+                        onChange={(event) => setAddedQuestionStr(event.target.value)}
+                        value={addedQuestionStr}
+                      />
+                      <input
+                        type="text"
+                        className='w-1/2 ml-4 mb-5 brd-btn border-bottom-thin bg-transparent border-transparent px-5 py-3'
+                        placeholder='Answer...'
+                        onChange={(event) => setAddedAnswerStr(event.target.value)}
+                        value={addedAnswerStr}
+                      />
+
+                      <button className='mcolor-100 mbg-800 px-10 py-1 ml-4 rounded-[5px]' 
+                        onClick={() => {
+                          if (addedAnswerStr.trim() !== "" && addedQuestionStr.trim() !== "") {
+                            const newPair = { question: addedQuestionStr, answer: addedAnswerStr, distractors: [] }; // Add an empty array for distractors
+                            setGeneratedQA(prevState => ({
+                              ...prevState,
+                              question_answer_pairs: [newPair, ...prevState.question_answer_pairs],
+                            }));
+                            
+                            setAddedQuestionStr("");
+                            setAddedAnswerStr("");
+                          } else {
+                            alert("Fill out the empty fields.");
+                          }
+                        }}
+                      >
+                        Add
+                      </button>
+                    </div>
+
+
+                    <table className='w-full'>
+                      <thead>
+                        <tr className='text-lg'>
+                          <th className='pr-5 text-start'>#</th>
+                          <th className='text-start pl-5'>Question</th>
+                          <th className='text-start pb-5'>Answer</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {shuffleArray(generatedQA.question_answer_pairs)
+                          .filter((pair) => pair.distractors.length === 0)
+                          .map((pair, index) => (
+                            <tr key={index}>
+                              <td className='pr-5'>{index + 1}</td>
+                              <td className='pr-5 w-3/4 text-justify text-start mcolor-800 text-lg pb-5 px-5'>
+                                <textarea
+                                  type="text"
+                                  className='w-full px-5 pt-4 text-start mcolor-800 text-lg'
+                                  value={pair.question}
+                                  rows={Math.ceil((pair.question || '').length / 50) + 1}
+
+                                  onChange={(event) => {
+                                    let val = event.target.value;
+                                    setGeneratedQA((prevGeneratedQA) => {
+                                      const updatedPairs = [...prevGeneratedQA.question_answer_pairs];
+                                      const pairToUpdate = updatedPairs.find((p) => p === pair);
+                                      if (pairToUpdate) {
+                                        const itemIndex = updatedPairs.indexOf(pairToUpdate);
+                                        const updatedItem = { ...pairToUpdate };
+                                        updatedItem.question = val;
+                                        updatedPairs[itemIndex] = updatedItem;
+                                      }
+                                      return {
+                                        ...prevGeneratedQA,
+                                        question_answer_pairs: updatedPairs,
+                                      };
+                                    });
+                                  }}
+                                ></textarea>
+                              </td>
+                              <td className='text-center mcolor-800 text-lg flex gap-5'>
+                                <input
+                                  type="text"
+                                  className='text-center'
+                                  value={pair.answer}
+                                  onChange={(event) => {
+                                    let val = event.target.value;
+                                    setGeneratedQA((prevGeneratedQA) => {
+                                      const updatedPairs = [...prevGeneratedQA.question_answer_pairs];
+                                      const pairToUpdate = updatedPairs.find((p) => p === pair);
+                                      if (pairToUpdate) {
+                                        const itemIndex = updatedPairs.indexOf(pairToUpdate);
+                                        const updatedItem = { ...pairToUpdate };
+                                        updatedItem.answer = val;
+                                        updatedPairs[itemIndex] = updatedItem;
+                                      }
+                                      return {
+                                        ...prevGeneratedQA,
+                                        question_answer_pairs: updatedPairs,
+                                      };
+                                    });
+                                  }}
+                                />
+
+                                <button className='bg-red mcolor-100 py-1 px-5 rounded-[5px]'
+                                  onClick={() => {
+                                    setGeneratedQA((prevGeneratedQA) => {
+                                      const updatedPairs = prevGeneratedQA.question_answer_pairs.filter((p) => p !== pair);
+                                      return {
+                                        ...prevGeneratedQA,
+                                        question_answer_pairs: updatedPairs,
+                                      };
+                                    });
+                                  }}
+                                >
+                                  Delete
+                                </button>
+                              </td>
+                            </tr>
+                          ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
 
 
               </div>
