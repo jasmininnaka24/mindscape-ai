@@ -1,11 +1,15 @@
 import axios from 'axios';
 import React, { useEffect, useState } from 'react'
-import CampaignIcon from '@mui/icons-material/Campaign';
 import { useParams } from 'react-router-dom';
 import { Navbar } from '../../../../components/navbar/logged_navbar/navbar'
 import FavoriteIcon from '@mui/icons-material/Favorite';
 import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
 import VisibilityIcon from '@mui/icons-material/Visibility';
+import CampaignIcon from '@mui/icons-material/Campaign';
+
+
+// component imports
+import { AuditoryLearner } from '../../../../components/practices/AuditoryLearner';
 
 
 
@@ -15,25 +19,24 @@ export const PersonalReviewerStart = () => {
 
   const [questionIndex, setQuestionIndex] = useState(0)
   const [extractedQA, setQA] = useState({});
-  const [extractedChoices, setChoices] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [questionData, setQuestionData] = useState({});
+  const [, setChoices] = useState([]);
   const [shuffledChoices, setShuffledChoices] = useState([]);
+  const [shuffledChoicesTOF, setShuffledChoicesTOF] = useState([]);
   const [selectedChoice, setSelectedChoice] = useState("");
-  const [submittedAnswer, setSubmittedAnswer] = useState("");
+  const [, setSubmittedAnswer] = useState("");
   const [unattemptedCounts, setUnattemptedCounts] = useState(0);
   const [correctAnswerCounts, setCorrectAnswerCounts] = useState(0);
   const [wrongAnswerCounts, setWrongAnswerCounts] = useState(0);
   const [chanceLeft, setChanceLeft] = useState(2);
   const [points, setPoints] = useState(0);
-  const [filteredDataValue, setFilteredDataValue] = useState('')
+  const [filteredDataValue, setFilteredDataValue] = useState('');
+  const [remainingHints, setRemainingHints] = useState(3);
   
   // for hide and unhide
   const [hideQuestion, setHideQuestion] = useState('hidden');
   const [unhideQuestion, setUnideQuestion] = useState('');
-  const [hideChoice, setHideChoice] = useState('hidden');
-  const [unhideChoice, setUnideChoice] = useState('');
   const [unhiddenChoice, setUnhiddenChoice] = useState([]);
-  const [hiddenChoice, setHiddenChoice] = useState([]);
   const [hideAllChoice, setHideAllChoice] = useState('hidden');
   const [unhideAllChoice, setUnhideAllChoice] = useState('');
   const [hideAll, setHideAll] = useState('hidden');
@@ -48,6 +51,28 @@ export const PersonalReviewerStart = () => {
   const [answeredWrongVal2, setAnsweredWrongVal2] = useState('')
 
   const [enabledSubmitBtn, setEnabledSubmitBtn] = useState(true);
+
+
+  function handleDragStart(e, choice) {
+    e.dataTransfer.setData("text/plain", choice);
+  }
+
+
+  function handleDragEnd(e) {
+    // Handle any cleanup or additional logic after dragging ends
+  }
+  
+  const handleDragOver = (e) => {
+    e.preventDefault();
+  };
+  
+  const handleDrop = (e) => {
+    e.preventDefault();
+    const droppedChoiceText = e.dataTransfer.getData('text/plain');
+    setSelectedChoice(droppedChoiceText);
+  };
+
+
 
 
   const speechSynthesis = window.speechSynthesis;
@@ -76,6 +101,7 @@ export const PersonalReviewerStart = () => {
           const fetchedQA = materialResponse.data;
           
           setQA(fetchedQA)
+          setQuestionData(fetchedQA)
 
 
           if(fetchedQA.length > 0) {
@@ -101,6 +127,7 @@ export const PersonalReviewerStart = () => {
   
             let shuffledArray = shuffleArray([...choicesResponse.data, { choice: fetchedQA[questionIndex].answer }])
             setShuffledChoices(shuffledArray);
+            setShuffledChoicesTOF(choicesResponse.data)
           }
   
           const unattemptedCount = fetchedQA.filter(question => question.response_state === 'Unattempted').length;
@@ -158,18 +185,6 @@ export const PersonalReviewerStart = () => {
 
 
           setCorrectAnswerCounts(fetchedQA.length);
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -320,6 +335,48 @@ export const PersonalReviewerStart = () => {
     await axios.put(`http://localhost:3001/quesAns/update-stoppedAt/${materialId}/${currentQuestionId}`, data);
   }
 
+
+  const wrongFunctionality = (choice) => {
+    if(chanceLeft !== 0) {
+      alert('Wrong')
+      let currentChanceCount = chanceLeft - 1
+      setChanceLeft(currentChanceCount)
+      if(setAnsweredWrongVal === ''){
+        setWrongAnswer(true)
+        setAnsweredWrongVal(selectedChoice)
+      } else {
+        setWrongAnswer2(true)
+        setAnsweredWrongVal2(selectedChoice)
+      }
+      if(currentChanceCount === 0) {
+        setTimeout(() => {
+          unhideAllBtn()
+          setAnswerSubmitted(true)
+          setEnabledSubmitBtn(false)
+          setSelectedChoice('')
+        }, 500);
+        
+        setTimeout(() => {
+          setAnsweredWrongVal('')
+          setAnsweredWrongVal2('')
+          setAnswerSubmitted(false)
+          setChanceLeft(2)
+          currectCounts(choice, "Wrong")
+          hideAllBtn()
+          setSubmittedAnswer("")
+          setWrongAnswer(false)      
+          setEnabledSubmitBtn(true)      
+          currectQuestion('0', questionIndex)
+          let questionIndexVal = (questionIndex + 1) % extractedQA.length;
+          setQuestionIndex(questionIndexVal)
+          currectQuestion('1', questionIndexVal)
+        }, 3000);
+        
+
+      }
+    }
+  }
+
   const submitAnswer = (choice) => {
     if(selectedChoice === extractedQA[questionIndex].answer){
       setTimeout(() => {
@@ -332,6 +389,7 @@ export const PersonalReviewerStart = () => {
         setAnswerSubmitted(false)
         setSubmittedAnswer("")
         setChanceLeft(2)
+        setSelectedChoice('')
         setPoints(points + 1)
         currectQuestion('0', questionIndex)
         currectCounts(choice, "Correct")
@@ -343,47 +401,26 @@ export const PersonalReviewerStart = () => {
       }, 4000);
 
     } else {
-      if(chanceLeft !== 0) {
-        alert('Wrong')
-        let currentChanceCount = chanceLeft - 1
-        setChanceLeft(currentChanceCount)
-        if(setAnsweredWrongVal === ''){
-          setWrongAnswer(true)
-          setAnsweredWrongVal(selectedChoice)
-        } else {
-          setWrongAnswer2(true)
-          setAnsweredWrongVal2(selectedChoice)
-        }
-        if(currentChanceCount === 0) {
-          setTimeout(() => {
-            unhideAllBtn()
-            setAnswerSubmitted(true)
-            setEnabledSubmitBtn(false)
-          }, 500);
-          
-          setTimeout(() => {
-            setAnsweredWrongVal('')
-            setAnsweredWrongVal2('')
-            setAnswerSubmitted(false)
-            setChanceLeft(2)
-            currectCounts(choice, "Wrong")
-            hideAllBtn()
-            setSubmittedAnswer("")
-            setWrongAnswer(false)      
-            setEnabledSubmitBtn(true)      
-            currectQuestion('0', questionIndex)
-            let questionIndexVal = (questionIndex + 1) % extractedQA.length;
-            setQuestionIndex(questionIndexVal)
-            currectQuestion('1', questionIndexVal)
-          }, 3000);
-          
-
-        }
-      }
-      
+      wrongFunctionality(choice)
     }
     
   };
+
+  const giveHint =() => {
+    if (remainingHints === 3) {
+      setSelectedChoice(extractedQA[questionIndex].answer[0])
+      setRemainingHints(2)
+    } else if(remainingHints === 2){
+      setSelectedChoice(extractedQA[questionIndex].answer.slice(0, 2))
+      setRemainingHints(1)
+    } else if(remainingHints === 1) {
+      setSelectedChoice(extractedQA[questionIndex].answer.slice(0, 3))
+      setRemainingHints(0)
+    } else {
+      alert()
+      wrongFunctionality(selectedChoice)
+    }
+  }
 
 
   // hide button functionalities
@@ -437,6 +474,41 @@ export const PersonalReviewerStart = () => {
   };
   
 
+  const questionTOFReplace = (value, selectedChoice) => {
+    // If selectedChoice is 'True' or 'False', return the original question
+    if (selectedChoice === 'True' || selectedChoice === 'False') {
+      return value;
+    }
+  
+    // Rest of your function logic here
+    let randomNumber = Math.round(Math.random());
+    let randomNumberChoice = Math.floor(Math.random() * 3); 
+    let words = value.split(" ");
+    let sentence = '';
+  
+    if (randomNumber === 0) {
+      // if correct
+      sentence = words[0] + " " + words.slice(1).join(" ");
+      questionData[questionIndex].question = sentence
+    } else if (shuffledChoicesTOF && shuffledChoicesTOF.length > 0 && shuffledChoicesTOF[0].choice) {
+      // if wrong
+      sentence = shuffledChoicesTOF[randomNumberChoice].choice + " " + words.slice(1).join(" ");
+      questionData[questionIndex].answer = 'False'
+      questionData[questionIndex].question = sentence
+      // questionData[questionIndex].answer = 'False'
+    } else {
+      sentence = value;
+    }
+  
+    sentence = sentence.replace('s is', 's are');
+    sentence = sentence.replace('s does', 's do');
+    sentence = sentence.replace('s has', 's have');
+    questionData[questionIndex].question = sentence;
+    
+    // setQA(questionData);
+    return questionData[questionIndex].question;
+  };
+  
 
   return (
     <div className='py-8 container poppins'>
@@ -511,98 +583,164 @@ export const PersonalReviewerStart = () => {
 
 
 
+        {/* Auditory learner */}
+        {/* <AuditoryLearner extractedQA={extractedQA} hideQuestion={hideQuestion} questionIndex={questionIndex} stateQuestion={stateQuestion} hideQuestionBtn={hideQuestionBtn} unhideQuestion={unhideQuestion} unhideQuestionBtn={unhideQuestionBtn} unhideAll={unhideAll} unhideAllBtn={unhideAllBtn} hideAll={hideAll} hideAllBtn={hideAllBtn} unhideAllChoice={unhideAllChoice} unhideAllChoicesBtn={unhideAllChoicesBtn} hideAllChoice={hideAllChoice} hideAllChoicesBtn={hideAllChoicesBtn} shuffledChoices={shuffledChoices} answerSubmitted={answerSubmitted} wrongAnswer={wrongAnswer} answeredWrongVal={answeredWrongVal} wrongAnswer2={wrongAnswer2} answeredWrongVal2={answeredWrongVal2} handleRadioChange={handleRadioChange
+        } selectedChoice={selectedChoice} unhiddenChoice={unhiddenChoice} hideChoiceBtn={hideChoiceBtn} choiceSpeak={choiceSpeak} enabledSubmitBtn={enabledSubmitBtn} submitAnswer={submitAnswer} /> */}
 
+
+
+
+        {/* Kinesthetic Learners */}
+
+
+
+
+
+
+
+        {/* Visual Learners */}
         {extractedQA.length > 0 ? (
-          <div>
+        <div>
 
-            {/* question */}
-            <div className='relative mt-4 pb-8 text-center text-xl font-medium text-xl mcolor-900'>
-              <p className='mbg-300 mcolor-900 w-full rounded-[5px] py-4 mcolor-800'>{hideQuestion !== 'hidden' ? extractedQA[questionIndex].question : `Question...`}</p>
-              <button className='mx-3 absolute right-5 top-4' onClick={stateQuestion}><CampaignIcon /></button>
-              <button className={`mx-3 absolute right-12 top-4 ${hideQuestion !== 'hidden' ? 'hidden' : ''}`} onClick={hideQuestionBtn}><VisibilityIcon /></button>
-              <button className={`mx-3 absolute right-12 top-4 ${unhideQuestion !== 'hidden' ? 'hidden' : ''}`} onClick={unhideQuestionBtn}><VisibilityOffIcon /></button>
-            </div>
+          {/* question */}
+          <div className='flex items-center justify-between gap-4 relative mt-4 pb-8 text-center text-xl font-medium text-xl mcolor-900'>
+            <div className=' relative w-full mbg-300 mcolor-900 min-h-[50vh] w-full rounded-[5px] pt-14 mcolor-800'>
+              <p className='mcolor-800 text-lg mt-2 font-medium absolute top-3 left-5'>Type: {
+                (extractedQA[questionIndex].quizType === 'ToF' && 'True or False') ||
+                (extractedQA[questionIndex].quizType === 'FITB' && 'Fill In The Blanks') ||
+                (extractedQA[questionIndex].quizType === 'Identification' && 'Identification') ||
+                (extractedQA[questionIndex].quizType === 'MCQA' && 'MCQA')
+              }</p>
+
+              { (extractedQA[questionIndex].quizType === 'Identification' || extractedQA[questionIndex].quizType === 'FITB') && (
+                <div>
+                  <p className='mcolor-800 text-lg mt-2 font-medium absolute top-10 left-5'>Remaining Hints: {remainingHints}</p>
+                  <button className='mcolor-800 mbg-200 border-thin-800 rounded-[5px] px-2 py-1 text-lg mt-2 font-medium absolute bottom-5 left-5' onClick={giveHint}>Use hint</button>
+                </div>
+              )}
 
 
-            {/* functionality buttons */}
+              <p className='p-10'>{questionTOFReplace(questionData[questionIndex].question, selectedChoice)}</p>
 
-            <div className='flex items-center justify-between'>
+              <div className='flex justify-center'>
+                <div
+                  className='dragHere border-medium-800 w-1/2 h-[12vh] rounded-[5px] mbg-100 absolute bottom-14'
+                  onDrop={handleDrop}
+                  onDragOver={handleDragOver}
+                >
+                    <div draggable onDragStart={(e) => handleDragStart(e, selectedChoice)}>
+                      {(extractedQA[questionIndex].quizType === 'MCQA' || extractedQA[questionIndex].quizType === 'ToF') && (
+                        <p className='py-7'>{selectedChoice}</p>
+                      )}
 
-              {/* hide and unhide all choices */}
-              <div>
-                <button className={`mcolor-800 mb-3 cursor-pointer text-xl ${unhideAll !== 'hidden' ? '' : 'hidden'}`} onClick={unhideAllBtn}>
-                  Unhide All <VisibilityIcon />
-                </button>
 
-                <button className={`mcolor-800 mb-3 cursor-pointer text-xl ${hideAll !== 'hidden' ? '' : 'hidden'}`} onClick={hideAllBtn}>
-                  Hide All <VisibilityOffIcon />
-                </button>
+                      { (extractedQA[questionIndex].quizType === 'Identification' || extractedQA[questionIndex].quizType === 'FITB') && (
+                        <input type="text" placeholder='Type here...' className='w-full h-full text-center py-5 my-2' value={selectedChoice || ''} onChange={(event) => {
+                          setSelectedChoice(event.target.value)
+                        }} style={{ height: '100%' }} />
+                      )}
+
+                    </div>
+                </div>
               </div>
-
-              {/* Hide and unhide all */}
-              <div>
-                <button className={`mcolor-800 mb-3 cursor-pointer text-xl ${unhideAllChoice !== 'hidden' ? '' : 'hidden'}`} onClick={unhideAllChoicesBtn}>
-                  Unhide All Choices <VisibilityIcon />
-                </button>
-
-                <button className={`mcolor-800 mb-3 cursor-pointer text-xl ${hideAllChoice !== 'hidden' ? '' : 'hidden'}`} onClick={hideAllChoicesBtn}>
-                  Hide All Choices <VisibilityOffIcon />
-                </button>
-              </div>
             </div>
-
 
             {/* choices */}
-            <form className='grid-result gap-4 mcolor-800'>
-            {shuffledChoices.map((choice, index) => (
-              <div
-                key={index}
-                className={`flex items-center justify-center px-5 py-3 text-center choice border-thin-800 rounded-[5px]  
+            {(extractedQA[questionIndex].quizType === 'MCQA') && (
+              <form className='w-1/2 flex flex-col gap-4 mcolor-800'>
+              {shuffledChoices.map((choice, index) => (
+                <div>
+                  {choice.choice !== selectedChoice && (
+                    <div
+                      key={index}
+                      className={`flex items-center justify-center px-5 py-3 text-center choice border-thin-800 rounded-[5px]`}
+                      draggable="true" 
+                      onDragStart={(e) => handleDragStart(e, choice.choice)}  
+                      onDragEnd={handleDragEnd}
+                    >
+                      <div>
+                        <div className={`flex items-center`}>
+                        <label 
+                          htmlFor={`choice${index}`} 
+                          className={`mr-5 pt-1 cursor-pointer text-xl`}
+                        >
+                          {choice.choice}
+                        </label>
 
-                ${answerSubmitted === true && choice.choice === extractedQA[questionIndex].answer ? 'mbg-700 mcolor-100 ' : 'mbg-200 '}
+                        </div>
 
-                ${wrongAnswer === true && choice.choice === answeredWrongVal ? 'bg-red mcolor-100 ' : ''}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ))}
+              </form>
+             )}
 
-                ${wrongAnswer2 === true && choice.choice === answeredWrongVal2 ? 'bg-red mcolor-100 ' : ''} 
-                
-                `}
-                >
-                <input
-                  type="radio"
-                  name="option"
-                  value={choice.choice}
-                  id={`choice${index}`} 
-                  className={`custom-radio cursor-pointer`}
-                  onChange={handleRadioChange}
-                  checked={selectedChoice === choice.choice} 
-                />
-                <div className=''>
-                  <div className={`flex items-center`}>
-                    <label htmlFor={`choice${index}`} className={`mr-5 pt-1 cursor-pointer text-xl ${unhiddenChoice.includes(choice.choice) ? '' : 'hidden'}`}>
-                      {choice.choice}
-                    </label>
+              {extractedQA[questionIndex].quizType === 'ToF' && (
+                <div className='w-1/2 flex flex-col gap-4 mcolor-800'>
+                  <div
+                    className={`flex items-center justify-center px-5 py-3 text-center choice border-thin-800 rounded-[5px] `}
+                    draggable="true" 
+                    onDragStart={(e) => handleDragStart(e, 'True')}  
+                    onDragEnd={handleDragEnd}
+                  >
+                    <div>
+                      <div className={`flex items-center`}>
+                      <label 
+                        className={`mr-5 pt-1 cursor-pointer text-xl`}
+                      >
+                        True
+                      </label>
 
-                    <label htmlFor={`choice${index}`} className='ml-1 cursor-pointer text-5xl' onClick={() => hideChoiceBtn(choice.choice)}>
-                      {unhiddenChoice.includes(choice.choice) ? <VisibilityOffIcon /> : <VisibilityIcon />}
-                    </label>
-                    <label htmlFor={`choice${index}`} className='ml-2 cursor-pointer text-5xl' onClick={() => {choiceSpeak(choice.choice)}}><CampaignIcon /></label>
+                      </div>
+
+                    </div>
+                  </div>
+                  <div
+                    className={`flex items-center justify-center px-5 py-3 text-center choice border-thin-800 rounded-[5px] `}
+                    draggable="true" 
+                    onDragStart={(e) => handleDragStart(e, 'False')}  
+                    onDragEnd={handleDragEnd}
+                  >
+                    <div>
+                      <div className={`flex items-center`}>
+                      <label 
+                        className={`mr-5 pt-1 cursor-pointer text-xl`}
+                      >
+                        False
+                      </label>
+
+                      </div>
+
+                    </div>
                   </div>
 
                 </div>
-              </div>
-            ))}
+              )}
 
-            </form>
 
-            {enabledSubmitBtn === true && (
-              <div className='flex justify-center mt-8'>
-                <button className='w-1/2 py-2 px-5 mbg-700 rounded-[5px] mcolor-100 text-lg' onClick={() => submitAnswer(extractedQA[questionIndex].id)}>Submit Answer</button>
-              </div>
-            )}
+
           </div>
-        ) : (
-          <p className='text-center my-5 text-xl mcolor-500'>Nothing to show</p>
-        )}
+
+
+
+          {enabledSubmitBtn === true && (
+            <div className='flex justify-center mt-8'>
+              <button className='w-1/2 py-2 px-5 mbg-700 rounded-[5px] mcolor-100 text-lg' onClick={() => submitAnswer(extractedQA[questionIndex].id)}>Submit Answer</button>
+            </div>
+          )}
+        </div>
+      ) : (
+        <p className='text-center my-5 text-xl mcolor-500'>Nothing to show</p>
+      )}
+
+
+
+
+
+
+
       </div>
     </div>
   )

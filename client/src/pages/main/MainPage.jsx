@@ -1,7 +1,10 @@
 import React from 'react';
 import './mainpage.css';
 import { Link } from 'react-router-dom';
-
+import personalStudyRoomImg from '../../assets/personal_study.jpg';
+import groupStudyRoomImg from '../../assets/group_study.jpg';
+import virtualLibraryRoomImg from '../../assets/library.jpg';
+import discussionFormusImg from '../../assets/discussion_forum.jpg';
 
 export const MainPage = () => {
 
@@ -28,8 +31,10 @@ export const MainPage = () => {
 
         <div className='w-full grid lg:grid-cols-2 gap-10 mt-8'>
           <div className='p-5 flex flex-col justify-between mbg-100 mainpage-room rounded-[10px]'>
-            <div></div>
-            <div className='flex justify-between items-center'>
+            <div className='flex justify-center' style={{width: '100%', height: '27vh'}}>
+              <img src={personalStudyRoomImg} style={{height: '100%', width: '100%', objectFit: 'cover'}} alt="" />
+            </div>
+            <div className='flex justify-between items-center mt-3'>
               <p className='font-medium text-2xl'>Personal Study Room</p>
               <div>
                 <Link to={'/main/personal/'}>
@@ -38,9 +43,12 @@ export const MainPage = () => {
               </div>
             </div>
           </div>
+
           <div className='p-5 flex flex-col justify-between mbg-100 mainpage-room rounded-[10px]'>
-            <div></div>
-            <div className='flex justify-between items-center'>
+            <div className='flex justify-center' style={{width: '100%', height: '27vh'}}>
+              <img src={groupStudyRoomImg} style={{height: '100%', width: '100%', objectFit: 'cover'}} alt="" />
+            </div>
+            <div className='flex justify-between items-center mt-3'>
               <p className='font-medium text-2xl'>Group Study Room</p>
               <div>
                 <Link to={'/main/group/'}>
@@ -50,8 +58,10 @@ export const MainPage = () => {
             </div>
           </div>
           <div className='p-5 flex flex-col justify-between mbg-100 mainpage-room rounded-[10px]'>
-            <div></div>
-            <div className='flex justify-between items-center'>
+            <div className='flex justify-center' style={{width: '100%', height: '27vh'}}>
+              <img src={virtualLibraryRoomImg} style={{height: '100%', width: '100%', objectFit: 'cover'}} alt="" />
+            </div>
+            <div className='flex justify-between items-center mt-3'>
               <p className='font-medium text-2xl'>Virtual Library Room</p>
               <div>
                 <button className='mbg-800 font-medium text-lg mcolor-100 px-14 py-2 rounded-[5px]'>Go visit</button>
@@ -59,8 +69,10 @@ export const MainPage = () => {
             </div>
           </div>
           <div className='p-5 flex flex-col justify-between mbg-100 mainpage-room rounded-[10px]'>
-            <div></div>
-            <div className='flex justify-between items-center'>
+            <div className='flex justify-center' style={{width: '100%', height: '27vh'}}>
+              <img src={discussionFormusImg} style={{height: '100%', width: '100%', objectFit: 'cover'}} alt="" />
+            </div>
+            <div className='flex justify-between items-center mt-3'>
               <p className='font-medium text-2xl'>Discussion Forums</p>
               <div>
                 <button className='mbg-800 font-medium text-lg mcolor-100 px-14 py-2 rounded-[5px]'>Go visit</button>

@@ -74,7 +74,6 @@ export const SavedGeneratedData = (props) => {
   const saveGeneratedDataBtn = async (event) => {
     event.preventDefault();
     
-    setIsLoading(true); 
 
 
     const studyMaterialsData = {
@@ -94,6 +93,7 @@ export const SavedGeneratedData = (props) => {
       studyMaterialsData.body !== "" &&
       studyMaterialsData.UserId !== ""
     ) {
+
       let hasEmptyFields = false;
   
       for (let i = 0; i < genQAData.length; i++) {
@@ -148,6 +148,8 @@ export const SavedGeneratedData = (props) => {
       }
   
       if (!hasEmptyFields) {
+        setIsLoading(true); 
+
         try {
           const smResponse = await axios.post(
             'http://localhost:3001/studyMaterial',
@@ -158,7 +160,7 @@ export const SavedGeneratedData = (props) => {
             const qaData = {
               question: genQAData[i].question,
               answer: genQAData[i].answer,
-              quizType: 'MCQA',
+              quizType: genQAData[i].distractors.length > 0 ? 'MCQA' : 'Identification',
               StudyMaterialId: smResponse.data.id,
               UserId: smResponse.data.UserId,
             };
@@ -199,7 +201,7 @@ export const SavedGeneratedData = (props) => {
           for (let i = 0; i < genTrueSentences.length; i++) {
             const trueSentencesData = {
               question: genTrueSentences[i],
-              answer: 'True',
+              answer: genQAData[i].answer,
               quizType: 'ToF',
               StudyMaterialId: smResponse.data.id,
               UserId: smResponse.data.UserId,
@@ -212,6 +214,28 @@ export const SavedGeneratedData = (props) => {
                 );
             } catch (error) {
               console.error();
+            }
+
+            const qaResponse = await axios.post(
+              'http://localhost:3001/quesAns',
+              trueSentencesData
+            );
+  
+            for (let j = 0; j < genQAData[i].distractors.length; j++) {
+              let qacData = {
+                choice: genQAData[i].distractors[j],
+                QuesAnId: qaResponse.data.id,
+                StudyMaterialId: smResponse.data.id,
+                UserId: smResponse.data.UserId,
+              };
+  
+              if (qacData.choice !== "") {
+                await axios.post(
+                  'http://localhost:3001/quesAnsChoices',
+                  qacData
+                );
+                console.log("Saved!");
+              }
             }
     
           }
