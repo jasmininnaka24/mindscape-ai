@@ -74,8 +74,6 @@ export const SavedGeneratedData = (props) => {
   const saveGeneratedDataBtn = async (event) => {
     event.preventDefault();
     
-
-
     const studyMaterialsData = {
       title: studyMaterialTitle,
       body: pdfDetails,
@@ -106,16 +104,19 @@ export const SavedGeneratedData = (props) => {
         };
 
         const trueSentencesData = {
-          question: genTrueSentences[i].sentences,
+          question: genTrueSentences[i].sentence,
           answer: 'True',
           quizType: 'ToF'
+
+          
         }
-        
-  
+
+      
         const qaDataRev = {
           question: genQADataRev[i].question,
           answer: genQADataRev[i].answer,
         };
+
   
         if (
           qaData.question === "" ||
@@ -128,6 +129,26 @@ export const SavedGeneratedData = (props) => {
           hasEmptyFields = true;
           alert("Cannot have empty fields.");
           break; 
+        }
+
+        
+      }
+
+
+      for (let i = 0; i < genTrueSentences.length; i++) {
+
+        for (let j = 0; j < genTrueSentences[i].distractors.length; j++) {
+          let qacData = {
+            choice: genTrueSentences[i].distractors[j],
+          };
+
+          console.log(qacData.choice);
+
+          if (qacData.choice === "") {
+            hasEmptyFields = true;
+            alert("Cannot have empty fields.");
+            break;
+          } 
         }
       }
 
@@ -146,6 +167,13 @@ export const SavedGeneratedData = (props) => {
           break; 
         }
       }
+
+
+
+
+      
+      
+
   
       if (!hasEmptyFields) {
         setIsLoading(true); 
@@ -200,45 +228,36 @@ export const SavedGeneratedData = (props) => {
 
           for (let i = 0; i < genTrueSentences.length; i++) {
             const trueSentencesData = {
-              question: genTrueSentences[i],
-              answer: genQAData[i].answer,
+              question: genTrueSentences[i].sentence,
+              answer: 'True',
               quizType: 'ToF',
               StudyMaterialId: smResponse.data.id,
               UserId: smResponse.data.UserId,
             };
-            
+          
             try {
-              await axios.post(
-                'http://localhost:3001/quesAns',
-                trueSentencesData
-                );
-            } catch (error) {
-              console.error();
-            }
-
-            const qaResponse = await axios.post(
-              'http://localhost:3001/quesAns',
-              trueSentencesData
-            );
-  
-            for (let j = 0; j < genQAData[i].distractors.length; j++) {
-              let qacData = {
-                choice: genQAData[i].distractors[j],
-                QuesAnId: qaResponse.data.id,
-                StudyMaterialId: smResponse.data.id,
-                UserId: smResponse.data.UserId,
-              };
-  
-              if (qacData.choice !== "") {
-                await axios.post(
-                  'http://localhost:3001/quesAnsChoices',
-                  qacData
-                );
-                console.log("Saved!");
+              // Create the question and get the response
+              const qaResponse = await axios.post('http://localhost:3001/quesAns', trueSentencesData);
+          
+              // Iterate through distractors and create question choices
+              for (let j = 0; j < genTrueSentences[i].distractors.length; j++) {
+                let qacData = {
+                  choice: genTrueSentences[i].distractors[j],
+                  QuesAnId: qaResponse.data.id, // Link the question choice to the question ID
+                  StudyMaterialId: smResponse.data.id,
+                  UserId: smResponse.data.UserId,
+                };
+          
+                if (qacData.choice !== "") {
+                  await axios.post('http://localhost:3001/quesAnsChoices', qacData);
+                  console.log("Saved!");
+                }
               }
+            } catch (error) {
+              console.error(error);
             }
-    
           }
+          
 
           for (let i = 0; i < genFillInTheBlanks.sentences.length; i++) {
             const fillInTheBlank = {

@@ -50,7 +50,6 @@ export const QAGenerator = (props) => {
   }, [generatedQA]);
 
 
-
   const revNoteQuestionChange = (event, index) => {
     const updatedPairs = [...generatedQA.reviewer_ques_pairs];
     updatedPairs[index].question = event.target.value;
@@ -76,12 +75,22 @@ export const QAGenerator = (props) => {
   };
   
   
-  
+
 
   const trueSentenceChange = (event, index) => {
     const updatedTS = [...generatedQA.true_or_false_sentences];
-    updatedTS[index] = event.target.value;
+    updatedTS[index].sentence = event.target.value;
     setGeneratedQA({ ...generatedQA, true_or_false_sentences: updatedTS });
+    console.log(generatedQA.true_or_false_sentences);
+
+  };
+  
+
+  const distractorChange = (event, distractorIndex, index) => {
+    const updatedTS = [...generatedQA.true_or_false_sentences];
+    updatedTS[index].distractors[distractorIndex] = event.target.value;
+    setGeneratedQA({ ...generatedQA, true_or_false_sentences: updatedTS });
+    console.log(generatedQA.true_or_false_sentences);
   };
 
 
@@ -90,8 +99,17 @@ export const QAGenerator = (props) => {
     setGeneratedQA({ ...generatedQA, true_or_false_sentences: updatedTS });
   }
 
+  const deleteTrueDistractorItem = (index, distractorIndex) => {
+    const updatedTS = [...generatedQA.true_or_false_sentences];
+    const updatedDistractors = [...updatedTS[index].distractors];
+    updatedDistractors.splice(distractorIndex, 1);
+    updatedTS[index].distractors = updatedDistractors;
+    setGeneratedQA({ ...generatedQA, true_or_false_sentences: updatedTS });
+  };
+  
+  // console.log(generatedQA.true_or_false_sentences[0].distractors.length);
 
-
+  
   const addSentenceAndAnswerToTheList = () => {
     if (addedFITBSentence.trim() === "" || addedFITBAnswer.trim() === "") {
       return;
@@ -699,23 +717,39 @@ export const QAGenerator = (props) => {
                       <thead>
                         <tr className='text-lg'>
                           <th className='pr-5 text-start'>#</th>
-                          <th className='text-start'>Sentence</th>
-                          <th>Action</th>
+                          <th className='text-start w-full'>Sentence</th>
+                          <th className='w-1/3'>Action</th>
                         </tr>
                       </thead>
                       {generatedQA.true_or_false_sentences.map((item, index) => (
                         <tr key={index}>
                           <td className='pr-5'>{index+1}</td>
                           <td>
-                            <textarea
-                              key={index}
-                              value={item || ''}
-                              onChange={(event) => trueSentenceChange(event, index)}
-                              className='w-full px-5 pt-4 text-start mcolor-800 text-lg'
-                            ></textarea>
+                            <div className='flex items-center my-3 '>
+                              <textarea
+                                key={index}
+                                value={item.sentence || ''}
+                                onChange={(event) => trueSentenceChange(event, index)}
+                                className='mt-10 w-full px-5 pt-4 text-start correct-bg mcolor-800 text-lg rounded-[5px]'
+                                ></textarea>
+                                <span className='mx-8 mt-6'>True</span>
+                            </div>
+                            {item.distractors.map((distractor, distractorIndex) => (
+                              <div className='flex items-center my-3'>
+                                <textarea
+                                  key={distractorIndex}
+                                  value={distractor || ''}
+                                  onChange={(event) => distractorChange(event, distractorIndex, index)}
+                                  className='w-full px-5 pt-4 text-start wrong-bg mcolor-800 text-lg rounded-[5px]'
+                                  ></textarea>
+                                <span className='ml-3'>False</span>
+                                <button className='ml-3 text-center text-lg mcolor-800 mbg-200 border-thin-800 px-3 py-1 rounded-[5px]' onClick={() => {deleteTrueDistractorItem(index, distractorIndex)}}>x</button>
+                              </div>
+                            ))}
                           </td>
-                          <td className='flex items-end justify-center pt-6'>
-                            <button className='text-center text-lg bg-red mcolor-100 px-4 py-1 rounded-[5px]' onClick={() => {deleteTrueSentenceItem(index)}}>Remove</button>
+
+                          <td className='flex justify-center pt-6'>
+                            <button className='mt-6 text-center text-lg bg-red mcolor-100 px-4 py-1 rounded-[5px]' onClick={() => {deleteTrueSentenceItem(index)}}>Remove all items</button>
                           </td>
                         </tr>
                       ))}

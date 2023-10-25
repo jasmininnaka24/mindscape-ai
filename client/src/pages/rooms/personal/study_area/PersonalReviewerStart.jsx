@@ -20,7 +20,7 @@ export const PersonalReviewerStart = () => {
   const [questionIndex, setQuestionIndex] = useState(0)
   const [extractedQA, setQA] = useState({});
   const [questionData, setQuestionData] = useState({});
-  const [, setChoices] = useState([]);
+  const [generatedChoices, setChoices] = useState([]);
   const [shuffledChoices, setShuffledChoices] = useState([]);
   const [shuffledChoicesTOF, setShuffledChoicesTOF] = useState([]);
   const [selectedChoice, setSelectedChoice] = useState("");
@@ -87,6 +87,17 @@ export const PersonalReviewerStart = () => {
     return shuffledArray;
   };
 
+  const choiceFunc = async (id) => {
+    try {
+      const choicesResponse = await axios.get(`http://localhost:3001/quesAnsChoices/study-material/${materialId}/${id}`);
+      const randomIndex = Math.floor(Math.random() * choicesResponse.data.length);
+      return choicesResponse.data[randomIndex].choice;
+    } catch (error) {
+      console.error('Error fetching choices:', error);
+      return null;
+    }
+  };
+
 
   useEffect(() => {
     async function fetchData() {
@@ -99,17 +110,43 @@ export const PersonalReviewerStart = () => {
           
           const materialResponse = await axios.get(`http://localhost:3001/quesAns/study-material-mcq/${materialId}`);
           const fetchedQA = materialResponse.data;
-          
-          setQA(fetchedQA)
-          setQuestionData(fetchedQA)
 
 
-          if(fetchedQA.length > 0) {
-            const filteredQuestions = fetchedQA.filter(question => question.stoppedAt === '1');
+          const updatedData = await Promise.all(
+            fetchedQA.map(async (item) => {
+              if (item.quizType === 'ToF') {
+                const randomNumber = Math.floor(Math.random() * 10);
+                if (randomNumber % 2 === 0) {
+                  try {
+                    const choicesResponse = await axios.get(`http://localhost:3001/quesAnsChoices/study-material/${materialId}/${item.id}`);
+                    const randomIndex = Math.floor(Math.random() * choicesResponse.data.length);
+                    const question = choicesResponse.data[randomIndex].choice;
+                    return {
+                      ...item,
+                      question: question,
+                      answer: 'False',
+                    };
+                  } catch (error) {
+                    console.error('Error fetching choices:', error);
+                    return item; // Return the original item if there's an error
+                  }
+                }
+              }
+              return item; // Return the original item if it's not of type 'ToF'
+            })
+          );
+        
+          setQA(updatedData);
+          console.log(updatedData);
+        
+
+
+          if(updatedData.length > 0) {
+            const filteredQuestions = updatedData.filter(question => question.stoppedAt === '1');
           
             if (filteredQuestions.length > 0) {
               const questionIndexGet = filteredQuestions[0].id;
-              const foundIndex = fetchedQA.findIndex(question => question.id === questionIndexGet);
+              const foundIndex = updatedData.findIndex(question => question.id === questionIndexGet);
               if (foundIndex !== -1) {
                 setQuestionIndex(foundIndex);
               } else {
@@ -119,20 +156,25 @@ export const PersonalReviewerStart = () => {
               setQuestionIndex(0);
             } 
 
+
+            
           
           
-          
-            const choicesResponse = await axios.get(`http://localhost:3001/quesAnsChoices/study-material/${materialId}/${fetchedQA[questionIndex].id}`);
+            const choicesResponse = await axios.get(`http://localhost:3001/quesAnsChoices/study-material/${materialId}/${updatedData[questionIndex].id}`);
+
             setChoices(choicesResponse.data);
   
-            let shuffledArray = shuffleArray([...choicesResponse.data, { choice: fetchedQA[questionIndex].answer }])
+            let shuffledArray = shuffleArray([...choicesResponse.data, { choice: updatedData[questionIndex].answer }])
+
             setShuffledChoices(shuffledArray);
-            setShuffledChoicesTOF(choicesResponse.data)
+            setShuffledChoicesTOF(choicesResponse.data);
           }
+
+
   
-          const unattemptedCount = fetchedQA.filter(question => question.response_state === 'Unattempted').length;
-          const correctCount = fetchedQA.filter(question => question.response_state === 'Correct').length;
-          const wrongCount = fetchedQA.filter(question => question.response_state === 'Wrong').length;
+          const unattemptedCount = updatedData.filter(question => question.response_state === 'Unattempted').length;
+          const correctCount = updatedData.filter(question => question.response_state === 'Correct').length;
+          const wrongCount = updatedData.filter(question => question.response_state === 'Wrong').length;
           setUnattemptedCounts(unattemptedCount);
           setCorrectAnswerCounts(correctCount);
           setWrongAnswerCounts(wrongCount);
@@ -152,15 +194,41 @@ export const PersonalReviewerStart = () => {
 
           
           const fetchedQA = materialResponse.data;
-          setQA(fetchedQA)
+
+          const updatedData = await Promise.all(
+            fetchedQA.map(async (item) => {
+              if (item.quizType === 'ToF') {
+                const randomNumber = Math.floor(Math.random() * 10);
+                if (randomNumber % 2 === 0) {
+                  try {
+                    const choicesResponse = await axios.get(`http://localhost:3001/quesAnsChoices/study-material/${materialId}/${item.id}`);
+                    const randomIndex = Math.floor(Math.random() * choicesResponse.data.length);
+                    const question = choicesResponse.data[randomIndex].choice;
+                    return {
+                      ...item,
+                      question: question,
+                      answer: 'False',
+                    };
+                  } catch (error) {
+                    console.error('Error fetching choices:', error);
+                    return item; // Return the original item if there's an error
+                  }
+                }
+              }
+              return item; // Return the original item if it's not of type 'ToF'
+            })
+          );
+        
+          setQA(updatedData);
+          console.log(updatedData);
 
           
-          if(fetchedQA.length > 0) {
-            const filteredQuestions = fetchedQA.filter(question => question.stoppedAt === '1');
+          if(updatedData.length > 0) {
+            const filteredQuestions = updatedData.filter(question => question.stoppedAt === '1');
           
             if (filteredQuestions.length > 0) {
               const questionIndexGet = filteredQuestions[0].id;
-              const foundIndex = fetchedQA.findIndex(question => question.id === questionIndexGet);
+              const foundIndex = updatedData.findIndex(question => question.id === questionIndexGet);
               if (foundIndex !== -1) {
                 setQuestionIndex(foundIndex);
               } else {
@@ -173,10 +241,10 @@ export const PersonalReviewerStart = () => {
           
           
           
-            const choicesResponse = await axios.get(`http://localhost:3001/quesAnsChoices/study-material/${materialId}/${fetchedQA[questionIndex].id}`);
+            const choicesResponse = await axios.get(`http://localhost:3001/quesAnsChoices/study-material/${materialId}/${updatedData[questionIndex].id}`);
             setChoices(choicesResponse.data);
   
-            let shuffledArray = shuffleArray([...choicesResponse.data, { choice: fetchedQA[questionIndex].answer }])
+            let shuffledArray = shuffleArray([...choicesResponse.data, { choice: updatedData[questionIndex].answer }])
             setShuffledChoices(shuffledArray);
           }
 
@@ -184,7 +252,7 @@ export const PersonalReviewerStart = () => {
 
 
 
-          setCorrectAnswerCounts(fetchedQA.length);
+          setCorrectAnswerCounts(updatedData.length);
 
 
 
@@ -196,15 +264,40 @@ export const PersonalReviewerStart = () => {
 
           
           const fetchedQA = materialResponse.data;
-          setQA(fetchedQA)
+          const updatedData = await Promise.all(
+            fetchedQA.map(async (item) => {
+              if (item.quizType === 'ToF') {
+                const randomNumber = Math.floor(Math.random() * 10);
+                if (randomNumber % 2 === 0) {
+                  try {
+                    const choicesResponse = await axios.get(`http://localhost:3001/quesAnsChoices/study-material/${materialId}/${item.id}`);
+                    const randomIndex = Math.floor(Math.random() * choicesResponse.data.length);
+                    const question = choicesResponse.data[randomIndex].choice;
+                    return {
+                      ...item,
+                      question: question,
+                      answer: 'False',
+                    };
+                  } catch (error) {
+                    console.error('Error fetching choices:', error);
+                    return item; // Return the original item if there's an error
+                  }
+                }
+              }
+              return item; // Return the original item if it's not of type 'ToF'
+            })
+          );
+        
+          setQA(updatedData);
+          console.log(updatedData);
 
           
-          if(fetchedQA.length > 0) {
-            const filteredQuestions = fetchedQA.filter(question => question.stoppedAt === '1');
+          if(updatedData.length > 0) {
+            const filteredQuestions = updatedData.filter(question => question.stoppedAt === '1');
           
             if (filteredQuestions.length > 0) {
               const questionIndexGet = filteredQuestions[0].id;
-              const foundIndex = fetchedQA.findIndex(question => question.id === questionIndexGet);
+              const foundIndex = updatedData.findIndex(question => question.id === questionIndexGet);
               if (foundIndex !== -1) {
                 setQuestionIndex(foundIndex);
               } else {
@@ -217,16 +310,17 @@ export const PersonalReviewerStart = () => {
           
           
           
-            const choicesResponse = await axios.get(`http://localhost:3001/quesAnsChoices/study-material/${materialId}/${fetchedQA[questionIndex].id}`);
+            const choicesResponse = await axios.get(`http://localhost:3001/quesAnsChoices/study-material/${materialId}/${updatedData[questionIndex].id}`);
             setChoices(choicesResponse.data);
   
-            let shuffledArray = shuffleArray([...choicesResponse.data, { choice: fetchedQA[questionIndex].answer }])
+            let shuffledArray = shuffleArray([...choicesResponse.data, { choice: updatedData[questionIndex].answer }])
             setShuffledChoices(shuffledArray);
+
           }
 
 
 
-          setWrongAnswerCounts(fetchedQA.length);
+          setWrongAnswerCounts(updatedData.length);
 
 
 
@@ -241,15 +335,40 @@ export const PersonalReviewerStart = () => {
 
           
           const fetchedQA = materialResponse.data;
-          setQA(fetchedQA)
+          const updatedData = await Promise.all(
+            fetchedQA.map(async (item) => {
+              if (item.quizType === 'ToF') {
+                const randomNumber = Math.floor(Math.random() * 10);
+                if (randomNumber % 2 === 0) {
+                  try {
+                    const choicesResponse = await axios.get(`http://localhost:3001/quesAnsChoices/study-material/${materialId}/${item.id}`);
+                    const randomIndex = Math.floor(Math.random() * choicesResponse.data.length);
+                    const question = choicesResponse.data[randomIndex].choice;
+                    return {
+                      ...item,
+                      question: question,
+                      answer: 'False',
+                    };
+                  } catch (error) {
+                    console.error('Error fetching choices:', error);
+                    return item; // Return the original item if there's an error
+                  }
+                }
+              }
+              return item; // Return the original item if it's not of type 'ToF'
+            })
+          );
+        
+          setQA(updatedData);
+          console.log(updatedData);
 
           
-          if(fetchedQA.length > 0) {
-            const filteredQuestions = fetchedQA.filter(question => question.stoppedAt === '1');
+          if(updatedData.length > 0) {
+            const filteredQuestions = updatedData.filter(question => question.stoppedAt === '1');
           
             if (filteredQuestions.length > 0) {
               const questionIndexGet = filteredQuestions[0].id;
-              const foundIndex = fetchedQA.findIndex(question => question.id === questionIndexGet);
+              const foundIndex = updatedData.findIndex(question => question.id === questionIndexGet);
               if (foundIndex !== -1) {
                 setQuestionIndex(foundIndex);
               } else {
@@ -260,20 +379,19 @@ export const PersonalReviewerStart = () => {
             } 
 
           
-          
-          
-            const choicesResponse = await axios.get(`http://localhost:3001/quesAnsChoices/study-material/${materialId}/${fetchedQA[questionIndex].id}`);
+            const choicesResponse = await axios.get(`http://localhost:3001/quesAnsChoices/study-material/${materialId}/${updatedData[questionIndex].id}`);
             setChoices(choicesResponse.data);
   
-            let shuffledArray = shuffleArray([...choicesResponse.data, { choice: fetchedQA[questionIndex].answer }])
+            let shuffledArray = shuffleArray([...choicesResponse.data, { choice: updatedData[questionIndex].answer }])
             setShuffledChoices(shuffledArray);
+
           }
 
 
 
 
 
-          setUnattemptedCounts(fetchedQA.length);
+          setUnattemptedCounts(updatedData.length);
 
         } else {
           console.error("No questions available or invalid question index.");
@@ -282,8 +400,13 @@ export const PersonalReviewerStart = () => {
         console.error("Error fetching data: ", error);
       }
     }
+
   
     fetchData();
+
+    console.log(extractedQA);
+
+
     return () => {
       speechSynthesis.cancel();
     };
@@ -294,7 +417,6 @@ export const PersonalReviewerStart = () => {
 
   
 
-  
   
 
   const handleRadioChange = (event) => {
@@ -354,6 +476,7 @@ export const PersonalReviewerStart = () => {
           setAnswerSubmitted(true)
           setEnabledSubmitBtn(false)
           setSelectedChoice('')
+          setRemainingHints(3);
         }, 500);
         
         setTimeout(() => {
@@ -367,6 +490,14 @@ export const PersonalReviewerStart = () => {
           setWrongAnswer(false)      
           setEnabledSubmitBtn(true)      
           currectQuestion('0', questionIndex)
+
+          // if(extractedQA[questionIndex].quizType === 'ToF') {
+          //   const updatedTS = [...extractedQA]; 
+          //   updatedTS[questionIndex] = { ...updatedTS[questionIndex], question: questionData[questionIndex].question, answer: 'True' };            
+          //   setQA(updatedTS);
+          // }
+
+
           let questionIndexVal = (questionIndex + 1) % extractedQA.length;
           setQuestionIndex(questionIndexVal)
           currectQuestion('1', questionIndexVal)
@@ -378,6 +509,7 @@ export const PersonalReviewerStart = () => {
   }
 
   const submitAnswer = (choice) => {
+    
     if(selectedChoice === extractedQA[questionIndex].answer){
       setTimeout(() => {
         unhideAllBtn()
@@ -395,6 +527,16 @@ export const PersonalReviewerStart = () => {
         currectCounts(choice, "Correct")
         hideAllBtn()
         setEnabledSubmitBtn(true)
+
+        
+        // if(extractedQA[questionIndex].quizType === 'ToF') {
+        //   const updatedTS = [...extractedQA]; 
+        //   updatedTS[questionIndex] = { ...updatedTS[questionIndex], question: questionData[questionIndex].question, answer: 'True' };            
+        //   setQA(updatedTS);
+        // }
+
+
+
         let questionIndexVal = (questionIndex + 1) % extractedQA.length;
         setQuestionIndex(questionIndexVal);
         currectQuestion('1', questionIndexVal)
@@ -472,43 +614,14 @@ export const PersonalReviewerStart = () => {
 
     unhideQuestionBtn();
   };
+
   
 
-  const questionTOFReplace = (value, selectedChoice) => {
-    // If selectedChoice is 'True' or 'False', return the original question
-    if (selectedChoice === 'True' || selectedChoice === 'False') {
-      return value;
-    }
-  
-    // Rest of your function logic here
-    let randomNumber = Math.round(Math.random());
-    let randomNumberChoice = Math.floor(Math.random() * 3); 
-    let words = value.split(" ");
-    let sentence = '';
-  
-    if (randomNumber === 0) {
-      // if correct
-      sentence = words[0] + " " + words.slice(1).join(" ");
-      questionData[questionIndex].question = sentence
-    } else if (shuffledChoicesTOF && shuffledChoicesTOF.length > 0 && shuffledChoicesTOF[0].choice) {
-      // if wrong
-      sentence = shuffledChoicesTOF[randomNumberChoice].choice + " " + words.slice(1).join(" ");
-      questionData[questionIndex].answer = 'False'
-      questionData[questionIndex].question = sentence
-      // questionData[questionIndex].answer = 'False'
-    } else {
-      sentence = value;
-    }
-  
-    sentence = sentence.replace('s is', 's are');
-    sentence = sentence.replace('s does', 's do');
-    sentence = sentence.replace('s has', 's have');
-    questionData[questionIndex].question = sentence;
-    
-    // setQA(questionData);
-    return questionData[questionIndex].question;
-  };
-  
+
+
+
+
+
 
   return (
     <div className='py-8 container poppins'>
@@ -619,8 +732,14 @@ export const PersonalReviewerStart = () => {
                 </div>
               )}
 
+              {/* questions */}
+              {extractedQA[questionIndex].quizType === 'ToF' ? (
 
-              <p className='p-10'>{questionTOFReplace(questionData[questionIndex].question, selectedChoice)}</p>
+                <p className='p-10'>{extractedQA[questionIndex].question}</p>
+                
+              ) : (
+                <p className='p-10'>{extractedQA[questionIndex].question}</p>
+              )}
 
               <div className='flex justify-center'>
                 <div
