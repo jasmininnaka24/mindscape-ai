@@ -22,6 +22,11 @@ module.exports = (sequelize, DataTypes) => {
       allowNull: false,
       defaultValue: '0',
     },
+    bgColor: {
+      type: DataTypes.TEXT,
+      allowNull: false,
+      defaultValue: 'none',
+    },
   });
 
   QuesAns.associate = (models) => {

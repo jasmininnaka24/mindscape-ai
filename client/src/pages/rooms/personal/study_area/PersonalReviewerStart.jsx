@@ -6,7 +6,7 @@ import FavoriteIcon from '@mui/icons-material/Favorite';
 import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import CampaignIcon from '@mui/icons-material/Campaign';
-
+import VpnKeyIcon from '@mui/icons-material/VpnKey';
 
 // component imports
 import { AuditoryLearner } from '../../../../components/practices/AuditoryLearner';
@@ -32,6 +32,7 @@ export const PersonalReviewerStart = () => {
   const [points, setPoints] = useState(0);
   const [filteredDataValue, setFilteredDataValue] = useState('');
   const [remainingHints, setRemainingHints] = useState(3);
+  const [draggedBG, setDraggedBG] = useState('mbg-100');
   
   // for hide and unhide
   const [hideQuestion, setHideQuestion] = useState('hidden');
@@ -41,7 +42,6 @@ export const PersonalReviewerStart = () => {
   const [unhideAllChoice, setUnhideAllChoice] = useState('');
   const [hideAll, setHideAll] = useState('hidden');
   const [unhideAll, setUnhideAll] = useState('');
-
 
   // wrong and correct answer
   const [answerSubmitted, setAnswerSubmitted] = useState(false);
@@ -458,11 +458,26 @@ export const PersonalReviewerStart = () => {
   }
 
 
+
+
+
+  
   const wrongFunctionality = (choice) => {
+    let backgroundColors = ['red', 'orange', 'yellow', 'green', 'blue', 'purple', 'gray'];
+    let extractedBG = extractedQA[questionIndex].bgColor;
+    backgroundColors = backgroundColors.filter(color => color !== extractedBG);
+    
+   
+    backgroundColors = shuffleArray(backgroundColors);
+  
+    const chooseBGColor = (num) => {
+      setDraggedBG(`${backgroundColors[num]}-bg`)
+    }
     if(chanceLeft !== 0) {
       alert('Wrong')
       let currentChanceCount = chanceLeft - 1
       setChanceLeft(currentChanceCount)
+
       if(setAnsweredWrongVal === ''){
         setWrongAnswer(true)
         setAnsweredWrongVal(selectedChoice)
@@ -470,6 +485,7 @@ export const PersonalReviewerStart = () => {
         setWrongAnswer2(true)
         setAnsweredWrongVal2(selectedChoice)
       }
+
       if(currentChanceCount === 0) {
         setTimeout(() => {
           unhideAllBtn()
@@ -477,6 +493,10 @@ export const PersonalReviewerStart = () => {
           setEnabledSubmitBtn(false)
           setSelectedChoice('')
           setRemainingHints(3);
+          chooseBGColor(1)
+
+
+
         }, 500);
         
         setTimeout(() => {
@@ -490,6 +510,7 @@ export const PersonalReviewerStart = () => {
           setWrongAnswer(false)      
           setEnabledSubmitBtn(true)      
           currectQuestion('0', questionIndex)
+          chooseBGColor('mbg-300')
 
           // if(extractedQA[questionIndex].quizType === 'ToF') {
           //   const updatedTS = [...extractedQA]; 
@@ -504,6 +525,8 @@ export const PersonalReviewerStart = () => {
         }, 3000);
         
 
+      } else {
+        chooseBGColor(0)
       }
     }
   }
@@ -515,6 +538,8 @@ export const PersonalReviewerStart = () => {
         unhideAllBtn()
         setAnswerSubmitted(true)
         setEnabledSubmitBtn(false)
+        let bgColor = extractedQA[questionIndex].bgColor;
+        setDraggedBG(bgColor)
       }, 500);
       console.log(choice);
       setTimeout(() => {
@@ -527,15 +552,8 @@ export const PersonalReviewerStart = () => {
         currectCounts(choice, "Correct")
         hideAllBtn()
         setEnabledSubmitBtn(true)
-
-        
-        // if(extractedQA[questionIndex].quizType === 'ToF') {
-        //   const updatedTS = [...extractedQA]; 
-        //   updatedTS[questionIndex] = { ...updatedTS[questionIndex], question: questionData[questionIndex].question, answer: 'True' };            
-        //   setQA(updatedTS);
-        // }
-
-
+        setRemainingHints(3);
+        setDraggedBG('mbg-100')
 
         let questionIndexVal = (questionIndex + 1) % extractedQA.length;
         setQuestionIndex(questionIndexVal);
@@ -559,8 +577,7 @@ export const PersonalReviewerStart = () => {
       setSelectedChoice(extractedQA[questionIndex].answer.slice(0, 3))
       setRemainingHints(0)
     } else {
-      alert()
-      wrongFunctionality(selectedChoice)
+      alert('No more remaining hint')
     }
   }
 
@@ -717,7 +734,7 @@ export const PersonalReviewerStart = () => {
 
           {/* question */}
           <div className='flex items-center justify-between gap-4 relative mt-4 pb-8 text-center text-xl font-medium text-xl mcolor-900'>
-            <div className=' relative w-full mbg-300 mcolor-900 min-h-[50vh] w-full rounded-[5px] pt-14 mcolor-800'>
+            <div className={`relative w-full ${extractedQA[questionIndex].bgColor !== 'none' ? `${extractedQA[questionIndex].bgColor}-bg` : 'mbg-300'} mcolor-900 min-h-[50vh] w-full rounded-[5px] pt-14 mcolor-800`}>
               <p className='mcolor-800 text-lg mt-2 font-medium absolute top-3 left-5'>Type: {
                 (extractedQA[questionIndex].quizType === 'ToF' && 'True or False') ||
                 (extractedQA[questionIndex].quizType === 'FITB' && 'Fill In The Blanks') ||
@@ -743,11 +760,11 @@ export const PersonalReviewerStart = () => {
 
               <div className='flex justify-center'>
                 <div
-                  className='dragHere border-medium-800 w-1/2 h-[12vh] rounded-[5px] mbg-100 absolute bottom-14'
+                  className={`dragHere border-medium-800 w-1/2 h-[12vh] rounded-[5px] absolute bottom-14 flex justify-between items-center px-10 ${draggedBG}`}
                   onDrop={handleDrop}
                   onDragOver={handleDragOver}
                 >
-                    <div draggable onDragStart={(e) => handleDragStart(e, selectedChoice)}>
+                    <div className='' draggable onDragStart={(e) => handleDragStart(e, selectedChoice)}>
                       {(extractedQA[questionIndex].quizType === 'MCQA' || extractedQA[questionIndex].quizType === 'ToF') && (
                         <p className='py-7'>{selectedChoice}</p>
                       )}
@@ -760,6 +777,9 @@ export const PersonalReviewerStart = () => {
                       )}
 
                     </div>
+
+
+                    <div className={`${extractedQA[questionIndex].bgColor !== 'none' ? `${extractedQA[questionIndex].bgColor}-key` : 'mbg-300'}`}><VpnKeyIcon /></div>
                 </div>
               </div>
             </div>

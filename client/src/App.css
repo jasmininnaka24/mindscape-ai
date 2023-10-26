@@ -240,6 +240,77 @@ input:focus{
 .text-red{
   color: rgb(200, 107, 107);
 }
+
+
+
+
+
+
+/* true or false bg-colors */
+
+.red-bg {
+  background: #FFCCCC;
+}
+.orange-bg {
+  background: #FFDAB9;
+}
+.yellow-bg {
+  background: #FFF2CC;
+}
+.green-bg {
+  background: #DFF0D8;
+}
+.blue-bg {
+  background: #C4D4E9;
+}
+.purple-bg {
+  background: #E6E6FA;
+}
+.gray-bg {
+  background: #DCDCDC;
+}
+
+
+.red-key {
+  color: #d14848;
+}
+.orange-key {
+  color: #cf7c32;
+}
+.yellow-key {
+  color: #c5ab5b;
+}
+.green-key {
+  color: #638059;
+}
+.blue-key {
+  color: #405a7d;
+}
+.purple-key {
+  color: #52529e;
+}
+.gray-key {
+  color: #575454;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 ::-webkit-scrollbar {
   width: 10px;
 }

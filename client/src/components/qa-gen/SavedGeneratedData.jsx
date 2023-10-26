@@ -73,7 +73,8 @@ export const SavedGeneratedData = (props) => {
 
   const saveGeneratedDataBtn = async (event) => {
     event.preventDefault();
-    
+
+
     const studyMaterialsData = {
       title: studyMaterialTitle,
       body: pdfDetails,
@@ -171,6 +172,9 @@ export const SavedGeneratedData = (props) => {
 
 
 
+      let backgroundColors = ['red', 'orange', 'yellow', 'green', 'blue', 'purple', 'gray']
+      let randomIndex = ''
+      let randomColor = ''
       
       
 
@@ -185,9 +189,14 @@ export const SavedGeneratedData = (props) => {
           );
   
           for (let i = 0; i < genQAData.length; i++) {
+
+            randomIndex = Math.floor(Math.random() * backgroundColors.length);
+            randomColor = backgroundColors[randomIndex];
+
             const qaData = {
               question: genQAData[i].question,
               answer: genQAData[i].answer,
+              bgColor: randomColor,
               quizType: genQAData[i].distractors.length > 0 ? 'MCQA' : 'Identification',
               StudyMaterialId: smResponse.data.id,
               UserId: smResponse.data.UserId,
@@ -226,11 +235,18 @@ export const SavedGeneratedData = (props) => {
             console.log('Saved rev!');
           }
 
+
+
           for (let i = 0; i < genTrueSentences.length; i++) {
+
+            randomIndex = Math.floor(Math.random() * backgroundColors.length);
+            randomColor = backgroundColors[randomIndex];
+
             const trueSentencesData = {
               question: genTrueSentences[i].sentence,
               answer: 'True',
               quizType: 'ToF',
+              bgColor: randomColor,
               StudyMaterialId: smResponse.data.id,
               UserId: smResponse.data.UserId,
             };
@@ -260,10 +276,15 @@ export const SavedGeneratedData = (props) => {
           
 
           for (let i = 0; i < genFillInTheBlanks.sentences.length; i++) {
+
+            randomIndex = Math.floor(Math.random() * backgroundColors.length);
+            randomColor = backgroundColors[randomIndex];
+
             const fillInTheBlank = {
               question: genFillInTheBlanks.sentences[i],
               answer: genFillInTheBlanks.answer[i],
               quizType: 'FITB',
+              bgColor: randomColor,
               StudyMaterialId: smResponse.data.id,
               UserId: smResponse.data.UserId,
             }
