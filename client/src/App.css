@@ -179,6 +179,11 @@ body {
   border-bottom: #4D5F6E solid 2px;
 }
 
+.border-bold-100{
+  border: #FFFFFF 4px solid;
+  box-shadow: 0 0 15px #999;
+}
+
 .border-bottom-thin-scale{
   border-bottom: #33404A solid 1px;
 }
@@ -291,6 +296,32 @@ input:focus{
 }
 .gray-key {
   color: #575454;
+}
+
+
+@keyframes shake {
+  0% { transform: translateX(0); }
+  25% { transform: translateX(-5px) rotate(0deg); }
+  50% { transform: translateX(5px) rotate(0deg); }
+  75% { transform: translateX(-5px) rotate(0deg); }
+  100% { transform: translateX(5px) rotate(0deg); }
+}
+
+@keyframes shake {
+  0% { transform: translateX(0); }
+  25% { transform: translateX(-3px) rotate(0deg); }
+  50% { transform: translateX(3px) rotate(0deg); }
+  75% { transform: translateX(-3px) rotate(0deg); }
+  100% { transform: translateX(3px) rotate(0deg); }
+}
+
+
+.shaking-element {
+  animation: shake 0.5s infinite;
+}
+
+.shake-animation {
+  animation: shake 0.3s infinite;
 }
 
 

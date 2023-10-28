@@ -33,6 +33,7 @@ export const PersonalReviewerStart = () => {
   const [filteredDataValue, setFilteredDataValue] = useState('');
   const [remainingHints, setRemainingHints] = useState(3);
   const [draggedBG, setDraggedBG] = useState('mbg-100');
+  const [borderMedium, setBorderMedium] = useState('border-medium-800');
   
   // for hide and unhide
   const [hideQuestion, setHideQuestion] = useState('hidden');
@@ -70,6 +71,7 @@ export const PersonalReviewerStart = () => {
     e.preventDefault();
     const droppedChoiceText = e.dataTransfer.getData('text/plain');
     setSelectedChoice(droppedChoiceText);
+    setDraggedBG('mbg-100')
   };
 
 
@@ -424,8 +426,12 @@ export const PersonalReviewerStart = () => {
   };
   
   const stateQuestion = () => {
-    speechSynthesis.speak(new SpeechSynthesisUtterance(extractedQA[questionIndex].question));
+    let questionText = extractedQA[questionIndex].question.replace('_________', 'blank').replace(/\([^)]+\)/g, '');  
+    let questionUtterance = new SpeechSynthesisUtterance(questionText);
+  
+    speechSynthesis.speak(questionUtterance);
   }
+  
   
   const choiceSpeak = (choice) => {
     speechSynthesis.speak(new SpeechSynthesisUtterance(choice));
@@ -474,7 +480,8 @@ export const PersonalReviewerStart = () => {
       setDraggedBG(`${backgroundColors[num]}-bg`)
     }
     if(chanceLeft !== 0) {
-      alert('Wrong')
+      // alert('Wrong')
+      speechSynthesis.speak(new SpeechSynthesisUtterance('Wrong answer!'));
       let currentChanceCount = chanceLeft - 1
       setChanceLeft(currentChanceCount)
 
@@ -508,16 +515,10 @@ export const PersonalReviewerStart = () => {
           hideAllBtn()
           setSubmittedAnswer("")
           setWrongAnswer(false)      
+          setWrongAnswer2(false)      
           setEnabledSubmitBtn(true)      
           currectQuestion('0', questionIndex)
           chooseBGColor('mbg-300')
-
-          // if(extractedQA[questionIndex].quizType === 'ToF') {
-          //   const updatedTS = [...extractedQA]; 
-          //   updatedTS[questionIndex] = { ...updatedTS[questionIndex], question: questionData[questionIndex].question, answer: 'True' };            
-          //   setQA(updatedTS);
-          // }
-
 
           let questionIndexVal = (questionIndex + 1) % extractedQA.length;
           setQuestionIndex(questionIndexVal)
@@ -539,9 +540,10 @@ export const PersonalReviewerStart = () => {
         setAnswerSubmitted(true)
         setEnabledSubmitBtn(false)
         let bgColor = extractedQA[questionIndex].bgColor;
-        setDraggedBG(bgColor)
+        setDraggedBG(`${bgColor}-bg`)
+        setBorderMedium('border-bold-100')
+        speechSynthesis.speak(new SpeechSynthesisUtterance('Correct answer!'));
       }, 500);
-      console.log(choice);
       setTimeout(() => {
         setAnswerSubmitted(false)
         setSubmittedAnswer("")
@@ -554,6 +556,9 @@ export const PersonalReviewerStart = () => {
         setEnabledSubmitBtn(true)
         setRemainingHints(3);
         setDraggedBG('mbg-100')
+        setBorderMedium('border-medium-800')
+        setAnsweredWrongVal('')
+        setAnsweredWrongVal2('')
 
         let questionIndexVal = (questionIndex + 1) % extractedQA.length;
         setQuestionIndex(questionIndexVal);
@@ -577,7 +582,7 @@ export const PersonalReviewerStart = () => {
       setSelectedChoice(extractedQA[questionIndex].answer.slice(0, 3))
       setRemainingHints(0)
     } else {
-      alert('No more remaining hint')
+      speechSynthesis.speak(new SpeechSynthesisUtterance('No more remaining hint'));
     }
   }
 
@@ -603,7 +608,15 @@ export const PersonalReviewerStart = () => {
 
 
   const unhideAllChoicesBtn = () => {
-    const allChoices = shuffledChoices.map(choice => choice.choice);
+
+    let allChoices = []
+    if(extractedQA[questionIndex].quizType === 'ToF') {
+      allChoices = ['True', 'False'];
+      allChoices = allChoices.map(choice => choice)
+    } else {
+      allChoices = shuffledChoices.map(choice => choice.choice);
+    }
+    
     setUnhiddenChoice(allChoices);
     setUnhideAllChoice('hidden')
     setHideAllChoice('')
@@ -658,9 +671,9 @@ export const PersonalReviewerStart = () => {
             </div>
           )}
           {chanceLeft === 1 && (
-            <div className='w-full mcolor-800'>
+            <div className='w-full mcolor-800 flex'>
               <span className='mcolor-800 font-medium text-lg'>Chance Left: </span>
-              <span><FavoriteIcon/></span>
+              <div className='shake-animation pl-1'><FavoriteIcon/></div>
             </div>
           )}
 
@@ -714,8 +727,8 @@ export const PersonalReviewerStart = () => {
 
 
         {/* Auditory learner */}
-        {/* <AuditoryLearner extractedQA={extractedQA} hideQuestion={hideQuestion} questionIndex={questionIndex} stateQuestion={stateQuestion} hideQuestionBtn={hideQuestionBtn} unhideQuestion={unhideQuestion} unhideQuestionBtn={unhideQuestionBtn} unhideAll={unhideAll} unhideAllBtn={unhideAllBtn} hideAll={hideAll} hideAllBtn={hideAllBtn} unhideAllChoice={unhideAllChoice} unhideAllChoicesBtn={unhideAllChoicesBtn} hideAllChoice={hideAllChoice} hideAllChoicesBtn={hideAllChoicesBtn} shuffledChoices={shuffledChoices} answerSubmitted={answerSubmitted} wrongAnswer={wrongAnswer} answeredWrongVal={answeredWrongVal} wrongAnswer2={wrongAnswer2} answeredWrongVal2={answeredWrongVal2} handleRadioChange={handleRadioChange
-        } selectedChoice={selectedChoice} unhiddenChoice={unhiddenChoice} hideChoiceBtn={hideChoiceBtn} choiceSpeak={choiceSpeak} enabledSubmitBtn={enabledSubmitBtn} submitAnswer={submitAnswer} /> */}
+        <AuditoryLearner extractedQA={extractedQA} hideQuestion={hideQuestion} questionIndex={questionIndex} stateQuestion={stateQuestion} hideQuestionBtn={hideQuestionBtn} unhideQuestion={unhideQuestion} unhideQuestionBtn={unhideQuestionBtn} unhideAll={unhideAll} unhideAllBtn={unhideAllBtn} hideAll={hideAll} hideAllBtn={hideAllBtn} unhideAllChoice={unhideAllChoice} unhideAllChoicesBtn={unhideAllChoicesBtn} hideAllChoice={hideAllChoice} hideAllChoicesBtn={hideAllChoicesBtn} shuffledChoices={shuffledChoices} answerSubmitted={answerSubmitted} wrongAnswer={wrongAnswer} answeredWrongVal={answeredWrongVal} wrongAnswer2={wrongAnswer2} answeredWrongVal2={answeredWrongVal2} handleRadioChange={handleRadioChange
+        } selectedChoice={selectedChoice} unhiddenChoice={unhiddenChoice} hideChoiceBtn={hideChoiceBtn} choiceSpeak={choiceSpeak} enabledSubmitBtn={enabledSubmitBtn} submitAnswer={submitAnswer} setSelectedChoice={setSelectedChoice} giveHint={giveHint} remainingHints={remainingHints} />
 
 
 
@@ -729,150 +742,6 @@ export const PersonalReviewerStart = () => {
 
 
         {/* Visual Learners */}
-        {extractedQA.length > 0 ? (
-        <div>
-
-          {/* question */}
-          <div className='flex items-center justify-between gap-4 relative mt-4 pb-8 text-center text-xl font-medium text-xl mcolor-900'>
-            <div className={`relative w-full ${extractedQA[questionIndex].bgColor !== 'none' ? `${extractedQA[questionIndex].bgColor}-bg` : 'mbg-300'} mcolor-900 min-h-[50vh] w-full rounded-[5px] pt-14 mcolor-800`}>
-              <p className='mcolor-800 text-lg mt-2 font-medium absolute top-3 left-5'>Type: {
-                (extractedQA[questionIndex].quizType === 'ToF' && 'True or False') ||
-                (extractedQA[questionIndex].quizType === 'FITB' && 'Fill In The Blanks') ||
-                (extractedQA[questionIndex].quizType === 'Identification' && 'Identification') ||
-                (extractedQA[questionIndex].quizType === 'MCQA' && 'MCQA')
-              }</p>
-
-              { (extractedQA[questionIndex].quizType === 'Identification' || extractedQA[questionIndex].quizType === 'FITB') && (
-                <div>
-                  <p className='mcolor-800 text-lg mt-2 font-medium absolute top-10 left-5'>Remaining Hints: {remainingHints}</p>
-                  <button className='mcolor-800 mbg-200 border-thin-800 rounded-[5px] px-2 py-1 text-lg mt-2 font-medium absolute bottom-5 left-5' onClick={giveHint}>Use hint</button>
-                </div>
-              )}
-
-              {/* questions */}
-              {extractedQA[questionIndex].quizType === 'ToF' ? (
-
-                <p className='p-10'>{extractedQA[questionIndex].question}</p>
-                
-              ) : (
-                <p className='p-10'>{extractedQA[questionIndex].question}</p>
-              )}
-
-              <div className='flex justify-center'>
-                <div
-                  className={`dragHere border-medium-800 w-1/2 h-[12vh] rounded-[5px] absolute bottom-14 flex justify-between items-center px-10 ${draggedBG}`}
-                  onDrop={handleDrop}
-                  onDragOver={handleDragOver}
-                >
-                    <div className='' draggable onDragStart={(e) => handleDragStart(e, selectedChoice)}>
-                      {(extractedQA[questionIndex].quizType === 'MCQA' || extractedQA[questionIndex].quizType === 'ToF') && (
-                        <p className='py-7'>{selectedChoice}</p>
-                      )}
-
-
-                      { (extractedQA[questionIndex].quizType === 'Identification' || extractedQA[questionIndex].quizType === 'FITB') && (
-                        <input type="text" placeholder='Type here...' className='w-full h-full text-center py-5 my-2' value={selectedChoice || ''} onChange={(event) => {
-                          setSelectedChoice(event.target.value)
-                        }} style={{ height: '100%' }} />
-                      )}
-
-                    </div>
-
-
-                    <div className={`${extractedQA[questionIndex].bgColor !== 'none' ? `${extractedQA[questionIndex].bgColor}-key` : 'mbg-300'}`}><VpnKeyIcon /></div>
-                </div>
-              </div>
-            </div>
-
-            {/* choices */}
-            {(extractedQA[questionIndex].quizType === 'MCQA') && (
-              <form className='w-1/2 flex flex-col gap-4 mcolor-800'>
-              {shuffledChoices.map((choice, index) => (
-                <div>
-                  {choice.choice !== selectedChoice && (
-                    <div
-                      key={index}
-                      className={`flex items-center justify-center px-5 py-3 text-center choice border-thin-800 rounded-[5px]`}
-                      draggable="true" 
-                      onDragStart={(e) => handleDragStart(e, choice.choice)}  
-                      onDragEnd={handleDragEnd}
-                    >
-                      <div>
-                        <div className={`flex items-center`}>
-                        <label 
-                          htmlFor={`choice${index}`} 
-                          className={`mr-5 pt-1 cursor-pointer text-xl`}
-                        >
-                          {choice.choice}
-                        </label>
-
-                        </div>
-
-                      </div>
-                    </div>
-                  )}
-                </div>
-              ))}
-              </form>
-             )}
-
-              {extractedQA[questionIndex].quizType === 'ToF' && (
-                <div className='w-1/2 flex flex-col gap-4 mcolor-800'>
-                  <div
-                    className={`flex items-center justify-center px-5 py-3 text-center choice border-thin-800 rounded-[5px] `}
-                    draggable="true" 
-                    onDragStart={(e) => handleDragStart(e, 'True')}  
-                    onDragEnd={handleDragEnd}
-                  >
-                    <div>
-                      <div className={`flex items-center`}>
-                      <label 
-                        className={`mr-5 pt-1 cursor-pointer text-xl`}
-                      >
-                        True
-                      </label>
-
-                      </div>
-
-                    </div>
-                  </div>
-                  <div
-                    className={`flex items-center justify-center px-5 py-3 text-center choice border-thin-800 rounded-[5px] `}
-                    draggable="true" 
-                    onDragStart={(e) => handleDragStart(e, 'False')}  
-                    onDragEnd={handleDragEnd}
-                  >
-                    <div>
-                      <div className={`flex items-center`}>
-                      <label 
-                        className={`mr-5 pt-1 cursor-pointer text-xl`}
-                      >
-                        False
-                      </label>
-
-                      </div>
-
-                    </div>
-                  </div>
-
-                </div>
-              )}
-
-
-
-          </div>
-
-
-
-          {enabledSubmitBtn === true && (
-            <div className='flex justify-center mt-8'>
-              <button className='w-1/2 py-2 px-5 mbg-700 rounded-[5px] mcolor-100 text-lg' onClick={() => submitAnswer(extractedQA[questionIndex].id)}>Submit Answer</button>
-            </div>
-          )}
-        </div>
-      ) : (
-        <p className='text-center my-5 text-xl mcolor-500'>Nothing to show</p>
-      )}
 
 
 
