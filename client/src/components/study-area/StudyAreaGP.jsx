@@ -5,7 +5,6 @@ import { Link, useLocation } from 'react-router-dom';
 import { useNavigate, useParams } from 'react-router-dom';
 import CategoryIcon from '@mui/icons-material/Category';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
-import SettingsIcon from '@mui/icons-material/Settings';
 
 export const StudyAreaGP = (props) => {
   const navigate = useNavigate();
@@ -18,10 +17,9 @@ export const StudyAreaGP = (props) => {
 
   const { UserId, categoryFor } = props;
   const categoryForToLower = categoryFor.toLowerCase();
-  const categoryForToUpper = categoryFor.toUpperCase();
 
   const [showLesson, setShowLesson] = useState(true);
-  const [showMCQAs, setShowMCQAs] = useState(false);
+  const [, setShowMCQAs] = useState(false);
   const [showRev, setShowRev] = useState(false);
   const [activeButton, setActiveButton] = useState(1);
   const [studyMaterialsCategory, setSudyMaterialsCategory] = useState([]);
@@ -44,7 +42,6 @@ export const StudyAreaGP = (props) => {
   const [savedGroupNotif, setSavedGroupNotif] = useState('hidden');
   const [userList, setUserList] = useState([]);
   const [tempUserList, setTempUserList] = useState([]);
-  const [isUserListUpdated, setIsUserListUpdated] = useState("");
   const [groupMemberIndex, setGroupMemberIndex] = useState("");
 
   const [isExpanded, setIsExpanded] = useState(true);
@@ -261,6 +258,7 @@ export const StudyAreaGP = (props) => {
         categoryFor &&
         UserId
       ) {
+        
         let studyLastMaterialLink;
 
         if (categoryFor === 'Personal') {

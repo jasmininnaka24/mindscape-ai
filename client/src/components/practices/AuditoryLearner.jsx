@@ -214,9 +214,10 @@ export const AuditoryLearner = (props) => {
 
 
         </div>
-      ) : (
-        <p className='text-center my-5 text-xl mcolor-500'>Nothing to show</p>
-      )}
+        ) : (
+          <p className='text-center my-5 text-xl mcolor-500'>Nothing to show</p>
+        )
+      }
     </div>
   )
 }

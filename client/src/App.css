@@ -299,6 +299,39 @@ input:focus{
 }
 
 
+/* keyboard style */
+.keyboard {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.key {
+  width: 10%;
+  text-align: center;
+  cursor: pointer;
+}
+
+.row {
+  display: flex;
+  width: 100%;
+}
+
+
+
+@media (max-width: 768px) {
+  .key {
+    width: 20%;
+  }
+}
+
+@media (max-width: 480px) {
+  .key {
+    width: 33.33%;
+  }
+}
+
+
+
 @keyframes shake {
   0% { transform: translateX(0); }
   25% { transform: translateX(-5px) rotate(0deg); }
@@ -315,6 +348,35 @@ input:focus{
   100% { transform: translateX(3px) rotate(0deg); }
 }
 
+@keyframes shakeGame {
+  0% { transform: translateX(0); }
+  25% { transform: translateX(-4px) rotate(0deg); }
+  50% { transform: translateY(4px) rotate(0deg); }
+  75% { transform: translateX(-4px) rotate(0deg); }
+  100% { transform: translateY(4px) rotate(0deg); }
+}
+
+
+@keyframes shakeGame1 {
+  0% { transform: translateX(0); }
+  25% { transform: translateX(-15px) rotate(0deg); }
+  75% { transform: translateX(-15px) rotate(0deg); }
+}
+
+@keyframes shakeGame2 {
+  0% { transform: translateX(0); }
+  25% { transform: translateX(-15px) rotate(0deg); }
+  50% { transform: translateY(15px) rotate(0deg); }
+  75% { transform: translateX(-15px) rotate(0deg); }
+  100% { transform: translateY(15px) rotate(0deg); }
+}
+
+@keyframes float {
+  0% { transform: translateY(0) }
+  50% { transform: translateY(5px) }
+  100% { transform: translateY(0px)  }
+}
+
 
 .shaking-element {
   animation: shake 0.5s infinite;
@@ -322,6 +384,18 @@ input:focus{
 
 .shake-animation {
   animation: shake 0.3s infinite;
+}
+
+.float-animation {
+  animation: float 8s infinite;
+}
+
+.shake-game-animation {
+  animation: shakeGame1 1s infinite;
+}
+
+.shake-game-animation1 {
+  animation: shakeGame2 .4s infinite;
 }
 
 
