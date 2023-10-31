@@ -26,6 +26,7 @@ let nextQA = 0;
 let question_index = 0
 let shuffledChoicesVal = []
 let selectedChoiceValCurr = '';
+let questionValCurr = '';
 let currentFailCountVal = 0;
 let submittedAnswerValCurr = "";
 let userListValExt = []
@@ -98,6 +99,10 @@ io.on('connection', (socket) => {
     io.to(room).emit("received_selected_choice", selectedChoiceVal)
     selectedChoiceValCurr = selectedChoiceVal
   })
+
+  socket.on('update_QA_data', (updatedData) => {
+    io.emit('update_QA_data', updatedData);
+  });
 
   socket.on("updated_userlist", ({room, userList}) => {
     io.to(room).emit("received_updated_userlist", userList)
