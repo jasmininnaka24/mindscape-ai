@@ -39,7 +39,9 @@ export const PersonalReviewerPage = () => {
                   <button className='px-6 py-2 rounded-[5px] text-lg mbg-200 mcolor-800 border-thin-800 font-normal'>Start Study Session</button>
                 </Link>
               </div>
-              <button className='px-6 py-2 rounded-[5px] text-lg mbg-800 mcolor-100 font-normal'>Take Assessment</button>
+              <Link to={`/main/personal/study-area/personal-assessment/${materialId}`}>
+                <button className='px-6 py-2 rounded-[5px] text-lg mbg-800 mcolor-100 font-normal'>Take Assessment</button>
+              </Link>
             </div>
           </div>
 

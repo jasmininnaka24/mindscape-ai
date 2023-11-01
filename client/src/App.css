@@ -175,6 +175,17 @@ body {
 .border-bottom-thin{
   border-bottom: #33404A solid 1px;
 }
+
+.border-thin-800-correct{
+  border: #67a686 solid 2px;
+  box-shadow: 0 0 15px #999;
+}
+
+.border-thin-800-wrong{
+  border: #d26969 solid 2px;
+  box-shadow: 0 0 15px #999;
+}
+
 .border-bottom-medium{
   border-bottom: #4D5F6E solid 2px;
 }
@@ -202,6 +213,10 @@ body {
 
 .modal-bg{
   background-color: rgba(51, 64, 74, .8);
+}
+
+.correct-color {
+  color: #67a686;
 }
 
 input{
@@ -315,6 +330,7 @@ input:focus{
   display: flex;
   width: 100%;
 }
+
 
 
 

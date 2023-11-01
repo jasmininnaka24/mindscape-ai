@@ -28,6 +28,7 @@ import { PersonalStudyArea } from './pages/rooms/personal/study_area/PersonalStu
 import { PersonalQAGenerator } from './pages/rooms/personal/study_area/PersonalQAGenerator'
 import { PersonalReviewerPage } from './pages/rooms/personal/study_area/PersonalReviewerPage';
 import { PersonalReviewerStart } from './pages/rooms/personal/study_area/PersonalReviewerStart';
+import { PersonalAssessment } from './pages/rooms/personal/study_area/PersonalAssessment';
 
 // dependecies
 import AOS from 'aos';
@@ -73,6 +74,7 @@ function App() {
             <Route path='/main/personal/study-area/qa-gen' element={<PersonalQAGenerator />} /> 
             <Route path='/main/personal/study-area/personal-review/:materialId' element={<PersonalReviewerPage />} />
             <Route path='/main/personal/study-area/personal-review-start/:materialId' element={<PersonalReviewerStart />} />
+            <Route path='/main/personal/study-area/personal-assessment/:materialId' element={<PersonalAssessment />} />
               
             {/* If page does not exist */}
             <Route path='*' element={<h1 className='text-center text-4xl font-bold primary-text-color pt-40'>404: Page Not Found</h1>} /> 

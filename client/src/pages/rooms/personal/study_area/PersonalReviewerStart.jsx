@@ -827,7 +827,7 @@ export const PersonalReviewerStart = () => {
 
         {/* Visual Learners */}
         {/* <VisualLearner extractedQA={extractedQA} questionIndex={questionIndex} shuffledChoices={shuffledChoices} selectedChoice={selectedChoice} enabledSubmitBtn={enabledSubmitBtn} submitAnswer={submitAnswer} setSelectedChoice={setSelectedChoice} giveHint={giveHint} remainingHints={remainingHints} draggedBG={draggedBG} borderMedium={borderMedium} handleDrop={handleDrop} handleDragOver={handleDragOver} handleDragStart={handleDragStart} handleDragEnd={handleDragEnd}  />
- */}
+        */}
 
 
 
