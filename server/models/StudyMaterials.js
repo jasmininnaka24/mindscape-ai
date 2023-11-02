@@ -32,6 +32,9 @@ module.exports = (sequelize, DataTypes) => {
     StudyMaterials.hasMany(models.QuesRev, {
       onDelete: 'cascade',
     })
+    StudyMaterials.hasMany(models.DashForPersonalAndGroup, {
+      onDelete: 'cascade',
+    })
   }
 
   return StudyMaterials;
