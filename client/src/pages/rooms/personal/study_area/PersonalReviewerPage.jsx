@@ -14,6 +14,7 @@ export const PersonalReviewerPage = () => {
   const [showLessonContext, SetShowLessonContext] = useState(false);
   const [notesReviewer, setNotesReviewer] = useState([]);
   const [lessonContext, setLessonContext] = useState("");
+  const [takeAssessment, setTakeAssessment] = useState(false);
 
   useEffect(() => {
     axios.get(`http://localhost:3001/quesRev/study-material-rev/${materialId}`).then((response) => {
@@ -24,6 +25,18 @@ export const PersonalReviewerPage = () => {
     axios.get(`http://localhost:3001/studyMaterial/study-material-personal/Personal/${UserId}/${materialId}`).then((response) => {
       setLessonContext(response.data.body);
     })
+
+    const fetchData = async () => {
+      const previousSavedData = await axios.get(`http://localhost:3001/DashForPersonalAndGroup/get-latest-assessment/${materialId}`);
+      const fetchedData = previousSavedData.data;
+
+      if (fetchedData[0].assessmentScore !== 'none') {
+        setTakeAssessment(true);
+      }
+    }
+
+    fetchData();
+
   },[materialId])
 
   return (
@@ -40,7 +53,7 @@ export const PersonalReviewerPage = () => {
                 </Link>
               </div>
               <Link to={`/main/personal/study-area/personal-assessment/${materialId}`}>
-                <button className='px-6 py-2 rounded-[5px] text-lg mbg-800 mcolor-100 font-normal'>Take Assessment</button>
+                <button className='px-6 py-2 rounded-[5px] text-lg mbg-800 mcolor-100 font-normal'>Take {takeAssessment === true ? 'Assessment' : 'Pre-Assessment'}</button>
               </Link>
             </div>
           </div>

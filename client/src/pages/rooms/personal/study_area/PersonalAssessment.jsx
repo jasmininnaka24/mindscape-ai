@@ -1,11 +1,14 @@
 import React, { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { Link, useNavigate, useParams } from 'react-router-dom';
 import axios from 'axios';
 import CheckIcon from '@mui/icons-material/Check';
+
 
 export const PersonalAssessment = () => {
 
   const { materialId } = useParams();
+
+  const navigate = useNavigate();
 
   // hooks
   const [materialTitle, setMaterialTitle] = useState('')
@@ -17,8 +20,17 @@ export const PersonalAssessment = () => {
   const [selectedChoice, setSelectedChoice] = useState([]);
   const [score, setScore] = useState(0);
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [isAssessmentDone, setIsAssessmentDone] = useState(false);
   const [showAssessment, setShowAssessment] = useState(true);
   const [showAnalysis, setShowAnalysis] = useState(false);
+  const [overAllItems, setOverAllItems] = useState(0);
+  const [preAssessmentScore, setPreAssessmentScore] = useState(0);
+  const [assessmentScore, setAssessmentScore] = useState(0);
+  const [assessmentImp, setAssessmentImp] = useState(0);
+  const [assessmentScorePerf, setAssessmentScorePerf] = useState(0);
+  const [completionTime, setCompletionTime] = useState(0);
+  const [confidenceLevel, setConfidenceLevel] = useState(0);
+  const [overAllPerformance, setOverAllPerformance] = useState(0);
 
   const UserId = 1;
 
@@ -37,6 +49,8 @@ export const PersonalAssessment = () => {
       const fetchedQA = materialResponse.data;
 
 
+      const previousSavedData = await axios.get(`http://localhost:3001/DashForPersonalAndGroup/get-latest-assessment/${materialId}`);
+      const fetchedData = previousSavedData.data;
 
       const updatedData = await Promise.all(
         fetchedQA.map(async (item) => {
@@ -65,6 +79,8 @@ export const PersonalAssessment = () => {
       setQA(updatedData);
 
 
+
+
       if (Array.isArray(updatedData)) {
         const shuffledChoicesPromises = updatedData.map(async (item) => {
           try {
@@ -82,7 +98,6 @@ export const PersonalAssessment = () => {
         try {
           const shuffledChoices = await Promise.all(shuffledChoicesPromises);
           setShuffledChoices(shuffledChoices);
-          console.log(shuffledChoices);
 
         } catch (error) {
           console.error('Error processing choices:', error);
@@ -95,7 +110,6 @@ export const PersonalAssessment = () => {
     fetchData();
 
 
-    console.log(selectedChoice);
   }, [materialId, questionIndex])
 
 
@@ -113,19 +127,84 @@ export const PersonalAssessment = () => {
     const selectedChoices = [...selectedChoice];
     selectedChoices[index] = choice;
     setSelectedChoice(selectedChoices);
-    console.log(selectedChoices)
   };
 
-  const submitAnswer = () => {
+  const submitAnswer = async () => {
     if (selectedChoice.some(answer => answer === '' || answer === undefined)) {
       alert('There are some empty fields. Answer all items.');
     } else {
       const score = selectedChoice.reduce((totalScore, item, index) => {
         return item.toLowerCase() === extractedQA[index].answer.toLowerCase() ? totalScore + 1 : totalScore;
       }, 0);
-      setScore(score);
-      setIsSubmitted(true);
-      setShowAnalysis(true)
+
+      const previousSavedData = await axios.get(`http://localhost:3001/DashForPersonalAndGroup/get-latest-assessment/${materialId}`);
+      const fetchedData = previousSavedData.data;
+      
+      
+      if (fetchedData.length === 0) {
+        let data = {
+          dashFor: 'Personal',
+          overAllItems: extractedQA.length,
+          preAssessmentScore: score,
+          StudyGroupId: null,
+          StudyMaterialId: materialId,
+        }
+        axios.post(`http://localhost:3001/DashForPersonalAndGroup/`, data);
+        navigate(`/main/personal/study-area/personal-review/${materialId}`);
+      } else {
+
+        if (fetchedData[0].assessmentScore === 'none') {
+          let data = {
+            assessmentScore: score,
+            assessmentImp: ((score - fetchedData[0].preAssessmentScore) / (extractedQA.length - fetchedData[0].preAssessmentScore) * 100).toFixed(2),
+            assessmentScorePerf: ((score / extractedQA.length) * 100).toFixed(2),
+            completionTime: 8,
+            confidenceLevel: (((Math.round(13/2))/score) *  100).toFixed(2),
+          }
+          axios.put(`http://localhost:3001/DashForPersonalAndGroup/update-data/${fetchedData[0].id}`, data);
+
+        } else {
+
+          let improvement = Math.max(0, ((score - fetchedData[0].assessmentScore) / Math.max(extractedQA.length - fetchedData[0].assessmentScore, 1) * 100).toFixed(2))
+
+          let confidence = (((Math.round(extractedQA.length/2)) / 8) *  100).toFixed(2);
+
+          let data = {
+            dashFor: 'Personal',
+            overAllItems: extractedQA.length,
+            preAssessmentScore: fetchedData[0].preAssessmentScore,
+            assessmentScore: score,
+            assessmentImp: improvement,
+            assessmentScorePerf: ((score / extractedQA.length) * 100).toFixed(2),
+            completionTime: 8,
+            confidenceLevel: 8 >= Math.round(extractedQA.length/2) ? confidence : 100,
+            numOfTakes: fetchedData[0].numOfTakes + 1,
+            StudyMaterialId: materialId,
+            StudyGroupId: null
+          }
+
+          const newlyFetchedDashboardData = await axios.post(`http://localhost:3001/DashForPersonalAndGroup/`, data);
+          const newlyFetchedDashboardDataValues = newlyFetchedDashboardData.data;
+
+          setOverAllItems(newlyFetchedDashboardDataValues.overAllItems)
+          setPreAssessmentScore(newlyFetchedDashboardDataValues.preAssessmentScore)
+          setAssessmentScore(newlyFetchedDashboardDataValues.assessmentScore)
+          setAssessmentImp(newlyFetchedDashboardDataValues.assessmentImp)
+          setAssessmentScorePerf(newlyFetchedDashboardDataValues.assessmentScorePerf)
+          setCompletionTime(newlyFetchedDashboardDataValues.completionTime)
+          setConfidenceLevel(newlyFetchedDashboardDataValues.confidenceLevel)
+          setOverAllPerformance((parseFloat(newlyFetchedDashboardDataValues.assessmentImp) + parseFloat(newlyFetchedDashboardDataValues.assessmentScorePerf) + parseFloat(newlyFetchedDashboardDataValues.confidenceLevel) + 90) / 4)
+
+        }
+
+        setScore(score);
+        setIsSubmitted(true);
+        setShowAssessment(false)
+        setShowAnalysis(true)
+        setIsAssessmentDone(true);
+      }
+
+
     }
   };
   
@@ -265,9 +344,24 @@ export const PersonalAssessment = () => {
             </div>
           ))}
 
-          {showAnalysis === false && (
+          {(showAnalysis === false && isAssessmentDone === false) && (
             <div className='flex justify-center mt-8'>
               <button className='w-1/2 py-2 px-5 mbg-800 rounded-[5px] mcolor-100 text-lg' onClick={() => submitAnswer(extractedQA[questionIndex].id)}>Submit Answer</button>
+            </div>
+          )}
+
+          {(showAnalysis === false && isAssessmentDone === true) && (
+            <div className=' flex items-center justify-center gap-5'>
+              <button className='border-thin-800 px-5 py-3 rounded-[5px] w-1/4' onClick={() => {
+                setShowAssessment(false)
+                setShowAnalysis(true)
+              }}>View Analysis</button>
+
+              <Link to={`/main/personal/study-area/personal-review/${materialId}`} className='border-thin-800 px-5 py-3 rounded-[5px] w-1/4 text-center'>
+                <button>Back to Study Area</button>
+              </Link>
+
+              <button className='mbg-800 mcolor-100 px-5 py-3 rounded-[5px] w-1/4'>View Analytics</button>            
             </div>
           )}
         </div>
@@ -278,7 +372,7 @@ export const PersonalAssessment = () => {
 
           <div className='min-h-[90vh] flex items-center justify-between'>
             <div>
-              <p className='text-center mx-10 mb-20 text-2xl'>Based in the available information, the analysis classifies that you are <span className='font-bold'>ready</span> to take a real-life exam. You have a substantial <span className='font-bold'>73.52%</span> probability of success.</p>
+              <p className='text-center mx-10 mb-20 text-2xl'>Based in the available information, the analysis classifies that you are <span className='font-bold'>{overAllPerformance.toFixed(2) >= 90 ? 'ready' : 'not yet ready'}</span> to take a real-life exam. You have a substantial <span className='font-bold'>{overAllPerformance.toFixed(2)}%</span> probability of success.</p>
 
               <br /><br />
 
@@ -288,14 +382,14 @@ export const PersonalAssessment = () => {
                 </div>
                 <div className='w-full'>
 
-                  <p className='text-2xl'>Pre-assessment score: 3/{extractedQA.length}</p>
-                  <p className='text-2xl'>Assessment score: {score}/{extractedQA.length}</p>
-                  <p className='text-2xl font-bold'>Assessment improvement: 75%</p>
-                  <p className='text-2xl font-bold'>Assessment score performance: 90%</p>
+                  <p className='text-2xl'>Pre-assessment score: {preAssessmentScore}/{extractedQA.length}</p>
+                  <p className='text-2xl'>Assessment score: {assessmentScore}/{extractedQA.length}</p>
+                  <p className='text-2xl font-bold'>Assessment improvement: {assessmentImp}%</p>
+                  <p className='text-2xl font-bold'>Assessment score performance: {assessmentScorePerf}%</p>
 
                   <br /><br />
-                  <p className='text-2xl'>Completion time: 20 mins</p>
-                  <p className='text-2xl font-bold'>Confidence level: 55.56%</p>
+                  <p className='text-2xl'>Completion time: {completionTime} min{(completionTime > 1) ? 's' : ''}</p>
+                  <p className='text-2xl font-bold'>Confidence level: {confidenceLevel}%</p>
 
                 </div>
               </div>
@@ -305,7 +399,7 @@ export const PersonalAssessment = () => {
 
           <div className='mt-10'>
             <p className='mb-5 font-bold text-2xl text-center'>ANALYSIS</p>
-            <p className='text-center text-xl mb-10'>The Assessment Improvement of 75% and Assessment Score performance of 90% indicate significant progress and a high level of achievement in the assessment. However, the Confidence level of 55.56% suggests that there is room for improvement in effective tme utilization for studying.</p>
+            <p className='text-center text-xl mb-10'>The Assessment Improvement of {assessmentImp}% and Assessment Score performance of {assessmentScorePerf}% indicate significant progress and a high level of achievement in the assessment. However, the Confidence level of 55.56% suggests that there is room for improvement in effective tme utilization for studying.</p>
             <p className='text-center text-xl mb-10'>The data analysis classifies that you are ready to take a real-life exam. as the probability of success is 73.52%, which falls show of the passing grade of 57%. While there has been improvement shown in the assessment, there are still areas that need strengthening.To increase you chance of success. focus on improving your understanding of weak topics identified in the pre-assessment and maximize your study time effectively.</p>
           </div>
 
@@ -315,7 +409,15 @@ export const PersonalAssessment = () => {
           </div>
 
           <div className='mt-32 flex items-center justify-center gap-5'>
-            <button className='border-thin-800 px-5 py-3 rounded-[5px] w-1/4'>Back to Study Area</button>
+            <button className='border-thin-800 px-5 py-3 rounded-[5px] w-1/4' onClick={() => {
+              setShowAssessment(true)
+              setShowAnalysis(false)
+            }}>Review Answers</button>
+
+            <Link to={`/main/personal/study-area/personal-review/${materialId}`} className='border-thin-800 px-5 py-3 rounded-[5px] w-1/4 text-center'>
+              <button>Back to Study Area</button>
+            </Link>      
+
             <button className='mbg-800 mcolor-100 px-5 py-3 rounded-[5px] w-1/4'>View Analytics</button>
           </div>
 
