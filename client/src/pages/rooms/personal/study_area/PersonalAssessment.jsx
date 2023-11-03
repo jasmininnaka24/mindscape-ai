@@ -31,6 +31,8 @@ export const PersonalAssessment = () => {
   const [completionTime, setCompletionTime] = useState(0);
   const [confidenceLevel, setConfidenceLevel] = useState(0);
   const [overAllPerformance, setOverAllPerformance] = useState(0);
+  const [assessmentCountMoreThanOne, setAssessmentCountMoreThanOne] = useState(false);
+  const [lastAssessmentScore, setLastAssessmentScore] = useState(0);
 
   const UserId = 1;
 
@@ -51,6 +53,13 @@ export const PersonalAssessment = () => {
 
       const previousSavedData = await axios.get(`http://localhost:3001/DashForPersonalAndGroup/get-latest-assessment/${materialId}`);
       const fetchedData = previousSavedData.data;
+
+      if(fetchedData[0].assessmentScore !== 'none') {
+        setAssessmentCountMoreThanOne(true); 
+        if(fetchedData.length >= 2) {
+          setLastAssessmentScore(fetchedData[1].assessmentScore)
+        }
+      } 
 
       const updatedData = await Promise.all(
         fetchedQA.map(async (item) => {
@@ -136,11 +145,10 @@ export const PersonalAssessment = () => {
       const score = selectedChoice.reduce((totalScore, item, index) => {
         return item.toLowerCase() === extractedQA[index].answer.toLowerCase() ? totalScore + 1 : totalScore;
       }, 0);
-
+  
       const previousSavedData = await axios.get(`http://localhost:3001/DashForPersonalAndGroup/get-latest-assessment/${materialId}`);
       const fetchedData = previousSavedData.data;
-      
-      
+  
       if (fetchedData.length === 0) {
         let data = {
           dashFor: 'Personal',
@@ -152,23 +160,19 @@ export const PersonalAssessment = () => {
         axios.post(`http://localhost:3001/DashForPersonalAndGroup/`, data);
         navigate(`/main/personal/study-area/personal-review/${materialId}`);
       } else {
-
         if (fetchedData[0].assessmentScore === 'none') {
           let data = {
             assessmentScore: score,
             assessmentImp: ((score - fetchedData[0].preAssessmentScore) / (extractedQA.length - fetchedData[0].preAssessmentScore) * 100).toFixed(2),
             assessmentScorePerf: ((score / extractedQA.length) * 100).toFixed(2),
             completionTime: 8,
-            confidenceLevel: (((Math.round(13/2))/score) *  100).toFixed(2),
+            confidenceLevel: (((Math.round(13 / 2)) / score) * 100).toFixed(2),
           }
           axios.put(`http://localhost:3001/DashForPersonalAndGroup/update-data/${fetchedData[0].id}`, data);
-
         } else {
-
-          let improvement = Math.max(0, ((score - fetchedData[0].assessmentScore) / Math.max(extractedQA.length - fetchedData[0].assessmentScore, 1) * 100).toFixed(2))
-
-          let confidence = (((Math.round(extractedQA.length/2)) / 8) *  100).toFixed(2);
-
+          let improvement = Math.max(0, ((score - fetchedData[0].assessmentScore) / Math.max(extractedQA.length - fetchedData[0].assessmentScore, 1) * 100).toFixed(2));
+          let confidence = (((Math.round(extractedQA.length / 2)) / 8) * 100).toFixed(2);
+  
           let data = {
             dashFor: 'Personal',
             overAllItems: extractedQA.length,
@@ -177,34 +181,38 @@ export const PersonalAssessment = () => {
             assessmentImp: improvement,
             assessmentScorePerf: ((score / extractedQA.length) * 100).toFixed(2),
             completionTime: 8,
-            confidenceLevel: 8 >= Math.round(extractedQA.length/2) ? confidence : 100,
+            confidenceLevel: 8 >= Math.round(extractedQA.length / 2) ? confidence : 100,
             numOfTakes: fetchedData[0].numOfTakes + 1,
             StudyMaterialId: materialId,
             StudyGroupId: null
           }
-
+  
           const newlyFetchedDashboardData = await axios.post(`http://localhost:3001/DashForPersonalAndGroup/`, data);
           const newlyFetchedDashboardDataValues = newlyFetchedDashboardData.data;
-
-          setOverAllItems(newlyFetchedDashboardDataValues.overAllItems)
-          setPreAssessmentScore(newlyFetchedDashboardDataValues.preAssessmentScore)
-          setAssessmentScore(newlyFetchedDashboardDataValues.assessmentScore)
-          setAssessmentImp(newlyFetchedDashboardDataValues.assessmentImp)
-          setAssessmentScorePerf(newlyFetchedDashboardDataValues.assessmentScorePerf)
-          setCompletionTime(newlyFetchedDashboardDataValues.completionTime)
-          setConfidenceLevel(newlyFetchedDashboardDataValues.confidenceLevel)
-          setOverAllPerformance((parseFloat(newlyFetchedDashboardDataValues.assessmentImp) + parseFloat(newlyFetchedDashboardDataValues.assessmentScorePerf) + parseFloat(newlyFetchedDashboardDataValues.confidenceLevel) + 90) / 4)
-
+  
+          setOverAllItems(newlyFetchedDashboardDataValues.overAllItems);
+          setPreAssessmentScore(newlyFetchedDashboardDataValues.preAssessmentScore);
+          setAssessmentScore(newlyFetchedDashboardDataValues.assessmentScore);
+          setAssessmentImp(newlyFetchedDashboardDataValues.assessmentImp);
+          setAssessmentScorePerf(newlyFetchedDashboardDataValues.assessmentScorePerf);
+          setCompletionTime(newlyFetchedDashboardDataValues.completionTime);
+          setConfidenceLevel(newlyFetchedDashboardDataValues.confidenceLevel);
+          setOverAllPerformance((parseFloat(newlyFetchedDashboardDataValues.assessmentImp) + parseFloat(newlyFetchedDashboardDataValues.assessmentScorePerf) + parseFloat(newlyFetchedDashboardDataValues.confidenceLevel) + 90) / 4);
+  
+          if (newlyFetchedDashboardDataValues.length > 0 && newlyFetchedDashboardDataValues[0].assessmentScore !== 'none') {
+            setAssessmentCountMoreThanOne(true); 
+            if (newlyFetchedDashboardDataValues.length >= 2) {
+              setLastAssessmentScore(newlyFetchedDashboardDataValues[1].assessmentScore);
+            }
+          }
         }
-
+  
         setScore(score);
         setIsSubmitted(true);
-        setShowAssessment(false)
-        setShowAnalysis(true)
+        setShowAssessment(false);
+        setShowAnalysis(true);
         setIsAssessmentDone(true);
       }
-
-
     }
   };
   
@@ -382,7 +390,7 @@ export const PersonalAssessment = () => {
                 </div>
                 <div className='w-full'>
 
-                  <p className='text-2xl'>Pre-assessment score: {preAssessmentScore}/{extractedQA.length}</p>
+                  <p className='text-2xl'>{assessmentCountMoreThanOne === true ? 'Last Assessment' : 'Pre-assessment'} score: {assessmentCountMoreThanOne === true ? lastAssessmentScore : preAssessmentScore}/{extractedQA.length}</p>
                   <p className='text-2xl'>Assessment score: {assessmentScore}/{extractedQA.length}</p>
                   <p className='text-2xl font-bold'>Assessment improvement: {assessmentImp}%</p>
                   <p className='text-2xl font-bold'>Assessment score performance: {assessmentScorePerf}%</p>
@@ -403,10 +411,22 @@ export const PersonalAssessment = () => {
             <p className='text-center text-xl mb-10'>The data analysis classifies that you are ready to take a real-life exam. as the probability of success is 73.52%, which falls show of the passing grade of 57%. While there has been improvement shown in the assessment, there are still areas that need strengthening.To increase you chance of success. focus on improving your understanding of weak topics identified in the pre-assessment and maximize your study time effectively.</p>
           </div>
 
-          <div className='mt-20'>
-            <p className='mb-5 font-bold text-2xl text-center'>Recommendations</p>
-            <p className='text-center text-xl mb-10'><CheckIcon className='mr-2' />Finish the assessment under <span className='font-bold'>25 mins</span></p>
-          </div>
+          {completionTime < overAllItems && (
+            <div className='mt-20'>
+              <p className='mb-5 font-bold text-2xl text-center'>Recommendations</p>
+
+              <p className='text-center text-xl mb-10'>
+                <CheckIcon className='mr-2' />
+                Challenge yourself to finish the assessment under{' '}
+                <span className='font-bold'>
+                  {`${Math.floor(overAllItems / 120) > 0 ? (Math.floor(overAllItems / 120) === 1 ? '1 hour' : Math.floor(overAllItems / 120) + ' hours') + ' ' : ''}${Math.floor((overAllItems % 120) / 2) > 0 ? (Math.floor((overAllItems % 120) / 2) === 1 ? '1 min' : Math.floor((overAllItems % 120) / 2) + ' mins') + ' ' : ''}${((overAllItems % 2) * 30) > 0 ? ((overAllItems % 2) * 30) + ' second' + (((overAllItems % 2) * 30) !== 1 ? 's' : '') : ''}`}
+                </span> 
+                {' '}
+                to increase the confidence level
+              </p>
+
+            </div>
+          )}
 
           <div className='mt-32 flex items-center justify-center gap-5'>
             <button className='border-thin-800 px-5 py-3 rounded-[5px] w-1/4' onClick={() => {
