@@ -211,8 +211,14 @@ body {
   border-bottom: #4D5F6E solid 3px;
 }
 
-.modal-bg{
+.modal-bg {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
   background-color: rgba(51, 64, 74, .8);
+  z-index: 999; 
 }
 
 .correct-color {

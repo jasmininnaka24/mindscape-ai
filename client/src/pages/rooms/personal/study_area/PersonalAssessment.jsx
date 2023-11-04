@@ -33,6 +33,7 @@ export const PersonalAssessment = () => {
   const [overAllPerformance, setOverAllPerformance] = useState(0);
   const [assessmentCountMoreThanOne, setAssessmentCountMoreThanOne] = useState(false);
   const [lastAssessmentScore, setLastAssessmentScore] = useState(0);
+  const [showSubmittedAnswerModal, setShowSubmittedAnswerModal] = useState(false);
 
   const UserId = 1;
 
@@ -119,7 +120,7 @@ export const PersonalAssessment = () => {
     fetchData();
 
 
-  }, [materialId, questionIndex])
+  }, [materialId, questionIndex, showSubmittedAnswerModal])
 
 
   const shuffleArray = (array) => {
@@ -209,8 +210,6 @@ export const PersonalAssessment = () => {
   
         setScore(score);
         setIsSubmitted(true);
-        setShowAssessment(false);
-        setShowAnalysis(true);
         setIsAssessmentDone(true);
       }
     }
@@ -359,17 +358,58 @@ export const PersonalAssessment = () => {
           )}
 
           {(showAnalysis === false && isAssessmentDone === true) && (
-            <div className=' flex items-center justify-center gap-5'>
-              <button className='border-thin-800 px-5 py-3 rounded-[5px] w-1/4' onClick={() => {
-                setShowAssessment(false)
-                setShowAnalysis(true)
-              }}>View Analysis</button>
+            <div>
+              <p className='text-center mcolor-500 font-medium mb-8 text-xl'>Your score is: </p>
+              <p className='text-center text-6xl font-bold mcolor-800 mb-20'>{score}/{overAllItems}</p>
 
-              <Link to={`/main/personal/study-area/personal-review/${materialId}`} className='border-thin-800 px-5 py-3 rounded-[5px] w-1/4 text-center'>
-                <button>Back to Study Area</button>
-              </Link>
+              <div className=' flex items-center justify-center gap-5'>
+                <button
+                  className='border-thin-800 px-5 py-3 rounded-[5px] w-1/4'
+                  onClick={() => {
+                    console.log('button clicked');
+                    setShowSubmittedAnswerModal(true);
+                  }}
+                >
+                  View Analysis
+                </button>
 
-              <button className='mbg-800 mcolor-100 px-5 py-3 rounded-[5px] w-1/4'>View Analytics</button>            
+                <Link to={`/main/personal/study-area/personal-review/${materialId}`} className='border-thin-800 px-5 py-3 rounded-[5px] w-1/4 text-center'>
+                  <button>Back to Study Area</button>
+                </Link>
+
+                <button className='mbg-800 mcolor-100 px-5 py-3 rounded-[5px] w-1/4'>View Analytics</button>            
+              </div>
+
+
+
+              {showSubmittedAnswerModal === true && (
+                <div className={`absolute top-0 modal-bg left-0 w-full h-full`}>
+                  <div className='flex items-center justify-center h-full'>
+                    <div className='relative mbg-100 min-h-[40vh] w-1/2 z-10 relative p-10 rounded-[5px]'>
+
+                      <p className='text-center text-xl font-medium mcolor-800 mt-5'>Kindly be advised that the data analysis process by the system AI may require 1-2 minutes, depending on your internet speed. Would you be comfortable waiting for that duration?</p>
+
+
+                      <div className='w-full absolute bottom-10 flex items-center justify-center left-0 gap-4'>
+
+                        <button className='mbg-200 border-thin-800 px-5 py-2 rounded-[5px]' onClick={() => {
+                          setShowSubmittedAnswerModal(false);
+                        }} >Cancel</button>
+
+
+                        <button className='mbg-800 mcolor-100 border-thin-800 px-5 py-2 rounded-[5px]' onClick={() => {
+                          setShowAnalysis(true)
+                          setShowAssessment(false);
+                          setShowSubmittedAnswerModal(false);
+                        }}>Proceed</button>
+                      </div>
+
+                    </div>
+                  </div>
+                </div>
+
+          
+              )}
             </div>
           )}
         </div>
@@ -378,9 +418,9 @@ export const PersonalAssessment = () => {
       {showAnalysis === true && (
         <div className='mcolor-800 container'>
 
-          <div className='min-h-[90vh] flex items-center justify-between'>
+          <div className='mt-14 flex items-center justify-between'>
             <div>
-              <p className='text-center mx-10 mb-20 text-2xl'>Based in the available information, the analysis classifies that you are <span className='font-bold'>{overAllPerformance.toFixed(2) >= 90 ? 'ready' : 'not yet ready'}</span> to take a real-life exam. You have a substantial <span className='font-bold'>{overAllPerformance.toFixed(2)}%</span> probability of success.</p>
+              <p className='text-center mx-10 mb-16 text-2xl'>Based in the available information, you have a substantial <span className='font-bold'>{overAllPerformance.toFixed(2)}%</span> probability of success of taking the real-life exam and that the analysis classifies that you are <span className='font-bold'>{overAllPerformance.toFixed(2) >= 90 ? 'ready' : 'not yet ready'}</span> to take it as to your preference study profeciency target is <span className='font-bold'>90%</span></p>
 
               <br /><br />
 
@@ -405,7 +445,7 @@ export const PersonalAssessment = () => {
           </div>
 
 
-          <div className='mt-10'>
+          <div className='mt-24'>
             <p className='mb-5 font-bold text-2xl text-center'>ANALYSIS</p>
             <p className='text-center text-xl mb-10'>The Assessment Improvement of {assessmentImp}% and Assessment Score performance of {assessmentScorePerf}% indicate significant progress and a high level of achievement in the assessment. However, the Confidence level of 55.56% suggests that there is room for improvement in effective tme utilization for studying.</p>
             <p className='text-center text-xl mb-10'>The data analysis classifies that you are ready to take a real-life exam. as the probability of success is 73.52%, which falls show of the passing grade of 57%. While there has been improvement shown in the assessment, there are still areas that need strengthening.To increase you chance of success. focus on improving your understanding of weak topics identified in the pre-assessment and maximize your study time effectively.</p>
@@ -443,6 +483,9 @@ export const PersonalAssessment = () => {
 
         </div>
       )}
+
+
+
 
     </div>
   )
