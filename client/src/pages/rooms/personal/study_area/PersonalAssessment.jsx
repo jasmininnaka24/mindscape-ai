@@ -34,8 +34,13 @@ export const PersonalAssessment = () => {
   const [assessmentCountMoreThanOne, setAssessmentCountMoreThanOne] = useState(false);
   const [lastAssessmentScore, setLastAssessmentScore] = useState(0);
   const [showSubmittedAnswerModal, setShowSubmittedAnswerModal] = useState(false);
+  const [generatedAnalysis, setGeneratedAnalysis] = useState('');
+  const [showTexts, setShowTexts] = useState(true);
+
+  const [analysisId, setAnalysisId] = useState(0);
 
   const UserId = 1;
+  
 
 
   useEffect(() => {
@@ -55,12 +60,19 @@ export const PersonalAssessment = () => {
       const previousSavedData = await axios.get(`http://localhost:3001/DashForPersonalAndGroup/get-latest-assessment/${materialId}`);
       const fetchedData = previousSavedData.data;
 
-      if(fetchedData[0].assessmentScore !== 'none') {
+      if (fetchedData && Array.isArray(fetchedData) && fetchedData.length > 0) {
+        setOverAllItems(fetchedData[0].overAllItems)
+      }
+      
+      if (fetchedData && Array.isArray(fetchedData) && fetchedData.length > 0 && fetchedData[0].assessmentScore !== 'none') {
         setAssessmentCountMoreThanOne(true); 
-        if(fetchedData.length >= 2) {
-          setLastAssessmentScore(fetchedData[1].assessmentScore)
+        if (fetchedData.length >= 2) {
+          setLastAssessmentScore(fetchedData[1].assessmentScore);
         }
-      } 
+      } else {
+        console.error('Invalid or empty data received:', fetchedData);
+      }
+      
 
       const updatedData = await Promise.all(
         fetchedQA.map(async (item) => {
@@ -138,6 +150,7 @@ export const PersonalAssessment = () => {
     selectedChoices[index] = choice;
     setSelectedChoice(selectedChoices);
   };
+  
 
   const submitAnswer = async () => {
     if (selectedChoice.some(answer => answer === '' || answer === undefined)) {
@@ -149,29 +162,87 @@ export const PersonalAssessment = () => {
   
       const previousSavedData = await axios.get(`http://localhost:3001/DashForPersonalAndGroup/get-latest-assessment/${materialId}`);
       const fetchedData = previousSavedData.data;
-  
+      
+
+
+
+      // for pre-text functionality
       if (fetchedData.length === 0) {
+
+        let confidence = (((Math.round(extractedQA.length / 2)) / 8) * 100).toFixed(2);
+
         let data = {
           dashFor: 'Personal',
           overAllItems: extractedQA.length,
           preAssessmentScore: score,
-          StudyGroupId: null,
+          assessmentScorePerf: ((score / extractedQA.length) * 100).toFixed(2),
+          completionTime: 8,
+          confidenceLevel: 8 >= Math.round(extractedQA.length / 2) ? confidence : 100,
           StudyMaterialId: materialId,
+          StudyGroupId: null
         }
-        axios.post(`http://localhost:3001/DashForPersonalAndGroup/`, data);
+
+
+        const newlyFetchedDashboardData = await axios.post(`http://localhost:3001/DashForPersonalAndGroup/`, data);
+
+        const newlyFetchedDashboardDataValues = newlyFetchedDashboardData.data;
+
+        setAnalysisId(newlyFetchedDashboardDataValues.id);
+        setAssessmentCountMoreThanOne(false)
+
+
         navigate(`/main/personal/study-area/personal-review/${materialId}`);
-      } else {
+      } 
+      
+      
+      else {
+
+        // for 1st assessment functionalitty
         if (fetchedData[0].assessmentScore === 'none') {
+
+          const improvement = Math.max(0, ((score - fetchedData[0].preAssessmentScore) / Math.max(extractedQA.length - fetchedData[0].preAssessmentScore, 1) * 100).toFixed(2));
+
+
+          let confidence = (((Math.round(extractedQA.length / 2)) / 8) * 100).toFixed(2);
+
+
           let data = {
             assessmentScore: score,
-            assessmentImp: ((score - fetchedData[0].preAssessmentScore) / (extractedQA.length - fetchedData[0].preAssessmentScore) * 100).toFixed(2),
+            assessmentImp: parseInt(score) === parseInt(fetchedData[0].preAssessmentScore) ? 100 : improvement,
             assessmentScorePerf: ((score / extractedQA.length) * 100).toFixed(2),
             completionTime: 8,
-            confidenceLevel: (((Math.round(13 / 2)) / score) * 100).toFixed(2),
+            confidenceLevel: 8 >= Math.round(extractedQA.length / 2) ? confidence : 100,
           }
-          axios.put(`http://localhost:3001/DashForPersonalAndGroup/update-data/${fetchedData[0].id}`, data);
-        } else {
-          let improvement = Math.max(0, ((score - fetchedData[0].assessmentScore) / Math.max(extractedQA.length - fetchedData[0].assessmentScore, 1) * 100).toFixed(2));
+
+
+
+          const newlyFetchedDashboardData = await axios.put(`http://localhost:3001/DashForPersonalAndGroup/update-data/${fetchedData[0].id}`, data);
+          const newlyFetchedDashboardDataValues = newlyFetchedDashboardData.data;
+
+          setAnalysisId(newlyFetchedDashboardDataValues.id);
+
+          setOverAllItems(newlyFetchedDashboardDataValues.overAllItems);
+          setPreAssessmentScore(newlyFetchedDashboardDataValues.preAssessmentScore);
+          setAssessmentScore(newlyFetchedDashboardDataValues.assessmentScore);
+          setAssessmentImp(newlyFetchedDashboardDataValues.assessmentImp);
+          setAssessmentScorePerf(newlyFetchedDashboardDataValues.assessmentScorePerf);
+          setCompletionTime(newlyFetchedDashboardDataValues.completionTime);
+          setConfidenceLevel(newlyFetchedDashboardDataValues.confidenceLevel);
+          setOverAllPerformance((parseFloat(newlyFetchedDashboardDataValues.assessmentImp) + parseFloat(newlyFetchedDashboardDataValues.assessmentScorePerf) + parseFloat(newlyFetchedDashboardDataValues.confidenceLevel) + 90) / 4);
+          
+          setAssessmentCountMoreThanOne(false)
+        } 
+        
+        
+        
+        
+        // for more than one assesssment functionality
+        else {
+
+
+          const improvement = Math.max(0, ((score - fetchedData[0].assessmentScore) / Math.max(extractedQA.length - fetchedData[0].assessmentScore, 1) * 100).toFixed(2));
+
+
           let confidence = (((Math.round(extractedQA.length / 2)) / 8) * 100).toFixed(2);
   
           let data = {
@@ -179,7 +250,7 @@ export const PersonalAssessment = () => {
             overAllItems: extractedQA.length,
             preAssessmentScore: fetchedData[0].preAssessmentScore,
             assessmentScore: score,
-            assessmentImp: improvement,
+            assessmentImp: parseInt(score) === parseInt(fetchedData[0].assessmentScore) ? 100 : improvement,
             assessmentScorePerf: ((score / extractedQA.length) * 100).toFixed(2),
             completionTime: 8,
             confidenceLevel: 8 >= Math.round(extractedQA.length / 2) ? confidence : 100,
@@ -187,10 +258,17 @@ export const PersonalAssessment = () => {
             StudyMaterialId: materialId,
             StudyGroupId: null
           }
+
+          setLastAssessmentScore(fetchedData[0].assessmentScore)
+          setAssessmentImp(assessmentImp.assessmentImp)
   
           const newlyFetchedDashboardData = await axios.post(`http://localhost:3001/DashForPersonalAndGroup/`, data);
           const newlyFetchedDashboardDataValues = newlyFetchedDashboardData.data;
-  
+
+
+
+          setAnalysisId(newlyFetchedDashboardDataValues.id);
+
           setOverAllItems(newlyFetchedDashboardDataValues.overAllItems);
           setPreAssessmentScore(newlyFetchedDashboardDataValues.preAssessmentScore);
           setAssessmentScore(newlyFetchedDashboardDataValues.assessmentScore);
@@ -214,6 +292,95 @@ export const PersonalAssessment = () => {
       }
     }
   };
+
+
+  const generateAnalysis = async (id) => {
+
+    setShowTexts(false)
+
+    const generateAnalysisUrl = 'https://064a-34-83-254-120.ngrok.io/generate_analysis';
+
+    
+    let predictionText = overAllPerformance.toFixed(2) >= 90 ? 'ready' : 'not yet ready';
+
+    let predictionVal = overAllPerformance.toFixed(2);
+
+    let studyProfeciencyTarget = 90;
+
+    
+    const previousSavedData = await axios.get(`http://localhost:3001/DashForPersonalAndGroup/get-latest-assessment/${materialId}`);
+    const fetchedData = previousSavedData.data;    
+    
+    let lastExamStr = 'Pre-Assessment';
+    let lastAssessmentScore = 0;
+    let assessmentScore = 0; // Initialize to 0 or any default value if necessary
+    let overAllItems = 0; // Initialize to 0 or any default value if necessary
+    let assessmentImp = 0; // Initialize to 0 or any default value if necessary
+    let confidenceLevel = 0; // Initialize to 0 or any default value if necessary
+
+    
+    if (fetchedData.length === 1) {
+      lastExamStr = 'Pre-Assessment';
+      lastAssessmentScore = fetchedData[0].preAssessmentScore;
+      assessmentScore = fetchedData[0].preAssessmentScore;
+      overAllItems = fetchedData[0].overAllItems;
+      confidenceLevel = fetchedData[0].confidenceLevel;
+      assessmentImp = fetchedData[0].assessmentImp;
+      
+      setAssessmentCountMoreThanOne(false)
+    } else if (fetchedData.length > 1) {
+      lastExamStr = 'Assessment';
+      lastAssessmentScore = fetchedData[0].assessmentScore;
+      assessmentScore = fetchedData[0].assessmentScore;
+      overAllItems = fetchedData[0].overAllItems;
+      assessmentImp = fetchedData[0].assessmentImp;
+      confidenceLevel = fetchedData[0].confidenceLevel;
+
+      setAssessmentCountMoreThanOne(true)
+    }
+    
+    let data = {
+      last_exam: lastExamStr,
+      last_assessment_score: lastAssessmentScore,
+      assessment_score: assessmentScore,
+      exam_num_of_items: overAllItems,
+      assessment_imp: assessmentImp,
+      confidence_level: confidenceLevel,
+      prediction_val: predictionVal,
+      prediction_text: predictionText,
+      target: studyProfeciencyTarget,
+    }
+    
+    console.log(fetchedData.length);
+    console.log(fetchedData);
+    console.log(data);
+    
+    const response = await axios.post(generateAnalysisUrl, data);
+    console.log(response.data);
+    let generatedAnalysisResponse = (response.data.generated_analysis).replace('\n\n\n\n\n', '');
+    setGeneratedAnalysis(generatedAnalysisResponse)
+
+    const newlyFetchedDashboardData = await axios.put(`http://localhost:3001/DashForPersonalAndGroup/set-update-analysis/${id}`, {analysis: generatedAnalysisResponse});
+    const newlyFetchedDashboardDataValues = newlyFetchedDashboardData.data;
+
+    
+    setAnalysisId(newlyFetchedDashboardDataValues.id);
+
+    setOverAllItems(newlyFetchedDashboardDataValues.overAllItems);
+    setPreAssessmentScore(newlyFetchedDashboardDataValues.preAssessmentScore);
+    setAssessmentScore(newlyFetchedDashboardDataValues.assessmentScore);
+    setAssessmentImp(newlyFetchedDashboardDataValues.assessmentImp);
+    setAssessmentScorePerf(newlyFetchedDashboardDataValues.assessmentScorePerf);
+    setCompletionTime(newlyFetchedDashboardDataValues.completionTime);
+    setConfidenceLevel(newlyFetchedDashboardDataValues.confidenceLevel);
+    setOverAllPerformance((parseFloat(newlyFetchedDashboardDataValues.assessmentImp) + parseFloat(newlyFetchedDashboardDataValues.assessmentScorePerf) + parseFloat(newlyFetchedDashboardDataValues.confidenceLevel) + 90) / 4);
+
+
+
+    setShowAnalysis(true)
+    setShowAssessment(false);
+    setShowSubmittedAnswerModal(false);
+  }
   
 
   return (
@@ -359,25 +526,29 @@ export const PersonalAssessment = () => {
 
           {(showAnalysis === false && isAssessmentDone === true) && (
             <div>
-              <p className='text-center mcolor-500 font-medium mb-8 text-xl'>Your score is: </p>
-              <p className='text-center text-6xl font-bold mcolor-800 mb-20'>{score}/{overAllItems}</p>
 
-              <div className=' flex items-center justify-center gap-5'>
-                <button
-                  className='border-thin-800 px-5 py-3 rounded-[5px] w-1/4'
-                  onClick={() => {
-                    console.log('button clicked');
-                    setShowSubmittedAnswerModal(true);
-                  }}
-                >
-                  View Analysis
-                </button>
+              <div>
+                <p className='text-center mcolor-500 font-medium mb-8 text-xl'>Your score is: </p>
+                <p className='text-center text-6xl font-bold mcolor-800 mb-20'>{score}/{overAllItems}</p>
 
-                <Link to={`/main/personal/study-area/personal-review/${materialId}`} className='border-thin-800 px-5 py-3 rounded-[5px] w-1/4 text-center'>
-                  <button>Back to Study Area</button>
-                </Link>
+                <div className=' flex items-center justify-center gap-5'>
+                  <button
+                    className='border-thin-800 px-5 py-3 rounded-[5px] w-1/4'
+                    onClick={() => {
+                      console.log('button clicked');
+                      setShowSubmittedAnswerModal(true);
+                    }}
+                  >
+                    Analyze the Data
+                  </button>
 
-                <button className='mbg-800 mcolor-100 px-5 py-3 rounded-[5px] w-1/4'>View Analytics</button>            
+                  <Link to={`/main/personal/study-area/personal-review/${materialId}`} className='border-thin-800 px-5 py-3 rounded-[5px] w-1/4 text-center'>
+                    <button>Back to Study Area</button>
+                  </Link>
+
+                  <button className='mbg-800 mcolor-100 px-5 py-3 rounded-[5px] w-1/4'>View Analytics</button>            
+
+                </div>
               </div>
 
 
@@ -387,23 +558,26 @@ export const PersonalAssessment = () => {
                   <div className='flex items-center justify-center h-full'>
                     <div className='relative mbg-100 min-h-[40vh] w-1/2 z-10 relative p-10 rounded-[5px]'>
 
-                      <p className='text-center text-xl font-medium mcolor-800 mt-5'>Kindly be advised that the data analysis process by the system AI may require 1-2 minutes, depending on your internet speed. Would you be comfortable waiting for that duration?</p>
+                    {showTexts === true ? (
+                      <div>
+                        <p className='text-center text-xl font-medium mcolor-800 mt-5'>Kindly be advised that the data analysis process by the system AI may require 2-3 minutes, depending on your internet speed. Would you be comfortable waiting for that duration?</p>
+
+                        <div className='w-full absolute bottom-10 flex items-center justify-center left-0 gap-4'>
+
+                          <button className='mbg-200 border-thin-800 px-5 py-2 rounded-[5px]' onClick={() => {
+                            setShowSubmittedAnswerModal(false);
+                          }} >No</button>
 
 
-                      <div className='w-full absolute bottom-10 flex items-center justify-center left-0 gap-4'>
-
-                        <button className='mbg-200 border-thin-800 px-5 py-2 rounded-[5px]' onClick={() => {
-                          setShowSubmittedAnswerModal(false);
-                        }} >Cancel</button>
-
-
-                        <button className='mbg-800 mcolor-100 border-thin-800 px-5 py-2 rounded-[5px]' onClick={() => {
-                          setShowAnalysis(true)
-                          setShowAssessment(false);
-                          setShowSubmittedAnswerModal(false);
-                        }}>Proceed</button>
+                          <button className='mbg-800 mcolor-100 border-thin-800 px-5 py-2 rounded-[5px]' onClick={() => generateAnalysis(analysisId)}>Yes</button>
+                        </div>
                       </div>
-
+                    ) : (
+                      <div class="loading-container">
+                        <p class="loading-text mcolor-900">Analyzing data...</p>
+                        <div class="loading-spinner"></div>
+                      </div>                    
+                    )}
                     </div>
                   </div>
                 </div>
@@ -420,7 +594,7 @@ export const PersonalAssessment = () => {
 
           <div className='mt-14 flex items-center justify-between'>
             <div>
-              <p className='text-center mx-10 mb-16 text-2xl'>Based in the available information, you have a substantial <span className='font-bold'>{overAllPerformance.toFixed(2)}%</span> probability of success of taking the real-life exam and that the analysis classifies that you are <span className='font-bold'>{overAllPerformance.toFixed(2) >= 90 ? 'ready' : 'not yet ready'}</span> to take it as to your preference study profeciency target is <span className='font-bold'>90%</span></p>
+              <p className='text-center mx-10 mb-16 text-2xl'>You have a substantial <span className='font-bold'>{overAllPerformance.toFixed(2)}%</span> probability of success of taking the real-life exam and that the analysis classifies that you are <span className='font-bold'>{overAllPerformance.toFixed(2) >= 90 ? 'ready' : 'not yet ready'}</span> to take it as to your preference study profeciency target is <span className='font-bold'>90%</span>.</p>
 
               <br /><br />
 
@@ -445,28 +619,38 @@ export const PersonalAssessment = () => {
           </div>
 
 
-          <div className='mt-24'>
-            <p className='mb-5 font-bold text-2xl text-center'>ANALYSIS</p>
-            <p className='text-center text-xl mb-10'>The Assessment Improvement of {assessmentImp}% and Assessment Score performance of {assessmentScorePerf}% indicate significant progress and a high level of achievement in the assessment. However, the Confidence level of 55.56% suggests that there is room for improvement in effective tme utilization for studying.</p>
-            <p className='text-center text-xl mb-10'>The data analysis classifies that you are ready to take a real-life exam. as the probability of success is 73.52%, which falls show of the passing grade of 57%. While there has been improvement shown in the assessment, there are still areas that need strengthening.To increase you chance of success. focus on improving your understanding of weak topics identified in the pre-assessment and maximize your study time effectively.</p>
-          </div>
 
-          {completionTime < overAllItems && (
-            <div className='mt-20'>
-              <p className='mb-5 font-bold text-2xl text-center'>Recommendations</p>
-
-              <p className='text-center text-xl mb-10'>
-                <CheckIcon className='mr-2' />
-                Challenge yourself to finish the assessment under{' '}
-                <span className='font-bold'>
-                  {`${Math.floor(overAllItems / 120) > 0 ? (Math.floor(overAllItems / 120) === 1 ? '1 hour' : Math.floor(overAllItems / 120) + ' hours') + ' ' : ''}${Math.floor((overAllItems % 120) / 2) > 0 ? (Math.floor((overAllItems % 120) / 2) === 1 ? '1 min' : Math.floor((overAllItems % 120) / 2) + ' mins') + ' ' : ''}${((overAllItems % 2) * 30) > 0 ? ((overAllItems % 2) * 30) + ' second' + (((overAllItems % 2) * 30) !== 1 ? 's' : '') : ''}`}
-                </span> 
-                {' '}
-                to increase the confidence level
-              </p>
-
+        {generatedAnalysis !== '' && (
+          <div>
+            <div className='mt-24'>
+              <p className='mb-5 font-bold text-2xl text-center'>ANALYSIS</p>
+              <p className='text-center text-xl mb-10'>{generatedAnalysis}</p>
             </div>
-          )}
+
+            {completionTime < overAllItems && (
+              <div className='mt-20'>
+                <p className='mb-5 font-bold text-2xl text-center'>Recommendations</p>
+
+                <p className='text-center text-xl mb-10'>
+                  <CheckIcon className='mr-2' />
+                  Challenge yourself to finish the assessment under{' '}
+                  <span className='font-bold'>
+                    {`${Math.floor(overAllItems / 120) > 0 ? (Math.floor(overAllItems / 120) === 1 ? '1 hour' : Math.floor(overAllItems / 120) + ' hours') + ' ' : ''}${Math.floor((overAllItems % 120) / 2) > 0 ? (Math.floor((overAllItems % 120) / 2) === 1 ? '1 min' : Math.floor((overAllItems % 120) / 2) + ' mins') + ' ' : ''}${((overAllItems % 2) * 30) > 0 ? ((overAllItems % 2) * 30) + ' second' + (((overAllItems % 2) * 30) !== 1 ? 's' : '') : ''}`}
+                  </span> 
+                  {' '}
+                  to increase the confidence level
+                </p>
+
+              </div>
+            )}
+          </div>
+        )}
+
+
+
+
+
+
 
           <div className='mt-32 flex items-center justify-center gap-5'>
             <button className='border-thin-800 px-5 py-3 rounded-[5px] w-1/4' onClick={() => {

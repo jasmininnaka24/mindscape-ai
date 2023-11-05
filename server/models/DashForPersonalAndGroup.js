@@ -44,6 +44,11 @@ module.exports = (sequelize, DataTypes) => {
       allowNull: false,
       defaultValue: 1, 
     },    
+    analysis: {
+      type: DataTypes.TEXT,
+      allowNull: false,
+      defaultValue: 'No record of analysis yet.', 
+    },    
   });
 
   DashForPersonalAndGroup.associate = (models) => {

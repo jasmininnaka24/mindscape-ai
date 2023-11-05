@@ -55,4 +55,28 @@ router.put('/update-data/:id', async (req, res) => {
 });
 
 
+router.put('/set-update-analysis/:id', async (req, res) => {
+  const dashboardId = req.params.id;
+  const { analysis } = req.body;
+
+  try {
+    const dashboardData = await DashForPersonalAndGroup.findByPk(dashboardId);
+
+    if (!dashboardData) {
+      return res.status(404).json({ error: 'Dashboard data not found' });
+    }
+
+    dashboardData.analysis = analysis;
+
+    await dashboardData.save();
+
+    console.log('Dashboard data updated successfully:', dashboardData);
+    res.json(dashboardData);
+  } catch (error) {
+    console.error('Error updating dashboard data:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
+
 module.exports = router;

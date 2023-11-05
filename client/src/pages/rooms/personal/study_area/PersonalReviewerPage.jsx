@@ -27,13 +27,20 @@ export const PersonalReviewerPage = () => {
     })
 
     const fetchData = async () => {
-      const previousSavedData = await axios.get(`http://localhost:3001/DashForPersonalAndGroup/get-latest-assessment/${materialId}`);
-      const fetchedData = previousSavedData.data;
-
-      if (fetchedData[0].assessmentScore !== 'none') {
-        setTakeAssessment(true);
+      try {
+        const previousSavedData = await axios.get(`http://localhost:3001/DashForPersonalAndGroup/get-latest-assessment/${materialId}`);
+        const fetchedData = previousSavedData.data;
+    
+        if (fetchedData && fetchedData.length >= 1 && fetchedData[0].assessmentScore !== undefined && fetchedData[0].assessmentScore === 'none') {
+          setTakeAssessment(true);
+        } else if (fetchedData && fetchedData.length >= 1 && fetchedData[0].assessmentScore !== undefined) {
+          setTakeAssessment(true);
+        }
+      } catch (error) {
+        console.error('Error fetching assessment data:', error);
       }
     }
+    
 
     fetchData();
 
