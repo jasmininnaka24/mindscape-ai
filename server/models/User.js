@@ -15,6 +15,16 @@ module.exports = (sequelize, DataTypes) => {
     name: {
       type: DataTypes.STRING,
       allowNull: false,
+    },
+    typeOfLearner: {
+      type: DataTypes.STRING,
+      allowNull: false,
+      defaultValue: 'Unclassified', 
+    },
+    studyProfTarget: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      defaultValue: 0, 
     }
   });
 

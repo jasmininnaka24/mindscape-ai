@@ -8,6 +8,8 @@ export const PersonalAssessment = () => {
 
   const { materialId } = useParams();
 
+  let studyProfeciencyTarget = 90;
+
   const navigate = useNavigate();
 
   // hooks
@@ -65,9 +67,9 @@ export const PersonalAssessment = () => {
       }
       
       if (fetchedData && Array.isArray(fetchedData) && fetchedData.length > 0 && fetchedData[0].assessmentScore !== 'none') {
-        setAssessmentCountMoreThanOne(true); 
         if (fetchedData.length >= 2) {
           setLastAssessmentScore(fetchedData[1].assessmentScore);
+          setAssessmentCountMoreThanOne(true); 
         }
       } else {
         console.error('Invalid or empty data received:', fetchedData);
@@ -228,7 +230,7 @@ export const PersonalAssessment = () => {
           setAssessmentScorePerf(newlyFetchedDashboardDataValues.assessmentScorePerf);
           setCompletionTime(newlyFetchedDashboardDataValues.completionTime);
           setConfidenceLevel(newlyFetchedDashboardDataValues.confidenceLevel);
-          setOverAllPerformance((parseFloat(newlyFetchedDashboardDataValues.assessmentImp) + parseFloat(newlyFetchedDashboardDataValues.assessmentScorePerf) + parseFloat(newlyFetchedDashboardDataValues.confidenceLevel) + 90) / 4);
+          setOverAllPerformance((parseFloat(newlyFetchedDashboardDataValues.assessmentImp) + parseFloat(newlyFetchedDashboardDataValues.assessmentScorePerf) + parseFloat(newlyFetchedDashboardDataValues.confidenceLevel)) / 3);
           
           setAssessmentCountMoreThanOne(false)
         } 
@@ -276,12 +278,12 @@ export const PersonalAssessment = () => {
           setAssessmentScorePerf(newlyFetchedDashboardDataValues.assessmentScorePerf);
           setCompletionTime(newlyFetchedDashboardDataValues.completionTime);
           setConfidenceLevel(newlyFetchedDashboardDataValues.confidenceLevel);
-          setOverAllPerformance((parseFloat(newlyFetchedDashboardDataValues.assessmentImp) + parseFloat(newlyFetchedDashboardDataValues.assessmentScorePerf) + parseFloat(newlyFetchedDashboardDataValues.confidenceLevel) + 90) / 4);
+          setOverAllPerformance((parseFloat(newlyFetchedDashboardDataValues.assessmentImp) + parseFloat(newlyFetchedDashboardDataValues.assessmentScorePerf) + parseFloat(newlyFetchedDashboardDataValues.confidenceLevel)) / 3);
   
           if (newlyFetchedDashboardDataValues.length > 0 && newlyFetchedDashboardDataValues[0].assessmentScore !== 'none') {
-            setAssessmentCountMoreThanOne(true); 
             if (newlyFetchedDashboardDataValues.length >= 2) {
               setLastAssessmentScore(newlyFetchedDashboardDataValues[1].assessmentScore);
+              setAssessmentCountMoreThanOne(true); 
             }
           }
         }
@@ -298,25 +300,22 @@ export const PersonalAssessment = () => {
 
     setShowTexts(false)
 
-    const generateAnalysisUrl = 'https://064a-34-83-254-120.ngrok.io/generate_analysis';
+    const generateAnalysisUrl = 'https://9657-34-125-241-203.ngrok.io/generate_analysis';
 
     
     let predictionText = overAllPerformance.toFixed(2) >= 90 ? 'ready' : 'not yet ready';
 
     let predictionVal = overAllPerformance.toFixed(2);
-
-    let studyProfeciencyTarget = 90;
-
     
     const previousSavedData = await axios.get(`http://localhost:3001/DashForPersonalAndGroup/get-latest-assessment/${materialId}`);
     const fetchedData = previousSavedData.data;    
     
     let lastExamStr = 'Pre-Assessment';
     let lastAssessmentScore = 0;
-    let assessmentScore = 0; // Initialize to 0 or any default value if necessary
-    let overAllItems = 0; // Initialize to 0 or any default value if necessary
-    let assessmentImp = 0; // Initialize to 0 or any default value if necessary
-    let confidenceLevel = 0; // Initialize to 0 or any default value if necessary
+    let assessmentScore = 0; 
+    let overAllItems = 0; 
+    let assessmentImp = 0; 
+    let confidenceLevel = 0; 
 
     
     if (fetchedData.length === 1) {
@@ -362,9 +361,47 @@ export const PersonalAssessment = () => {
 
     const newlyFetchedDashboardData = await axios.put(`http://localhost:3001/DashForPersonalAndGroup/set-update-analysis/${id}`, {analysis: generatedAnalysisResponse});
     const newlyFetchedDashboardDataValues = newlyFetchedDashboardData.data;
+    
+    const dashID = newlyFetchedDashboardDataValues.id;
+    const dashCompletionTime = newlyFetchedDashboardDataValues.completionTime;
+    const dashAssessmentImp = newlyFetchedDashboardDataValues.assessmentImp;
+    const dashAssessmentScorePerf = newlyFetchedDashboardDataValues.assessmentScorePerf;
+
 
     
-    setAnalysisId(newlyFetchedDashboardDataValues.id);
+    const saveRecommendation = async (recommendation, dashId) => {
+      await axios.post(`http://localhost:3001/DashRecommendations/`, {recommendation: recommendation, DashForPersonalAndGroupId: dashId});
+    }
+
+
+    // saving recommendations
+
+
+    if (dashCompletionTime < 100) { 
+      let completionTimeRecommendation = `Challenge yourself to finish the assessment under ${Math.floor(overAllItems / 120) > 0 ? (Math.floor(overAllItems / 120) === 1 ? '1 hour' : Math.floor(overAllItems / 120) + ' hours') + ' ' : ''}${Math.floor((overAllItems % 120) / 2) > 0 ? (Math.floor((overAllItems % 120) / 2) === 1 ? '1 min' : Math.floor((overAllItems % 120) / 2) + ' mins') + ' ' : ''}${((overAllItems % 2) * 30) > 0 ? ((overAllItems % 2) * 30) + ' second' + (((overAllItems % 2) * 30) !== 1 ? 's' : '') : ''} to increase the confidence level until it gets to 100%.`;
+
+      saveRecommendation(completionTimeRecommendation, dashID);
+    }
+    
+    
+    
+    if (dashAssessmentImp < studyProfeciencyTarget) {
+      let assessmentImpRecommendation = "You may consider revisiting the lesson/quiz practice to enhance your understanding, which will lead to an increase in your Assessment Improvement when you retake the quiz.";
+      
+      saveRecommendation(assessmentImpRecommendation, dashID);
+    }
+    
+
+
+    if (dashAssessmentScorePerf < studyProfeciencyTarget) {
+      let assessmentScorePerfRecommendation = "You can aim for a quiz score of 90% or higher, which will significantly enhance your overall Assessment Performance reaching the 90% benchmark.";
+      
+      saveRecommendation(assessmentScorePerfRecommendation, dashID);
+    }
+
+
+    
+    setAnalysisId(dashID);
 
     setOverAllItems(newlyFetchedDashboardDataValues.overAllItems);
     setPreAssessmentScore(newlyFetchedDashboardDataValues.preAssessmentScore);
@@ -373,7 +410,7 @@ export const PersonalAssessment = () => {
     setAssessmentScorePerf(newlyFetchedDashboardDataValues.assessmentScorePerf);
     setCompletionTime(newlyFetchedDashboardDataValues.completionTime);
     setConfidenceLevel(newlyFetchedDashboardDataValues.confidenceLevel);
-    setOverAllPerformance((parseFloat(newlyFetchedDashboardDataValues.assessmentImp) + parseFloat(newlyFetchedDashboardDataValues.assessmentScorePerf) + parseFloat(newlyFetchedDashboardDataValues.confidenceLevel) + 90) / 4);
+    setOverAllPerformance((parseFloat(newlyFetchedDashboardDataValues.assessmentImp) + parseFloat(newlyFetchedDashboardDataValues.assessmentScorePerf) + parseFloat(newlyFetchedDashboardDataValues.confidenceLevel)) / 3);
 
 
 
@@ -532,15 +569,29 @@ export const PersonalAssessment = () => {
                 <p className='text-center text-6xl font-bold mcolor-800 mb-20'>{score}/{overAllItems}</p>
 
                 <div className=' flex items-center justify-center gap-5'>
-                  <button
-                    className='border-thin-800 px-5 py-3 rounded-[5px] w-1/4'
-                    onClick={() => {
-                      console.log('button clicked');
-                      setShowSubmittedAnswerModal(true);
-                    }}
-                  >
-                    Analyze the Data
-                  </button>
+
+                  {generatedAnalysis === '' ? (
+                    <button
+                      className='border-thin-800 px-5 py-3 rounded-[5px] w-1/4'
+                      onClick={() => {
+                        console.log('button clicked');
+                        setShowSubmittedAnswerModal(true);
+                      }}
+                    >
+                      Analyze the Data
+                    </button>
+                  ): (
+                    <button
+                      className='border-thin-800 px-5 py-3 rounded-[5px] w-1/4'
+                      onClick={() => {
+                        setShowAnalysis(true)
+                        setShowAssessment(false);
+                        setShowSubmittedAnswerModal(false);
+                      }}
+                    >
+                      View Analysis
+                    </button>
+                  )}
 
                   <Link to={`/main/personal/study-area/personal-review/${materialId}`} className='border-thin-800 px-5 py-3 rounded-[5px] w-1/4 text-center'>
                     <button>Back to Study Area</button>
@@ -620,31 +671,47 @@ export const PersonalAssessment = () => {
 
 
 
-        {generatedAnalysis !== '' && (
-          <div>
-            <div className='mt-24'>
-              <p className='mb-5 font-bold text-2xl text-center'>ANALYSIS</p>
-              <p className='text-center text-xl mb-10'>{generatedAnalysis}</p>
-            </div>
-
-            {completionTime < overAllItems && (
-              <div className='mt-20'>
-                <p className='mb-5 font-bold text-2xl text-center'>Recommendations</p>
-
-                <p className='text-center text-xl mb-10'>
-                  <CheckIcon className='mr-2' />
-                  Challenge yourself to finish the assessment under{' '}
-                  <span className='font-bold'>
-                    {`${Math.floor(overAllItems / 120) > 0 ? (Math.floor(overAllItems / 120) === 1 ? '1 hour' : Math.floor(overAllItems / 120) + ' hours') + ' ' : ''}${Math.floor((overAllItems % 120) / 2) > 0 ? (Math.floor((overAllItems % 120) / 2) === 1 ? '1 min' : Math.floor((overAllItems % 120) / 2) + ' mins') + ' ' : ''}${((overAllItems % 2) * 30) > 0 ? ((overAllItems % 2) * 30) + ' second' + (((overAllItems % 2) * 30) !== 1 ? 's' : '') : ''}`}
-                  </span> 
-                  {' '}
-                  to increase the confidence level
-                </p>
-
+          {generatedAnalysis !== '' && (
+            <div>
+              <div className='mt-24'>
+                <p className='mb-5 font-bold text-2xl text-center'>ANALYSIS</p>
+                <p className='text-center text-xl mb-10'>{generatedAnalysis}</p>
               </div>
-            )}
-          </div>
-        )}
+
+              {(completionTime < 100 || assessmentImp < studyProfeciencyTarget || assessmentScorePerf < studyProfeciencyTarget) && (
+                <div className='mt-20'>
+                  <p className='mb-5 font-bold text-2xl text-center'>Recommendations</p>
+
+                  <p className='text-center text-xl mb-4'>
+                    <CheckIcon className='mr-2' />
+                    Challenge yourself to finish the assessment under{' '}
+                    <span className='font-bold'>
+                      {`${Math.floor(overAllItems / 120) > 0 ? (Math.floor(overAllItems / 120) === 1 ? '1 hour' : Math.floor(overAllItems / 120) + ' hours') + ' ' : ''}${Math.floor((overAllItems % 120) / 2) > 0 ? (Math.floor((overAllItems % 120) / 2) === 1 ? '1 min' : Math.floor((overAllItems % 120) / 2) + ' mins') + ' ' : ''}${((overAllItems % 2) * 30) > 0 ? ((overAllItems % 2) * 30) + ' second' + (((overAllItems % 2) * 30) !== 1 ? 's' : '') : ''}`}
+                    </span> 
+                    {' '}
+                    to increase the confidence level until it gets to 100%.
+                  </p>
+
+
+                  {assessmentImp < studyProfeciencyTarget && (
+                    <p className='text-center text-xl mb-4'>
+                      <CheckIcon className='mr-2' />
+                      You may consider revisiting the lesson/quiz practice to enhance your understanding, which will lead to an increase in your <span className='font-bold'>Assessment Improvement</span> when you retake the quiz.
+                    </p>
+                  )}
+
+
+                  {assessmentScorePerf < studyProfeciencyTarget && (
+                    <p className='text-center text-xl mb-4'>
+                      <CheckIcon className='mr-2' />
+                      You can aim for a quiz score of 90% or higher, which will significantly enhance your overall <span className='font-bold'>Assessment Performance</span> reaching the 90% benchmark.
+                    </p>
+                  )}
+
+                </div>
+              )}
+            </div>
+          )}
 
 
 
