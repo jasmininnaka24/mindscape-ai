@@ -41,6 +41,9 @@ export const PersonalAssessment = () => {
 
   const [analysisId, setAnalysisId] = useState(0);
 
+  const [seconds, setSeconds] = useState(0);
+  const [isRunning, setIsRunning] = useState(false);
+
   const UserId = 1;
   
 
@@ -128,13 +131,20 @@ export const PersonalAssessment = () => {
         }
       }
 
-      
+
+      if(isAssessmentDone === false) {
+        setSeconds(extractedQA.length * 60);
+        setIsRunning(true)
+      }
     }
 
     fetchData();
 
 
-  }, [materialId, questionIndex, showSubmittedAnswerModal])
+
+  }, [extractedQA.length, materialId, questionIndex, showSubmittedAnswerModal])
+
+
 
 
   const shuffleArray = (array) => {
@@ -152,146 +162,162 @@ export const PersonalAssessment = () => {
     selectedChoices[index] = choice;
     setSelectedChoice(selectedChoices);
   };
-  
+
+
 
   const submitAnswer = async () => {
-    if (selectedChoice.some(answer => answer === '' || answer === undefined)) {
-      alert('There are some empty fields. Answer all items.');
-    } else {
-      const score = selectedChoice.reduce((totalScore, item, index) => {
-        return item.toLowerCase() === extractedQA[index].answer.toLowerCase() ? totalScore + 1 : totalScore;
-      }, 0);
+
+    stopTimer();
+    
+
+    const score = selectedChoice.reduce((totalScore, item, index) => {
+      const qaItem = extractedQA[index];
+      if (qaItem && qaItem.answer !== undefined && qaItem.answer !== null && item) {
+        return item.toLowerCase() === qaItem.answer.toLowerCase()
+          ? totalScore + 1
+          : totalScore;
+      } else {
+        return totalScore;
+      }
+    }, 0);
+    
+
+    const previousSavedData = await axios.get(`http://localhost:3001/DashForPersonalAndGroup/get-latest-assessment/${materialId}`);
+    const fetchedData = previousSavedData.data;
+    
+
+
+    let completionTimeInMinutes = Math.floor(seconds/60);
+
+    let timeDuration = (extractedQA.length - completionTimeInMinutes);
   
-      const previousSavedData = await axios.get(`http://localhost:3001/DashForPersonalAndGroup/get-latest-assessment/${materialId}`);
-      const fetchedData = previousSavedData.data;
+    let completionTimeCalc = seconds === 0 ? extractedQA.length : timeDuration;
+
+
+
+    // for pre-text functionality
+    if (fetchedData.length === 0) {
+
+      let confidence = (((Math.round(extractedQA.length / 2)) / 8) * 100).toFixed(2);
+
+      let data = {
+        dashFor: 'Personal',
+        overAllItems: extractedQA.length,
+        preAssessmentScore: score,
+        assessmentScorePerf: ((score / extractedQA.length) * 100).toFixed(2),
+        completionTime: completionTimeCalc,
+        confidenceLevel: completionTimeCalc >= Math.round(extractedQA.length / 2) ? confidence : 100,
+        StudyMaterialId: materialId,
+        StudyGroupId: null
+      }
+
+
+      const newlyFetchedDashboardData = await axios.post(`http://localhost:3001/DashForPersonalAndGroup/`, data);
+
+      const newlyFetchedDashboardDataValues = newlyFetchedDashboardData.data;
+
+      setAnalysisId(newlyFetchedDashboardDataValues.id);
+      setAssessmentCountMoreThanOne(false)
+
+
+      navigate(`/main/personal/study-area/personal-review/${materialId}`);
+    } 
+    
+    
+    else {
+      // for 1st assessment functionalitty
+      if (fetchedData[0].assessmentScore === 'none') {
+
+        const improvement = Math.max(0, ((score - fetchedData[0].preAssessmentScore) / Math.max(extractedQA.length - fetchedData[0].preAssessmentScore, 1) * 100).toFixed(2));
+
+
+        let confidence = (((Math.round(extractedQA.length / 2)) / completionTimeCalc) * 100).toFixed(2);
+
+
+        let data = {
+          assessmentScore: score,
+          assessmentImp: parseInt(score) === parseInt(fetchedData[0].preAssessmentScore) ? 100 : improvement,
+          assessmentScorePerf: ((score / extractedQA.length) * 100).toFixed(2),
+          completionTime: completionTimeCalc,
+          confidenceLevel: completionTimeCalc >= Math.round(extractedQA.length / 2) ? confidence : 100,
+        }
+
+
+
+        const newlyFetchedDashboardData = await axios.put(`http://localhost:3001/DashForPersonalAndGroup/update-data/${fetchedData[0].id}`, data);
+        const newlyFetchedDashboardDataValues = newlyFetchedDashboardData.data;
+
+        setAnalysisId(newlyFetchedDashboardDataValues.id);
+
+        setOverAllItems(newlyFetchedDashboardDataValues.overAllItems);
+        setPreAssessmentScore(newlyFetchedDashboardDataValues.preAssessmentScore);
+        setAssessmentScore(newlyFetchedDashboardDataValues.assessmentScore);
+        setAssessmentImp(newlyFetchedDashboardDataValues.assessmentImp);
+        setAssessmentScorePerf(newlyFetchedDashboardDataValues.assessmentScorePerf);
+        setCompletionTime(newlyFetchedDashboardDataValues.completionTime);
+        setConfidenceLevel(newlyFetchedDashboardDataValues.confidenceLevel);
+        setOverAllPerformance((parseFloat(newlyFetchedDashboardDataValues.assessmentImp) + parseFloat(newlyFetchedDashboardDataValues.assessmentScorePerf) + parseFloat(newlyFetchedDashboardDataValues.confidenceLevel)) / 3);
+        
+        setAssessmentCountMoreThanOne(false)
+      } 
       
+      
+      
+      
+      // for more than one assesssment functionality
+      else {
 
 
+        const improvement = Math.max(0, ((score - fetchedData[0].assessmentScore) / Math.max(extractedQA.length - fetchedData[0].assessmentScore, 1) * 100).toFixed(2));
+        const validImprovement = isNaN(improvement) ? 0 : improvement;
+        
 
-      // for pre-text functionality
-      if (fetchedData.length === 0) {
-
-        let confidence = (((Math.round(extractedQA.length / 2)) / 8) * 100).toFixed(2);
+        let confidence = (((Math.round(extractedQA.length / 2)) / completionTimeCalc) * 100).toFixed(2);
 
         let data = {
           dashFor: 'Personal',
           overAllItems: extractedQA.length,
-          preAssessmentScore: score,
+          preAssessmentScore: fetchedData[0].preAssessmentScore,
+          assessmentScore: score,
+          assessmentImp: parseInt(score) === parseInt(fetchedData[0].assessmentScore) ? 100 : validImprovement,
           assessmentScorePerf: ((score / extractedQA.length) * 100).toFixed(2),
-          completionTime: 8,
-          confidenceLevel: 8 >= Math.round(extractedQA.length / 2) ? confidence : 100,
+          completionTime: completionTimeCalc,
+          confidenceLevel: completionTimeCalc >= Math.round(extractedQA.length / 2) ? confidence : 100,
+          numOfTakes: fetchedData[0].numOfTakes + 1,
           StudyMaterialId: materialId,
           StudyGroupId: null
         }
 
+        setLastAssessmentScore(fetchedData[0].assessmentScore)
+        setAssessmentImp(assessmentImp.assessmentImp)
 
         const newlyFetchedDashboardData = await axios.post(`http://localhost:3001/DashForPersonalAndGroup/`, data);
-
         const newlyFetchedDashboardDataValues = newlyFetchedDashboardData.data;
 
+
+
         setAnalysisId(newlyFetchedDashboardDataValues.id);
-        setAssessmentCountMoreThanOne(false)
 
+        setOverAllItems(newlyFetchedDashboardDataValues.overAllItems);
+        setPreAssessmentScore(newlyFetchedDashboardDataValues.preAssessmentScore);
+        setAssessmentScore(newlyFetchedDashboardDataValues.assessmentScore);
+        setAssessmentImp(newlyFetchedDashboardDataValues.assessmentImp);
+        setAssessmentScorePerf(newlyFetchedDashboardDataValues.assessmentScorePerf);
+        setCompletionTime(newlyFetchedDashboardDataValues.completionTime);
+        setConfidenceLevel(newlyFetchedDashboardDataValues.confidenceLevel);
+        setOverAllPerformance((parseFloat(newlyFetchedDashboardDataValues.assessmentImp) + parseFloat(newlyFetchedDashboardDataValues.assessmentScorePerf) + parseFloat(newlyFetchedDashboardDataValues.confidenceLevel)) / 3);
 
-        navigate(`/main/personal/study-area/personal-review/${materialId}`);
-      } 
-      
-      
-      else {
-
-        // for 1st assessment functionalitty
-        if (fetchedData[0].assessmentScore === 'none') {
-
-          const improvement = Math.max(0, ((score - fetchedData[0].preAssessmentScore) / Math.max(extractedQA.length - fetchedData[0].preAssessmentScore, 1) * 100).toFixed(2));
-
-
-          let confidence = (((Math.round(extractedQA.length / 2)) / 8) * 100).toFixed(2);
-
-
-          let data = {
-            assessmentScore: score,
-            assessmentImp: parseInt(score) === parseInt(fetchedData[0].preAssessmentScore) ? 100 : improvement,
-            assessmentScorePerf: ((score / extractedQA.length) * 100).toFixed(2),
-            completionTime: 8,
-            confidenceLevel: 8 >= Math.round(extractedQA.length / 2) ? confidence : 100,
-          }
-
-
-
-          const newlyFetchedDashboardData = await axios.put(`http://localhost:3001/DashForPersonalAndGroup/update-data/${fetchedData[0].id}`, data);
-          const newlyFetchedDashboardDataValues = newlyFetchedDashboardData.data;
-
-          setAnalysisId(newlyFetchedDashboardDataValues.id);
-
-          setOverAllItems(newlyFetchedDashboardDataValues.overAllItems);
-          setPreAssessmentScore(newlyFetchedDashboardDataValues.preAssessmentScore);
-          setAssessmentScore(newlyFetchedDashboardDataValues.assessmentScore);
-          setAssessmentImp(newlyFetchedDashboardDataValues.assessmentImp);
-          setAssessmentScorePerf(newlyFetchedDashboardDataValues.assessmentScorePerf);
-          setCompletionTime(newlyFetchedDashboardDataValues.completionTime);
-          setConfidenceLevel(newlyFetchedDashboardDataValues.confidenceLevel);
-          setOverAllPerformance((parseFloat(newlyFetchedDashboardDataValues.assessmentImp) + parseFloat(newlyFetchedDashboardDataValues.assessmentScorePerf) + parseFloat(newlyFetchedDashboardDataValues.confidenceLevel)) / 3);
-          
-          setAssessmentCountMoreThanOne(false)
-        } 
-        
-        
-        
-        
-        // for more than one assesssment functionality
-        else {
-
-
-          const improvement = Math.max(0, ((score - fetchedData[0].assessmentScore) / Math.max(extractedQA.length - fetchedData[0].assessmentScore, 1) * 100).toFixed(2));
-
-
-          let confidence = (((Math.round(extractedQA.length / 2)) / 8) * 100).toFixed(2);
-  
-          let data = {
-            dashFor: 'Personal',
-            overAllItems: extractedQA.length,
-            preAssessmentScore: fetchedData[0].preAssessmentScore,
-            assessmentScore: score,
-            assessmentImp: parseInt(score) === parseInt(fetchedData[0].assessmentScore) ? 100 : improvement,
-            assessmentScorePerf: ((score / extractedQA.length) * 100).toFixed(2),
-            completionTime: 8,
-            confidenceLevel: 8 >= Math.round(extractedQA.length / 2) ? confidence : 100,
-            numOfTakes: fetchedData[0].numOfTakes + 1,
-            StudyMaterialId: materialId,
-            StudyGroupId: null
-          }
-
-          setLastAssessmentScore(fetchedData[0].assessmentScore)
-          setAssessmentImp(assessmentImp.assessmentImp)
-  
-          const newlyFetchedDashboardData = await axios.post(`http://localhost:3001/DashForPersonalAndGroup/`, data);
-          const newlyFetchedDashboardDataValues = newlyFetchedDashboardData.data;
-
-
-
-          setAnalysisId(newlyFetchedDashboardDataValues.id);
-
-          setOverAllItems(newlyFetchedDashboardDataValues.overAllItems);
-          setPreAssessmentScore(newlyFetchedDashboardDataValues.preAssessmentScore);
-          setAssessmentScore(newlyFetchedDashboardDataValues.assessmentScore);
-          setAssessmentImp(newlyFetchedDashboardDataValues.assessmentImp);
-          setAssessmentScorePerf(newlyFetchedDashboardDataValues.assessmentScorePerf);
-          setCompletionTime(newlyFetchedDashboardDataValues.completionTime);
-          setConfidenceLevel(newlyFetchedDashboardDataValues.confidenceLevel);
-          setOverAllPerformance((parseFloat(newlyFetchedDashboardDataValues.assessmentImp) + parseFloat(newlyFetchedDashboardDataValues.assessmentScorePerf) + parseFloat(newlyFetchedDashboardDataValues.confidenceLevel)) / 3);
-  
-          if (newlyFetchedDashboardDataValues.length > 0 && newlyFetchedDashboardDataValues[0].assessmentScore !== 'none') {
-            if (newlyFetchedDashboardDataValues.length >= 2) {
-              setLastAssessmentScore(newlyFetchedDashboardDataValues[1].assessmentScore);
-              setAssessmentCountMoreThanOne(true); 
-            }
+        if (newlyFetchedDashboardDataValues.length > 0 && newlyFetchedDashboardDataValues[0].assessmentScore !== 'none') {
+          if (newlyFetchedDashboardDataValues.length >= 2) {
+            setLastAssessmentScore(newlyFetchedDashboardDataValues[1].assessmentScore);
+            setAssessmentCountMoreThanOne(true); 
           }
         }
-  
-        setScore(score);
-        setIsSubmitted(true);
-        setIsAssessmentDone(true);
       }
+
+      setScore(score);
+      setIsSubmitted(true);
+      setIsAssessmentDone(true);
     }
   };
 
@@ -300,7 +326,7 @@ export const PersonalAssessment = () => {
 
     setShowTexts(false)
 
-    const generateAnalysisUrl = 'https://9657-34-125-241-203.ngrok.io/generate_analysis';
+    const generateAnalysisUrl = 'https://1596-35-240-164-133.ngrok.io/generate_analysis';
 
     
     let predictionText = overAllPerformance.toFixed(2) >= 90 ? 'ready' : 'not yet ready';
@@ -420,6 +446,65 @@ export const PersonalAssessment = () => {
   }
   
 
+
+
+
+  useEffect(() => {
+
+    let interval;
+    if (isRunning && seconds > 0) {
+      interval = setInterval(() => {
+        setSeconds(prevSeconds => prevSeconds - 1);
+      }, 1000);
+    } else if (seconds <= 0 && isRunning) {
+      console.log("Time is already done!");
+      setIsRunning(false);
+
+      submitAnswer(); 
+    }
+  
+    return () => clearInterval(interval);
+  }, [isRunning, seconds]);
+  
+
+
+
+
+
+
+
+
+
+  
+
+  const stopTimer = () => {
+    setIsRunning(false);
+  };
+
+  const saveTime = () => {
+    let timeString = '';
+    if (hours > 0) {
+      timeString += `${hours} ${hours > 1 ? "hours" : "hour"} `;
+    }
+    if (minutes > 0) {
+      timeString += `${minutes} ${minutes > 1 ? "minutes" : "minute"} `;
+    }
+    if (remainingSeconds > 0 || (hours === 0 && minutes === 0)) {
+      timeString += `${remainingSeconds} ${remainingSeconds > 1 ? "seconds" : "second"}`;
+    }
+    console.log(timeString);
+  };
+  
+  
+
+  const hours = Math.floor(seconds / 3600);
+  const minutes = Math.floor((seconds % 3600) / 60);
+  const remainingSeconds = seconds % 60;
+
+
+
+
+
   return (
     <div className='py-8 poppins mbg-200'>
 
@@ -429,6 +514,29 @@ export const PersonalAssessment = () => {
           <p className='text-center text-3xl font-medium mcolor-700 pt-5'>Assessment for {materialTitle} of {materialCategory}</p>
 
           <br /><br />
+        
+          {isRunning === true && (
+            <div className='timer-container px-10 py-3'>
+              <div className='rounded-[5px]' style={{ height: "15px", backgroundColor: "#B3C5D4" }}>
+                <div
+                  className='rounded-[5px]'
+                  style={{
+                    width: `${(seconds / (13 * 60)) * 100}%`,
+                    height: "100%",
+                    backgroundColor: seconds <= 10 ? "#af4242" : "#667F93", 
+                  }}
+                  />
+              </div>
+
+
+              <h1 className='mcolor-900 text-lg pt-3'>
+                Remaining time:{' '}
+                {hours > 0 && String(hours).padStart(2, "0") + " hours and "}
+                {(hours > 0 || minutes > 0) && String(minutes).padStart(2, "0") + " minutes and "}{String(remainingSeconds).padStart(2, "0") + " seconds"}
+              </h1>
+            </div>
+          )}
+
           <br /><br />
 
           {Array.isArray(extractedQA) && shuffledChoices.length > 0 && extractedQA.map((item, index) => (
@@ -528,26 +636,32 @@ export const PersonalAssessment = () => {
               {(item.quizType === 'Identification' || item.quizType === 'FITB') && (
                 <div>
                   <input
-                    className={`mb-5 w-full px-5 py-5 text-lg text-center choice rounded-[5px] ${
+                    className={`mb-5 w-full px-5 py-5 text-lg text-center choice rounded-[5px] box-shadoww ${
                       isSubmitted && selectedChoice[index] && extractedQA[index] &&
                       selectedChoice[index].toLowerCase() === extractedQA[index].answer.toLowerCase()
                         ? 'border-thin-800-correct'
                         : isSubmitted && selectedChoice[index] && extractedQA[index] &&
                         selectedChoice[index].toLowerCase() !== extractedQA[index].answer.toLowerCase()
                         ? 'border-thin-800-wrong'
-                        : 'border-thin-800'
-                      }`}
-                      type="text"
-                      placeholder='Answer here...'
-                      onChange={(event) => handleRadioChange(event.target.value, index)}
-                      disabled={isSubmitted} 
-                      />
+                        : selectedChoice[index] && extractedQA[index] && !isSubmitted
+                        ? 'border-thin-800'
+                        : ''
+                    }`}
+                    type="text"
+                    placeholder='Answer here...'
+                    onChange={(event) => handleRadioChange(event.target.value, index)}
+                    disabled={isSubmitted} 
+                  />
 
                   <p className='correct-color text-center text-xl'>
-                    {(isSubmitted === true && selectedChoice[index] &&
-                      extractedQA[index] &&
-                      selectedChoice[index].toLowerCase() !== extractedQA[index].answer.toLowerCase()) && extractedQA[index].answer}
+                    {isSubmitted === true &&
+                    selectedChoice[index] &&
+                    extractedQA[index] &&
+                    selectedChoice[index].toLowerCase() !== extractedQA[index].answer.toLowerCase() 
+                    ? extractedQA[index].answer 
+                    : null}
                   </p>
+
                 </div>
 
 
@@ -576,6 +690,7 @@ export const PersonalAssessment = () => {
                       onClick={() => {
                         console.log('button clicked');
                         setShowSubmittedAnswerModal(true);
+                        setIsRunning(false)
                       }}
                     >
                       Analyze the Data
@@ -587,6 +702,7 @@ export const PersonalAssessment = () => {
                         setShowAnalysis(true)
                         setShowAssessment(false);
                         setShowSubmittedAnswerModal(false);
+                        setIsRunning(false)
                       }}
                     >
                       View Analysis
@@ -617,6 +733,7 @@ export const PersonalAssessment = () => {
 
                           <button className='mbg-200 border-thin-800 px-5 py-2 rounded-[5px]' onClick={() => {
                             setShowSubmittedAnswerModal(false);
+                            setIsRunning(false)
                           }} >No</button>
 
 
@@ -678,19 +795,22 @@ export const PersonalAssessment = () => {
                 <p className='text-center text-xl mb-10'>{generatedAnalysis}</p>
               </div>
 
-              {(completionTime < 100 || assessmentImp < studyProfeciencyTarget || assessmentScorePerf < studyProfeciencyTarget) && (
+
+              {(completionTime >= Math.floor(extractedQA.length/2) || assessmentImp < studyProfeciencyTarget || assessmentScorePerf < studyProfeciencyTarget) && (
                 <div className='mt-20'>
                   <p className='mb-5 font-bold text-2xl text-center'>Recommendations</p>
 
-                  <p className='text-center text-xl mb-4'>
-                    <CheckIcon className='mr-2' />
-                    Challenge yourself to finish the assessment under{' '}
-                    <span className='font-bold'>
-                      {`${Math.floor(overAllItems / 120) > 0 ? (Math.floor(overAllItems / 120) === 1 ? '1 hour' : Math.floor(overAllItems / 120) + ' hours') + ' ' : ''}${Math.floor((overAllItems % 120) / 2) > 0 ? (Math.floor((overAllItems % 120) / 2) === 1 ? '1 min' : Math.floor((overAllItems % 120) / 2) + ' mins') + ' ' : ''}${((overAllItems % 2) * 30) > 0 ? ((overAllItems % 2) * 30) + ' second' + (((overAllItems % 2) * 30) !== 1 ? 's' : '') : ''}`}
-                    </span> 
-                    {' '}
-                    to increase the confidence level until it gets to 100%.
-                  </p>
+                  {completionTime >= Math.floor(extractedQA.length/2) && (
+                    <p className='text-center text-xl mb-4'>
+                      <CheckIcon className='mr-2' />
+                      Challenge yourself to finish the assessment under{' '}
+                      <span className='font-bold'>
+                        {`${Math.floor(overAllItems / 120) > 0 ? (Math.floor(overAllItems / 120) === 1 ? '1 hour' : Math.floor(overAllItems / 120) + ' hours') + ' ' : ''}${Math.floor((overAllItems % 120) / 2) > 0 ? (Math.floor((overAllItems % 120) / 2) === 1 ? '1 min' : Math.floor((overAllItems % 120) / 2) + ' mins') + ' ' : ''}${((overAllItems % 2) * 30) > 0 ? ((overAllItems % 2) * 30) + ' second' + (((overAllItems % 2) * 30) !== 1 ? 's' : '') : ''}`}
+                      </span> 
+                      {' '}
+                      to increase the confidence level until it gets to 100%.
+                    </p>
+                  )}
 
 
                   {assessmentImp < studyProfeciencyTarget && (
@@ -723,6 +843,7 @@ export const PersonalAssessment = () => {
             <button className='border-thin-800 px-5 py-3 rounded-[5px] w-1/4' onClick={() => {
               setShowAssessment(true)
               setShowAnalysis(false)
+              setIsRunning(false)
             }}>Review Answers</button>
 
             <Link to={`/main/personal/study-area/personal-review/${materialId}`} className='border-thin-800 px-5 py-3 rounded-[5px] w-1/4 text-center'>
@@ -737,7 +858,12 @@ export const PersonalAssessment = () => {
 
 
 
-
+    <br />
+    <br />
+    <br />
+    <br />
+    <br />
+    <br />
     </div>
   )
 }

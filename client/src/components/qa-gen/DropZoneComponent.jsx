@@ -19,7 +19,7 @@ export const DropZoneComponent = (props) => {
   const [loading, setLoading] = useState(false);
   const [progress, setProgress] = useState(0);
 
-  const url = 'http://127.0.0.1:8000/qa-generation';
+  const url = 'https://6d3a-34-141-209-219.ngrok.io/qa-generation';
 
   const [data, setData] = useState({
     text: PDFDetails,
