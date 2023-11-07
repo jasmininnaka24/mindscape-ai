@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { Navbar } from '../../../../components/navbar/logged_navbar/navbar'
-import { useParams } from 'react-router-dom';
+import { Navigate, useNavigate, useParams } from 'react-router-dom';
 import axios from 'axios';
 import { Link } from 'react-router-dom';
 
@@ -9,6 +9,8 @@ export const PersonalReviewerPage = () => {
 
   const { materialId } = useParams();
   const UserId = 1;
+
+  const navigate = useNavigate()
 
   const [showNotesReviewer, SetShowNotesReviewer] = useState(true);
   const [showLessonContext, SetShowLessonContext] = useState(false);
@@ -46,6 +48,23 @@ export const PersonalReviewerPage = () => {
 
   },[materialId])
 
+
+
+
+
+  const startStudySession = async () => {
+
+    await axios.put(`http://localhost:3001/studyMaterial/update-data/${materialId}`, {isStarted: 'true'});
+
+    navigate(`/main/personal/study-area/personal-review-start/${materialId}`);
+
+  }
+
+
+
+
+
+
   return (
     <div className='container py-8 poppins'>
       <Navbar linkBack={`/main/personal/study-area`} linkBackName={`Study Area`} currentPageName={'Reviewer Page Preview'} username={'Jennie Kim'}/>
@@ -55,9 +74,7 @@ export const PersonalReviewerPage = () => {
             <button className='px-6 py-2 rounded-[5px] text-lg mbg-200 mcolor-800 border-thin-800 font-normal'>Delete Material</button>
             <div className='flex justify-between items-center gap-4'>
               <div className='flex items-center gap-2'>
-                <Link to={`/main/personal/study-area/personal-review-start/${materialId}`}>
-                  <button className='px-6 py-2 rounded-[5px] text-lg mbg-200 mcolor-800 border-thin-800 font-normal'>Start Study Session</button>
-                </Link>
+                <button className='px-6 py-2 rounded-[5px] text-lg mbg-200 mcolor-800 border-thin-800 font-normal' onClick={startStudySession}>Start Study Session</button>
               </div>
               <Link to={`/main/personal/study-area/personal-assessment/${materialId}`}>
                 <button className='px-6 py-2 rounded-[5px] text-lg mbg-800 mcolor-100 font-normal'>Take {takeAssessment === true ? 'Assessment' : 'Pre-Assessment'}</button>

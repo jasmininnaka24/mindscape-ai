@@ -20,6 +20,16 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.TEXT,
       allowNull: false,
     },
+    isStarted: {
+      type: DataTypes.TEXT,
+      allowNull: false,
+      defaultValue: 'false',
+    },
+    studyPerformance: {
+      type: DataTypes.FLOAT,
+      allowNull: false,
+      defaultValue: 0.00,
+    },
   });
 
   StudyMaterials.associate = (models) => {

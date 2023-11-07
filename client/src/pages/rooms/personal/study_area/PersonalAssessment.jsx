@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Link, useNavigate, useParams } from 'react-router-dom';
+import { Link, useParams } from 'react-router-dom';
 import axios from 'axios';
 import CheckIcon from '@mui/icons-material/Check';
 import { BarChart } from '../../../../components/charts/BarChart';
@@ -9,8 +9,6 @@ export const PersonalAssessment = () => {
   const { materialId } = useParams();
 
   let studyProfeciencyTarget = 90;
-
-  const navigate = useNavigate();
 
   // hooks
   const [materialTitle, setMaterialTitle] = useState('')
@@ -36,6 +34,7 @@ export const PersonalAssessment = () => {
   const [showSubmittedAnswerModal, setShowSubmittedAnswerModal] = useState(false);
   const [generatedAnalysis, setGeneratedAnalysis] = useState('');
   const [showTexts, setShowTexts] = useState(true);
+  const [showScoreForPreAssessment, setShowScoreForPreAssessment] = useState(false);
 
   const [analysisId, setAnalysisId] = useState(0);
 
@@ -140,7 +139,7 @@ export const PersonalAssessment = () => {
     }
 
 
-  }, [extractedQA.length, isAssessmentDone, materialId, showSubmittedAnswerModal])
+  }, [extractedQA.length, isAssessmentDone, materialId])
 
 
 
@@ -162,12 +161,28 @@ export const PersonalAssessment = () => {
   };
 
 
+  const updateStudyPerformance = async (overallperf) => {
+    const updatedStudyPerformance = await axios.put(`http://localhost:3001/studyMaterial/update-study-performance/${materialId}`, {studyPerformance: (overallperf).toFixed(2)});
 
-  const submitAnswer = async () => {
 
-    stopTimer();
+    const categoryId = updatedStudyPerformance.data.StudyMaterialsCategoryId;
     
+    const extractedStudyMaterials = await axios.get(`http://localhost:3001/studyMaterial/all-study-material/${categoryId}`);
+    
+    const extractedStudyMaterialsResponse = extractedStudyMaterials.data;
+    const materialsLength = extractedStudyMaterialsResponse.length;
+    
+    let calcStudyPerfVal = extractedStudyMaterialsResponse.reduce((sum, item) => sum + item.studyPerformance, 0);
+    let overAllCalcVal = (calcStudyPerfVal / materialsLength).toFixed(2);
+    
+    await axios.put(`http://localhost:3001/studyMaterialCategory/update-study-performance/${categoryId}`, {studyPerformance: overAllCalcVal});
+  }
 
+
+
+
+  const dataForSubmittingAnswers = async () => {
+    
     const score = selectedChoice.reduce((totalScore, item, index) => {
       const qaItem = extractedQA[index];
       if (qaItem && qaItem.answer !== undefined && qaItem.answer !== null && item) {
@@ -190,6 +205,9 @@ export const PersonalAssessment = () => {
     let timeDuration = (extractedQA.length - completionTimeInMinutes);
   
     let completionTimeCalc = seconds === 0 ? extractedQA.length : timeDuration;
+
+  
+
 
 
 
@@ -215,10 +233,10 @@ export const PersonalAssessment = () => {
       const newlyFetchedDashboardDataValues = newlyFetchedDashboardData.data;
 
       setAnalysisId(newlyFetchedDashboardDataValues.id);
-      setAssessmentCountMoreThanOne(false)
+      setAssessmentCountMoreThanOne(false);
 
-
-      navigate(`/main/personal/study-area/personal-review/${materialId}`);
+      setShowScoreForPreAssessment(true)
+      // navigate(`/main/personal/study-area/personal-review/${materialId}`);
     } 
     
     
@@ -257,6 +275,11 @@ export const PersonalAssessment = () => {
         setOverAllPerformance((parseFloat(newlyFetchedDashboardDataValues.assessmentImp) + parseFloat(newlyFetchedDashboardDataValues.assessmentScorePerf) + parseFloat(newlyFetchedDashboardDataValues.confidenceLevel)) / 3);
         
         setAssessmentCountMoreThanOne(false)
+
+
+        let overallperf = ((parseFloat(newlyFetchedDashboardDataValues.assessmentImp) + parseFloat(newlyFetchedDashboardDataValues.assessmentScorePerf) + parseFloat(newlyFetchedDashboardDataValues.confidenceLevel)) / 3);
+
+        updateStudyPerformance(overallperf)
       } 
       
       
@@ -311,17 +334,51 @@ export const PersonalAssessment = () => {
             setAssessmentCountMoreThanOne(true); 
           }
         }
+
+        let overallperf = ((parseFloat(newlyFetchedDashboardDataValues.assessmentImp) + parseFloat(newlyFetchedDashboardDataValues.assessmentScorePerf) + parseFloat(newlyFetchedDashboardDataValues.confidenceLevel)) / 3);
+
+        updateStudyPerformance(overallperf)
+
+
+
       }
 
-      setScore(score);
-      setIsSubmitted(true);
-      setIsAssessmentDone(true);
 
-      const targetElement = document.getElementById("currSec");
-      targetElement.scrollIntoView({ behavior: 'smooth' })
 
+      setShowScoreForPreAssessment(false)
+      
     }
+    
+    setScore(score);
+    setIsSubmitted(true);
+    setIsAssessmentDone(true);
 
+    
+
+
+    const targetElement = document.getElementById("currSec");
+    targetElement.scrollIntoView({ behavior: 'smooth' });
+  
+  }
+
+  const submitAnswer = async () => {
+
+    if (seconds <= 0 && isRunning) {
+      stopTimer();
+      dataForSubmittingAnswers();
+    } else {
+      
+      if ((selectedChoice.length !== extractedQA.length) || selectedChoice.some(answer => answer === '' || answer === undefined)) {
+        alert('There are some empty fields');
+      } else {
+        stopTimer();
+        dataForSubmittingAnswers();
+      }
+    }
+    
+    
+    console.log(selectedChoice.length);
+    console.log(extractedQA.length);
 
   };
 
@@ -330,7 +387,7 @@ export const PersonalAssessment = () => {
 
     setShowTexts(false)
 
-    const generateAnalysisUrl = 'https://5166-35-188-72-92.ngrok.io/generate_analysis';
+    const generateAnalysisUrl = 'https://44ca-35-247-34-64.ngrok.io/generate_analysis';
 
     
     let predictionText = overAllPerformance.toFixed(2) >= 90 ? 'ready' : 'not yet ready';
@@ -447,10 +504,10 @@ export const PersonalAssessment = () => {
     setShowAnalysis(true)
     setShowAssessment(false);
     setShowSubmittedAnswerModal(false);
-    window.scrollTo(0, 0);
+    const targetElement = document.getElementById("currSec");
+    targetElement.scrollIntoView({ behavior: 'smooth' })
   }
   
-
 
 
 
@@ -486,19 +543,7 @@ export const PersonalAssessment = () => {
     setIsRunning(false);
   };
 
-  const saveTime = () => {
-    let timeString = '';
-    if (hours > 0) {
-      timeString += `${hours} ${hours > 1 ? "hours" : "hour"} `;
-    }
-    if (minutes > 0) {
-      timeString += `${minutes} ${minutes > 1 ? "minutes" : "minute"} `;
-    }
-    if (remainingSeconds > 0 || (hours === 0 && minutes === 0)) {
-      timeString += `${remainingSeconds} ${remainingSeconds > 1 ? "seconds" : "second"}`;
-    }
-    console.log(timeString);
-  };
+
   
   
 
@@ -528,7 +573,7 @@ export const PersonalAssessment = () => {
 
                 <div className=' flex items-center justify-center gap-5'>
 
-                  {generatedAnalysis === '' ? (
+                  {(generatedAnalysis === '' && !showScoreForPreAssessment) ? (
                     <button
                       className='border-thin-800 px-5 py-3 rounded-[5px] w-1/4'
                       onClick={() => {
@@ -606,7 +651,7 @@ export const PersonalAssessment = () => {
                 <div
                   className='rounded-[5px]'
                   style={{
-                    width: `${(seconds / (13 * 60)) * 100}%`,
+                    width: `${(seconds / (extractedQA.length * 60)) * 100}%`,
                     height: "100%",
                     backgroundColor: seconds <= 10 ? "#af4242" : "#667F93", 
                   }}

@@ -84,6 +84,88 @@ router.get('/study-material-category/:materialFor/:UserId', async(req, res) => {
 
 
 
+router.put('/update-data/:id', async (req, res) => {
+  const materialId = req.params.id;
+  const { isStarted } = req.body;
+
+  try {
+    const StudyMaterialsData = await StudyMaterials.findByPk(materialId);
+
+    if (!StudyMaterialsData) {
+      return res.status(404).json({ error: 'Dashboard data not found' });
+    }
+
+    StudyMaterialsData.isStarted = isStarted;
+
+    await StudyMaterialsData.save();
+
+    console.log('Dashboard data updated successfully:', StudyMaterialsData);
+    res.json(StudyMaterialsData);
+  } catch (error) {
+    console.error('Error updating dashboard data:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
+
+router.put('/update-study-performance/:id', async (req, res) => {
+  const materialId = req.params.id;
+  const { studyPerformance } = req.body;
+
+  try {
+    const StudyMaterialsData = await StudyMaterials.findByPk(materialId);
+
+    if (!StudyMaterialsData) {
+      return res.status(404).json({ error: 'Dashboard data not found' });
+    }
+
+    StudyMaterialsData.studyPerformance = studyPerformance;
+
+    const updatedStudyPerformance = await StudyMaterialsData.save();
+
+    console.log('Dashboard data updated successfully:', updatedStudyPerformance);
+    res.json(updatedStudyPerformance);
+  } catch (error) {
+    console.error('Error updating dashboard data:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
+
+
+
+router.get('/latestMaterialStudied/:UserId', async (req, res) => {
+  const { UserId } = req.params;
+
+  try {
+    const latestMaterial = await StudyMaterials.findAll({
+      where: {
+        UserId: UserId,
+        materialFor: 'Personal',
+        isStarted: 'true'
+      },
+      order: [['updatedAt', 'DESC']]
+    });
+
+    res.json(latestMaterial);
+  } catch (error) {
+    console.error('Error fetching latest material studied:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
+
+router.get('/all-study-material/:StudyMaterialsCategoryId', async(req, res) => {
+  const { StudyMaterialsCategoryId} = req.params;
+  const studyMaterials = await StudyMaterials.findAll({
+    where: { 
+      StudyMaterialsCategoryId: StudyMaterialsCategoryId,
+    },
+  });
+
+  res.json(studyMaterials);
+});
+
 
 
 module.exports = router;

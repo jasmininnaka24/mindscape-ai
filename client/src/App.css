@@ -190,6 +190,10 @@ body {
   border-bottom: #4D5F6E solid 2px;
 }
 
+.border-bottom-thin-gray{
+  border-bottom: #D9E1E7 solid 2px;
+}
+
 .border-bold-100{
   border: #FFFFFF 4px solid;
   box-shadow: 0 0 15px #999;

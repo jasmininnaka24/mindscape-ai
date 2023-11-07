@@ -56,6 +56,28 @@ router.get('/get-lastmaterial/:id/:StudyGroupId/:categoryFor/:UserId', async (re
   res.json(extractedCategory);
 })
 
+router.put('/update-study-performance/:id', async (req, res) => {
+  const categoryID = req.params.id;
+  const { studyPerformance } = req.body;
+
+  try {
+    const StudyMaterialsCategoriesData = await StudyMaterialsCategories.findByPk(categoryID);
+
+    if (!StudyMaterialsCategoriesData) {
+      return res.status(404).json({ error: 'Dashboard data not found' });
+    }
+
+    StudyMaterialsCategoriesData.studyPerformance = studyPerformance;
+
+    const updatedStudyPerformance = await StudyMaterialsCategoriesData.save();
+
+    console.log('Dashboard data updated successfully:', updatedStudyPerformance);
+    res.json(updatedStudyPerformance);
+  } catch (error) {
+    console.error('Error updating dashboard data:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
 
 
 module.exports = router;

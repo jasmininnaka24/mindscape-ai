@@ -8,6 +8,11 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.STRING,
       allowNull: false,
     },
+    studyPerformance: {
+      type: DataTypes.FLOAT,
+      allowNull: false,
+      defaultValue: 0.00,
+    },
   });
 
   StudyMaterialsCategories.associate = (models) => {

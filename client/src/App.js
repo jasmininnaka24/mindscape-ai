@@ -29,6 +29,9 @@ import { PersonalQAGenerator } from './pages/rooms/personal/study_area/PersonalQ
 import { PersonalReviewerPage } from './pages/rooms/personal/study_area/PersonalReviewerPage';
 import { PersonalReviewerStart } from './pages/rooms/personal/study_area/PersonalReviewerStart';
 import { PersonalAssessment } from './pages/rooms/personal/study_area/PersonalAssessment';
+import { PersonalDashboard } from './pages/rooms/personal/dashboard/PersonalDashboard';
+import { PersonalCategoryList } from './pages/rooms/personal/dashboard/PersonalCategoryList';
+import { PersonalTopicList } from './pages/rooms/personal/dashboard/PersonalTopicList';
 
 // dependecies
 import AOS from 'aos';
@@ -75,6 +78,11 @@ function App() {
             <Route path='/main/personal/study-area/personal-review/:materialId' element={<PersonalReviewerPage />} />
             <Route path='/main/personal/study-area/personal-review-start/:materialId' element={<PersonalReviewerStart />} />
             <Route path='/main/personal/study-area/personal-assessment/:materialId' element={<PersonalAssessment />} />
+
+            {/* Personal Dashboard */}
+            <Route path='/main/personal/dashboard' element={<PersonalDashboard />} />
+            <Route path='/main/personal/dashboard/category-list' element={<PersonalCategoryList />} />
+            <Route path='/main/personal/dashboard/category-list/topic-list/:categoryID' element={<PersonalTopicList />} />
               
             {/* If page does not exist */}
             <Route path='*' element={<h1 className='text-center text-4xl font-bold primary-text-color pt-40'>404: Page Not Found</h1>} /> 

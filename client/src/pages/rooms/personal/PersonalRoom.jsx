@@ -14,6 +14,12 @@ export const PersonalRoom = () => {
         <Link to={'/main/personal/study-area'}>
           Study Area
         </Link>
+
+        <br />
+
+        <Link to={'/main/personal/dashboard'}>
+          Dashboard
+        </Link>
       </div>
     </div>
   )
