@@ -1,44 +1,86 @@
-import React from 'react'
-import { Bar } from 'react-chartjs-2'
-import Chart from "chart.js/auto";
-
+import React, { useState } from 'react';
+import { Bar } from 'react-chartjs-2';
 
 export const BarChart = (props) => {
+  const { labelSet, dataGathered, maxBarValue, labelTop } = props;
+  const itemsPerPage = 5;
 
-  const {labelSet, dataGathered, maxBarValue} = props;
+  const totalPages = Math.ceil(dataGathered.length / itemsPerPage);
+  const [currentPage, setCurrentPage] = useState(1);
 
-  const labels = labelSet;
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const slicedData = dataGathered.slice(startIndex, endIndex);
+  const labels = labelSet.slice(startIndex, endIndex);
+  const backgroundColors = [];
+  const borderColors = [];
 
-  const backgroundColors = ["#D9E1E7", "#4D5F6E"];
-  const borderColors = ["#4D5F6E", "#4D5F6E"];
+  slicedData.forEach((value) => {
+    if (value >= 90) {
+      backgroundColors.push("#4D5F6E"); // Dark blue color
+      borderColors.push("#4D5F6E"); // Dark blue color
+    } else {
+      backgroundColors.push("#D9E1E7"); // Gray color
+      borderColors.push("#4D5F6E"); // Gray color
+    }
+  });
+
+  const handlePageChange = (page) => {
+    setCurrentPage(page);
+  };
+
+  const paginationButtons = totalPages > 1 ? (
+    <div className='flex items-center justify-center gap-4'>
+      <button className='px-5 py-2 mbg-200 mcolor-800 border-medium-800 rounded-[5px] font-medium' onClick={() => handlePageChange(currentPage - 1)} disabled={currentPage === 1}>Back</button>
+      <button className='px-5 py-2 mbg-200 mcolor-800 border-medium-800 rounded-[5px] font-medium' onClick={() => handlePageChange(currentPage + 1)} disabled={currentPage === totalPages}>Next</button>
+    </div>
+  ) : null;
   
-  if (labels.length === 3) {
-    backgroundColors.splice(1, 0, "#D9E1E7");
-    borderColors.splice(1, 0, "#4D5F6E");
-  }
   
+
   const data = {
     labels: labels,
     datasets: [
       {
-        label: "Assessment Score Records",
-        backgroundColor: [...backgroundColors],
-        borderColor: [...borderColors],
-        borderWidth: 1.5,
-        data: dataGathered,
+        label: 'Overall Score Performance',
+        backgroundColor: backgroundColors,
+        borderColor: borderColors,
+        borderWidth: 2,
+        data: slicedData,
       },
     ],
   };
-  
-  
+
   const legendOptions = {
     display: true,
+    position: 'top',
     labels: {
-      boxWidth: 0, 
+      usePointStyle: true,
+      generateLabels: function (chart) {
+        const legendItems = [];
+        if (dataGathered.some(value => value >= 90)) {
+          legendItems.push({
+            text: `Greater than ${90}`,
+            fillStyle: '#4D5F6E', // Dark blue color
+            hidden: false,
+          });
+        }
+        if (dataGathered.some(value => value < 90)) {
+          legendItems.push({
+            text: `Less than ${90}`,
+            fillStyle: '#D9E1E7', // Light blue color
+            hidden: false,
+          });
+        }
+        return legendItems;
+      },
     },
   };
   
+  
+
   const options = {
+    maintainAspectRatio: false,
     scales: {
       y: {
         beginAtZero: true,
@@ -47,23 +89,33 @@ export const BarChart = (props) => {
     },
     plugins: {
       legend: {
+        display: false, 
+      },
+      title: {
         display: true,
-        labels: {
-          boxWidth: 0,
+        text: 'Overall Score Performance', 
+        padding: {
+          top: 10,
+          bottom: 20,
+        },
+        font: {
+          size: 16,
+          weight: 'bold',
         },
       },
-      tooltip: {
-        enabled: false, 
-      },
-      hover: {
-        mode: null, 
-      },
+    },
+    tooltips: {
+      enabled: false,
+    },
+    hover: {
+      mode: null,
     },
   };
-  
+
   return (
-    <div>
-      <Bar data={data} options={{ ...options, plugins: { legend: legendOptions } }} />
-    </div>  
-  )
-}
+    <div className='max-h-[45vh]' >
+      <Bar className='h-[45vh]' data={data} options={{ ...options, plugins: { legend: legendOptions } }} />
+      {paginationButtons}
+    </div>
+  );
+};

@@ -353,6 +353,18 @@ input:focus{
 }
 
 
+
+.overflow-container::-webkit-scrollbar {
+  width: 8px; /* Set the width of the scrollbar */
+  height: 10px;
+}
+
+.overflow-container::-webkit-scrollbar-thumb {
+  background-color: #4D5F6E; /* Color of the scrollbar thumb */
+  border-radius: 4px; /* Round the corners of the thumb */
+}
+
+
 .loading-container {
   display: flex;
   align-items: center;

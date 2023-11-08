@@ -31,6 +31,8 @@ router.get('/:categoryFor/:UserId', async (req, res) => {
   res.json(extractedCategories);
 })
 
+
+
 router.get('/get-lastmaterial/:id/:categoryFor/:UserId', async (req, res) => {
   const { id, categoryFor, UserId } = req.params;
   const extractedCategory = await StudyMaterialsCategories.findOne({

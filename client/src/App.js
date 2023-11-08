@@ -32,6 +32,7 @@ import { PersonalAssessment } from './pages/rooms/personal/study_area/PersonalAs
 import { PersonalDashboard } from './pages/rooms/personal/dashboard/PersonalDashboard';
 import { PersonalCategoryList } from './pages/rooms/personal/dashboard/PersonalCategoryList';
 import { PersonalTopicList } from './pages/rooms/personal/dashboard/PersonalTopicList';
+import { PersonalTopicPage } from './pages/rooms/personal/dashboard/PersonalTopicPage';
 
 // dependecies
 import AOS from 'aos';
@@ -83,6 +84,7 @@ function App() {
             <Route path='/main/personal/dashboard' element={<PersonalDashboard />} />
             <Route path='/main/personal/dashboard/category-list' element={<PersonalCategoryList />} />
             <Route path='/main/personal/dashboard/category-list/topic-list/:categoryID' element={<PersonalTopicList />} />
+            <Route path='/main/personal/dashboard/category-list/topic-list/topic-page/:categoryID/:materialID' element={<PersonalTopicPage />} />
               
             {/* If page does not exist */}
             <Route path='*' element={<h1 className='text-center text-4xl font-bold primary-text-color pt-40'>404: Page Not Found</h1>} /> 
