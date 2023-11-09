@@ -1,6 +1,6 @@
 import axios from 'axios';
 import React, { useEffect, useState } from 'react'
-import { useParams } from 'react-router-dom'
+import { useNavigate, useParams } from 'react-router-dom'
 import RemoveRedEyeIcon from '@mui/icons-material/RemoveRedEye';
 import { Link } from 'react-router-dom';
 import { BarChart } from '../charts/BarChart';
@@ -8,19 +8,32 @@ import { PieChart } from '../charts/PieChart';
 
 export const TopicPage = () => {
 
-  const { materialID } = useParams();
+  const { categoryID, materialID } = useParams();
+  const navigate = useNavigate();
 
   const [studyMaterials, setStudyMaterials] = useState([]);
-  const [preparedLength, setPreparedLength] = useState(0)
-  const [unpreparedLength, setUnpreparedLength] = useState(0)
+  const [preparedLength, setPreparedLength] = useState(0);
+  const [unpreparedLength, setUnpreparedLength] = useState(0);
+  const [showModal, setShowModal] = useState(false);
+  const [showFirstText, setShowFirstText] = useState(false);
+  const [showSecondText, setShowSecondText] = useState(false);
+  const [showLoader, setShowLoader] = useState(false);
+  const [currentAnalysisId, setCurrectAnalysisId] = useState(0);
+  const [currentIndex, setCurrectIndex] = useState(0);
+  const [fetchedID, setFetchedID] = useState(0)
 
   useEffect(() => {
     const fetchData = async () => {
-      const extractedData = await axios.get(`http://localhost:3001/DashForPersonalAndGroup/get-latest-assessment/${materialID}`);
+      const extractedData = await axios.get(`http://localhost:3001/DashForPersonalAndGroup/get-assessments/${materialID}`);
 
       setStudyMaterials(extractedData.data)
-      let data = extractedData.data;
+      const fetchedData = extractedData.data;
+      const fetchedId = fetchedData.map((item) => item.id).pop();
 
+      setFetchedID(fetchedId);
+
+
+      let data = extractedData.data;
       
       let preparedLength = 0;
       let unpreparedLength = 0;
@@ -47,19 +60,84 @@ export const TopicPage = () => {
     }
 
     fetchData();
+    
   }, [materialID])
+  console.log(studyMaterials[2-1]);
+
+  const generateAnalysis = async (id, index) => {
+
+    setShowLoader(true)
+    setShowFirstText(false)
+    setShowSecondText(false) 
+
+    let data = {
+      last_exam: 'Pre-Assessment',
+      last_assessment_score: studyMaterials[index].preAssessmentScore,
+      assessment_score: studyMaterials[index].assessmentScore,
+      exam_num_of_items: studyMaterials[index].overAllItems,
+      assessment_imp: studyMaterials[index].assessmentImp,
+      confidence_level: studyMaterials[index].confidenceLevel,
+      prediction_val: ((parseFloat(studyMaterials[index].assessmentImp) + parseFloat(studyMaterials[index].assessmentScorePerf) + parseFloat(studyMaterials[index].confidenceLevel)) / 3).toFixed(2),
+      prediction_text: ((parseFloat(studyMaterials[index].assessmentImp) + parseFloat(studyMaterials[index].assessmentScorePerf) + parseFloat(studyMaterials[index].confidenceLevel)) / 3).toFixed(2) >= 90 ? 'ready' : 'not yet ready',
+      target: 90,
+    };
+    
+    if (studyMaterials.length > 1) {
+      if (id !== fetchedID) {
+        data.last_exam = 'Assessment';
+        data.last_assessment_score = studyMaterials[index + 1].assessmentScore;
+      }
+    }
+
+    console.log(fetchedID);
+    console.log(id);
+    console.log(data);
+    
+
+    const generateAnalysisUrl = 'https://f92b-34-124-241-52.ngrok.io/generate_analysis';
+
+    const response = await axios.post(generateAnalysisUrl, data);
+    console.log(response.data);
+    let generatedAnalysisResponse = (response.data.generated_analysis).replace('\n\n\n\n\n', '');
+
+    await axios.put(`http://localhost:3001/DashForPersonalAndGroup/set-update-analysis/${id}`, {analysis: generatedAnalysisResponse});
+
+    setShowModal(false)
+    setShowFirstText(false)
+    setShowSecondText(false)
+    setShowLoader(false)
+
+    navigate(`/main/personal/dashboard/category-list/topic-list/topic-page/analysis/${categoryID}/${materialID}/${id}`)
+
+  
+  }
+
+  const checkIFTheresRecordedAnalysis = (id, index) => {
+    
+    const analysis = studyMaterials[index].analysis;
+    if (analysis === 'No record of analysis yet.') {
+      setCurrectAnalysisId(id)
+      setCurrectIndex(index)
+      setShowModal(true)
+      setShowFirstText(true)
+    } else {
+      navigate(`/main/personal/dashboard/category-list/topic-list/topic-page/analysis/${categoryID}/${materialID}/${id}`)
+    }
+  }
 
   return (
     <div className='flex flex-col'>
       <div className='flex my-10'>
         <div className='w-full'>
-        <BarChart
-          labelSet={studyMaterials.map(material => new Date(material.updatedAt).toLocaleDateString('en-US', { month: '2-digit', day: '2-digit', year: 'numeric' }))}
-          dataGathered={studyMaterials.map(material => ((parseFloat(material.assessmentImp) + parseFloat(material.assessmentScorePerf) + parseFloat(material.confidenceLevel)) / 3).toFixed(2))}
-          maxBarValue={100} labelTop={'Assessment Score Performance'}
+          <p className='text-center mcolor-800 mb-2 font-bold'>Overall Performance</p>
+          <BarChart
+            labelSet={studyMaterials.map(material => new Date(material.updatedAt).toLocaleDateString('en-US', { month: '2-digit', day: '2-digit', year: 'numeric' }))}
+            dataGathered={studyMaterials.map(material => ((parseFloat(material.assessmentImp) + parseFloat(material.assessmentScorePerf) + parseFloat(material.confidenceLevel)) / 3).toFixed(2))}
+            maxBarValue={100} labelTop={'Assessment Score Performance'}
         />
         </div>
-        <div className='w-1/2 mb-8'>
+        <div className='w-1/2 mb-8 mt-2'>
+          <p className='text-center mcolor-800 mb-2 font-bold mb-2'>Preparation Counts</p>
           <div className='min-h-[40vh]'>
             <PieChart dataGathered={[unpreparedLength, preparedLength]} />
           </div>
@@ -101,15 +179,78 @@ export const TopicPage = () => {
 
                 <td className='text-center py-3 text-lg mcolor-800'>{item.assessmentScorePerf}%</td>
                 <td className='text-center py-3 text-lg mcolor-800'>{item.confidenceLevel}%</td>
-                <td className='text-center py-3 text-lg mcolor-800'>{((parseFloat(item.assessmentImp) + parseFloat(item.assessmentScorePerf) + parseFloat(item.confidenceLevel)) / 3).toFixed(2)}%</td>
-                <td className='text-center py-3 text-lg mcolor-800'>
-                  <Link to={`/main/personal/dashboard/category-list/topic-list/topic-page/${item.id}`}><RemoveRedEyeIcon /></Link>
+                <td className='text-center py-3 text-lg mcolor-800'>{((parseFloat(item.assessmentImp) + parseFloat(item.assessmentScorePerf) + parseFloat(item.confidenceLevel)) / 3).toFixed(2) >= 90 ? 'Prepared' : 'Unprepared'}</td>
+                <td className='text-center py-3 text-lg mcolor-800 cursor-pointer' onClick={() => {checkIFTheresRecordedAnalysis(item.id, index)}}>
+                  <RemoveRedEyeIcon />
                 </td>
               </tr>
             })}
           </tbody>
         </table>
       </div>  
+
+      {showModal === true && (
+        <div className={`absolute top-0 modal-bg left-0 w-full h-full`}>
+          <div className='flex items-center justify-center h-full'>
+            <div className='relative mbg-100 min-h-[40vh] w-1/2 z-10 relative p-10 rounded-[5px]'>
+              
+
+              {showFirstText === true && (
+                <div>
+                  <p className='text-center text-xl font-medium mcolor-800 pt-10'>No analysis has been recorded. Would you like to generate an analysis for the given data?</p>
+
+                  <div className='w-full absolute bottom-10 flex items-center justify-center left-0 gap-4'>
+                    <button className='mbg-200 border-thin-800 px-5 py-2 rounded-[5px]' onClick={() => {
+                      setShowModal(false)
+                      setShowFirstText(false)
+                      setShowSecondText(false) 
+                    }} >No</button>
+
+                    <button className='mbg-800 mcolor-100 border-thin-800 px-5 py-2 rounded-[5px]' onClick={() => {
+                      setShowFirstText(false)
+                      setShowSecondText(true) 
+                    }}>Yes</button>
+                  </div>
+                </div>
+              )}
+
+
+
+
+              {showSecondText === true && (
+                <div>
+
+                  <p className='text-center text-xl font-medium mcolor-800 mt-5'>Kindly be advised that the data analysis process by the system AI may require 2-3 minutes, depending on your internet speed. Would you be comfortable waiting for that duration?</p>
+                  
+                  <div className='w-full absolute bottom-10 flex items-center justify-center left-0 gap-4'>
+
+                    <button className='mbg-200 border-thin-800 px-5 py-2 rounded-[5px]' onClick={() => {
+                      setShowModal(false)
+                      setShowFirstText(false)
+                      setShowSecondText(false) 
+                    }} >No</button>
+
+                    <button className='mbg-800 mcolor-100 border-thin-800 px-5 py-2 rounded-[5px]' onClick={() => generateAnalysis(currentAnalysisId, currentIndex)}>Yes</button>
+                  </div>
+
+                </div>
+              )}
+
+
+              {showLoader === true && (
+                <div class="loading-container">
+                  <p class="loading-text mcolor-900">Analyzing data...</p>
+                  <div class="loading-spinner"></div>
+                </div> 
+              )}
+
+
+
+
+            </div>
+          </div>
+        </div>
+      )}
     </div>  
   )
 }

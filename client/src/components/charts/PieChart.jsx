@@ -4,7 +4,7 @@ import { Pie } from 'react-chartjs-2';
 
 export const PieChart = ({ dataGathered }) => {
   const backgroundColors = ['#D9E1E7', '#4D5F6E'];
-  const labels = ['Unprepared', 'Prepared'];
+  const labels = ['Unpreparedness', 'Preparedness'];
 
   const data = {
     datasets: [
@@ -44,7 +44,7 @@ export const PieChart = ({ dataGathered }) => {
           label: function (context) {
             const labelIndex = context.dataIndex;
             const dataValue = dataGathered[labelIndex];
-            return ` Length: ${dataValue}`;
+            return ` Count: ${dataValue}`;
           },
         },
       },

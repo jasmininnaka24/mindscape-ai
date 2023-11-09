@@ -51,11 +51,7 @@ module.exports = (sequelize, DataTypes) => {
     },    
   });
 
-  DashForPersonalAndGroup.associate = (models) => {
-    DashForPersonalAndGroup.hasMany(models.DashRecommendations, {
-      onDelete: 'cascade',
-    })
-  }
+
 
   return DashForPersonalAndGroup;
 }

@@ -25,6 +25,41 @@ router.get('/get-latest-assessment/:StudyMaterialId', async (req, res) => {
   }
 });
 
+router.get('/get-assessments/:StudyMaterialId', async (req, res) => {
+  const { StudyMaterialId } = req.params;
+  try {
+    const extractedStudyMaterial = await DashForPersonalAndGroup.findAll({
+      where: {
+        StudyMaterialId: StudyMaterialId,
+      },
+      order: [['createdAt', 'DESC']], 
+    });
+
+    res.json(extractedStudyMaterial);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
+
+
+router.get('/get-dash-data/:id', async (req, res) => {
+  const { id } = req.params; // Access the id parameter directly from req.params
+  try {
+    const extractedStudyMaterial = await DashForPersonalAndGroup.findByPk(id);
+
+    if (extractedStudyMaterial) {
+      res.json(extractedStudyMaterial);
+    } else {
+      res.status(404).json({ error: 'Study material not found' });
+    }
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
 
 
 router.put('/update-data/:id', async (req, res) => {

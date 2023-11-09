@@ -207,7 +207,6 @@ const studyGroupRouter = require('./routes/StudyGroup');
 const studyGroupMembersRouter = require('./routes/StudyGroupMembers');
 const FollowersRouter = require('./routes/Followers');
 const DashForPersonalAndGroup = require('./routes/DashForPersonalAndGroup');
-const DashRecommendations = require('./routes/DashRecommendations');
 const { fail } = require('assert');
 
 app.use('/tasks', tasksRouter);
@@ -221,7 +220,6 @@ app.use('/studyGroup', studyGroupRouter);
 app.use('/studyGroupMembers', studyGroupMembersRouter);
 app.use('/followers', FollowersRouter);
 app.use('/DashForPersonalAndGroup', DashForPersonalAndGroup);
-app.use('/DashRecommendations', DashRecommendations);
 
 // Serve the React app for all routes except the API routes
 app.get('*', (req, res) => {

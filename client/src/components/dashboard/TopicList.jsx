@@ -84,22 +84,22 @@ export const TopicList = ({categoryFor}) => {
 
   return (
     <div className='my-8'>
-        <div className='mb-12 w-full flex items-center justify-center'>
-          <div className='w-1/3 min-h-[40vh] mt-10'>
-            <PieChart dataGathered={[unpreparedLength, preparedLength]} />
-          </div>
-          <div className='w-1/2 mt-10'>
-            <p className='text-2xl mt-3'>Performance Status: <span className='font-bold'>{extractedCategory.studyPerformance >= 90 ? 'Passing' : 'Requires Improvement'}</span></p>
-            <p className='text-2xl mt-3'>Performance in percentile: <span className='font-bold'>{extractedCategory.studyPerformance}%</span></p>
-            <p className='text-2xl mt-3'>Target Performance: <span className='font-bold'>90%</span></p>
-          </div>
+      <div className='mb-12 w-full flex items-center justify-center'>
+        <div className='w-1/3 min-h-[40vh] mt-10'>
+          <PieChart dataGathered={[unpreparedLength, preparedLength]} />
         </div>
-      <div className='border-medium-800 min-h-[80vh] rounded-[5px] overflow-x-auto overflow-container'>
+        <div className='w-1/2 mt-10'>
+          <p className='text-2xl mt-3'>Performance Status: <span className='font-bold'>{extractedCategory.studyPerformance >= 90 ? 'Passing' : 'Requires Improvement'}</span></p>
+          <p className='text-2xl mt-3'>Performance in percentile: <span className='font-bold'>{extractedCategory.studyPerformance}%</span></p>
+          <p className='text-2xl mt-3'>Target Performance: <span className='font-bold'>90%</span></p>
+        </div>
+      </div>
+      <div className='border-medium-800 rounded-[5px] overflow-x-auto overflow-container'>
         <table className='p-5 w-full rounded-[5px] text-center'>
           <thead className='mbg-300'>
             <tr>
               <td className='text-center text-xl py-3 font-medium px-10'>Topic</td>
-              <td className='text-center text-xl py-3 font-medium px-10'>Study <br />Performance</td>
+              <td className='text-center text-xl py-3 font-medium px-10'>Overall <br />Performance</td>
               <td className='text-center text-xl py-3 font-medium px-10'>Latest Assessment <br />% Score</td>
               <td className='text-center text-xl py-3 font-medium px-10'>Confidence Level</td>
               <td className='text-center text-xl py-3 font-medium px-10'>Improvement</td>
