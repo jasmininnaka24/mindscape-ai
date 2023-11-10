@@ -187,17 +187,17 @@ export const StudyAreaGP = (props) => {
     }
 
     let studyMaterialCatPersonalLink = '';
-    let studyMaterialPersonalLink = '';
+    let studyMaterialGroupLink = '';
     let studyLastMaterialLink = '';
 
     if (categoryFor === 'Personal') {
       studyMaterialCatPersonalLink = `http://localhost:3001/studyMaterialCategory/${categoryFor}/${UserId}`;
 
-      studyMaterialPersonalLink = `http://localhost:3001/studyMaterial/study-material-category/${categoryFor}/${UserId}`;
+      studyMaterialGroupLink = `http://localhost:3001/studyMaterial/study-material-category/${categoryFor}/${UserId}`;
     } else {
       studyMaterialCatPersonalLink = `http://localhost:3001/studyMaterialCategory/${categoryFor}/${groupNameId}/${UserId}`;
 
-      studyMaterialPersonalLink = `http://localhost:3001/studyMaterial/study-material-category/${categoryFor}/${groupNameId}/${UserId}`;
+      studyMaterialGroupLink = `http://localhost:3001/studyMaterial/study-material-category/${categoryFor}/${groupNameId}/${UserId}`;
     }
 
     if(categoryFor === 'Group') {
@@ -245,7 +245,7 @@ export const StudyAreaGP = (props) => {
       setMaterialCategories(response.data);
     });
 
-    axios.get(studyMaterialPersonalLink).then((response) => {
+    axios.get(studyMaterialGroupLink).then((response) => {
       let sortedData = response.data.sort((a, b) => b.id - a.id);
       setSudyMaterialsCategory(sortedData);
 

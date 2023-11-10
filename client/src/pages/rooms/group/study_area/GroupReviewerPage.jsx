@@ -3,7 +3,8 @@ import io from 'socket.io-client';
 import { useParams } from 'react-router-dom';
 import VpnKeyIcon from '@mui/icons-material/VpnKey';
 import seedrandom from 'seedrandom';
-
+import { PreJoinPage } from '../../../../components/group/PreJoinPage';
+import { AssessmentPage } from '../../../../components/group/AssessmentPage';
 import axios from 'axios';
 
 const socket = io.connect("http://localhost:3001");
@@ -23,8 +24,11 @@ export const GroupReviewerPage = () => {
   const [userList, setUserList] = useState([]);
   const [userTurn, setUserTurn] = useState(0);
   const [isJoined, setIsJoined] = useState(false);
-  const [showInputs, setInputs] = useState(true);
+  const [showPreJoin, setShowPreJoin] = useState(true);
   const [sessionExpired, setSessionExpired] = useState(false);
+  
+  
+  
   
   // study material
   const [questionIndex, setQuestionIndex] = useState(0)
@@ -42,6 +46,29 @@ export const GroupReviewerPage = () => {
   const [borderMedium, setBorderMedium] = useState('border-medium-800');
   const [typeOfLearner, setTypeOfLearner] = useState('kinesthetic')
   const [enabledSubmitBtn, setEnabledSubmitBtn] = useState(true);
+  const [showAssessmentPage, setShowAssessmentPage] = useState(false);
+  const [assessementRoom, setAssessmentRoom] = useState('');
+  
+
+
+
+
+  // assessment socket userstates
+  const [userListAssessment, setUserListAssessment] = useState([]);
+
+  // assessment page states
+  const [selectedAssessmentAnswer, setSelectedAssessmentAnswer] = useState([]);
+
+
+
+
+
+
+
+
+
+
+  
 
   const seed = 'uniqueRandArr27';
   const rng = seedrandom(seed);
@@ -131,6 +158,7 @@ export const GroupReviewerPage = () => {
         const fetchedQA = materialResponse.data;
 
         setRoom(groupResponse.data.code);
+        setAssessmentRoom(`assessment-room-${groupResponse.data.code}`)
 
 
         const updatedData = await Promise.all(
@@ -251,37 +279,40 @@ export const GroupReviewerPage = () => {
 
   
 
-const joinRoom = () => {
-  let points = 0;
-  setFailCount(2)
-  socket.emit("join_room", { room, username, userId, points, questionIndex, shuffledChoices, userList, failCount });
-  setInputs(false);
-  setIsJoined(true);
+  const joinRoom = () => {
+    let points = 0;
+    setFailCount(2)
+    socket.emit("join_room", { room, username, userId, points, questionIndex, shuffledChoices, userList, failCount });
+    setShowPreJoin(false);
+    setIsJoined(true);
 
-  socket.on("received_next_user_join", (userTurnSer) => {
-    setUserTurn(userTurnSer)
-  });
-  
-  socket.on("userList", (userListValExt) => {
-    setUserList(userListValExt);
-  });
-  
-  socket.on("shuffled_join", (shuffledChoices) => {
-    setShuffledChoices(shuffledChoices);
-  });
+    socket.on("received_next_user_join", (userTurnSer) => {
+      setUserTurn(userTurnSer)
+    });
+    
+    socket.on("userList", (userListValExt) => {
+      setUserList(userListValExt);
+    });
+    
+    socket.on("shuffled_join", (shuffledChoices) => {
+      setShuffledChoices(shuffledChoices);
+    });
 
-  socket.on("received_selected_choice_join", (selectedChoiceValCurr) => {
-    setSelectedChoice(selectedChoiceValCurr);
-  });
+    socket.on("received_selected_choice_join", (selectedChoiceValCurr) => {
+      setSelectedChoice(selectedChoiceValCurr);
+    });
 
-  socket.on("received_current_fail_val", (currentFailCountVal) => {
-    setFailCount(currentFailCountVal);
-  });
+    socket.on("received_current_fail_val", (currentFailCountVal) => {
+      setFailCount(currentFailCountVal);
+    });
 
-  socket.on("received_updated_userlist", (userList) => {
-    setUserList(userList);
-  });
-};
+    socket.on("received_updated_userlist", (userList) => {
+      setUserList(userList);
+    });
+  };
+
+
+
 
 
   const nextUser = () => {
@@ -370,336 +401,341 @@ const joinRoom = () => {
 
 
   return (
-    <div className='poppins container w-full pt-5 flex flex-col items-center min-h-[100vh]'>
-      <div className='w-full'>
+    <div>
         {sessionExpired ? (
           <div>
             <p className='pt-5 text-xl text-center'>Your session has expired due to inactivity. Please refresh the page to start a new session.</p>
           </div>
         ) : (
           <div>
-            {showInputs && (
               <div>
-                <input type="text" placeholder='username' onChange={(event) => { setUsername(event.target.value) }} />
-                <input type="text" placeholder='user id' onChange={(event) => { setUserId(event.target.value) }} />
-                {/* Get user input for userId */}
-                <button onClick={joinRoom}>Join</button>
+
+                {showPreJoin && (
+                  <PreJoinPage setUsername={setUsername} setUserId={setUserId} joinRoom={joinRoom} materialId={materialId} groupId={groupId} setShowPreJoin={setShowPreJoin} setShowAssessmentPage={setShowAssessmentPage} room={room} assessementRoom={assessementRoom} username={username} userId={userId} userListAssessment={userListAssessment} setUserListAssessment={setUserListAssessment} selectedAssessmentAnswer={selectedAssessmentAnswer} setSelectedAssessmentAnswer={setSelectedAssessmentAnswer} />
+                )}
+ 
+                {showAssessmentPage && (
+                  <AssessmentPage groupId={groupId} materialId={materialId} setShowAssessmentPage={setShowAssessmentPage} userListAssessment={userListAssessment} setUserListAssessment={setUserListAssessment} room={room} assessementRoom={assessementRoom} username={username} userId={userId} selectedAssessmentAnswer={selectedAssessmentAnswer} setSelectedAssessmentAnswer={setSelectedAssessmentAnswer} />
+                )}
+                
               </div>
-            )}
 
           {isJoined && (
-            <div className='flex justify-between'>
-              <ul className='w-[18%] relative top-0 left-0 py-5 px-8 mbg-200 rounded-[5px]'>
-                <p>Connected users:</p>
-                {userList.map(user => (
-                  <li key={user.userId}>
-                    <p><i className="fa-solid fa-circle text-green-500 mr-1"></i> {user.username.charAt(0).toUpperCase() + user.username.slice(1)}</p>
-                  </li>
-                ))}
-                <br />
-                <p>Points: </p>
-                {userList.map(user => (
-                  <li key={user.userId}>
-                    <p><i class="fa-solid fa-user mcolor-800 mr-1"></i> {user.username.charAt(0).toUpperCase() + user.username.slice(1)}: {user.points} </p>
-                  </li>
-                ))}
-              </ul>
-              {userList.length > 0 && userTurn < userList.length && (
-                <div className='w-[80%]'>
-                  {userList.length > 1 ? 
-                    (userList[userTurn % userList.length].userId === userId ? (
-                      <div>
-                        <p className={`mbg-200 mcolor-800 px-5 py-3 rounded-[5px] text-center text-xl ${userList[userTurn].userId === userId ? 'font-bold' : 'font-bold'}`}>{userList[userTurn].userId !== userId ? `${userList[userTurn].username.charAt(0).toUpperCase() + userList[userTurn].username.slice(1)}'s turn`: 'YOUR TURN'}</p>
-
-                        {extractedQA.length > 0 ? (
+            <div className='poppins container w-full flex flex-col items-center min-h-[100vh]'>
+              <div className='w-full'>
+                <div className='flex justify-between'>
+                  <ul className='w-[18%] relative top-0 left-0 py-5 px-8 mbg-200 rounded-[5px]'>
+                    <p>Connected users:</p>
+                    {userList.map(user => (
+                      <li key={user.userId}>
+                        <p><i className="fa-solid fa-circle text-green-500 mr-1"></i> {user.username.charAt(0).toUpperCase() + user.username.slice(1)}</p>
+                      </li>
+                    ))}
+                    <br />
+                    <p>Points: </p>
+                    {userList.map(user => (
+                      <li key={user.userId}>
+                        <p><i class="fa-solid fa-user mcolor-800 mr-1"></i> {user.username.charAt(0).toUpperCase() + user.username.slice(1)}: {user.points} </p>
+                      </li>
+                    ))}
+                  </ul>
+                  {userList.length > 0 && userTurn < userList.length && (
+                    <div className='w-[80%]'>
+                      {userList.length > 1 ? 
+                        (userList[userTurn % userList.length].userId === userId ? (
                           <div>
+                            <p className={`mbg-200 mcolor-800 px-5 py-3 rounded-[5px] text-center text-xl ${userList[userTurn].userId === userId ? 'font-bold' : 'font-bold'}`}>{userList[userTurn].userId !== userId ? `${userList[userTurn].username.charAt(0).toUpperCase() + userList[userTurn].username.slice(1)}'s turn`: 'YOUR TURN'}</p>
 
-                            {/* question */}
-                            <div className='flex items-center justify-between gap-4 relative mt-4 pb-8 text-center text-xl font-medium text-xl mcolor-900'>
-                              <div className={`relative w-full mbg-300 mcolor-900 min-h-[50vh] w-full rounded-[5px] pt-14 mcolor-800`}>
-                                <p className='mcolor-800 text-lg mt-2 font-medium absolute top-3 left-5'>Type: {
-                                  (extractedQA[questionIndex].quizType === 'ToF' && 'True or False') ||
-                                  (extractedQA[questionIndex].quizType === 'FITB' && 'Fill In The Blanks') ||
-                                  (extractedQA[questionIndex].quizType === 'Identification' && 'Identification') ||
-                                  (extractedQA[questionIndex].quizType === 'MCQA' && 'MCQA')
-                                }</p>
-
-                                { (extractedQA[questionIndex].quizType === 'Identification' || extractedQA[questionIndex].quizType === 'FITB') && (
-                                  <div>
-                                    <p className='mcolor-800 text-lg mt-2 font-medium absolute top-10 left-5'>Remaining Hints: {remainingHints}</p>
-                                    <button className='mcolor-800 mbg-200 border-thin-800 rounded-[5px] px-2 py-1 text-lg mt-2 font-medium absolute bottom-5 left-5' onClick={giveHint}>Use hint</button>
-                                  </div>
-                                )}
-
-                                {/* questions */}
-                                {extractedQA[questionIndex].quizType === 'ToF' ? (
-
-                                  <p className='p-10'>{extractedQA[questionIndex].question}</p>
-                                  
-                                ) : (
-                                  <p className='p-10'>{extractedQA[questionIndex].question}</p>
-                                )}
-
-                                <div className='flex justify-center'>
-                                  <div
-                                    className={`dragHere w-1/2 h-[12vh] rounded-[5px] absolute bottom-14 flex justify-center items-center px-10 mbg-100 ${borderMedium}`}
-                                    onDrop={handleDrop}
-                                    onDragOver={handleDragOver}
-                                  >
-
-
-                                      {/* answer */}
-                                      <div className='text-center' draggable onDragStart={(e) => handleDragStart(e, selectedChoice)}>
-                                        {(extractedQA[questionIndex].quizType === 'MCQA' || extractedQA[questionIndex].quizType === 'ToF') && (
-                                          <p className={`py-7 ${selectedChoice === '' ? 'mcolor-400' : 'mcolor-900'}`}>{selectedChoice === '' ? 'Your answer goes here' : selectedChoice}</p>
-
-                                        )}
-
-
-                                        { (extractedQA[questionIndex].quizType === 'Identification' || extractedQA[questionIndex].quizType === 'FITB') && (
-                                          <input type="text" onChange={handleRadioChange} placeholder='Type here...' className='w-full h-full text-center py-5 my-2' value={selectedChoice || ''} style={{ height: '100%' }} />
-                                        )}
-
-                                      </div>
-                                  </div>
-                                </div>
-                              </div>
-
-
-
-
-                            </div>
-
-                          </div>
-                          ) : (
-                            <p className='text-center my-5 text-xl mcolor-500'>Nothing to show</p>
-                          )
-                        }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-                        {extractedQA.length > 0 && extractedQA[questionIndex] && (
-                          <div>
-                            {(selectedChoice !== "" && (extractedQA[questionIndex].quizType === 'MCQA' || extractedQA[questionIndex].quizType === 'ToF')) && 
+                            {extractedQA.length > 0 ? (
                               <div>
-                                {failCount < 2 && (
-                                  <p className='pb-5 pt-4 text-center font-normal text-lg mcolor-800'>{userList[userTurn].userId !== userId ? `${userList[userTurn].username.charAt(0).toUpperCase() + userList[userTurn].username.slice(1)}`: 'You'} selected <span className='font-bold'>{selectedChoice}</span> - {failCount} chance left
-                                  </p>
-                                )}
 
-                                {failCount === 0 && (
-                                  <p className='pb-4 font-normal text-lg text-red'>Failed to answer</p>
-                                )}
+                                {/* question */}
+                                <div className='flex items-center justify-between gap-4 relative mt-4 pb-8 text-center text-xl font-medium text-xl mcolor-900'>
+                                  <div className={`relative w-full mbg-300 mcolor-900 min-h-[50vh] w-full rounded-[5px] pt-14 mcolor-800`}>
+                                    <p className='mcolor-800 text-lg mt-2 font-medium absolute top-3 left-5'>Type: {
+                                      (extractedQA[questionIndex].quizType === 'ToF' && 'True or False') ||
+                                      (extractedQA[questionIndex].quizType === 'FITB' && 'Fill In The Blanks') ||
+                                      (extractedQA[questionIndex].quizType === 'Identification' && 'Identification') ||
+                                      (extractedQA[questionIndex].quizType === 'MCQA' && 'MCQA')
+                                    }</p>
+
+                                    { (extractedQA[questionIndex].quizType === 'Identification' || extractedQA[questionIndex].quizType === 'FITB') && (
+                                      <div>
+                                        <p className='mcolor-800 text-lg mt-2 font-medium absolute top-10 left-5'>Remaining Hints: {remainingHints}</p>
+                                        <button className='mcolor-800 mbg-200 border-thin-800 rounded-[5px] px-2 py-1 text-lg mt-2 font-medium absolute bottom-5 left-5' onClick={giveHint}>Use hint</button>
+                                      </div>
+                                    )}
+
+                                    {/* questions */}
+                                    {extractedQA[questionIndex].quizType === 'ToF' ? (
+
+                                      <p className='p-10'>{extractedQA[questionIndex].question}</p>
+                                      
+                                    ) : (
+                                      <p className='p-10'>{extractedQA[questionIndex].question}</p>
+                                    )}
+
+                                    <div className='flex justify-center'>
+                                      <div
+                                        className={`dragHere w-1/2 h-[12vh] rounded-[5px] absolute bottom-14 flex justify-center items-center px-10 mbg-100 ${borderMedium}`}
+                                        onDrop={handleDrop}
+                                        onDragOver={handleDragOver}
+                                      >
+
+
+                                          {/* answer */}
+                                          <div className='text-center' draggable onDragStart={(e) => handleDragStart(e, selectedChoice)}>
+                                            {(extractedQA[questionIndex].quizType === 'MCQA' || extractedQA[questionIndex].quizType === 'ToF') && (
+                                              <p className={`py-7 ${selectedChoice === '' ? 'mcolor-400' : 'mcolor-900'}`}>{selectedChoice === '' ? 'Your answer goes here' : selectedChoice}</p>
+
+                                            )}
+
+
+                                            { (extractedQA[questionIndex].quizType === 'Identification' || extractedQA[questionIndex].quizType === 'FITB') && (
+                                              <input type="text" onChange={handleRadioChange} placeholder='Type here...' className='w-full h-full text-center py-5 my-2' value={selectedChoice || ''} style={{ height: '100%' }} />
+                                            )}
+
+                                          </div>
+                                      </div>
+                                    </div>
+                                  </div>
+
+
+
+
+                                </div>
+
                               </div>
+                              ) : (
+                                <p className='text-center my-5 text-xl mcolor-500'>Nothing to show</p>
+                              )
                             }
 
-                            {extractedQA[questionIndex].quizType === 'MCQA' && (
-                              <form className='grid-result gap-4'>
-                                {shuffledChoices.map((choice, index) => {
-                                  return (
+
+
+
+
+
+
+
+
+
+
+
+
+
+                            {extractedQA.length > 0 && extractedQA[questionIndex] && (
+                              <div>
+                                {(selectedChoice !== "" && (extractedQA[questionIndex].quizType === 'MCQA' || extractedQA[questionIndex].quizType === 'ToF')) && 
+                                  <div>
+                                    {failCount < 2 && (
+                                      <p className='pb-5 pt-4 text-center font-normal text-lg mcolor-800'>{userList[userTurn].userId !== userId ? `${userList[userTurn].username.charAt(0).toUpperCase() + userList[userTurn].username.slice(1)}`: 'You'} selected <span className='font-bold'>{selectedChoice}</span> - {failCount} chance left
+                                      </p>
+                                    )}
+
+                                    {failCount === 0 && (
+                                      <p className='pb-4 font-normal text-lg text-red'>Failed to answer</p>
+                                    )}
+                                  </div>
+                                }
+
+                                {extractedQA[questionIndex].quizType === 'MCQA' && (
+                                  <form className='grid-result gap-4'>
+                                    {shuffledChoices.map((choice, index) => {
+                                      return (
+                                        <div
+                                          key={index}
+                                          className='flex justify-center mbg-200 px-5 py-3 text-xl text-center mcolor-800 choice border-thin-800 rounded-[5px]'
+                                        >
+                                          <input
+                                            type="radio"
+                                            name="option"
+                                            value={choice.choice}
+                                            id={`choice${index}`} 
+                                            className='custom-radio mt-1 cursor-pointer'
+                                            onChange={handleRadioChange}
+                                            checked={selectedChoice === choice.choice} 
+                                          />
+                                          <label htmlFor={`choice${index}`} className='ml-1 cursor-pointer'>{choice.choice}</label>
+                                        </div>
+                                      );
+                                    })}
+                                  </form>
+                                )}
+
+                                {extractedQA[questionIndex].quizType === 'ToF' && (
+                                  <form className='grid-result gap-4'>
                                     <div
-                                      key={index}
+                                      key={1}
                                       className='flex justify-center mbg-200 px-5 py-3 text-xl text-center mcolor-800 choice border-thin-800 rounded-[5px]'
                                     >
                                       <input
                                         type="radio"
                                         name="option"
-                                        value={choice.choice}
-                                        id={`choice${index}`} 
+                                        value={'True'}
+                                        id={`choice${1}`} 
                                         className='custom-radio mt-1 cursor-pointer'
                                         onChange={handleRadioChange}
-                                        checked={selectedChoice === choice.choice} 
+                                        checked={selectedChoice === 'True'} 
                                       />
-                                      <label htmlFor={`choice${index}`} className='ml-1 cursor-pointer'>{choice.choice}</label>
+                                      <label htmlFor={`choice${1}`} className='ml-1 cursor-pointer'>{'True'}</label>
                                     </div>
-                                  );
-                                })}
-                              </form>
+                                    <div
+                                      key={2}
+                                      className='flex justify-center mbg-200 px-5 py-3 text-xl text-center mcolor-800 choice border-thin-800 rounded-[5px]'
+                                    >
+                                      <input
+                                        type="radio"
+                                        name="option"
+                                        value={'False'}
+                                        id={`choice${2}`} 
+                                        className='custom-radio mt-1 cursor-pointer'
+                                        onChange={handleRadioChange}
+                                        checked={selectedChoice === 'False'} 
+                                      />
+                                      <label htmlFor={`choice${2}`} className='ml-1 cursor-pointer'>{'False'}</label>
+                                    </div>
+                                  </form>
+                                )}
+
+                                <div className='flex justify-center mt-8'>
+                                  <button className='w-1/2 py-2 px-5 mbg-700 rounded-[5px] mcolor-100 text-lg' onClick={submitAnswer}>Submit Answer</button>
+                                </div>
+                              </div>
                             )}
 
-                            {extractedQA[questionIndex].quizType === 'ToF' && (
-                              <form className='grid-result gap-4'>
-                                <div
-                                  key={1}
-                                  className='flex justify-center mbg-200 px-5 py-3 text-xl text-center mcolor-800 choice border-thin-800 rounded-[5px]'
-                                >
-                                  <input
-                                    type="radio"
-                                    name="option"
-                                    value={'True'}
-                                    id={`choice${1}`} 
-                                    className='custom-radio mt-1 cursor-pointer'
-                                    onChange={handleRadioChange}
-                                    checked={selectedChoice === 'True'} 
-                                  />
-                                  <label htmlFor={`choice${1}`} className='ml-1 cursor-pointer'>{'True'}</label>
-                                </div>
-                                <div
-                                  key={2}
-                                  className='flex justify-center mbg-200 px-5 py-3 text-xl text-center mcolor-800 choice border-thin-800 rounded-[5px]'
-                                >
-                                  <input
-                                    type="radio"
-                                    name="option"
-                                    value={'False'}
-                                    id={`choice${2}`} 
-                                    className='custom-radio mt-1 cursor-pointer'
-                                    onChange={handleRadioChange}
-                                    checked={selectedChoice === 'False'} 
-                                  />
-                                  <label htmlFor={`choice${2}`} className='ml-1 cursor-pointer'>{'False'}</label>
-                                </div>
-                              </form>
-                            )}
-
-                            <div className='flex justify-center mt-8'>
-                              <button className='w-1/2 py-2 px-5 mbg-700 rounded-[5px] mcolor-100 text-lg' onClick={submitAnswer}>Submit Answer</button>
-                            </div>
                           </div>
-                        )}
-
-                      </div>
-                    ) : (
-                      <div>
-                        <p className={`mbg-200 mcolor-800 px-5 py-3 rounded-[5px] text-center text-xl ${userList[userTurn].userId === userId ? 'font-bold' : 'font-bold'}`}>{userList[userTurn].userId !== userId ? `${userList[userTurn].username.charAt(0).toUpperCase() + userList[userTurn].username.slice(1)}'s turn`: 'YOUR TURN'}</p>
-
-
-
-                        {extractedQA.length > 0 ? (
+                        ) : (
                           <div>
-
-                            {/* question */}
-                            <div className='flex items-center justify-between gap-4 relative mt-4 pb-8 text-center text-xl font-medium text-xl mcolor-900'>
-                              <div className={`relative w-full mbg-300 mcolor-900 min-h-[50vh] w-full rounded-[5px] pt-14 mcolor-800`}>
-                                <p className='mcolor-800 text-lg mt-2 font-medium absolute top-3 left-5'>Type: {
-                                  (extractedQA[questionIndex].quizType === 'ToF' && 'True or False') ||
-                                  (extractedQA[questionIndex].quizType === 'FITB' && 'Fill In The Blanks') ||
-                                  (extractedQA[questionIndex].quizType === 'Identification' && 'Identification') ||
-                                  (extractedQA[questionIndex].quizType === 'MCQA' && 'MCQA')
-                                }</p>
+                            <p className={`mbg-200 mcolor-800 px-5 py-3 rounded-[5px] text-center text-xl ${userList[userTurn].userId === userId ? 'font-bold' : 'font-bold'}`}>{userList[userTurn].userId !== userId ? `${userList[userTurn].username.charAt(0).toUpperCase() + userList[userTurn].username.slice(1)}'s turn`: 'YOUR TURN'}</p>
 
 
 
-                                {/* questions */}
-                                {extractedQA[questionIndex].quizType === 'ToF' ? (
-
-                                  <p className='p-10'>{extractedQA[questionIndex].question}</p>
-                                  
-                                ) : (
-                                  <p className='p-10'>{extractedQA[questionIndex].question}</p>
-                                )}
-
-                                <div className='flex justify-center'>
-                                  <div
-                                    className={`dragHere w-1/2 h-[12vh] rounded-[5px] absolute bottom-14 flex justify-center items-center px-10 mbg-100 ${borderMedium}`}
-                                    onDrop={handleDrop}
-                                    onDragOver={handleDragOver}
-                                  >
-
-
-                                      {/* answer */}
-                                      <div className='text-center' draggable onDragStart={(e) => handleDragStart(e, selectedChoice)}>
-                                        {(extractedQA[questionIndex].quizType === 'MCQA' || extractedQA[questionIndex].quizType === 'ToF') && (
-                                          <p className={`py-7 ${selectedChoice === '' ? 'mcolor-400' : 'mcolor-900'}`}>{selectedChoice === '' ? `${userList[userTurn].userId !== userId ? `${userList[userTurn].username.charAt(0).toUpperCase() + userList[userTurn].username.slice(1)}'s answer goes here`: 'your answer goes here'}` : selectedChoice}</p>
-
-                                        )}
-
-
-                                        { (extractedQA[questionIndex].quizType === 'Identification' || extractedQA[questionIndex].quizType === 'FITB') && (
-                                          <input type="text" placeholder={`${selectedChoice === '' ? `${userList[userTurn].userId !== userId ? `${userList[userTurn].username.charAt(0).toUpperCase() + userList[userTurn].username.slice(1)}'s answer goes here`: 'your answer goes here'}` : selectedChoice}`} className='w-full h-full text-center py-5 my-2' readOnly value={selectedChoice || ''} onChange={(event) => {
-                                            setSelectedChoice(event.target.value)
-                                          }} style={{ height: '100%' }} />
-                                        )}
-
-                                      </div>
-                                  </div>
-                                </div>
-                              </div>
-
-
-
-                            </div>
-
-                            {(selectedChoice !== "" && (extractedQA[questionIndex].quizType === 'MCQA' || extractedQA[questionIndex].quizType === 'ToF')) && 
+                            {extractedQA.length > 0 ? (
                               <div>
-                                {failCount < 2 && (
-                                  <p className='py-1 text-center font-normal text-lg mcolor-800'>{userList[userTurn].userId !== userId ? `${userList[userTurn].username.charAt(0).toUpperCase() + userList[userTurn].username.slice(1)}`: 'You'} selected <span className='font-bold'>{selectedChoice}</span> <span className='mcolor-800'>- {failCount} chance left</span>
-                                  </p>
+
+                                {/* question */}
+                                <div className='flex items-center justify-between gap-4 relative mt-4 pb-8 text-center text-xl font-medium text-xl mcolor-900'>
+                                  <div className={`relative w-full mbg-300 mcolor-900 min-h-[50vh] w-full rounded-[5px] pt-14 mcolor-800`}>
+                                    <p className='mcolor-800 text-lg mt-2 font-medium absolute top-3 left-5'>Type: {
+                                      (extractedQA[questionIndex].quizType === 'ToF' && 'True or False') ||
+                                      (extractedQA[questionIndex].quizType === 'FITB' && 'Fill In The Blanks') ||
+                                      (extractedQA[questionIndex].quizType === 'Identification' && 'Identification') ||
+                                      (extractedQA[questionIndex].quizType === 'MCQA' && 'MCQA')
+                                    }</p>
+
+
+
+                                    {/* questions */}
+                                    {extractedQA[questionIndex].quizType === 'ToF' ? (
+
+                                      <p className='p-10'>{extractedQA[questionIndex].question}</p>
+                                      
+                                    ) : (
+                                      <p className='p-10'>{extractedQA[questionIndex].question}</p>
+                                    )}
+
+                                    <div className='flex justify-center'>
+                                      <div
+                                        className={`dragHere w-1/2 h-[12vh] rounded-[5px] absolute bottom-14 flex justify-center items-center px-10 mbg-100 ${borderMedium}`}
+                                        onDrop={handleDrop}
+                                        onDragOver={handleDragOver}
+                                      >
+
+
+                                          {/* answer */}
+                                          <div className='text-center' draggable onDragStart={(e) => handleDragStart(e, selectedChoice)}>
+                                            {(extractedQA[questionIndex].quizType === 'MCQA' || extractedQA[questionIndex].quizType === 'ToF') && (
+                                              <p className={`py-7 ${selectedChoice === '' ? 'mcolor-400' : 'mcolor-900'}`}>{selectedChoice === '' ? `${userList[userTurn].userId !== userId ? `${userList[userTurn].username.charAt(0).toUpperCase() + userList[userTurn].username.slice(1)}'s answer goes here`: 'your answer goes here'}` : selectedChoice}</p>
+
+                                            )}
+
+
+                                            { (extractedQA[questionIndex].quizType === 'Identification' || extractedQA[questionIndex].quizType === 'FITB') && (
+                                              <input type="text" placeholder={`${selectedChoice === '' ? `${userList[userTurn].userId !== userId ? `${userList[userTurn].username.charAt(0).toUpperCase() + userList[userTurn].username.slice(1)}'s answer goes here`: 'your answer goes here'}` : selectedChoice}`} className='w-full h-full text-center py-5 my-2' readOnly value={selectedChoice || ''} onChange={(event) => {
+                                                setSelectedChoice(event.target.value)
+                                              }} style={{ height: '100%' }} />
+                                            )}
+
+                                          </div>
+                                      </div>
+                                    </div>
+                                  </div>
+
+
+
+                                </div>
+
+                                {(selectedChoice !== "" && (extractedQA[questionIndex].quizType === 'MCQA' || extractedQA[questionIndex].quizType === 'ToF')) && 
+                                  <div>
+                                    {failCount < 2 && (
+                                      <p className='py-1 text-center font-normal text-lg mcolor-800'>{userList[userTurn].userId !== userId ? `${userList[userTurn].username.charAt(0).toUpperCase() + userList[userTurn].username.slice(1)}`: 'You'} selected <span className='font-bold'>{selectedChoice}</span> <span className='mcolor-800'>- {failCount} chance left</span>
+                                      </p>
+                                    )}
+
+                                    {failCount !== 0 && (
+                                      <p className={`pb-4 text-center font-normal text-lg ${selectedChoice === extractedQA[questionIndex].answer ? 'text-emerald-500' : 'text-red'}`}>{userList[userTurn].username.charAt(0).toUpperCase() + userList[userTurn].username.slice(1)} selected {selectedChoice === extractedQA[questionIndex].answer ? 'the correct answer' : 'a wrong answer'}</p>
+                                    )}
+
+                                    {failCount === 0 && (
+                                      <p className='pb-4 text-center font-normal text-lg text-red'>Failed to answer</p>
+                                    )}
+                                  </div>
+                                }
+
+                                {extractedQA[questionIndex].quizType === 'MCQA' && (
+                                  <ul className='grid-result gap-4'>
+                                    {shuffledChoices.map((choice, index) => {
+                                      return (
+                                        <li
+                                          className={`${choice.choice === selectedChoice ? "mbg-600 mcolor-100" : "mbg-200 mcolor-800"} px-5 py-3 text-xl text-center choice border-thin-800 rounded-[5px]`}
+                                          key={index}
+                                        >
+                                          {choice.choice}
+                                        </li>
+                                      )
+                                    })}
+                                  </ul>
                                 )}
 
-                                {failCount !== 0 && (
-                                  <p className={`pb-4 text-center font-normal text-lg ${selectedChoice === extractedQA[questionIndex].answer ? 'text-emerald-500' : 'text-red'}`}>{userList[userTurn].username.charAt(0).toUpperCase() + userList[userTurn].username.slice(1)} selected {selectedChoice === extractedQA[questionIndex].answer ? 'the correct answer' : 'a wrong answer'}</p>
+                                {extractedQA[questionIndex].quizType === 'ToF' && (
+                                  <ul className='grid-result gap-4'>
+                                    <li
+                                      className={`${'True' === selectedChoice ? "mbg-600 mcolor-100" : "mbg-200 mcolor-800"} px-5 py-3 text-xl text-center choice border-thin-800 rounded-[5px]`}
+                                      key={1}
+                                    >
+                                      {'True'}
+                                    </li>
+                                    <li
+                                      className={`${'False' === selectedChoice ? "mbg-600 mcolor-100" : "mbg-200 mcolor-800"} px-5 py-3 text-xl text-center choice border-thin-800 rounded-[5px]`}
+                                      key={1}
+                                    >
+                                      {'False'}
+                                    </li>
+                                  </ul>
                                 )}
 
-                                {failCount === 0 && (
-                                  <p className='pb-4 text-center font-normal text-lg text-red'>Failed to answer</p>
-                                )}
                               </div>
+                              ) : (
+                                <p className='text-center my-5 text-xl mcolor-500'>Nothing to show</p>
+                              )
                             }
 
-                            {extractedQA[questionIndex].quizType === 'MCQA' && (
-                              <ul className='grid-result gap-4'>
-                                {shuffledChoices.map((choice, index) => {
-                                  return (
-                                    <li
-                                      className={`${choice.choice === selectedChoice ? "mbg-600 mcolor-100" : "mbg-200 mcolor-800"} px-5 py-3 text-xl text-center choice border-thin-800 rounded-[5px]`}
-                                      key={index}
-                                    >
-                                      {choice.choice}
-                                    </li>
-                                  )
-                                })}
-                              </ul>
-                            )}
-
-                            {extractedQA[questionIndex].quizType === 'ToF' && (
-                              <ul className='grid-result gap-4'>
-                                <li
-                                  className={`${'True' === selectedChoice ? "mbg-600 mcolor-100" : "mbg-200 mcolor-800"} px-5 py-3 text-xl text-center choice border-thin-800 rounded-[5px]`}
-                                  key={1}
-                                >
-                                  {'True'}
-                                </li>
-                                <li
-                                  className={`${'False' === selectedChoice ? "mbg-600 mcolor-100" : "mbg-200 mcolor-800"} px-5 py-3 text-xl text-center choice border-thin-800 rounded-[5px]`}
-                                  key={1}
-                                >
-                                  {'False'}
-                                </li>
-                              </ul>
-                            )}
-
                           </div>
-                          ) : (
-                            <p className='text-center my-5 text-xl mcolor-500'>Nothing to show</p>
-                          )
-                        }
+                        )) : (
+                          <p className='text-xl text-center mcolor-800 py-3 my-1'>Waiting for other users...</p>
+                        )
+                      }
 
-                      </div>
-                    )) : (
-                      <p className='text-xl text-center mcolor-800 py-3 my-1'>Waiting for other users...</p>
-                    )
-                  }
+                    </div>
+                  )}
 
                 </div>
-              )}
-
+              </div>
             </div>
           )}        
           </div>
         )}
-      </div>
     </div>
   );
 };

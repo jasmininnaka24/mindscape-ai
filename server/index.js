@@ -31,29 +31,89 @@ let currentFailCountVal = 0;
 let submittedAnswerValCurr = "";
 let userListValExt = []
 
+let reviewShuffledChoices = {}
+let reviewUserTurnSer = {}
+let reviewSelectedChoiceValCurr = {}
+let reviewFailCount = {}
+let reviewNextQA = {}
+let reviewQuestionIndex = {}
+
+
+
+// assessment
+let assessmentRoomList = {};
+let assessmentUsers = []
+let ioSelectedAssessmentAnswer = []
+
 io.on('connection', (socket) => {
   socket.on('join_room', (data) => {
-    const { room, username, userId, points, questionIndex, shuffledChoices, userList, failCount} = data;
+    const { room, username, userId, points, questionIndex, shuffledChoices, userList, failCount } = data;
     socket.join(room);
+  
+    // Initialize arrays for the room if they don't exist
     if (!rooms[room]) {
       rooms[room] = [];
     }
-
+    if (!reviewShuffledChoices[room]) {
+      reviewShuffledChoices[room] = [];
+    }
+    if (!reviewUserTurnSer[room]) {
+      reviewUserTurnSer[room] = [];
+    }
+    if (!reviewSelectedChoiceValCurr[room]) {
+      reviewSelectedChoiceValCurr[room] = [];
+    }
+    if (!reviewFailCount[room]) {
+      reviewFailCount[room] = [];
+    }
+    if (!reviewNextQA[room]) {
+      reviewNextQA[room] = [];
+    }
+    if (!reviewQuestionIndex[room]) {
+      reviewQuestionIndex[room] = [];
+    }
+  
     // Add user to the room's user list
     rooms[room].push({ socketId: socket.id, username, userId, points });
 
-    userListValExt = rooms[room];
+    // Only push new user's data if arrays are empty
+    if (reviewShuffledChoices[room].length === 0) {
+      reviewShuffledChoices[room].push([...shuffledChoices]);
+    }
+    if (reviewUserTurnSer[room].length === 0) {
+      reviewUserTurnSer[room].push(Number(userTurnSer));
+    }
+    if (reviewSelectedChoiceValCurr[room].length === 0) {
+      reviewSelectedChoiceValCurr[room].push(selectedChoiceValCurr.toString());
+    }
+    if (reviewFailCount[room].length === 0) {
+      reviewFailCount[room].push(Number(failCount));
+    }
+    if (reviewNextQA[room].length === 0) {
+      reviewNextQA[room].push(Number(nextQA));
+    }
+    if (reviewQuestionIndex[room].length === 0) {
+      reviewQuestionIndex[room].push(questionIndex);
+    }
+  
     // Emit the updated user list and current turn to all clients in the room
-    io.to(room).emit('userList', userListValExt);
-    io.to(room).emit('received_next_user_join', userTurnSer);
-    io.to(room).emit('received_selected_choice_join', selectedChoiceValCurr);
-    io.to(room).emit('received_current_fail_val', failCount);
-    io.to(room).emit('next_qa_join', nextQA);
-    io.to(room).emit('current_QA_index', questionIndex);
-    io.to(room).emit('shuffled_join', shuffledChoices);
-    shuffledChoicesVal = shuffledChoices;
-    currentFailCountVal = failCount;
+    io.to(room).emit('userList', rooms[room]);
+    io.to(room).emit('received_next_user_join', reviewUserTurnSer[room]);
+    io.to(room).emit('received_selected_choice_join', reviewSelectedChoiceValCurr[room]);
+    io.to(room).emit('received_current_fail_val', reviewFailCount[room]);
+    io.to(room).emit('next_qa_join', reviewNextQA[room]);
+    io.to(room).emit('current_QA_index', reviewQuestionIndex[room]);
+    io.to(room).emit('shuffled_join', reviewShuffledChoices[room]);
+  
+    console.log(rooms[room]);
+    console.log(reviewUserTurnSer[room]);
+    console.log(reviewSelectedChoiceValCurr[room]);
+    console.log(reviewFailCount[room]);
+    console.log(reviewNextQA[room]);
+    console.log(reviewQuestionIndex[room]);
+    console.log(reviewShuffledChoices[room]);
   });
+
 
   socket.on('next_turn', ({ nextUser, room }) => {
     // Determine the next turn and emit it to all clients in the room
@@ -62,28 +122,28 @@ io.on('connection', (socket) => {
     const nextTurn = nextUser;
 
     io.to(room).emit('received_next_user', nextTurn);
-    userTurnSer = nextTurn;
+    reviewUserTurnSer[room] = nextTurn;
   });
   
   socket.on('next_qa', ({ questionIndexVal, room, studyMaterialsLength }) => {
     io.to(room).emit('received_next_qa', questionIndexVal);
-    nextQA = questionIndexVal;
+    reviewNextQA[room] = questionIndexVal;
   });
   
   socket.on('shuffled_choices', ({ room, shuffledArray }) => {
     io.to(room).emit('received_shuffled_choices', shuffledArray);
-    shuffledChoicesVal = shuffledArray;
+    reviewShuffledChoices[room] = shuffledArray;
   });
   
   socket.on('current_QA_index_rec', ({ questionIndex, room }) => {
     io.to(room).emit('received_next_qa', nextQuestion);
-    question_index = questionIndex;
+    reviewQuestionIndex[room] = questionIndex;
   });
 
   socket.on("user_zero", ({userTurn, questionIndex, room}) => {
     io.to(room).emit('received_next_user_zero', {userTurnSer, questionIndex})
-    userTurnSer = userTurn;
-    question_index = questionIndex;
+    reviewUserTurnSer[room] = userTurn;
+    reviewQuestionIndex[room] = questionIndex;
   })
 
 
@@ -91,13 +151,13 @@ io.on('connection', (socket) => {
     if(userListCount === 1){
       let userTurnCurr = 0
       io.to(room).emit("user_turn_disc", userTurnCurr)
-      userTurnSer = userTurnCurr
+      reviewUserTurnSer[room] = userTurnCurr
     }
   })
 
   socket.on("selected_choice", ({room, selectedChoiceVal}) => {
     io.to(room).emit("received_selected_choice", selectedChoiceVal)
-    selectedChoiceValCurr = selectedChoiceVal
+    reviewSelectedChoiceValCurr[room] = selectedChoiceVal
   })
 
   socket.on('update_QA_data', (updatedData) => {
@@ -109,6 +169,10 @@ io.on('connection', (socket) => {
     rooms[room] = userList
   })
 
+
+
+
+  // to be repaired later
   socket.on("submitted_answer", ({room, currentFailCount, submittedAnswerVal}) => {
     io.to(room).emit("received_submitted_answer", {currentFailCount, submittedAnswerVal})
     currentFailCountVal = currentFailCount;
@@ -116,9 +180,43 @@ io.on('connection', (socket) => {
   })
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  // assessment sockets
+  socket.on('join_assessment_room', (data) => {
+    const { room, username, userId, selectedAssessmentAnswer } = data;
+    socket.join(room);
+    if (!assessmentRoomList[room]) {
+      assessmentRoomList[room] = [];
+    }
+  
+    // Add user to the room's user list
+    assessmentRoomList[room].push({ socketId: socket.id, username, userId });
+  
+    assessmentUsers = assessmentRoomList[room];
+    // Emit the updated user list and current turn to all clients in the room
+    io.to(room).emit('assessment_user_list', assessmentUsers);
+    
+
+  });
+  
+
+
+
+
   socket.on('disconnect', () => {
-
-
 
     // Find the user index in the room
     Object.keys(rooms).forEach((room) => {
@@ -183,10 +281,33 @@ io.on('connection', (socket) => {
 
       }
     });
+
+
+
+
+    // Find and remove the user from all assessment rooms
+    Object.keys(assessmentRoomList).forEach((assessmentRoom) => {
+      const userIndex = assessmentRoomList[assessmentRoom].findIndex(user => user.socketId === socket.id);
+      if (userIndex !== -1) {
+        assessmentRoomList[assessmentRoom].splice(userIndex, 1);
+        // Remove the assessmentRoom if there are no users in it
+        if (assessmentRoomList[assessmentRoom].length === 0) {
+          delete assessmentRoomList[assessmentRoom];
+          selectedChoiceValCurr = "";
+        }
+        io.to(assessmentRoom).emit('assessment_user_list', assessmentRoomList[assessmentRoom]);
+        console.log(assessmentRoomList);
+
+      }
+    });
+
   });
   
   
   
+
+
+
   
   
 });

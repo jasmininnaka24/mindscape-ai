@@ -1,16 +1,19 @@
-import React, { useEffect, useState } from 'react';
-import { Link, useParams } from 'react-router-dom';
 import axios from 'axios';
+import React, { useEffect, useState } from 'react'
+import { Link } from 'react-router-dom';
 import CheckIcon from '@mui/icons-material/Check';
+import io from 'socket.io-client';
 
 // chart
-import { BarChartForAnalysis } from '../../../../components/charts/BarChartForAnalysis';
+import { BarChartForAnalysis } from '../charts/BarChartForAnalysis';
 
 
+const socket = io.connect("http://localhost:3001");
 
-export const PersonalAssessment = () => {
 
-  const { materialId } = useParams();
+export const AssessmentPage = (props) => {
+
+  const { groupId, materialId, userId, userListAssessment, setUserListAssessment, selectedAssessmentAnswer, setSelectedAssessmentAnswer } = props;
 
   let studyProfeciencyTarget = 90;
 
@@ -19,7 +22,6 @@ export const PersonalAssessment = () => {
   const [materialCategory, setMaterialCategory] = useState('')
   const [extractedQA, setQA] = useState({});
   const [shuffledChoices, setShuffledChoices] = useState([]);
-  const [selectedChoice, setSelectedChoice] = useState([]);
   const [score, setScore] = useState(0);
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [isAssessmentDone, setIsAssessmentDone] = useState(false);
@@ -44,19 +46,24 @@ export const PersonalAssessment = () => {
   const [categoryID, setCategoryID] = useState(0);
   const [seconds, setSeconds] = useState(0);
   const [isRunning, setIsRunning] = useState(false);
-
-  const UserId = 1;
+  
   
 
-
+  
+  const UserId = 1;
+  
+  
+  
   useEffect(() => {
-    const fetchData = async () => {
 
-      const materialTitleResponse = await axios.get(`http://localhost:3001/studyMaterial/study-material-personal/Personal/${UserId}/${materialId}`)
-      setMaterialTitle(materialTitleResponse.data.title)
+    const fetchData = async () => {
       
 
-      const materialCategoryResponse = await axios.get(`http://localhost:3001/studyMaterialCategory/get-lastmaterial/${materialTitleResponse.data.StudyMaterialsCategoryId}/Personal/${UserId}`)
+      const materialTitleResponse = await axios.get(`http://localhost:3001/studyMaterial/study-material/Group/${groupId}/${UserId}/${materialId}`)
+      setMaterialTitle(materialTitleResponse.data[0].title)
+      
+
+      const materialCategoryResponse = await axios.get(`http://localhost:3001/studyMaterialCategory/get-lastmaterial/${materialTitleResponse.data[0].StudyMaterialsCategoryId}/${groupId}/Group/${UserId}`)
       setMaterialCategory(materialCategoryResponse.data.category)
 
       const materialResponse = await axios.get(`http://localhost:3001/quesAns/study-material-mcq/${materialId}`);
@@ -142,8 +149,17 @@ export const PersonalAssessment = () => {
       fetchData();
     }
 
+    socket.on("assessment_user_list", (updatedData) => {
+      setUserListAssessment(updatedData);
+    });
+    
+    return () => {
+      socket.off('assessment_user_list');
+      socket.off('disconnect');
 
-  }, [extractedQA.length, isAssessmentDone, materialId])
+    };
+    
+  }, [extractedQA.length, groupId, isAssessmentDone, materialId, setUserListAssessment, userId])
 
 
 
@@ -159,9 +175,9 @@ export const PersonalAssessment = () => {
 
 
   const handleRadioChange = (choice, index) => {
-    const selectedChoices = [...selectedChoice];
-    selectedChoices[index] = choice;
-    setSelectedChoice(selectedChoices);
+    const selectedAssessmentAnswers = [...selectedAssessmentAnswer];
+    selectedAssessmentAnswers[index] = choice;
+    setSelectedAssessmentAnswer(selectedAssessmentAnswers);
   };
 
 
@@ -188,7 +204,7 @@ export const PersonalAssessment = () => {
 
   const dataForSubmittingAnswers = async () => {
     
-    const score = selectedChoice.reduce((totalScore, item, index) => {
+    const score = selectedAssessmentAnswer.reduce((totalScore, item, index) => {
       const qaItem = extractedQA[index];
       if (qaItem && qaItem.answer !== undefined && qaItem.answer !== null && item) {
         return item.toLowerCase() === qaItem.answer.toLowerCase()
@@ -222,7 +238,7 @@ export const PersonalAssessment = () => {
       let confidence = (((Math.round(extractedQA.length / 2)) / 8) * 100).toFixed(2);
 
       let data = {
-        dashFor: 'Personal',
+        dashFor: 'Group',
         overAllItems: extractedQA.length,
         preAssessmentScore: score,
         assessmentScorePerf: ((score / extractedQA.length) * 100).toFixed(2),
@@ -301,7 +317,7 @@ export const PersonalAssessment = () => {
         let confidence = (((Math.round(extractedQA.length / 2)) / completionTimeCalc) * 100).toFixed(2);
 
         let data = {
-          dashFor: 'Personal',
+          dashFor: 'Group',
           overAllItems: extractedQA.length,
           preAssessmentScore: fetchedData[0].preAssessmentScore,
           assessmentScore: score,
@@ -373,7 +389,7 @@ export const PersonalAssessment = () => {
       dataForSubmittingAnswers();
     } else {
       
-      if ((selectedChoice.length !== extractedQA.length) || selectedChoice.some(answer => answer === '' || answer === undefined)) {
+      if ((selectedAssessmentAnswer.length !== extractedQA.length) || selectedAssessmentAnswer.some(answer => answer === '' || answer === undefined)) {
         alert('There are some empty fields');
       } else {
         stopTimer();
@@ -382,7 +398,7 @@ export const PersonalAssessment = () => {
     }
     
     
-    console.log(selectedChoice.length);
+    console.log(selectedAssessmentAnswer.length);
     console.log(extractedQA.length);
 
   };
@@ -518,8 +534,18 @@ export const PersonalAssessment = () => {
 
 
 
+
   return (
     <div className='py-8 poppins mbg-200 mcolor-900' id='currSec'>
+
+      <ul className='w-[18%] relative top-0 left-0 py-5 px-8 mbg-200 rounded-[5px]'>
+        <p>Connected users:</p>
+        {userListAssessment.map(user => (
+          <li key={user.userId}>
+            <p><i className="fa-solid fa-circle text-green-500 mr-1"></i> {user.username.charAt(0).toUpperCase() + user.username.slice(1)}</p>
+          </li>
+        ))}
+      </ul>
 
 
       {showAssessment === true && (
@@ -641,7 +667,7 @@ export const PersonalAssessment = () => {
                     key={choiceIndex}
                     className={`flex items-center justify-center px-5 py-3 text-center choice rounded-[5px] 
                     ${(isSubmitted === true && extractedQA[index].answer === choice) ? 'border-thin-800-correct' : 
-                    (isSubmitted === true && selectedChoice[index] !== extractedQA[index].answer && selectedChoice[index] === choice) ? 'border-thin-800-wrong' : 'border-thin-800'}`}
+                    (isSubmitted === true && selectedAssessmentAnswer[index] !== extractedQA[index].answer && selectedAssessmentAnswer[index] === choice) ? 'border-thin-800-wrong' : 'border-thin-800'}`}
                     >
 
                       <input
@@ -651,7 +677,7 @@ export const PersonalAssessment = () => {
                         id={`choice-${choiceIndex}-${index}`}
                         className={`custom-radio cursor-pointer`}
                         onChange={() => handleRadioChange(choice, index)}
-                        checked={selectedChoice[index] === choice}
+                        checked={selectedAssessmentAnswer[index] === choice}
                         disabled={isSubmitted} 
                         />
 
@@ -672,7 +698,7 @@ export const PersonalAssessment = () => {
                       key={1}
                       className={`flex items-center justify-center px-5 py-3 text-center choice rounded-[5px] 
                       ${(isSubmitted === true && extractedQA[index].answer === 'True') ? 'border-thin-800-correct' : 
-                      (isSubmitted === true && selectedChoice[index] !== extractedQA[index].answer && selectedChoice[index] === 'True') ? 'border-thin-800-wrong' : 'border-thin-800'}`}
+                      (isSubmitted === true && selectedAssessmentAnswer[index] !== extractedQA[index].answer && selectedAssessmentAnswer[index] === 'True') ? 'border-thin-800-wrong' : 'border-thin-800'}`}
                       >
 
                     <input
@@ -682,7 +708,7 @@ export const PersonalAssessment = () => {
                       id={`choice-${1}-${index}`}
                       className={`custom-radio cursor-pointer`}
                       onChange={() => handleRadioChange('True', index)}
-                      checked={selectedChoice[index] === 'True'}
+                      checked={selectedAssessmentAnswer[index] === 'True'}
                       disabled={isSubmitted} 
                       />
 
@@ -700,7 +726,7 @@ export const PersonalAssessment = () => {
                       key={2}
                       className={`flex items-center justify-center px-5 py-3 text-center choice rounded-[5px] 
                       ${(isSubmitted === true && extractedQA[index].answer === 'False') ? 'border-thin-800-correct' : 
-                      (isSubmitted === true && selectedChoice[index] !== extractedQA[index].answer && selectedChoice[index] === 'False') ? 'border-thin-800-wrong' : 'border-thin-800'}`}
+                      (isSubmitted === true && selectedAssessmentAnswer[index] !== extractedQA[index].answer && selectedAssessmentAnswer[index] === 'False') ? 'border-thin-800-wrong' : 'border-thin-800'}`}
                       >
 
                       <input
@@ -710,7 +736,7 @@ export const PersonalAssessment = () => {
                         id={`choice-${2}-${index}`}
                         className={`custom-radio cursor-pointer`}
                         onChange={() => handleRadioChange('False', index)}
-                        checked={selectedChoice[index] === 'False'}
+                        checked={selectedAssessmentAnswer[index] === 'False'}
                         disabled={isSubmitted} 
                         />
 
@@ -729,13 +755,13 @@ export const PersonalAssessment = () => {
                 <div>
                   <input
                     className={`mb-5 w-full px-5 py-5 text-lg text-center choice rounded-[5px] box-shadoww ${
-                      isSubmitted && selectedChoice[index] && extractedQA[index] &&
-                      selectedChoice[index].toLowerCase() === extractedQA[index].answer.toLowerCase()
+                      isSubmitted && selectedAssessmentAnswer[index] && extractedQA[index] &&
+                      selectedAssessmentAnswer[index].toLowerCase() === extractedQA[index].answer.toLowerCase()
                         ? 'border-thin-800-correct'
-                        : isSubmitted && selectedChoice[index] && extractedQA[index] &&
-                        selectedChoice[index].toLowerCase() !== extractedQA[index].answer.toLowerCase()
+                        : isSubmitted && selectedAssessmentAnswer[index] && extractedQA[index] &&
+                        selectedAssessmentAnswer[index].toLowerCase() !== extractedQA[index].answer.toLowerCase()
                         ? 'border-thin-800-wrong'
-                        : selectedChoice[index] && extractedQA[index] && !isSubmitted
+                        : selectedAssessmentAnswer[index] && extractedQA[index] && !isSubmitted
                         ? 'border-thin-800'
                         : ''
                     }`}
@@ -747,9 +773,9 @@ export const PersonalAssessment = () => {
 
                   <p className='correct-color text-center text-xl'>
                     {isSubmitted === true &&
-                    selectedChoice[index] &&
+                    selectedAssessmentAnswer[index] &&
                     extractedQA[index] &&
-                    selectedChoice[index].toLowerCase() !== extractedQA[index].answer.toLowerCase() 
+                    selectedAssessmentAnswer[index].toLowerCase() !== extractedQA[index].answer.toLowerCase() 
                     ? extractedQA[index].answer 
                     : null}
                   </p>
