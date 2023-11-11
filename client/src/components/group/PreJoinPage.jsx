@@ -9,7 +9,7 @@ const socket = io.connect("http://localhost:3001");
 
 export const PreJoinPage = (props) => {
 
-  const { setUsername, setUserId, joinRoom, materialId, groupId, setShowPreJoin, setShowAssessmentPage, username, userId, room, assessementRoom, setUserListAssessment, selectedAssessmentAnswer, setSelectedAssessmentAnswer } = props;
+  const { setUsername, setUserId, joinRoom, materialId, groupId, setShowPreJoin, setShowAssessmentPage, username, userId, assessementRoom, setUserListAssessment, selectedAssessmentAnswer, setSelectedAssessmentAnswer, setIsRunning, setSeconds, itemCount, setQA, extractedQA, shuffledChoices, setShuffledChoices } = props;
 
   const UserId = 1
 
@@ -66,19 +66,30 @@ export const PreJoinPage = (props) => {
   const takeAssessmentBtn = async () => {
     setShowPreJoin(false);
     setShowAssessmentPage(true);
-
+    let updatedIsRunning = true
+    // setSeconds(itemCount)
+    
     let data = {
       room: assessementRoom,
       username: username,
       userId: userId,
-      selectedAssessmentAnswer: selectedAssessmentAnswer
+      selectedAssessmentAnswer: selectedAssessmentAnswer,
+      timeDurationVal: 30
     }
 
     socket.emit('join_assessment_room', data);
     socket.on("assessment_user_list", (updatedData) => {
       setUserListAssessment(updatedData);
     });
+    socket.on("selected_assessment_answers", (selectedChoicesData) => {
+      setSelectedAssessmentAnswer(selectedChoicesData);
+    });
+    socket.on("updated_time", (time) => {
+      setSeconds(time);
+      setIsRunning(updatedIsRunning);
+    });
   }
+
 
   return (
     <div className='container py-8 poppins'>

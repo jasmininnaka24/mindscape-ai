@@ -48,7 +48,8 @@ export const GroupReviewerPage = () => {
   const [enabledSubmitBtn, setEnabledSubmitBtn] = useState(true);
   const [showAssessmentPage, setShowAssessmentPage] = useState(false);
   const [assessementRoom, setAssessmentRoom] = useState('');
-  
+  const [isRunning, setIsRunning] = useState(false);
+  const [seconds, setSeconds] = useState(0);
 
 
 
@@ -58,7 +59,7 @@ export const GroupReviewerPage = () => {
 
   // assessment page states
   const [selectedAssessmentAnswer, setSelectedAssessmentAnswer] = useState([]);
-
+  const [itemCount, setItemCount] = useState(0)
 
 
 
@@ -186,17 +187,37 @@ export const GroupReviewerPage = () => {
         );
 
         setQA(updatedData);
+        setItemCount(updatedData.length * 60)
         socket.emit("update_QA_data", updatedData);
 
+          
+        if (Array.isArray(updatedData)) {
+          const shuffledChoicesPromises = updatedData.map(async (item) => {
+            try {
+              const materialChoicesResponse = await axios.get(`http://localhost:3001/quesAnsChoices/study-material/${materialId}/${item.id}`);
+              const choices = materialChoicesResponse.data.map(choice => choice.choice);
+              const combinedArray = [...choices, item.answer];
+              const shuffledArray = shuffleArray(combinedArray);
+              return shuffledArray;
+            } catch (error) {
+              console.error('Error fetching choices:', error);
+              return []; // or handle the error according to your use case
+            }
+          });
+    
+          try {
+            const shuffledChoices = await Promise.all(shuffledChoicesPromises);
+            setShuffledChoices(shuffledChoices);
+
+            socket.emit("shuffled_choices", {room, shuffledChoices})
+          } catch (error) {
+            console.error('Error processing choices:', error);
+          }
+        }
+
+
+
         
-
-        const choicesResponse = await axios.get(`http://localhost:3001/quesAnsChoices/study-material/${materialId}/${extractedQA[questionIndex].id}`);
-        setChoices(choicesResponse.data);
-
-        let shuffledArray = shuffleArray([...choicesResponse.data, { choice: extractedQA[questionIndex].answer }])
-
-        setShuffledChoices(shuffledArray);
-        socket.emit("shuffled_choices", {room, shuffledArray})
         
 
 
@@ -411,11 +432,11 @@ export const GroupReviewerPage = () => {
               <div>
 
                 {showPreJoin && (
-                  <PreJoinPage setUsername={setUsername} setUserId={setUserId} joinRoom={joinRoom} materialId={materialId} groupId={groupId} setShowPreJoin={setShowPreJoin} setShowAssessmentPage={setShowAssessmentPage} room={room} assessementRoom={assessementRoom} username={username} userId={userId} userListAssessment={userListAssessment} setUserListAssessment={setUserListAssessment} selectedAssessmentAnswer={selectedAssessmentAnswer} setSelectedAssessmentAnswer={setSelectedAssessmentAnswer} />
+                  <PreJoinPage setUsername={setUsername} setUserId={setUserId} joinRoom={joinRoom} materialId={materialId} groupId={groupId} setShowPreJoin={setShowPreJoin} setShowAssessmentPage={setShowAssessmentPage} room={room} assessementRoom={assessementRoom} username={username} userId={userId} userListAssessment={userListAssessment} setUserListAssessment={setUserListAssessment} selectedAssessmentAnswer={selectedAssessmentAnswer} setSelectedAssessmentAnswer={setSelectedAssessmentAnswer} isRunning={isRunning} setIsRunning={setIsRunning} seconds={seconds} setSeconds={setSeconds} itemCount={itemCount} setQA={setQA} extractedQA={extractedQA} shuffledChoices={shuffledChoices} setShuffledChoices={setShuffledChoices} />
                 )}
  
                 {showAssessmentPage && (
-                  <AssessmentPage groupId={groupId} materialId={materialId} setShowAssessmentPage={setShowAssessmentPage} userListAssessment={userListAssessment} setUserListAssessment={setUserListAssessment} room={room} assessementRoom={assessementRoom} username={username} userId={userId} selectedAssessmentAnswer={selectedAssessmentAnswer} setSelectedAssessmentAnswer={setSelectedAssessmentAnswer} />
+                  <AssessmentPage groupId={groupId} materialId={materialId} setShowAssessmentPage={setShowAssessmentPage} userListAssessment={userListAssessment} setUserListAssessment={setUserListAssessment} room={room} assessementRoom={assessementRoom} username={username} userId={userId} selectedAssessmentAnswer={selectedAssessmentAnswer} setSelectedAssessmentAnswer={setSelectedAssessmentAnswer} isRunning={isRunning} setIsRunning={setIsRunning} seconds={seconds} setSeconds={setSeconds} setQA={setQA} extractedQA={extractedQA} shuffledChoices={shuffledChoices} setShuffledChoices={setShuffledChoices} />
                 )}
                 
               </div>

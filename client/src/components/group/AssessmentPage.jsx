@@ -13,15 +13,13 @@ const socket = io.connect("http://localhost:3001");
 
 export const AssessmentPage = (props) => {
 
-  const { groupId, materialId, userId, userListAssessment, setUserListAssessment, selectedAssessmentAnswer, setSelectedAssessmentAnswer } = props;
+  const { groupId, materialId, username, userId, userListAssessment, setUserListAssessment, selectedAssessmentAnswer, setSelectedAssessmentAnswer, assessementRoom, isRunning, setIsRunning, seconds, setSeconds, setQA, extractedQA, shuffledChoices, setShuffledChoices } = props;
 
   let studyProfeciencyTarget = 90;
 
   // hooks
   const [materialTitle, setMaterialTitle] = useState('')
   const [materialCategory, setMaterialCategory] = useState('')
-  const [extractedQA, setQA] = useState({});
-  const [shuffledChoices, setShuffledChoices] = useState([]);
   const [score, setScore] = useState(0);
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [isAssessmentDone, setIsAssessmentDone] = useState(false);
@@ -44,8 +42,6 @@ export const AssessmentPage = (props) => {
 
   const [analysisId, setAnalysisId] = useState(0);
   const [categoryID, setCategoryID] = useState(0);
-  const [seconds, setSeconds] = useState(0);
-  const [isRunning, setIsRunning] = useState(false);
   
   
 
@@ -66,9 +62,6 @@ export const AssessmentPage = (props) => {
       const materialCategoryResponse = await axios.get(`http://localhost:3001/studyMaterialCategory/get-lastmaterial/${materialTitleResponse.data[0].StudyMaterialsCategoryId}/${groupId}/Group/${UserId}`)
       setMaterialCategory(materialCategoryResponse.data.category)
 
-      const materialResponse = await axios.get(`http://localhost:3001/quesAns/study-material-mcq/${materialId}`);
-      const fetchedQA = materialResponse.data;
-
 
       const previousSavedData = await axios.get(`http://localhost:3001/DashForPersonalAndGroup/get-latest-assessment/${materialId}`);
       const fetchedData = previousSavedData.data;
@@ -85,64 +78,7 @@ export const AssessmentPage = (props) => {
       } else {
         console.error('Invalid or empty data received:', fetchedData);
       }
-      
-
-      const updatedData = await Promise.all(
-        fetchedQA.map(async (item) => {
-          if (item.quizType === 'ToF') {
-            const randomNumber = Math.floor(Math.random() * 10);
-            if (randomNumber % 2 === 0) {
-              try {
-                const choicesResponse = await axios.get(`http://localhost:3001/quesAnsChoices/study-material/${materialId}/${item.id}`);
-                const randomIndex = Math.floor(Math.random() * choicesResponse.data.length);
-                const question = choicesResponse.data[randomIndex].choice;
-                return {
-                  ...item,
-                  question: question,
-                  answer: 'False',
-                };
-              } catch (error) {
-                console.error('Error fetching choices:', error);
-                return item; 
-              }
-            }
-          }
-          return item; 
-        })
-      );
     
-      setQA(updatedData);
-
-
-
-
-      if (Array.isArray(updatedData)) {
-        const shuffledChoicesPromises = updatedData.map(async (item) => {
-          try {
-            const materialChoicesResponse = await axios.get(`http://localhost:3001/quesAnsChoices/study-material/${materialId}/${item.id}`);
-            const choices = materialChoicesResponse.data.map(choice => choice.choice);
-            const combinedArray = [...choices, item.answer];
-            const shuffledArray = shuffleArray(combinedArray);
-            return shuffledArray;
-          } catch (error) {
-            console.error('Error fetching choices:', error);
-            return []; // or handle the error according to your use case
-          }
-        });
-  
-        try {
-          const shuffledChoices = await Promise.all(shuffledChoicesPromises);
-          setShuffledChoices(shuffledChoices);
-
-        } catch (error) {
-          console.error('Error processing choices:', error);
-        }
-      }
-
-
-        setSeconds(extractedQA.length * 60);
-        setIsRunning(true)
-      
     }
 
     if(isAssessmentDone === false) {
@@ -152,14 +88,19 @@ export const AssessmentPage = (props) => {
     socket.on("assessment_user_list", (updatedData) => {
       setUserListAssessment(updatedData);
     });
+    socket.on("selected_assessment_answers", (selectedChoicesData) => {
+      setSelectedAssessmentAnswer(selectedChoicesData);
+    });
+    
     
     return () => {
       socket.off('assessment_user_list');
+      socket.off('updated_time');
       socket.off('disconnect');
 
     };
     
-  }, [extractedQA.length, groupId, isAssessmentDone, materialId, setUserListAssessment, userId])
+  }, [groupId, isAssessmentDone, materialId, setSelectedAssessmentAnswer, setUserListAssessment, userId])
 
 
 
@@ -178,7 +119,16 @@ export const AssessmentPage = (props) => {
     const selectedAssessmentAnswers = [...selectedAssessmentAnswer];
     selectedAssessmentAnswers[index] = choice;
     setSelectedAssessmentAnswer(selectedAssessmentAnswers);
+  
+    socket.emit("updated_answers", { assessementRoom, selectedAssessmentAnswers });
+    socket.on("selected_assessment_answers", (selectedChoicesData) => {
+      setSelectedAssessmentAnswer(selectedChoicesData);
+    });
+    
   };
+
+  
+  
 
 
   const updateStudyPerformance = async (overallperf) => {
@@ -503,7 +453,23 @@ export const AssessmentPage = (props) => {
     let interval;
     if (isRunning && seconds > 0) {
       interval = setInterval(() => {
-        setSeconds(prevSeconds => prevSeconds - 1);
+        // setSeconds(prevSeconds => prevSeconds - 1);
+
+        setSeconds(prevSeconds => {
+          const updatedSeconds = prevSeconds - 1;
+          console.log("Updated Seconds:", updatedSeconds);
+          socket.emit('update_time', { room: assessementRoom, timeDurationVal: updatedSeconds });
+          return updatedSeconds;
+        });
+        
+        socket.on("updated_time", (time) => {
+          setSeconds(time);
+        });
+        
+
+
+
+
       }, 1000);
     } else if (seconds <= 0 && isRunning) {
       console.log("Time is already done!");

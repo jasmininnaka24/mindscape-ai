@@ -42,8 +42,9 @@ let reviewQuestionIndex = {}
 
 // assessment
 let assessmentRoomList = {};
-let assessmentUsers = []
-let ioSelectedAssessmentAnswer = []
+let ioSelectedAssessmentAnswers = {}
+let isRunning = {}
+let setSeconds = {}
 
 io.on('connection', (socket) => {
   socket.on('join_room', (data) => {
@@ -196,21 +197,63 @@ io.on('connection', (socket) => {
   
   // assessment sockets
   socket.on('join_assessment_room', (data) => {
-    const { room, username, userId, selectedAssessmentAnswer } = data;
+    const { room, username, userId, selectedAssessmentAnswers, timeDurationVal } = data;
     socket.join(room);
     if (!assessmentRoomList[room]) {
       assessmentRoomList[room] = [];
     }
+
+    if (!ioSelectedAssessmentAnswers[room]) {
+      ioSelectedAssessmentAnswers[room] = [];
+    }
+
+    if (!isRunning[room]) {
+      isRunning[room] = false;
+    }
+  
+    if (!setSeconds[room]) {
+      setSeconds[room] = 0;
+    }
   
     // Add user to the room's user list
     assessmentRoomList[room].push({ socketId: socket.id, username, userId });
+
+    if (ioSelectedAssessmentAnswers[room].length === 0) {
+      ioSelectedAssessmentAnswers[room].push(selectedAssessmentAnswers);
+    }
+
+    if (isRunning[room] === false) {
+      isRunning[room] = true;
+      setSeconds[room] = timeDurationVal;
+      io.to(room).emit("updated_time", setSeconds[room])
+    } else {
+      io.to(room).emit("updated_time", setSeconds[room])
+    }
   
-    assessmentUsers = assessmentRoomList[room];
     // Emit the updated user list and current turn to all clients in the room
-    io.to(room).emit('assessment_user_list', assessmentUsers);
-    
+    io.to(room).emit('assessment_user_list', assessmentRoomList[room]);
+    io.to(room).emit('selected_assessment_answers', ioSelectedAssessmentAnswers[room]);
+    console.log(ioSelectedAssessmentAnswers[room]);
 
   });
+  
+  socket.on("update_time", (data) => {
+    const {room, timeDurationVal } = data
+    setSeconds[room] = timeDurationVal;
+    io.to(room).emit("updated_time", setSeconds[room])
+  })
+  
+
+
+  socket.on("updated_answers", (data) => {
+
+    const {assessementRoom, selectedAssessmentAnswers } = data
+
+    ioSelectedAssessmentAnswers[assessementRoom] = selectedAssessmentAnswers;
+    io.to(assessementRoom).emit("selected_assessment_answers", ioSelectedAssessmentAnswers[assessementRoom])
+    
+  })
+
   
 
 
@@ -293,7 +336,9 @@ io.on('connection', (socket) => {
         // Remove the assessmentRoom if there are no users in it
         if (assessmentRoomList[assessmentRoom].length === 0) {
           delete assessmentRoomList[assessmentRoom];
-          selectedChoiceValCurr = "";
+          ioSelectedAssessmentAnswers[assessmentRoom] = [];
+          isRunning[assessmentRoom] = false;
+          setSeconds[assessmentRoom] = 0;
         }
         io.to(assessmentRoom).emit('assessment_user_list', assessmentRoomList[assessmentRoom]);
         console.log(assessmentRoomList);
