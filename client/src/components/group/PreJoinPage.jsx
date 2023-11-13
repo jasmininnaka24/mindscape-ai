@@ -9,7 +9,15 @@ const socket = io.connect("http://localhost:3001");
 
 export const PreJoinPage = (props) => {
 
-  const { setUsername, setUserId, joinRoom, materialId, groupId, setShowPreJoin, setShowAssessmentPage, username, userId, assessementRoom, setUserListAssessment, selectedAssessmentAnswer, setSelectedAssessmentAnswer,  isRunning, setIsRunning, setSeconds, itemCount, setQA, extractedQA, shuffledChoices, setShuffledChoices, isSubmittedButtonClicked, setIsSubmittedButtonClicked, idOfWhoSubmitted, setIdOfWhoSubmitted, usernameOfWhoSubmitted, setUsernameOfWhoSubmitted, score, setScore, isSubmitted, setIsSubmitted, isAssessmentDone, setIsAssessmentDone, showSubmittedAnswerModal, setShowSubmittedAnswerModal, showTexts, setShowTexts, showAnalysis, setShowAnalysis, showAssessment, setShowAssessment, overAllItems, setOverAllItems, preAssessmentScore, setPreAssessmentScore, assessmentScore, setAssessmentScore, assessmentImp, setAssessmentImp, assessmentScorePerf, setAssessmentScorePerf, completionTime, setCompletionTime, confidenceLevel, setConfidenceLevel, overAllPerformance, setOverAllPerformance, assessmentCountMoreThanOne, setAssessmentCountMoreThanOne } = props;
+  const { setUsername, setUserId, joinRoom, materialId, groupId, setShowPreJoin, setShowAssessmentPage, username, userId, assessementRoom, setUserListAssessment, selectedAssessmentAnswer, setSelectedAssessmentAnswer,  isRunning, setIsRunning, setSeconds, itemCount, setQA, extractedQA, shuffledChoices, setShuffledChoices, isSubmittedButtonClicked, setIsSubmittedButtonClicked, idOfWhoSubmitted, setIdOfWhoSubmitted, usernameOfWhoSubmitted, setUsernameOfWhoSubmitted, score, setScore, isSubmitted, setIsSubmitted, isAssessmentDone, setIsAssessmentDone, showSubmittedAnswerModal, setShowSubmittedAnswerModal, showTexts, setShowTexts, showAnalysis, setShowAnalysis, showAssessment, setShowAssessment, overAllItems, setOverAllItems, preAssessmentScore, setPreAssessmentScore, assessmentScore, setAssessmentScore, assessmentImp, setAssessmentImp, assessmentScorePerf, setAssessmentScorePerf, completionTime, setCompletionTime, confidenceLevel, setConfidenceLevel, overAllPerformance, setOverAllPerformance, assessmentCountMoreThanOne, setAssessmentCountMoreThanOne, generatedAnalysis, setGeneratedAnalysis } = props;
+
+
+
+
+
+
+
+
 
   const UserId = 1
 
@@ -84,6 +92,16 @@ export const PreJoinPage = (props) => {
       showTexts: showTexts,
       showAnalysis: showAnalysis,
       showAssessment: showAssessment,
+      overAllItems: overAllItems, 
+      preAssessmentScore: preAssessmentScore, 
+      assessmentScoreLatest: assessmentScore, 
+      assessmentImp: assessmentImp,
+      assessmentScorePerf: assessmentScorePerf,
+      completionTime: completionTime, 
+      confidenceLevel: confidenceLevel, 
+      overAllPerformance: overAllPerformance, 
+      assessmentCountMoreThanOne: assessmentCountMoreThanOne,
+      generatedAnalysis: generatedAnalysis
     };  
   
     socket.emit('join_assessment_room', data);
@@ -142,6 +160,46 @@ export const PreJoinPage = (props) => {
   
     socket.on('show_analysis', (showAnalysis) => {
       setShowAnalysis(showAnalysis);
+    });
+  
+    socket.on('over_all_items', (data) => {
+      setOverAllItems(data);
+    });
+  
+    socket.on('pre_assessment_score', (data) => {
+      setPreAssessmentScore(data);
+    });
+  
+    socket.on('assessment_score_latest', (data) => {
+      setAssessmentScore(data);
+    });
+  
+    socket.on('assessment_imp', (data) => {
+      setAssessmentImp(data);
+    });
+  
+    socket.on('assessment_score_perf', (data) => {
+      setAssessmentScorePerf(data);
+    });
+  
+    socket.on('completion_time', (data) => {
+      setCompletionTime(data);
+    });
+  
+    socket.on('confidence_level', (data) => {
+      setConfidenceLevel(data);
+    });
+  
+    socket.on('over_all_performance', (data) => {
+      setOverAllPerformance(data);
+    });
+  
+    socket.on('assessment_count_more_than_one', (data) => {
+      setAssessmentCountMoreThanOne(data);
+    });
+  
+    socket.on('generated_analysis', (data) => {
+      setGeneratedAnalysis(data);
     });
 
   };

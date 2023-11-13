@@ -13,7 +13,7 @@ const socket = io.connect("http://localhost:3001");
 
 export const AssessmentPage = (props) => {
 
-  const { groupId, materialId, username, userId, userListAssessment, setUserListAssessment, selectedAssessmentAnswer, setSelectedAssessmentAnswer, assessementRoom, isRunning, setIsRunning, seconds, setSeconds, setQA, extractedQA, shuffledChoices, setShuffledChoices, isSubmittedButtonClicked, setIsSubmittedButtonClicked, idOfWhoSubmitted, setIdOfWhoSubmitted, usernameOfWhoSubmitted, setUsernameOfWhoSubmitted, score, setScore, isSubmitted, setIsSubmitted, isAssessmentDone, setIsAssessmentDone, showSubmittedAnswerModal, setShowSubmittedAnswerModal, showTexts, setShowTexts, showAnalysis, setShowAnalysis, showAssessment, setShowAssessment, overAllItems, setOverAllItems, preAssessmentScore, setPreAssessmentScore, assessmentScore, setAssessmentScore, assessmentImp, setAssessmentImp, assessmentScorePerf, setAssessmentScorePerf, completionTime, setCompletionTime, confidenceLevel, setConfidenceLevel, overAllPerformance, setOverAllPerformance, assessmentCountMoreThanOne, setAssessmentCountMoreThanOne } = props;
+  const { groupId, materialId, username, userId, userListAssessment, setUserListAssessment, selectedAssessmentAnswer, setSelectedAssessmentAnswer, assessementRoom, isRunning, setIsRunning, seconds, setSeconds, setQA, extractedQA, shuffledChoices, setShuffledChoices, isSubmittedButtonClicked, setIsSubmittedButtonClicked, idOfWhoSubmitted, setIdOfWhoSubmitted, usernameOfWhoSubmitted, setUsernameOfWhoSubmitted, score, setScore, isSubmitted, setIsSubmitted, isAssessmentDone, setIsAssessmentDone, showSubmittedAnswerModal, setShowSubmittedAnswerModal, showTexts, setShowTexts, showAnalysis, setShowAnalysis, showAssessment, setShowAssessment, overAllItems, setOverAllItems, preAssessmentScore, setPreAssessmentScore, assessmentScore, setAssessmentScore, assessmentImp, setAssessmentImp, assessmentScorePerf, setAssessmentScorePerf, completionTime, setCompletionTime, confidenceLevel, setConfidenceLevel, overAllPerformance, setOverAllPerformance, assessmentCountMoreThanOne, setAssessmentCountMoreThanOne, generatedAnalysis, setGeneratedAnalysis } = props;
 
   let studyProfeciencyTarget = 90;
 
@@ -21,7 +21,6 @@ export const AssessmentPage = (props) => {
   const [materialTitle, setMaterialTitle] = useState('')
   const [materialCategory, setMaterialCategory] = useState('')
   const [lastAssessmentScore, setLastAssessmentScore] = useState(0);
-  const [generatedAnalysis, setGeneratedAnalysis] = useState('');
   const [showScoreForPreAssessment, setShowScoreForPreAssessment] = useState(false);
 
   const [analysisId, setAnalysisId] = useState(0);
@@ -107,7 +106,7 @@ export const AssessmentPage = (props) => {
 
     };
     
-  }, [groupId, isSubmittedButtonClicked, idOfWhoSubmitted, isAssessmentDone, materialId, setIdOfWhoSubmitted, setIsSubmitted, setScore, setSelectedAssessmentAnswer, seconds, setUserListAssessment, userListAssessment, isRunning, userId, setIsAssessmentDone, showAnalysis, score, isSubmitted])
+  }, [groupId, isSubmittedButtonClicked, idOfWhoSubmitted, isAssessmentDone, materialId, setIdOfWhoSubmitted, setIsSubmitted, setScore, setSelectedAssessmentAnswer, seconds, setUserListAssessment, userListAssessment, isRunning, userId, setIsAssessmentDone, showAnalysis, score, isSubmitted, setOverAllItems, setAssessmentCountMoreThanOne])
 
 
 
@@ -172,14 +171,26 @@ export const AssessmentPage = (props) => {
     
 
 
-    let completionTimeInMinutes = Math.floor(seconds/60);
+    let completionTimeCalc = '';
+    let extractedQALengthInMinutes = extractedQA.length * 60;
+    let timeleft = extractedQALengthInMinutes - seconds;
 
-    let timeDuration = (extractedQA.length - completionTimeInMinutes);
-  
-    let completionTimeCalc = seconds === 0 ? extractedQA.length : timeDuration;
-
-  
-
+    if (seconds === 0) {
+        completionTimeCalc = '0 seconds';
+    } else {
+        const minutes = Math.floor(timeleft / 60);
+        const secondsRemainder = timeleft % 60;
+    
+        if (minutes >= 0) {
+            completionTimeCalc += `${minutes} min `;
+        }
+        
+        if (secondsRemainder > 0) {
+            completionTimeCalc += (minutes > 0 ? ' ' : '') + `${secondsRemainder} second${secondsRemainder !== 1 ? 's' : ''}`;
+        }
+    }
+    
+    
 
 
     if (idOfWhoSubmitted === userId) {
@@ -380,7 +391,7 @@ export const AssessmentPage = (props) => {
     socket.emit('updated_show_texts', {room: assessementRoom, showTexts: false});
 
     
-    const generateAnalysisUrl = 'https://b70f-35-197-52-15.ngrok.io/generate_analysis';
+    const generateAnalysisUrl = 'https://57ef-34-125-116-81.ngrok.io/generate_analysis';
 
     
     let predictionText = overAllPerformance.toFixed(2) >= 90 ? 'ready' : 'not yet ready';
@@ -407,6 +418,9 @@ export const AssessmentPage = (props) => {
       assessmentImp = fetchedData[0].assessmentImp;
       
       setAssessmentCountMoreThanOne(false)
+      socket.emit('updated_assessment_count_more_than_one', {room: assessementRoom, assessmentCountMoreThanOne: false});
+
+
     } else if (fetchedData.length > 1) {
       lastExamStr = 'Assessment';
       lastAssessmentScore = fetchedData[0].assessmentScore;
@@ -416,6 +430,8 @@ export const AssessmentPage = (props) => {
       confidenceLevel = fetchedData[0].confidenceLevel;
 
       setAssessmentCountMoreThanOne(true)
+      socket.emit('updated_assessment_count_more_than_one', {room: assessementRoom, assessmentCountMoreThanOne: true});
+
     }
     
     let data = {
@@ -434,7 +450,10 @@ export const AssessmentPage = (props) => {
     
     const response = await axios.post(generateAnalysisUrl, data);
     let generatedAnalysisResponse = (response.data.generated_analysis).replace('\n\n\n\n\n', '');
+
     setGeneratedAnalysis(generatedAnalysisResponse)
+    socket.emit('updated_generated_analysis', {room: assessementRoom, generatedAnalysis: generatedAnalysisResponse});
+
 
     const newlyFetchedDashboardData = await axios.put(`http://localhost:3001/DashForPersonalAndGroup/set-update-analysis/${id}`, {analysis: generatedAnalysisResponse});
     const newlyFetchedDashboardDataValues = newlyFetchedDashboardData.data;
@@ -455,6 +474,8 @@ export const AssessmentPage = (props) => {
     setConfidenceLevel(newlyFetchedDashboardDataValues.confidenceLevel);
     setOverAllPerformance((parseFloat(newlyFetchedDashboardDataValues.assessmentImp) + parseFloat(newlyFetchedDashboardDataValues.assessmentScorePerf) + parseFloat(newlyFetchedDashboardDataValues.confidenceLevel)) / 3);
 
+    let overallperf = (parseFloat(newlyFetchedDashboardDataValues.assessmentImp) + parseFloat(newlyFetchedDashboardDataValues.assessmentScorePerf) + parseFloat(newlyFetchedDashboardDataValues.confidenceLevel)) / 3;
+
 
     setShowAnalysis(true)
     setShowAssessment(false);
@@ -463,6 +484,21 @@ export const AssessmentPage = (props) => {
     socket.emit('updated_show_analysis', {room: assessementRoom, showAnalysis: true});
     socket.emit('updated_show_assessment', {room: assessementRoom, showAssessment: false});
     socket.emit('updated_show_submitted_answer_modal', {room: assessementRoom, showSubmittedAnswerModal: false});
+    
+    socket.emit('updated_over_all_items', {room: assessementRoom, overAllItems: newlyFetchedDashboardDataValues.overAllItems});
+
+    socket.emit('updated_pre_assessment_score', {room: assessementRoom, preAssessmentScore: newlyFetchedDashboardDataValues.preAssessmentScore});
+
+    socket.emit('updated_assessment_score_latest', {room: assessementRoom, assessmentScoreLatest: newlyFetchedDashboardDataValues.assessmentScore});
+
+    socket.emit('updated_assessment_imp', {room: assessementRoom, assessmentImp: newlyFetchedDashboardDataValues.assessmentImp});
+
+    socket.emit('updated_assessment_score_perf', {room: assessementRoom, assessmentScorePerf: newlyFetchedDashboardDataValues.assessmentScorePerf});
+
+    socket.emit('updated_completion_time', {room: assessementRoom, completionTime: newlyFetchedDashboardDataValues.completionTime});
+    socket.emit('updated_confidence_level', {room: assessementRoom, confidenceLevel: newlyFetchedDashboardDataValues.confidenceLevel});
+    socket.emit('updated_over_all_performance', {room: assessementRoom, overAllPerformance: overallperf});
+
 
     
     const targetElement = document.getElementById("currSec");
@@ -785,6 +821,7 @@ export const AssessmentPage = (props) => {
               <button
                 className={`w-1/2 py-2 px-5 rounded-[5px] text-lg ${isSubmittedButtonClicked === true && idOfWhoSubmitted !== userId && usernameOfWhoSubmitted !== username ? 'disabled-button mbg-300 mcolor-800' : 'mbg-800 mcolor-100 '}`}
                 onClick={() => {
+
                   socket.emit('submitted_button_clicked', { room: assessementRoom, isAnswersSubmitted: true });
 
                   if (userListAssessment && userListAssessment.length > 0) {
@@ -795,6 +832,8 @@ export const AssessmentPage = (props) => {
                       submitAnswer();
                     }
                   }
+
+                    
                 }}
                 disabled={isSubmittedButtonClicked === true && idOfWhoSubmitted !== userId && usernameOfWhoSubmitted !== username}
                 style={{ cursor: isSubmittedButtonClicked === true && idOfWhoSubmitted !== userId && usernameOfWhoSubmitted !== username ? 'not-allowed' : 'pointer' }}
@@ -838,7 +877,7 @@ export const AssessmentPage = (props) => {
                   <p className='text-2xl font-bold'>Assessment score performance: {assessmentScorePerf}%</p>
 
                   <br /><br />
-                  <p className='text-2xl'>Completion time: {completionTime} min{(completionTime > 1) ? 's' : ''}</p>
+                  <p className='text-2xl'>Completion time: {completionTime}</p>
                   <p className='text-2xl font-bold'>Confidence level: {confidenceLevel}%</p>
 
                 </div>
@@ -854,42 +893,46 @@ export const AssessmentPage = (props) => {
                 <p className='mb-5 font-bold text-2xl text-center'>ANALYSIS</p>
                 <p className='text-center text-xl mb-10'>{generatedAnalysis}</p>
               </div>
+              {
+                (
+                  (completionTime && completionTime.match(/(\d+)\s*min/) ? parseInt(completionTime.match(/(\d+)\s*min/)[1], 10) : 0) >= Math.floor(extractedQA.length / 2) ||
+                  assessmentImp < studyProfeciencyTarget ||
+                  assessmentScorePerf < studyProfeciencyTarget
+                ) && (
+                  <div className='mt-20'>
+                    <p className='mb-5 font-bold text-2xl text-center'>Recommendations</p>
+
+                    {(completionTime && completionTime.match(/(\d+)\s*min/) ? parseInt(completionTime.match(/(\d+)\s*min/)[1], 10) : 0) >= Math.floor(extractedQA.length / 2) && (
+                      <p className='text-center text-xl mb-4'>
+                        <CheckIcon className='mr-2' />
+                        Challenge yourself to finish the assessment under{' '}
+                        <span className='font-bold'>
+                          {`${Math.floor(overAllItems / 120) > 0 ? (Math.floor(overAllItems / 120) === 1 ? '1 hour' : Math.floor(overAllItems / 120) + ' hours') + ' ' : ''}${Math.floor((overAllItems % 120) / 2) > 0 ? (Math.floor((overAllItems % 120) / 2) === 1 ? '1 min' : Math.floor((overAllItems % 120) / 2) + ' mins') + ' ' : ''}${((overAllItems % 2) * 30) > 0 ? ((overAllItems % 2) * 30) + ' second' + (((overAllItems % 2) * 30) !== 1 ? 's' : '') : ''}`}
+                        </span>
+                        {' '}
+                        to increase the confidence level until it gets to 100%.
+                      </p>
+                    )}
+
+                    {assessmentImp < studyProfeciencyTarget && (
+                      <p className='text-center text-xl mb-4'>
+                        <CheckIcon className='mr-2' />
+                        You may consider revisiting the lesson/quiz practice to enhance your understanding, which will lead to an increase in your <span className='font-bold'>Assessment Improvement</span> when you retake the quiz.
+                      </p>
+                    )}
+
+                    {assessmentScorePerf < studyProfeciencyTarget && (
+                      <p className='text-center text-xl mb-4'>
+                        <CheckIcon className='mr-2' />
+                        You can aim for a quiz score of 90% or higher, which will significantly enhance your overall <span className='font-bold'>Assessment Performance</span> reaching the 90% benchmark.
+                      </p>
+                    )}
+                  </div>
+                )
+              }
 
 
-              {(completionTime >= Math.floor(extractedQA.length/2) || assessmentImp < studyProfeciencyTarget || assessmentScorePerf < studyProfeciencyTarget) && (
-                <div className='mt-20'>
-                  <p className='mb-5 font-bold text-2xl text-center'>Recommendations</p>
 
-                  {completionTime >= Math.floor(extractedQA.length/2) && (
-                    <p className='text-center text-xl mb-4'>
-                      <CheckIcon className='mr-2' />
-                      Challenge yourself to finish the assessment under{' '}
-                      <span className='font-bold'>
-                        {`${Math.floor(overAllItems / 120) > 0 ? (Math.floor(overAllItems / 120) === 1 ? '1 hour' : Math.floor(overAllItems / 120) + ' hours') + ' ' : ''}${Math.floor((overAllItems % 120) / 2) > 0 ? (Math.floor((overAllItems % 120) / 2) === 1 ? '1 min' : Math.floor((overAllItems % 120) / 2) + ' mins') + ' ' : ''}${((overAllItems % 2) * 30) > 0 ? ((overAllItems % 2) * 30) + ' second' + (((overAllItems % 2) * 30) !== 1 ? 's' : '') : ''}`}
-                      </span> 
-                      {' '}
-                      to increase the confidence level until it gets to 100%.
-                    </p>
-                  )}
-
-
-                  {assessmentImp < studyProfeciencyTarget && (
-                    <p className='text-center text-xl mb-4'>
-                      <CheckIcon className='mr-2' />
-                      You may consider revisiting the lesson/quiz practice to enhance your understanding, which will lead to an increase in your <span className='font-bold'>Assessment Improvement</span> when you retake the quiz.
-                    </p>
-                  )}
-
-
-                  {assessmentScorePerf < studyProfeciencyTarget && (
-                    <p className='text-center text-xl mb-4'>
-                      <CheckIcon className='mr-2' />
-                      You can aim for a quiz score of 90% or higher, which will significantly enhance your overall <span className='font-bold'>Assessment Performance</span> reaching the 90% benchmark.
-                    </p>
-                  )}
-
-                </div>
-              )}
             </div>
           )}
 
