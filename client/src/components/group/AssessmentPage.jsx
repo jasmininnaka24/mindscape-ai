@@ -13,38 +13,21 @@ const socket = io.connect("http://localhost:3001");
 
 export const AssessmentPage = (props) => {
 
-  const { groupId, materialId, username, userId, userListAssessment, setUserListAssessment, selectedAssessmentAnswer, setSelectedAssessmentAnswer, assessementRoom, isRunning, setIsRunning, seconds, setSeconds, setQA, extractedQA, shuffledChoices, setShuffledChoices } = props;
+  const { groupId, materialId, username, userId, userListAssessment, setUserListAssessment, selectedAssessmentAnswer, setSelectedAssessmentAnswer, assessementRoom, isRunning, setIsRunning, seconds, setSeconds, setQA, extractedQA, shuffledChoices, setShuffledChoices, isSubmittedButtonClicked, setIsSubmittedButtonClicked, idOfWhoSubmitted, setIdOfWhoSubmitted, usernameOfWhoSubmitted, setUsernameOfWhoSubmitted, score, setScore, isSubmitted, setIsSubmitted, isAssessmentDone, setIsAssessmentDone, showSubmittedAnswerModal, setShowSubmittedAnswerModal, showTexts, setShowTexts, showAnalysis, setShowAnalysis, showAssessment, setShowAssessment, overAllItems, setOverAllItems, preAssessmentScore, setPreAssessmentScore, assessmentScore, setAssessmentScore, assessmentImp, setAssessmentImp, assessmentScorePerf, setAssessmentScorePerf, completionTime, setCompletionTime, confidenceLevel, setConfidenceLevel, overAllPerformance, setOverAllPerformance, assessmentCountMoreThanOne, setAssessmentCountMoreThanOne } = props;
 
   let studyProfeciencyTarget = 90;
 
   // hooks
   const [materialTitle, setMaterialTitle] = useState('')
   const [materialCategory, setMaterialCategory] = useState('')
-  const [score, setScore] = useState(0);
-  const [isSubmitted, setIsSubmitted] = useState(false);
-  const [isAssessmentDone, setIsAssessmentDone] = useState(false);
-  const [showAssessment, setShowAssessment] = useState(true);
-  const [showAnalysis, setShowAnalysis] = useState(false);
-  const [overAllItems, setOverAllItems] = useState(0);
-  const [preAssessmentScore, setPreAssessmentScore] = useState(0);
-  const [assessmentScore, setAssessmentScore] = useState(0);
-  const [assessmentImp, setAssessmentImp] = useState(0);
-  const [assessmentScorePerf, setAssessmentScorePerf] = useState(0);
-  const [completionTime, setCompletionTime] = useState(0);
-  const [confidenceLevel, setConfidenceLevel] = useState(0);
-  const [overAllPerformance, setOverAllPerformance] = useState(0);
-  const [assessmentCountMoreThanOne, setAssessmentCountMoreThanOne] = useState(false);
   const [lastAssessmentScore, setLastAssessmentScore] = useState(0);
-  const [showSubmittedAnswerModal, setShowSubmittedAnswerModal] = useState(false);
   const [generatedAnalysis, setGeneratedAnalysis] = useState('');
-  const [showTexts, setShowTexts] = useState(true);
   const [showScoreForPreAssessment, setShowScoreForPreAssessment] = useState(false);
 
   const [analysisId, setAnalysisId] = useState(0);
   const [categoryID, setCategoryID] = useState(0);
   
   
-
   
   const UserId = 1;
   
@@ -85,34 +68,48 @@ export const AssessmentPage = (props) => {
       fetchData();
     }
 
+
+    
     socket.on("assessment_user_list", (updatedData) => {
       setUserListAssessment(updatedData);
     });
     socket.on("selected_assessment_answers", (selectedChoicesData) => {
       setSelectedAssessmentAnswer(selectedChoicesData);
     });
-    
+
+    socket.on('id_of_who_submitted', (id) => {
+      setIdOfWhoSubmitted(id);
+    });
+  
+    socket.on('assessment_score', (score) => {
+      setScore(score);
+    });
+  
+    socket.on('isSubmitted_assess', (isSubmitted) => {
+      setIsSubmitted(isSubmitted);
+    });
+  
+    socket.on('isAssessment_done', (isAssessmentDone) => {
+      setIsAssessmentDone(isAssessmentDone);
+    });
+
+
+    if (isAssessmentDone === true) { 
+      const targetElement = document.getElementById("currSec");
+      targetElement.scrollIntoView({ behavior: 'smooth' });
+    }
     
     return () => {
       socket.off('assessment_user_list');
       socket.off('updated_time');
+      socket.off('selected_assessment_answers');
       socket.off('disconnect');
 
     };
     
-  }, [groupId, isAssessmentDone, materialId, setSelectedAssessmentAnswer, setUserListAssessment, userId])
+  }, [groupId, isSubmittedButtonClicked, idOfWhoSubmitted, isAssessmentDone, materialId, setIdOfWhoSubmitted, setIsSubmitted, setScore, setSelectedAssessmentAnswer, seconds, setUserListAssessment, userListAssessment, isRunning, userId, setIsAssessmentDone, showAnalysis, score, isSubmitted])
 
 
-
-
-  const shuffleArray = (array) => {
-    let shuffledArray = array.slice();
-    for (let i = shuffledArray.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [shuffledArray[i], shuffledArray[j]] = [shuffledArray[j], shuffledArray[i]];
-    }
-    return shuffledArray;
-  };
 
 
   const handleRadioChange = (choice, index) => {
@@ -127,7 +124,6 @@ export const AssessmentPage = (props) => {
     
   };
 
-  
   
 
 
@@ -152,8 +148,13 @@ export const AssessmentPage = (props) => {
 
 
 
-  const dataForSubmittingAnswers = async () => {
-    
+  const dataForSubmittingAnswers = async (userId) => {
+
+    socket.emit('update_time', { room: assessementRoom, timeDurationVal: seconds });
+    socket.on("updated_time", (time) => {
+      setSeconds(time);
+    });
+
     const score = selectedAssessmentAnswer.reduce((totalScore, item, index) => {
       const qaItem = extractedQA[index];
       if (qaItem && qaItem.answer !== undefined && qaItem.answer !== null && item) {
@@ -181,184 +182,205 @@ export const AssessmentPage = (props) => {
 
 
 
+    if (idOfWhoSubmitted === userId) {
 
-    // for pre-text functionality
-    if (fetchedData.length === 0) {
+      // for pre-text functionality
+      if (fetchedData.length === 0) {
 
-      let confidence = (((Math.round(extractedQA.length / 2)) / 8) * 100).toFixed(2);
-
-      let data = {
-        dashFor: 'Group',
-        overAllItems: extractedQA.length,
-        preAssessmentScore: score,
-        assessmentScorePerf: ((score / extractedQA.length) * 100).toFixed(2),
-        completionTime: completionTimeCalc,
-        confidenceLevel: completionTimeCalc >= Math.round(extractedQA.length / 2) ? confidence : 100,
-        StudyMaterialId: materialId,
-        StudyGroupId: null
-      }
-
-
-      const newlyFetchedDashboardData = await axios.post(`http://localhost:3001/DashForPersonalAndGroup/`, data);
-
-      const newlyFetchedDashboardDataValues = newlyFetchedDashboardData.data;
-
-      setAnalysisId(newlyFetchedDashboardDataValues.id);
-      setAssessmentCountMoreThanOne(false);
-
-      setShowScoreForPreAssessment(true)
-      // navigate(`/main/personal/study-area/personal-review/${materialId}`);
-    } 
-    
-    
-    else {
-      // for 1st assessment functionalitty
-      if (fetchedData[0].assessmentScore === 'none') {
-
-        const improvement = Math.max(0, ((score - fetchedData[0].preAssessmentScore) / Math.max(extractedQA.length - fetchedData[0].preAssessmentScore, 1) * 100).toFixed(2));
-
-
-        let confidence = (((Math.round(extractedQA.length / 2)) / completionTimeCalc) * 100).toFixed(2);
-
-
-        let data = {
-          assessmentScore: score,
-          assessmentImp: parseInt(score) === parseInt(fetchedData[0].preAssessmentScore) ? 100 : improvement,
-          assessmentScorePerf: ((score / extractedQA.length) * 100).toFixed(2),
-          completionTime: completionTimeCalc,
-          confidenceLevel: completionTimeCalc >= Math.round(extractedQA.length / 2) ? confidence : 100,
-        }
-
-
-
-        const newlyFetchedDashboardData = await axios.put(`http://localhost:3001/DashForPersonalAndGroup/update-data/${fetchedData[0].id}`, data);
-        const newlyFetchedDashboardDataValues = newlyFetchedDashboardData.data;
-
-        setAnalysisId(newlyFetchedDashboardDataValues.id);
-
-        setOverAllItems(newlyFetchedDashboardDataValues.overAllItems);
-        setPreAssessmentScore(newlyFetchedDashboardDataValues.preAssessmentScore);
-        setAssessmentScore(newlyFetchedDashboardDataValues.assessmentScore);
-        setAssessmentImp(newlyFetchedDashboardDataValues.assessmentImp);
-        setAssessmentScorePerf(newlyFetchedDashboardDataValues.assessmentScorePerf);
-        setCompletionTime(newlyFetchedDashboardDataValues.completionTime);
-        setConfidenceLevel(newlyFetchedDashboardDataValues.confidenceLevel);
-        setOverAllPerformance((parseFloat(newlyFetchedDashboardDataValues.assessmentImp) + parseFloat(newlyFetchedDashboardDataValues.assessmentScorePerf) + parseFloat(newlyFetchedDashboardDataValues.confidenceLevel)) / 3);
-        
-        setAssessmentCountMoreThanOne(false)
-
-
-        let overallperf = ((parseFloat(newlyFetchedDashboardDataValues.assessmentImp) + parseFloat(newlyFetchedDashboardDataValues.assessmentScorePerf) + parseFloat(newlyFetchedDashboardDataValues.confidenceLevel)) / 3);
-
-        updateStudyPerformance(overallperf)
-      } 
-      
-      
-      
-      
-      // for more than one assesssment functionality
-      else {
-
-
-        const improvement = Math.max(0, ((score - fetchedData[0].assessmentScore) / Math.max(extractedQA.length - fetchedData[0].assessmentScore, 1) * 100).toFixed(2));
-        const validImprovement = isNaN(improvement) ? 0 : improvement;
-        
-
-        let confidence = (((Math.round(extractedQA.length / 2)) / completionTimeCalc) * 100).toFixed(2);
+        let confidence = (((Math.round(extractedQA.length / 2)) / 8) * 100).toFixed(2);
 
         let data = {
           dashFor: 'Group',
           overAllItems: extractedQA.length,
-          preAssessmentScore: fetchedData[0].preAssessmentScore,
-          assessmentScore: score,
-          assessmentImp: parseInt(score) === parseInt(fetchedData[0].assessmentScore) ? 100 : validImprovement,
+          preAssessmentScore: score,
           assessmentScorePerf: ((score / extractedQA.length) * 100).toFixed(2),
           completionTime: completionTimeCalc,
           confidenceLevel: completionTimeCalc >= Math.round(extractedQA.length / 2) ? confidence : 100,
-          numOfTakes: fetchedData[0].numOfTakes + 1,
           StudyMaterialId: materialId,
           StudyGroupId: null
         }
 
-        setLastAssessmentScore(fetchedData[0].assessmentScore)
-        setAssessmentImp(assessmentImp.assessmentImp)
 
         const newlyFetchedDashboardData = await axios.post(`http://localhost:3001/DashForPersonalAndGroup/`, data);
+
         const newlyFetchedDashboardDataValues = newlyFetchedDashboardData.data;
 
-
-
         setAnalysisId(newlyFetchedDashboardDataValues.id);
+        setAssessmentCountMoreThanOne(false);
 
-        setOverAllItems(newlyFetchedDashboardDataValues.overAllItems);
-        setPreAssessmentScore(newlyFetchedDashboardDataValues.preAssessmentScore);
-        setAssessmentScore(newlyFetchedDashboardDataValues.assessmentScore);
-        setAssessmentImp(newlyFetchedDashboardDataValues.assessmentImp);
-        setAssessmentScorePerf(newlyFetchedDashboardDataValues.assessmentScorePerf);
-        setCompletionTime(newlyFetchedDashboardDataValues.completionTime);
-        setConfidenceLevel(newlyFetchedDashboardDataValues.confidenceLevel);
-        setOverAllPerformance((parseFloat(newlyFetchedDashboardDataValues.assessmentImp) + parseFloat(newlyFetchedDashboardDataValues.assessmentScorePerf) + parseFloat(newlyFetchedDashboardDataValues.confidenceLevel)) / 3);
+        setShowScoreForPreAssessment(true)
+        // navigate(`/main/personal/study-area/personal-review/${materialId}`);
+      } 
+      
+      
+      else {
+        // for 1st assessment functionalitty
+        if (fetchedData[0].assessmentScore === 'none') {
 
-        if (newlyFetchedDashboardDataValues.length > 0 && newlyFetchedDashboardDataValues[0].assessmentScore !== 'none') {
-          if (newlyFetchedDashboardDataValues.length >= 2) {
-            setLastAssessmentScore(newlyFetchedDashboardDataValues[1].assessmentScore);
-            setAssessmentCountMoreThanOne(true); 
+          const improvement = Math.max(0, ((score - fetchedData[0].preAssessmentScore) / Math.max(extractedQA.length - fetchedData[0].preAssessmentScore, 1) * 100).toFixed(2));
+
+
+          let confidence = (((Math.round(extractedQA.length / 2)) / completionTimeCalc) * 100).toFixed(2);
+
+
+          let data = {
+            assessmentScore: score,
+            assessmentImp: parseInt(score) === parseInt(fetchedData[0].preAssessmentScore) ? 100 : improvement,
+            assessmentScorePerf: ((score / extractedQA.length) * 100).toFixed(2),
+            completionTime: completionTimeCalc,
+            confidenceLevel: completionTimeCalc >= Math.round(extractedQA.length / 2) ? confidence : 100,
           }
+
+
+
+          const newlyFetchedDashboardData = await axios.put(`http://localhost:3001/DashForPersonalAndGroup/update-data/${fetchedData[0].id}`, data);
+          const newlyFetchedDashboardDataValues = newlyFetchedDashboardData.data;
+
+          setAnalysisId(newlyFetchedDashboardDataValues.id);
+
+          setOverAllItems(newlyFetchedDashboardDataValues.overAllItems);
+          setPreAssessmentScore(newlyFetchedDashboardDataValues.preAssessmentScore);
+          setAssessmentScore(newlyFetchedDashboardDataValues.assessmentScore);
+          setAssessmentImp(newlyFetchedDashboardDataValues.assessmentImp);
+          setAssessmentScorePerf(newlyFetchedDashboardDataValues.assessmentScorePerf);
+          setCompletionTime(newlyFetchedDashboardDataValues.completionTime);
+          setConfidenceLevel(newlyFetchedDashboardDataValues.confidenceLevel);
+          setOverAllPerformance((parseFloat(newlyFetchedDashboardDataValues.assessmentImp) + parseFloat(newlyFetchedDashboardDataValues.assessmentScorePerf) + parseFloat(newlyFetchedDashboardDataValues.confidenceLevel)) / 3);
+
+
+
+          
+          setAssessmentCountMoreThanOne(false)
+
+
+          let overallperf = ((parseFloat(newlyFetchedDashboardDataValues.assessmentImp) + parseFloat(newlyFetchedDashboardDataValues.assessmentScorePerf) + parseFloat(newlyFetchedDashboardDataValues.confidenceLevel)) / 3);
+
+          updateStudyPerformance(overallperf)
+        } 
+        
+        
+        
+        
+        // for more than one assesssment functionality
+        else {
+
+
+          const improvement = Math.max(0, ((score - fetchedData[0].assessmentScore) / Math.max(extractedQA.length - fetchedData[0].assessmentScore, 1) * 100).toFixed(2));
+          const validImprovement = isNaN(improvement) ? 0 : improvement;
+          
+
+          let confidence = (((Math.round(extractedQA.length / 2)) / completionTimeCalc) * 100).toFixed(2);
+
+          let data = {
+            dashFor: 'Group',
+            overAllItems: extractedQA.length,
+            preAssessmentScore: fetchedData[0].preAssessmentScore,
+            assessmentScore: score,
+            assessmentImp: parseInt(score) === parseInt(fetchedData[0].assessmentScore) ? 100 : validImprovement,
+            assessmentScorePerf: ((score / extractedQA.length) * 100).toFixed(2),
+            completionTime: completionTimeCalc,
+            confidenceLevel: completionTimeCalc >= Math.round(extractedQA.length / 2) ? confidence : 100,
+            numOfTakes: fetchedData[0].numOfTakes + 1,
+            StudyMaterialId: materialId,
+            StudyGroupId: null
+          }
+
+          setLastAssessmentScore(fetchedData[0].assessmentScore)
+          setAssessmentImp(assessmentImp.assessmentImp)
+
+          const newlyFetchedDashboardData = await axios.post(`http://localhost:3001/DashForPersonalAndGroup/`, data);
+          const newlyFetchedDashboardDataValues = newlyFetchedDashboardData.data;
+
+
+
+          setAnalysisId(newlyFetchedDashboardDataValues.id);
+
+          setOverAllItems(newlyFetchedDashboardDataValues.overAllItems);
+          setPreAssessmentScore(newlyFetchedDashboardDataValues.preAssessmentScore);
+          setAssessmentScore(newlyFetchedDashboardDataValues.assessmentScore);
+          setAssessmentImp(newlyFetchedDashboardDataValues.assessmentImp);
+          setAssessmentScorePerf(newlyFetchedDashboardDataValues.assessmentScorePerf);
+          setCompletionTime(newlyFetchedDashboardDataValues.completionTime);
+          setConfidenceLevel(newlyFetchedDashboardDataValues.confidenceLevel);
+          setOverAllPerformance((parseFloat(newlyFetchedDashboardDataValues.assessmentImp) + parseFloat(newlyFetchedDashboardDataValues.assessmentScorePerf) + parseFloat(newlyFetchedDashboardDataValues.confidenceLevel)) / 3);
+
+          if (newlyFetchedDashboardDataValues.length > 0 && newlyFetchedDashboardDataValues[0].assessmentScore !== 'none') {
+            if (newlyFetchedDashboardDataValues.length >= 2) {
+              setLastAssessmentScore(newlyFetchedDashboardDataValues[1].assessmentScore);
+              setAssessmentCountMoreThanOne(true); 
+            }
+          }
+
+          let overallperf = ((parseFloat(newlyFetchedDashboardDataValues.assessmentImp) + parseFloat(newlyFetchedDashboardDataValues.assessmentScorePerf) + parseFloat(newlyFetchedDashboardDataValues.confidenceLevel)) / 3);
+
+          updateStudyPerformance(overallperf)
+
+
+
         }
 
-        let overallperf = ((parseFloat(newlyFetchedDashboardDataValues.assessmentImp) + parseFloat(newlyFetchedDashboardDataValues.assessmentScorePerf) + parseFloat(newlyFetchedDashboardDataValues.confidenceLevel)) / 3);
-
-        updateStudyPerformance(overallperf)
 
 
-
+        setShowScoreForPreAssessment(false)
+        
       }
-
-
-
-      setShowScoreForPreAssessment(false)
-      
     }
-    
-    setScore(score);
-    setIsSubmitted(true);
-    setIsAssessmentDone(true);
 
-    
+    if (isSubmittedButtonClicked === true) {
+      
+      setScore(score);
+      setIsSubmitted(true);
+      setIsAssessmentDone(true);  
+
+      socket.emit('updated_score', {room: assessementRoom, assessmentScore: score});
+      socket.emit('updated_isSubmitted_assess', {room: assessementRoom, isSubmittedChar: true});
+      socket.emit('updated_isAssessment_done', {room: assessementRoom, isAssessmentDone: true});
+      socket.emit('updated_running', {room: assessementRoom, isRunning: false});
+
+      stopTimer();
+                
 
 
-    const targetElement = document.getElementById("currSec");
-    targetElement.scrollIntoView({ behavior: 'smooth' });
+    }
+  
   
   }
 
-  const submitAnswer = async () => {
 
+
+
+  const submitAnswer = () => {
+
+    
+    
     if (seconds <= 0 && isRunning) {
-      stopTimer();
-      dataForSubmittingAnswers();
+      
+        dataForSubmittingAnswers(userId);
+
+
+
     } else {
       
       if ((selectedAssessmentAnswer.length !== extractedQA.length) || selectedAssessmentAnswer.some(answer => answer === '' || answer === undefined)) {
         alert('There are some empty fields');
       } else {
-        stopTimer();
-        dataForSubmittingAnswers();
+          dataForSubmittingAnswers(userId);
+
       }
     }
-    
-    
-    console.log(selectedAssessmentAnswer.length);
-    console.log(extractedQA.length);
 
+  
+  
   };
 
 
   const generateAnalysis = async (id) => {
 
     setShowTexts(false)
+    socket.emit('updated_show_texts', {room: assessementRoom, showTexts: false});
 
-    const generateAnalysisUrl = 'https://2d8a-34-73-141-21.ngrok.io/generate_analysis';
+    
+    const generateAnalysisUrl = 'https://b70f-35-197-52-15.ngrok.io/generate_analysis';
 
     
     let predictionText = overAllPerformance.toFixed(2) >= 90 ? 'ready' : 'not yet ready';
@@ -408,12 +430,9 @@ export const AssessmentPage = (props) => {
       target: studyProfeciencyTarget,
     }
     
-    console.log(fetchedData.length);
-    console.log(fetchedData);
-    console.log(data);
+
     
     const response = await axios.post(generateAnalysisUrl, data);
-    console.log(response.data);
     let generatedAnalysisResponse = (response.data.generated_analysis).replace('\n\n\n\n\n', '');
     setGeneratedAnalysis(generatedAnalysisResponse)
 
@@ -437,10 +456,15 @@ export const AssessmentPage = (props) => {
     setOverAllPerformance((parseFloat(newlyFetchedDashboardDataValues.assessmentImp) + parseFloat(newlyFetchedDashboardDataValues.assessmentScorePerf) + parseFloat(newlyFetchedDashboardDataValues.confidenceLevel)) / 3);
 
 
-
     setShowAnalysis(true)
     setShowAssessment(false);
     setShowSubmittedAnswerModal(false);
+
+    socket.emit('updated_show_analysis', {room: assessementRoom, showAnalysis: true});
+    socket.emit('updated_show_assessment', {room: assessementRoom, showAssessment: false});
+    socket.emit('updated_show_submitted_answer_modal', {room: assessementRoom, showSubmittedAnswerModal: false});
+
+    
     const targetElement = document.getElementById("currSec");
     targetElement.scrollIntoView({ behavior: 'smooth' })
   }
@@ -457,7 +481,6 @@ export const AssessmentPage = (props) => {
 
         setSeconds(prevSeconds => {
           const updatedSeconds = prevSeconds - 1;
-          console.log("Updated Seconds:", updatedSeconds);
           socket.emit('update_time', { room: assessementRoom, timeDurationVal: updatedSeconds });
           return updatedSeconds;
         });
@@ -466,17 +489,14 @@ export const AssessmentPage = (props) => {
           setSeconds(time);
         });
         
-
-
-
-
       }, 1000);
     } else if (seconds <= 0 && isRunning) {
-      console.log("Time is already done!");
       setIsRunning(false);
 
-      submitAnswer(); 
-    }
+
+            
+
+      }
   
     return () => clearInterval(interval);
   }, [isRunning, seconds]);
@@ -512,7 +532,7 @@ export const AssessmentPage = (props) => {
           </li>
         ))}
       </ul>
-
+      
 
       {showAssessment === true && (
         <div className='container' id='assessmentSection'>
@@ -524,7 +544,7 @@ export const AssessmentPage = (props) => {
             <div>
               <div>
                 <p className='text-center mcolor-500 font-medium mb-8 text-xl'>Your score is: </p>
-                <p className='text-center text-6xl font-bold mcolor-800 mb-20'>{score}/{overAllItems}</p>
+                <p className='text-center text-6xl font-bold mcolor-800 mb-20'>{score}/{extractedQA.length}</p>
 
                 <div className=' flex items-center justify-center gap-5'>
 
@@ -532,9 +552,11 @@ export const AssessmentPage = (props) => {
                     <button
                       className='border-thin-800 px-5 py-3 rounded-[5px] w-1/4'
                       onClick={() => {
-                        console.log('button clicked');
                         setShowSubmittedAnswerModal(true);
                         setIsRunning(false)
+
+                        socket.emit('updated_show_submitted_answer_modal', {room: assessementRoom, showSubmittedAnswerModal: true});
+
                       }}
                     >
                       Analyze the Data
@@ -579,6 +601,8 @@ export const AssessmentPage = (props) => {
                           <button className='mbg-200 border-thin-800 px-5 py-2 rounded-[5px]' onClick={() => {
                             setShowSubmittedAnswerModal(false);
                             setIsRunning(false)
+                            socket.emit('updated_show_submitted_answer_modal', {room: assessementRoom, showSubmittedAnswerModal: false});
+
                           }} >No</button>
 
 
@@ -732,10 +756,12 @@ export const AssessmentPage = (props) => {
                         : ''
                     }`}
                     type="text"
+                    value={selectedAssessmentAnswer[index] || ''}
                     placeholder='Answer here...'
                     onChange={(event) => handleRadioChange(event.target.value, index)}
                     disabled={isSubmitted} 
                   />
+
 
                   <p className='correct-color text-center text-xl'>
                     {isSubmitted === true &&
@@ -753,13 +779,37 @@ export const AssessmentPage = (props) => {
             </div>
           ))}
 
+
           {(showAnalysis === false && isAssessmentDone === false) && (
             <div className='flex justify-center mt-8'>
-              <button className='w-1/2 py-2 px-5 mbg-800 rounded-[5px] mcolor-100 text-lg' onClick={() => submitAnswer()}>Submit Answer</button>
+              <button
+                className={`w-1/2 py-2 px-5 rounded-[5px] text-lg ${isSubmittedButtonClicked === true && idOfWhoSubmitted !== userId && usernameOfWhoSubmitted !== username ? 'disabled-button mbg-300 mcolor-800' : 'mbg-800 mcolor-100 '}`}
+                onClick={() => {
+                  socket.emit('submitted_button_clicked', { room: assessementRoom, isAnswersSubmitted: true });
+
+                  if (userListAssessment && userListAssessment.length > 0) {
+                    socket.emit('updated_id_of_who_submitted', { room: assessementRoom, idOfWhoSubmitted: userId });
+                    socket.emit('updated_username_of_who_submitted', { room: assessementRoom, usernameOfWhoSubmitted: username });
+
+                    if (isSubmittedButtonClicked && idOfWhoSubmitted === userId && usernameOfWhoSubmitted === username) {
+                      submitAnswer();
+                    }
+                  }
+                }}
+                disabled={isSubmittedButtonClicked === true && idOfWhoSubmitted !== userId && usernameOfWhoSubmitted !== username}
+                style={{ cursor: isSubmittedButtonClicked === true && idOfWhoSubmitted !== userId && usernameOfWhoSubmitted !== username ? 'not-allowed' : 'pointer' }}
+              >
+                {isSubmittedButtonClicked === true ? 
+                  (idOfWhoSubmitted === userId ? 'Confirm Submission' : `${usernameOfWhoSubmitted} clicks the submit button`) : 
+                  'Submit Answer'
+                }
+              </button>
             </div>
           )}
 
 
+
+                
         </div>
       )}
 

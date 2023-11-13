@@ -9,7 +9,7 @@ const socket = io.connect("http://localhost:3001");
 
 export const PreJoinPage = (props) => {
 
-  const { setUsername, setUserId, joinRoom, materialId, groupId, setShowPreJoin, setShowAssessmentPage, username, userId, assessementRoom, setUserListAssessment, selectedAssessmentAnswer, setSelectedAssessmentAnswer, setIsRunning, setSeconds, itemCount, setQA, extractedQA, shuffledChoices, setShuffledChoices } = props;
+  const { setUsername, setUserId, joinRoom, materialId, groupId, setShowPreJoin, setShowAssessmentPage, username, userId, assessementRoom, setUserListAssessment, selectedAssessmentAnswer, setSelectedAssessmentAnswer,  isRunning, setIsRunning, setSeconds, itemCount, setQA, extractedQA, shuffledChoices, setShuffledChoices, isSubmittedButtonClicked, setIsSubmittedButtonClicked, idOfWhoSubmitted, setIdOfWhoSubmitted, usernameOfWhoSubmitted, setUsernameOfWhoSubmitted, score, setScore, isSubmitted, setIsSubmitted, isAssessmentDone, setIsAssessmentDone, showSubmittedAnswerModal, setShowSubmittedAnswerModal, showTexts, setShowTexts, showAnalysis, setShowAnalysis, showAssessment, setShowAssessment, overAllItems, setOverAllItems, preAssessmentScore, setPreAssessmentScore, assessmentScore, setAssessmentScore, assessmentImp, setAssessmentImp, assessmentScorePerf, setAssessmentScorePerf, completionTime, setCompletionTime, confidenceLevel, setConfidenceLevel, overAllPerformance, setOverAllPerformance, assessmentCountMoreThanOne, setAssessmentCountMoreThanOne } = props;
 
   const UserId = 1
 
@@ -66,35 +66,93 @@ export const PreJoinPage = (props) => {
   const takeAssessmentBtn = async () => {
     setShowPreJoin(false);
     setShowAssessmentPage(true);
-    let updatedIsRunning = true
-    // setSeconds(itemCount)
-    
+  
     let data = {
       room: assessementRoom,
       username: username,
       userId: userId,
       selectedAssessmentAnswer: selectedAssessmentAnswer,
-      timeDurationVal: 30
-    }
-
+      timeDurationVal: itemCount,
+      isAnswersSubmitted: isSubmittedButtonClicked,
+      idOfWhoSubmitted: idOfWhoSubmitted,
+      usernameOfWhoSubmitted: usernameOfWhoSubmitted,
+      assessmentScore: score,
+      isSubmittedChar: isSubmitted,
+      isAssessmentDone: isAssessmentDone,
+      isRunning: true,
+      showSubmittedAnswerModal: showSubmittedAnswerModal,
+      showTexts: showTexts,
+      showAnalysis: showAnalysis,
+      showAssessment: showAssessment,
+    };  
+  
     socket.emit('join_assessment_room', data);
-    socket.on("assessment_user_list", (updatedData) => {
+  
+    socket.on('assessment_user_list', (updatedData) => {
       setUserListAssessment(updatedData);
     });
-    socket.on("selected_assessment_answers", (selectedChoicesData) => {
+  
+    socket.on('selected_assessment_answers', (selectedChoicesData) => {
       setSelectedAssessmentAnswer(selectedChoicesData);
     });
-    socket.on("updated_time", (time) => {
+  
+    socket.on('updated_time', (time) => {
       setSeconds(time);
-      setIsRunning(updatedIsRunning);
     });
-  }
+  
+    socket.on('is_running', (isrunning) => {
+      setIsRunning(isrunning);
+    });
+  
+    socket.on('submitted_button_response', (isSubmittedButtonTrue) => {
+      setIsSubmittedButtonClicked(isSubmittedButtonTrue);
+    });
+  
+    socket.on('id_of_who_submitted', (id) => {
+      setIdOfWhoSubmitted(id);
+    });
+  
+    socket.on('username_of_who_submitted', (username) => {
+      setUsernameOfWhoSubmitted(username);
+    });
+  
+    socket.on('assessment_score', (score) => {
+      setScore(score);
+    });
+  
+    socket.on('isSubmitted_assess', (isSubmitted) => {
+      setIsSubmitted(isSubmitted);
+    });
+  
+    socket.on('isAssessment_done', (isAssessmentDone) => {
+      setIsAssessmentDone(isAssessmentDone);
+    });
+  
+    socket.on('show_submitted_answer_modal', (submittedModal) => {
+      setShowSubmittedAnswerModal(submittedModal);
+    });
+  
+    socket.on('show_texts', (showTexts) => {
+      setShowTexts(showTexts);
+    });
+  
+    socket.on('show_assessment', (showAssessment) => {
+      setShowAssessment(showAssessment);
+    });
+  
+    socket.on('show_analysis', (showAnalysis) => {
+      setShowAnalysis(showAnalysis);
+    });
+
+  };
+  
 
 
   return (
     <div className='container py-8 poppins'>
       <Navbar linkBack={`/main/group/study-area/${groupId}`} linkBackName={`Study Area`} currentPageName={'Reviewer Page Preview'} username={'Jennie Kim'}/>
       <div>
+
           <div className='flex justify-between items-center my-5 py-3'>
             <button className='px-6 py-2 rounded-[5px] text-lg mbg-200 mcolor-800 border-thin-800 font-normal'>Delete Material</button>
             <div className='flex justify-between items-center gap-4'>

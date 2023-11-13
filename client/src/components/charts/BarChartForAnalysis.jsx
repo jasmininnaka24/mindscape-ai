@@ -39,6 +39,7 @@ export const BarChartForAnalysis = (props) => {
   };
   
   const options = {
+    maintainAspectRatio: false,
     animation: true,
     scales: {
       y: {
