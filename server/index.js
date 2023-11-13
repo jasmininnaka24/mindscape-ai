@@ -43,8 +43,24 @@ let reviewQuestionIndex = {}
 // assessment
 let assessmentRoomList = {};
 let ioSelectedAssessmentAnswers = {}
-let isRunning = {}
+let isRunningList = {}
 let setSeconds = {}
+let isSubmittedButtonClicked = {}
+let idOfWhoSubmittedPerson = {}
+let usernameOfWhoSubmittedPerson = {}
+let assessmentScores = {}
+let isSubmittedAssess = {}
+let isAssessmentDoneList = {}
+let showSubmittedAnswerModalList = {}
+let showTextsList = {}
+let showAnalysisList = {}
+let showAssessmentList = {}
+
+
+
+
+
+
 
 io.on('connection', (socket) => {
   socket.on('join_room', (data) => {
@@ -73,6 +89,7 @@ io.on('connection', (socket) => {
     if (!reviewQuestionIndex[room]) {
       reviewQuestionIndex[room] = [];
     }
+
   
     // Add user to the room's user list
     rooms[room].push({ socketId: socket.id, username, userId, points });
@@ -96,6 +113,7 @@ io.on('connection', (socket) => {
     if (reviewQuestionIndex[room].length === 0) {
       reviewQuestionIndex[room].push(questionIndex);
     }
+
   
     // Emit the updated user list and current turn to all clients in the room
     io.to(room).emit('userList', rooms[room]);
@@ -106,13 +124,7 @@ io.on('connection', (socket) => {
     io.to(room).emit('current_QA_index', reviewQuestionIndex[room]);
     io.to(room).emit('shuffled_join', reviewShuffledChoices[room]);
   
-    console.log(rooms[room]);
-    console.log(reviewUserTurnSer[room]);
-    console.log(reviewSelectedChoiceValCurr[room]);
-    console.log(reviewFailCount[room]);
-    console.log(reviewNextQA[room]);
-    console.log(reviewQuestionIndex[room]);
-    console.log(reviewShuffledChoices[room]);
+
   });
 
 
@@ -193,12 +205,27 @@ io.on('connection', (socket) => {
 
 
 
-
-  
-  // assessment sockets
+// assessment sockets
   socket.on('join_assessment_room', (data) => {
-    const { room, username, userId, selectedAssessmentAnswers, timeDurationVal } = data;
+    const {
+      room,
+      username,
+      userId,
+      selectedAssessmentAnswers,
+      timeDurationVal,
+      isAnswersSubmitted,
+      idOfWhoSubmitted,
+      assessmentScore,
+      isSubmittedChar,
+      isAssessmentDone,
+      isRunning,
+      showSubmittedAnswerModal,
+      showTexts,
+      showAnalysis,
+      showAssessment
+    } = data;
     socket.join(room);
+
     if (!assessmentRoomList[room]) {
       assessmentRoomList[room] = [];
     }
@@ -207,14 +234,57 @@ io.on('connection', (socket) => {
       ioSelectedAssessmentAnswers[room] = [];
     }
 
-    if (!isRunning[room]) {
-      isRunning[room] = false;
+    if (!isRunningList[room]) {
+      isRunningList[room] = false;
     }
-  
+
     if (!setSeconds[room]) {
       setSeconds[room] = 0;
     }
-  
+
+    if (!isSubmittedButtonClicked[room]) {
+      isSubmittedButtonClicked[room] = false;
+    }
+
+    if (!idOfWhoSubmittedPerson[room]) {
+      idOfWhoSubmittedPerson[room] = '';
+    }
+
+    if (!usernameOfWhoSubmittedPerson[room]) {
+      usernameOfWhoSubmittedPerson[room] = '';
+    }
+
+    if (!assessmentScores[room]) {
+      assessmentScores[room] = 0;
+    }
+
+    if (!isSubmittedAssess[room]) {
+      isSubmittedAssess[room] = false;
+    }
+
+    if (!isAssessmentDoneList[room]) {
+      isAssessmentDoneList[room] = false;
+    }
+
+    if (!showSubmittedAnswerModalList[room]) {
+      showSubmittedAnswerModalList[room] = false;
+    }
+
+    if (!showTextsList[room]) {
+      showTextsList[room] = true;
+    }
+
+    if (!showAnalysisList[room]) {
+      showAnalysisList[room] = false;
+    }
+
+    if (!showAssessmentList[room]) {
+      showAssessmentList[room] = true;
+    }
+
+
+
+
     // Add user to the room's user list
     assessmentRoomList[room].push({ socketId: socket.id, username, userId });
 
@@ -222,20 +292,152 @@ io.on('connection', (socket) => {
       ioSelectedAssessmentAnswers[room].push(selectedAssessmentAnswers);
     }
 
-    if (isRunning[room] === false) {
-      isRunning[room] = true;
-      setSeconds[room] = timeDurationVal;
-      io.to(room).emit("updated_time", setSeconds[room])
-    } else {
-      io.to(room).emit("updated_time", setSeconds[room])
+    if (isSubmittedAssess[room] === false) {
+      isSubmittedAssess[room] = isSubmittedChar;
     }
-  
+
+    if (idOfWhoSubmittedPerson[room] === '') {
+      idOfWhoSubmittedPerson[room] = idOfWhoSubmitted;
+      idOfWhoSubmittedPerson[room] = idOfWhoSubmitted;
+    }
+
+    if (usernameOfWhoSubmittedPerson[room] === '') {
+      usernameOfWhoSubmittedPerson[room] = idOfWhoSubmitted;
+    }
+    
+    if (assessmentScores[room] === 0) {
+      assessmentScores[room] = assessmentScore;
+    }
+    
+    if (isAssessmentDoneList[room] === false) {
+      isAssessmentDoneList[room] = isAssessmentDone;
+    }
+    
+    if (showSubmittedAnswerModalList[room] === false) {
+      showSubmittedAnswerModalList[room] = showSubmittedAnswerModal;
+    }
+    
+    if (showTextsList[room] === true) {
+      showTextsList[room] = showTexts;
+    }
+    
+    if (showAnalysisList[room] === false) {
+      showAnalysisList[room] = showAnalysis;
+    }
+    
+    if (showAssessmentList[room] === true) {
+      showAssessmentList[room] = showAssessment;
+    }
+
+
+
+    if (isRunningList[room] === false) {
+      isRunningList[room] = isRunning;
+      setSeconds[room] = timeDurationVal;
+      io.to(room).emit('updated_time', setSeconds[room]);
+      io.to(room).emit('is_running', isRunningList[room]);
+    } else {
+      io.to(room).emit('updated_time', setSeconds[room]);
+      io.to(room).emit('is_running', isRunningList[room]);
+    }
+
+    if (isSubmittedButtonClicked[room] === false) {
+      isSubmittedButtonClicked[room] = isAnswersSubmitted;
+      io.to(room).emit('submitted_button_response', isSubmittedButtonClicked[room]);
+    } else {
+      io.to(room).emit('submitted_button_response', isSubmittedButtonClicked[room]);
+    }
+
     // Emit the updated user list and current turn to all clients in the room
     io.to(room).emit('assessment_user_list', assessmentRoomList[room]);
     io.to(room).emit('selected_assessment_answers', ioSelectedAssessmentAnswers[room]);
-    console.log(ioSelectedAssessmentAnswers[room]);
+    io.to(room).emit('id_of_who_submitted', idOfWhoSubmittedPerson[room]);
+    io.to(room).emit('username_of_who_submitted', usernameOfWhoSubmittedPerson[room]);
+    io.to(room).emit('assessment_score', assessmentScores[room]);
+    io.to(room).emit('isSubmitted_assess', isSubmittedAssess[room]);
+    io.to(room).emit('isAssessment_done', isAssessmentDoneList[room]);
+    io.to(room).emit('show_submitted_answer_modal', showSubmittedAnswerModalList[room]);
+    io.to(room).emit('show_texts', showTextsList[room]);
+    io.to(room).emit('show_analysis', showAnalysisList[room]);
+    io.to(room).emit('show_assessment', showAssessmentList[room]);
 
   });
+
+
+
+
+
+
+  socket.on("updated_show_analysis", (data) => {
+    const {room, showAnalysis } = data
+    showAnalysisList[room] = showAnalysis;
+    io.to(room).emit("show_analysis", showAnalysisList[room])
+  })
+
+
+  socket.on("updated_show_assessment", (data) => {
+    const {room, showAssessment } = data
+    showAssessmentList[room] = showAssessment;
+    io.to(room).emit("show_assessment", showAssessmentList[room])
+  })
+
+
+  socket.on("updated_show_texts", (data) => {
+    const {room, showTexts } = data
+    showTextsList[room] = showTexts;
+    io.to(room).emit("show_texts", showTextsList[room])
+  })
+
+  socket.on("updated_show_submitted_answer_modal", (data) => {
+    const {room, showSubmittedAnswerModal } = data
+    showSubmittedAnswerModalList[room] = showSubmittedAnswerModal;
+    io.to(room).emit("show_submitted_answer_modal", showSubmittedAnswerModalList[room])
+  })
+  
+
+  socket.on("updated_isAssessment_done", (data) => {
+    const {room, isAssessmentDone } = data
+    isAssessmentDoneList[room] = isAssessmentDone;
+    io.to(room).emit("isAssessment_done", isAssessmentDoneList[room])
+  })
+  
+  socket.on("updated_running", (data) => {
+    const {room, isRunning } = data
+    isRunningList[room] = isRunning;
+    io.to(room).emit("is_running", isRunningList[room])
+  })
+  
+  
+  socket.on("updated_isSubmitted_assess", (data) => {
+    const {room, isSubmittedChar } = data
+    isSubmittedAssess[room] = isSubmittedChar;
+    io.to(room).emit("isSubmitted_assess", isSubmittedAssess[room])
+  })
+
+  socket.on('updated_id_of_who_submitted', (data) => {
+    const { room, idOfWhoSubmitted } = data;
+
+    idOfWhoSubmittedPerson[room] = idOfWhoSubmitted;
+    io.to(room).emit('id_of_who_submitted', idOfWhoSubmittedPerson[room]);
+
+  });
+
+  socket.on('updated_username_of_who_submitted', (data) => {
+    const { room, usernameOfWhoSubmitted } = data;
+
+    usernameOfWhoSubmittedPerson[room] = usernameOfWhoSubmitted;
+    io.to(room).emit('username_of_who_submitted', usernameOfWhoSubmittedPerson[room]);
+
+  });
+
+
+
+  
+  socket.on("updated_score", (data) => {
+    const {room, assessmentScore } = data
+    assessmentScores[room] = assessmentScore;
+    io.to(room).emit("assessment_score", assessmentScores[room])
+  })
   
   socket.on("update_time", (data) => {
     const {room, timeDurationVal } = data
@@ -246,13 +448,22 @@ io.on('connection', (socket) => {
 
 
   socket.on("updated_answers", (data) => {
-
     const {assessementRoom, selectedAssessmentAnswers } = data
 
     ioSelectedAssessmentAnswers[assessementRoom] = selectedAssessmentAnswers;
     io.to(assessementRoom).emit("selected_assessment_answers", ioSelectedAssessmentAnswers[assessementRoom])
-    
   })
+
+
+  socket.on('submitted_button_clicked', (data) => {
+    const { room, isAnswersSubmitted } = data;
+
+    isSubmittedButtonClicked[room] = isAnswersSubmitted;
+    io.to(room).emit('submitted_button_response', isSubmittedButtonClicked[room]);
+
+  });
+
+
 
   
 
@@ -337,11 +548,20 @@ io.on('connection', (socket) => {
         if (assessmentRoomList[assessmentRoom].length === 0) {
           delete assessmentRoomList[assessmentRoom];
           ioSelectedAssessmentAnswers[assessmentRoom] = [];
-          isRunning[assessmentRoom] = false;
+          isRunningList[assessmentRoom] = false;
           setSeconds[assessmentRoom] = 0;
+          isSubmittedButtonClicked[assessmentRoom] = false;
+          idOfWhoSubmittedPerson[assessmentRoom] = ''
+          usernameOfWhoSubmittedPerson[assessmentRoom] = ''
+          assessmentScores[assessmentRoom] = 0
+          isSubmittedAssess[assessmentRoom] = false
+          isAssessmentDoneList[assessmentRoom] = false
+          showSubmittedAnswerModalList[assessmentRoom] = false
+          showTextsList[assessmentRoom] = false
+          showAnalysisList[assessmentRoom] = false
+          showAssessmentList[assessmentRoom] = true
         }
         io.to(assessmentRoom).emit('assessment_user_list', assessmentRoomList[assessmentRoom]);
-        console.log(assessmentRoomList);
 
       }
     });
