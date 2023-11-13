@@ -55,7 +55,16 @@ let showSubmittedAnswerModalList = {}
 let showTextsList = {}
 let showAnalysisList = {}
 let showAssessmentList = {}
-
+let overAllItemsList = {}
+let preAssessmentScoreList = {}
+let assessmentScoreLatestList = {}
+let assessmentImpList = {}
+let assessmentScorePerfList = {}
+let completionTimeList = {}
+let confidenceLevelList = {}
+let overAllPerformanceList = {}
+let assessmentCountMoreThanOneList = {}
+let generatedAnalysisList = {}
 
 
 
@@ -222,7 +231,17 @@ io.on('connection', (socket) => {
       showSubmittedAnswerModal,
       showTexts,
       showAnalysis,
-      showAssessment
+      showAssessment,
+      overAllItems,
+      preAssessmentScore,
+      assessmentScoreLatest,
+      assessmentImp,
+      assessmentScorePerf,
+      completionTime,
+      confidenceLevel,
+      overAllPerformance,
+      assessmentCountMoreThanOne,
+      generatedAnalysis
     } = data;
     socket.join(room);
 
@@ -282,6 +301,55 @@ io.on('connection', (socket) => {
       showAssessmentList[room] = true;
     }
 
+    
+    if (!overAllItemsList[room]) {
+      overAllItemsList[room] = 0;
+    }
+    
+    
+    if (!preAssessmentScoreList[room]) {
+      preAssessmentScoreList[room] = 0;
+    }
+    
+    
+    if (!assessmentScoreLatestList[room]) {
+      assessmentScoreLatestList[room] = 0;
+    }
+    
+    
+    if (!assessmentImpList[room]) {
+      assessmentImpList[room] = 0;
+    }
+    
+    
+    if (!assessmentScorePerfList[room]) {
+      assessmentScorePerfList[room] = 0;
+    }
+    
+    
+    if (!completionTimeList[room]) {
+      completionTimeList[room] = 0;
+    }
+    
+    
+    if (!confidenceLevelList[room]) {
+      confidenceLevelList[room] = 0;
+    }
+    
+
+    if (!overAllPerformanceList[room]) {
+      overAllPerformanceList[room] = 0;
+    }
+
+
+    if (!assessmentCountMoreThanOneList[room]) {
+      assessmentCountMoreThanOneList[room] = false;
+    }
+
+    if (!generatedAnalysisList[room]) {
+      generatedAnalysisList[room] = '';
+    }
+
 
 
 
@@ -330,6 +398,49 @@ io.on('connection', (socket) => {
     }
 
 
+    
+    if (overAllItemsList[room] === 0) {
+      overAllItemsList[room] = overAllItems;
+    }
+    
+    if (preAssessmentScoreList[room] === 0) {
+      preAssessmentScoreList[room] = preAssessmentScore;
+    }
+    
+    if (assessmentScoreLatestList[room] === 0) {
+      assessmentScoreLatestList[room] = assessmentScoreLatest;
+    }
+    
+    if (assessmentImpList[room] === 0) {
+      assessmentImpList[room] = assessmentImp;
+    }
+    
+    if (assessmentScorePerfList[room] === 0) {
+      assessmentScorePerfList[room] = assessmentScorePerf;
+    }
+    
+    if (completionTimeList[room] === 0) {
+      completionTimeList[room] = completionTime;
+    }
+
+
+    if (confidenceLevelList[room] === 0) {
+      confidenceLevelList[room] = confidenceLevel;
+    }
+    
+    if (overAllPerformanceList[room] === 0) {
+      overAllPerformanceList[room] = overAllPerformance;
+    }
+    
+    if (assessmentCountMoreThanOneList[room] === true) {
+      assessmentCountMoreThanOneList[room] = assessmentCountMoreThanOne;
+    }
+    
+    if (generatedAnalysisList[room] === '') {
+      generatedAnalysisList[room] = generatedAnalysis;
+    }
+
+
 
     if (isRunningList[room] === false) {
       isRunningList[room] = isRunning;
@@ -361,6 +472,17 @@ io.on('connection', (socket) => {
     io.to(room).emit('show_analysis', showAnalysisList[room]);
     io.to(room).emit('show_assessment', showAssessmentList[room]);
 
+    io.to(room).emit('over_all_items', overAllItemsList[room]);
+    io.to(room).emit('pre_assessment_score', preAssessmentScoreList[room]);
+    io.to(room).emit('assessment_score_latest', assessmentScoreLatestList[room]);
+    io.to(room).emit('assessment_imp', assessmentImpList[room]);
+    io.to(room).emit('assessment_score_perf', assessmentScorePerfList[room]);
+    io.to(room).emit('completion_time', completionTimeList[room]);
+    io.to(room).emit('confidence_level', confidenceLevelList[room]);
+    io.to(room).emit('over_all_performance', overAllPerformanceList[room]);
+    io.to(room).emit('assessment_count_more_than_one', assessmentCountMoreThanOneList[room]);
+    io.to(room).emit('generated_analysis', generatedAnalysisList[room]);
+
   });
 
 
@@ -368,11 +490,87 @@ io.on('connection', (socket) => {
 
 
 
+  socket.on("updated_generated_analysis", (data) => {
+    const {room, generatedAnalysis } = data
+    generatedAnalysisList[room] = generatedAnalysis;
+    io.to(room).emit('generated_analysis', generatedAnalysisList[room]);
+  })
+
+
+  socket.on("updated_over_all_items", (data) => {
+    const {room, overAllItems } = data
+    overAllItemsList[room] = overAllItems;
+    io.to(room).emit('over_all_items', overAllItemsList[room])
+  })
+
+
+  socket.on("updated_pre_assessment_score", (data) => {
+    const {room, preAssessmentScore } = data
+    preAssessmentScoreList[room] = preAssessmentScore;
+    io.to(room).emit('pre_assessment_score', preAssessmentScoreList[room])
+  })
+
+
+  socket.on("updated_assessment_score_latest", (data) => {
+    const {room, assessmentScoreLatest } = data
+    assessmentScoreLatestList[room] = assessmentScoreLatest;
+    io.to(room).emit('assessment_score_latest', assessmentScoreLatestList[room])
+  })
+
+
+  socket.on("updated_assessment_imp", (data) => {
+    const {room, assessmentImp } = data
+    assessmentImpList[room] = assessmentImp;
+    io.to(room).emit('assessment_imp', assessmentImpList[room]);
+  })
+
+
+  socket.on("updated_assessment_score_perf", (data) => {
+    const {room, assessmentScorePerf } = data
+    assessmentScorePerfList[room] = assessmentScorePerf;
+    io.to(room).emit('assessment_score_perf', assessmentScorePerfList[room]);
+  })
+
+
+  socket.on("updated_completion_time", (data) => {
+    const {room, completionTime } = data
+    completionTimeList[room] = completionTime;
+    io.to(room).emit('completion_time', completionTimeList[room]);
+  })
+
+
+  socket.on("updated_confidence_level", (data) => {
+    const {room, confidenceLevel } = data
+    confidenceLevelList[room] = confidenceLevel;
+    io.to(room).emit('confidence_level', confidenceLevelList[room]);
+  })
+
+
+  socket.on("updated_over_all_performance", (data) => {
+    const {room, overAllPerformance } = data
+    overAllPerformanceList[room] = overAllPerformance;
+    io.to(room).emit('over_all_performance', overAllPerformanceList[room]);
+  })
+
+
+  socket.on("updated_assessment_count_more_than_one", (data) => {
+    const {room, assessmentCountMoreThanOne } = data
+    assessmentCountMoreThanOneList[room] = assessmentCountMoreThanOne;
+    io.to(room).emit('assessment_count_more_than_one', assessmentCountMoreThanOneList[room]);
+  })
+
+
   socket.on("updated_show_analysis", (data) => {
     const {room, showAnalysis } = data
     showAnalysisList[room] = showAnalysis;
     io.to(room).emit("show_analysis", showAnalysisList[room])
   })
+
+
+
+
+
+
 
 
   socket.on("updated_show_assessment", (data) => {
@@ -560,6 +758,16 @@ io.on('connection', (socket) => {
           showTextsList[assessmentRoom] = false
           showAnalysisList[assessmentRoom] = false
           showAssessmentList[assessmentRoom] = true
+          overAllItemsList[assessmentRoom] = 0
+          preAssessmentScoreList[assessmentRoom] = 0
+          assessmentScoreLatestList[assessmentRoom] = 0
+          assessmentImpList[assessmentRoom] = 0
+          assessmentScorePerfList[assessmentRoom] = 0
+          completionTimeList[assessmentRoom] = 0
+          confidenceLevelList[assessmentRoom] = 0
+          overAllPerformanceList[assessmentRoom] = 0
+          assessmentCountMoreThanOneList[assessmentRoom] = false
+          generatedAnalysisList[assessmentRoom] = ''
         }
         io.to(assessmentRoom).emit('assessment_user_list', assessmentRoomList[assessmentRoom]);
 
