@@ -147,13 +147,13 @@ export const CreateGroupComp = (props) => {
   }, []);
     
   return (
-    <div className='flex justify-between items-center gap-5'>
+    <div className='w-1/2 flex justify-between items-center gap-5'>
 
-      <button className='w-1/2 border-thin-800 font-medium mcolor-900 px-6 py-2 rounded-[5px]' onClick={() => {
+      <button className='w-1/2 mbg-100 shadows font-medium mcolor-900 px-6 py-3 rounded-[5px]' onClick={() => {
         setHidden('')
         setJoinGroup('')
       }}>Join Room</button>
-      <button className='w-1/2 border-thin-800 font-medium mcolor-900 px-6 py-2 rounded-[5px]' onClick={() => {
+      <button className='w-1/2 mbg-100 shadows font-medium mcolor-900 px-6 py-3 rounded-[5px]' onClick={() => {
         setHidden('')
         setCreateGroup('')
         }}>

@@ -22,21 +22,17 @@ app.use(express.static(path.join(__dirname, 'client/build')));
 
 let rooms = {};
 let userTurnSer = 0;
-let nextQA = 0;
-let question_index = 0
-let shuffledChoicesVal = []
 let selectedChoiceValCurr = '';
-let questionValCurr = '';
 let currentFailCountVal = 0;
-let submittedAnswerValCurr = "";
-let userListValExt = []
-
 let reviewShuffledChoices = {}
 let reviewUserTurnSer = {}
 let reviewSelectedChoiceValCurr = {}
 let reviewFailCount = {}
 let reviewNextQA = {}
 let reviewQuestionIndex = {}
+let reviewLostPoints = {}
+let isRunningListReview = {}
+let setSecondsReview = {}
 
 
 
@@ -73,7 +69,7 @@ let generatedAnalysisList = {}
 
 io.on('connection', (socket) => {
   socket.on('join_room', (data) => {
-    const { room, username, userId, points, questionIndex, shuffledChoices, userList, failCount } = data;
+    const { room, username, userId, points, questionIndex, shuffledChoices, userList, failCount, lostPoints, isRunningReview, timeDurationValReview } = data;
     socket.join(room);
   
     // Initialize arrays for the room if they don't exist
@@ -84,19 +80,30 @@ io.on('connection', (socket) => {
       reviewShuffledChoices[room] = [];
     }
     if (!reviewUserTurnSer[room]) {
-      reviewUserTurnSer[room] = [];
+      reviewUserTurnSer[room] = 0;
     }
     if (!reviewSelectedChoiceValCurr[room]) {
-      reviewSelectedChoiceValCurr[room] = [];
+      reviewSelectedChoiceValCurr[room] = "";
     }
     if (!reviewFailCount[room]) {
-      reviewFailCount[room] = [];
+      reviewFailCount[room] = 2;
     }
     if (!reviewNextQA[room]) {
-      reviewNextQA[room] = [];
+      reviewNextQA[room] = 0;
     }
     if (!reviewQuestionIndex[room]) {
-      reviewQuestionIndex[room] = [];
+      reviewQuestionIndex[room] = 0;
+    }
+    if (!reviewLostPoints[room]) {
+      reviewLostPoints[room] = false;
+    }
+
+    if (!isRunningListReview[room]) {
+      isRunningListReview[room] = false;
+    }
+
+    if (!setSecondsReview[room]) {
+      setSecondsReview[room] = false;
     }
 
   
@@ -105,25 +112,39 @@ io.on('connection', (socket) => {
 
     // Only push new user's data if arrays are empty
     if (reviewShuffledChoices[room].length === 0) {
-      reviewShuffledChoices[room].push([...shuffledChoices]);
+      reviewShuffledChoices[room] = shuffledChoices;
     }
-    if (reviewUserTurnSer[room].length === 0) {
-      reviewUserTurnSer[room].push(Number(userTurnSer));
+    if (reviewUserTurnSer[room] === 0) {
+      reviewUserTurnSer[room] = reviewUserTurnSer[room];
     }
-    if (reviewSelectedChoiceValCurr[room].length === 0) {
-      reviewSelectedChoiceValCurr[room].push(selectedChoiceValCurr.toString());
+    if (reviewSelectedChoiceValCurr[room] === "") {
+      reviewSelectedChoiceValCurr[room] = reviewSelectedChoiceValCurr[room];
     }
-    if (reviewFailCount[room].length === 0) {
-      reviewFailCount[room].push(Number(failCount));
+    if (reviewFailCount[room] === 2) {
+      reviewFailCount[room] = failCount;
     }
-    if (reviewNextQA[room].length === 0) {
-      reviewNextQA[room].push(Number(nextQA));
+    if (reviewNextQA[room] === 0) {
+      reviewNextQA[room] = reviewNextQA[room];
     }
-    if (reviewQuestionIndex[room].length === 0) {
-      reviewQuestionIndex[room].push(questionIndex);
+    if (reviewQuestionIndex[room] === 0) {
+      reviewQuestionIndex[room] = questionIndex;
+    }
+    if (reviewLostPoints[room] === false) {
+      reviewLostPoints[room] = lostPoints;
     }
 
-  
+    if (isRunningListReview[room] === false) {
+      isRunningListReview[room] = isRunningReview;
+      setSecondsReview[room] = timeDurationValReview;
+      
+      io.to(room).emit('updated_time_review', setSecondsReview[room]);
+      io.to(room).emit('is_running_review', isRunningListReview[room]);
+    } else {
+      io.to(room).emit('updated_time_review', setSecondsReview[room]);
+      io.to(room).emit('is_running_review', isRunningListReview[room]);
+    }
+    
+    
     // Emit the updated user list and current turn to all clients in the room
     io.to(room).emit('userList', rooms[room]);
     io.to(room).emit('received_next_user_join', reviewUserTurnSer[room]);
@@ -132,8 +153,26 @@ io.on('connection', (socket) => {
     io.to(room).emit('next_qa_join', reviewNextQA[room]);
     io.to(room).emit('current_QA_index', reviewQuestionIndex[room]);
     io.to(room).emit('shuffled_join', reviewShuffledChoices[room]);
+    io.to(room).emit('is_lost_points', reviewLostPoints[room]);
   
+  });
 
+
+
+  socket.on("update_time_review", (data) => {
+    const {room, timeDurationValReview } = data
+    setSecondsReview[room] = timeDurationValReview;
+    io.to(room).emit("updated_time_review", setSecondsReview[room])
+  })
+
+
+
+  socket.on('updated_lost_points', (data) => {
+
+    const {room, lostPoints} = data;
+
+    reviewLostPoints[room] = lostPoints;
+    io.to(room).emit('is_lost_points', reviewLostPoints[room]);
   });
 
 
@@ -682,8 +721,8 @@ io.on('connection', (socket) => {
       }
 
       const makeCountValTwo = () => {
-        currentFailCountVal = 2;
-        io.to(room).emit('received_current_fail_val', currentFailCountVal);
+        currentFailCountVal[[room]] = 2;
+        io.to(room).emit('received_current_fail_val', currentFailCountVal[[room]]);
       }
 
       const userIndex = rooms[room].findIndex(user => user.socketId === socket.id);
@@ -692,32 +731,32 @@ io.on('connection', (socket) => {
         io.to(room).emit('userList', rooms[room]);
     
         // Check if the user being disconnected is the current turn user
-        if (userIndex === userTurnSer) {
+        if (userIndex === userTurnSer[room]) {
           // If the last user is removed, set userTurnSer to 0
           if (rooms[room].length === 0 || rooms[room].length === 1) {
-            userTurnSer = 0;
-            selectedChoiceValCurr = ""
-            io.to(room).emit('received_next_user', userTurnSer);
+            userTurnSer[room] = 0;
+            selectedChoiceValCurr[room] = ""
+            io.to(room).emit('received_next_user', userTurnSer[room]);
 
             makeCountValTwo();
             makePointsZero();
           } else {
             // Otherwise, set it to the next user in the array
-            userTurnSer = userTurnSer % rooms[room].length;
-            io.to(room).emit('received_next_user', userTurnSer);
+            userTurnSer[room] = userTurnSer[room] % rooms[room].length;
+            io.to(room).emit('received_next_user', userTurnSer[room]);
             makeCountValTwo();
           }
-          io.to(room).emit('received_next_user_zero', userTurnSer);
+          io.to(room).emit('received_next_user_zero', userTurnSer[room]);
         } else {
           if (rooms[room].length === 0 || rooms[room].length === 1) {
-            userTurnSer = 0;
-            selectedChoiceValCurr = ""
-            io.to(room).emit('received_next_user', userTurnSer);
+            userTurnSer[room] = 0;
+            selectedChoiceValCurr[room] = ""
+            io.to(room).emit('received_next_user', userTurnSer[room]);
             makePointsZero();
             makeCountValTwo();
           } else {
             if(userIndex === -1){
-              let nextUser = userTurnSer -= 1;
+              let nextUser = userTurnSer[room] -= 1;
               io.to(room).emit('received_next_user', nextUser);
               makeCountValTwo();
             }
@@ -727,8 +766,20 @@ io.on('connection', (socket) => {
         // Remove the room if there are no users in it
         if (rooms[room].length === 0) {
           delete rooms[room];
-          selectedChoiceValCurr = ""
+          selectedChoiceValCurr[room] = ""
+          userTurnSer[room] = 0
+          userTurnSer[room] = ""
+          currentFailCountVal[room] = 0
+          reviewShuffledChoices[room] = []
+          reviewUserTurnSer[room] = 0
+          reviewSelectedChoiceValCurr[room] = ""
+          reviewFailCount[room] = 2
+          reviewNextQA[room] = 0
+          reviewQuestionIndex[room] = 0
+          reviewLostPoints[room] = 0
         }
+
+
 
 
       }

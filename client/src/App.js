@@ -22,6 +22,7 @@ import { GroupStudyArea } from './pages/rooms/group/study_area/GroupStudyArea';
 import { GroupQAGenerator } from './pages/rooms/group/study_area/GroupQAGenerator';
 import { GroupTasks } from './pages/rooms/group/task/GroupTasks';
 import { GroupReviewerPage } from './pages/rooms/group/study_area/GroupReviewerPage'
+import { GroupDashboard } from './pages/rooms/group/dashboard/GroupDashboard';
 
 import { PersonalRoom } from './pages/rooms/personal/PersonalRoom';
 import { PersonalStudyArea } from './pages/rooms/personal/study_area/PersonalStudyArea';
@@ -68,9 +69,9 @@ function App() {
             {/* Room Routes */}
             {/* Group Study Room Routes */}
             <Route path='/main/group/' element={<GroupRoom />} /> 
+            <Route path='/main/group/tasks/:groupId' element={<GroupTasks />} /> 
             <Route path='/main/group/study-area/:id' element={<GroupStudyArea />} /> 
             <Route path='/main/group/study-area/qa-gen/:id' element={<GroupQAGenerator />} /> 
-            <Route path='/main/group/study-area/tasks' element={<GroupTasks />} /> 
             {/* <Route path='/main/group/study-area/group-review' element={<GroupReviewPage />} />  */}
             <Route path='/main/group/study-area/group-review/:groupId/:materialId' element={<GroupReviewerPage />} />
 
@@ -88,6 +89,9 @@ function App() {
             <Route path='/main/personal/dashboard/category-list/topic-list/:categoryID' element={<PersonalTopicList />} />
             <Route path='/main/personal/dashboard/category-list/topic-list/topic-page/:categoryID/:materialID' element={<PersonalTopicPage />} />
             <Route path='/main/personal/dashboard/category-list/topic-list/topic-page/analysis/:categoryID/:materialID/:dashID' element={<PersonalAnalysisPage />} />
+
+            {/* Group Dashboard */}
+            <Route path='/main/group/dashboard/:groupId' element={<GroupDashboard />} />
               
             {/* If page does not exist */}
             <Route path='*' element={<h1 className='text-center text-4xl font-bold primary-text-color pt-40'>404: Page Not Found</h1>} /> 

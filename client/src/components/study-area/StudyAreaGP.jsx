@@ -561,7 +561,8 @@ export const StudyAreaGP = (props) => {
       </div>
 
       <div className='py-6 px-10 w-3/4 '>
-        <Navbar linkBack={`/main/${categoryForToLower}/`} linkBackName={`${categoryFor} Study Area`} currentPageName={'Study Area'} username={'Jennie Kim'}/>
+        
+        <Navbar linkBack={`/main/${categoryForToLower}/`} linkBackName={`${categoryFor === 'Personal' ? 'Personal Study Area' : 'Groups'}`} currentPageName={'Study Area'} username={'Jennie Kim'}/>
         
 
         <div className='flex justify-between items-center mt-10 mb-6'>

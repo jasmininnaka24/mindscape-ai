@@ -176,6 +176,10 @@ body {
   border-bottom: #33404A solid 1px;
 }
 
+.border-bottom-thin-gray{
+  border-bottom: #eef0f1 solid 1px;
+}
+
 .border-thin-800-correct{
   border: #67a686 solid 2px;
   box-shadow: 0 0 15px #999;

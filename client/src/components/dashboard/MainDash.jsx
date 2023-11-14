@@ -1,6 +1,6 @@
 import axios from 'axios'
 import React, { useEffect, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useParams } from 'react-router-dom'
 
 
 
@@ -15,6 +15,10 @@ export const MainDash = () => {
   const [itemsCount, setItemsCount] = useState(0);
 
   const UserId = 1;
+
+  // params
+
+  const { groupId } = useParams()
   
   useEffect(() => {
 
@@ -27,17 +31,35 @@ export const MainDash = () => {
         
 
 
-        const materialCategories = await axios.get(`http://localhost:3001/studyMaterialCategory/Personal/${UserId}`)
+        let materialCategories = '';
+        let materialTitleResponse = '';
+        let materialCategoryResponse = '';
+
+        if (groupId === '' || groupId === null || groupId === undefined) {
+          materialCategories = await axios.get(`http://localhost:3001/studyMaterialCategory/Personal/${UserId}`)
+
+          materialTitleResponse = await axios.get(`http://localhost:3001/studyMaterial/study-material-personal/Personal/${UserId}/${materialId}`)
+          
+          materialCategoryResponse = await axios.get(`http://localhost:3001/studyMaterialCategory/get-lastmaterial/${materialTitleResponse.data.StudyMaterialsCategoryId}/Personal/${UserId}`)
+          
+        } else {
+          materialCategories = await axios.get(`http://localhost:3001/studyMaterialCategory/Group/${groupId}/${UserId}`)
+          
+          materialTitleResponse = await axios.get(`http://localhost:3001/studyMaterial/study-material/Group/${groupId}/${UserId}/${materialId}`)
+
+          materialCategoryResponse = await axios.get(`http://localhost:3001/studyMaterialCategory/get-lastmaterial/${materialTitleResponse.data.StudyMaterialsCategoryId}/${groupId}/Group/${UserId}`)
+        }
+
+
+
         
         const materialCategoriesResponse = materialCategories.data;
         setMaterialCategories(materialCategoriesResponse)
 
         
-        const materialTitleResponse = await axios.get(`http://localhost:3001/studyMaterial/study-material-personal/Personal/${UserId}/${materialId}`)
         setMaterialTitle(materialTitleResponse.data.title)
         
         
-        const materialCategoryResponse = await axios.get(`http://localhost:3001/studyMaterialCategory/get-lastmaterial/${materialTitleResponse.data.StudyMaterialsCategoryId}/Personal/${UserId}`)
         setMaterialCategory(materialCategoryResponse.data.category)
 
         const materialResponse = await axios.get(`http://localhost:3001/quesAns/study-material-mcq/${materialId}`);
@@ -67,14 +89,17 @@ export const MainDash = () => {
       <div className='w-full rounded-[5px]'>
         <div className='w-full border-medium-800 min-h-[37vh] rounded-[5px] p-5'></div>
 
-
         <div className='w-full border-medium-800 min-h-[37vh] rounded-[5px] py- 5 px-10 mt-10 relative'>
 
           <div className='flex items-center justify-between'>
 
             <div>
               <p className='text-lg font-medium mcolor-800 mt-8 mb-1'>Recently Studying</p>
-              <p className='font-bold text-2xl my-5 mcolor-800'>{materialCategory} - {materialTitle}</p>
+              <p className='font-bold text-xl my-5 mcolor-800'>
+                {materialCategory === null || materialTitle === null || materialCategory === undefined || materialTitle === undefined
+                  ? 'No material has been studied'
+                  : `${materialCategory} - ${materialTitle}`}
+              </p>
               <table className='mcolor-800'>
                 <thead>
                   <tr>
@@ -95,7 +120,11 @@ export const MainDash = () => {
             
             <div className='mt-5'>
               <div className='text-center'>
-                <p className='text-4xl mcolor-800 font-medium'>{((familiarLength/itemsCount) * 100).toFixed(2)}%</p>
+                <p className='text-4xl mcolor-800 font-medium'>
+                  {isNaN((familiarLength / itemsCount) * 100)
+                    ? 0 + '%'
+                    : ((familiarLength / itemsCount) * 100).toFixed(2) + '%'}
+                </p>
                 <p className='mt-1 mcolor-400'>Study Performance</p>
               </div>
               <button className='absolute bottom-5 right-5 mbg-800 mcolor-100 px-5 py-2 rounded-[5px]'>View Reviewer</button>
