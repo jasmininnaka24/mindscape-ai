@@ -27,6 +27,11 @@ export const GroupReviewerPage = () => {
   const [showPreJoin, setShowPreJoin] = useState(true);
   const [sessionExpired, setSessionExpired] = useState(false);
   const [lostPoints, setLostPoints] = useState(false)
+  const [gainedPoints, setGainedPoints] = useState(false)
+  const [alreadyFetched, setAlreadyFetched] = useState(false);
+  const [isRunningReview, setIsRunningReview] = useState(false);
+  const [secondsReview, setSecondsReview] = useState(0);
+  const [hideSubmitButton, setHideSubmitButton] = useState(false);
   
   
   
@@ -50,8 +55,6 @@ export const GroupReviewerPage = () => {
   const [assessementRoom, setAssessmentRoom] = useState('');
   const [isRunning, setIsRunning] = useState(false);
   const [seconds, setSeconds] = useState(0);
-  const [isRunningReview, setIsRunningReview] = useState(false);
-  const [secondsReview, setSecondsReview] = useState(0);
 
 
 
@@ -105,12 +108,16 @@ export const GroupReviewerPage = () => {
   
 
   const failCountDefault = (num, val) => {
-    let currentFailCount = num
-    let submittedAnswerVal = val
-    setFailCount(currentFailCount)
-    setSubmittedAnswer(submittedAnswerVal)
-    socket.emit("submitted_answer", {room, currentFailCount, submittedAnswerVal})
-  }
+    let currentFailCount = (extractedQA[questionIndex].quizType === 'Identification' || extractedQA[questionIndex].quizType === 'FITB' || extractedQA[questionIndex].quizType === 'ToF') ? 1 : num;
+    let submittedAnswerVal = val;
+    setFailCount(currentFailCount);
+    setSubmittedAnswer(submittedAnswerVal);
+    socket.emit("submitted_answer", { room, currentFailCount, submittedAnswerVal });
+    socket.on("received_submitted_answer", (currentFailCount) => {
+      setFailCount(currentFailCount)
+    })
+  };
+  
 
   const handleRadioChange = (event) => {
     setSelectedChoice(event.target.value);
@@ -246,11 +253,15 @@ export const GroupReviewerPage = () => {
       }
     }
     
-    fetchData();
+    if (alreadyFetched === false) {
+      fetchData();
+      setAlreadyFetched(true)
+    }
+    
  
-    // socket.on('userList', (users) => {
-    //   setUserList(users);
-    // });
+    socket.on('userList', (users) => {
+      setUserList(users);
+    });
 
     socket.on('received_next_user', (nextUser) => {
       setUserTurn(nextUser);
@@ -273,18 +284,17 @@ export const GroupReviewerPage = () => {
       setSelectedChoice(selectedChoiceVal)
     })
 
-    socket.on("received_submitted_answer", ({currentFailCount, selectedChoice}) => {
+    socket.on("received_submitted_answer", (currentFailCount) => {
       setFailCount(currentFailCount)
-      setSubmittedAnswer(selectedChoice)
     })
 
     socket.on("update_QA_data", (updatedData) => {
       setQA(updatedData);
     });
 
-    // socket.on("received_updated_userlist", (userList) => {
-    //   setUserList(userList);
-    // });
+    socket.on("received_updated_userlist", (userList) => {
+      setUserList(userList);
+    });
     console.log(userList.length);
 
     // if(failCount === 0) {
@@ -298,14 +308,19 @@ export const GroupReviewerPage = () => {
     socket.on("user_turn_disc", (userTurnCurr) => {
       setUserTurn(userTurnCurr)
     })
-   
-
+    
+    
+    console.log("userTurn:", userTurn);
+    console.log("userList:", userList);
+    
     // Cleanup function to handle disconnection
     socket.on('disconnect', (newUserTurn) => {
       setUserList(prevUsers => prevUsers.filter(user => user.userId !== userId));
       setUserTurn(newUserTurn); 
       nextUser()
     });
+
+
 
 
     window.addEventListener('mousemove', handleUserActivity);
@@ -319,7 +334,7 @@ export const GroupReviewerPage = () => {
       window.removeEventListener('mousemove', handleUserActivity);
       window.removeEventListener('keypress', handleUserActivity);
     };
-  }, [groupId, userTurn, materialId, questionIndex, room, userId]);
+  }, [groupId, userTurn, materialId, questionIndex, room, userId, userList.length, alreadyFetched, userList]);
 
 
   
@@ -328,8 +343,8 @@ export const GroupReviewerPage = () => {
     let points = 0;
     setFailCount(2)
 
-    let userLength = userList.length;
-    socket.emit("join_room", { room, username, userId, points, questionIndex, shuffledChoices, userList, failCount, lostPoints, isRunningReview: userLength > 1 ? true : false, timeDurationValReview: currentCount });
+    socket.emit("join_room", { room, username, userId, points, questionIndex, shuffledChoices, userList, failCount, lostPoints, gainedPoints, isRunningReview: true, timeDurationValReview: currentCount });
+
     setShowPreJoin(false);
     setIsJoined(true);
     
@@ -355,12 +370,16 @@ export const GroupReviewerPage = () => {
       setFailCount(currentFailCountVal);
     });
 
-    // socket.on("received_updated_userlist", (userList) => {
-    //   setUserList(userList);
-    // });
+    socket.on("received_updated_userlist", (userList) => {
+      setUserList(userList);
+    });
 
     socket.on("is_lost_points", (points) => {
       setLostPoints(points);
+    });
+
+    socket.on("is_gained_points", (points) => {
+      setGainedPoints(points);
     });
 
     socket.on('updated_time_review', (time) => {
@@ -369,6 +388,7 @@ export const GroupReviewerPage = () => {
   
     socket.on('is_running_review', (isrunning) => {
       setIsRunningReview(isrunning);
+      console.log(isrunning);
     });
   
 
@@ -377,72 +397,136 @@ export const GroupReviewerPage = () => {
 
 
 
-
   const nextUser = () => {
-    let nextUser = (userTurn + 1) % userList.length;
+
+    let nextUser = 0;
+    
+    if (userTurn <= 0 || userTurn >= userList.length) {
+      console.log(`Index ${userTurn} exists in the array.`);
+      nextUser = (userTurn + 1) % userList.length;
+      setUserTurn(nextUser)
+    } else {
+      console.log(`Index ${userTurn} does not exist in the array.`);
+      setUserTurn(0)
+    }
+
+    
+    socket.emit('next_turn', {nextUser, room});
     let questionIndexVal = (questionIndex + 1) % extractedQA.length;
     let studyMaterialsLength = extractedQA.length;
 
-    socket.emit('next_turn', {nextUser, room});
     socket.emit('next_qa', {questionIndexVal, room, studyMaterialsLength });
-    setUserTurn(nextUser)
 
     let selectedChoiceVal = "";
     setSelectedChoice(selectedChoiceVal)
     socket.emit("selected_choice", {room, selectedChoiceVal})
-    failCountDefault(2, "")
     setRemainingHints(3)
+    setCurrentCount(20)
+    socket.emit('update_time_review', { room: room, timeDurationValReview: 20 });
+    
+
+
   }
+
+
+  const failedItem = () => {
+    setTimeout(() => {
+
+      setSubmittedAnswer("");
+      setLostPoints(true);
+      socket.emit("updated_lost_points", { room, lostPoints: true });
+    }, 100);
+
+
+    
+    setTimeout(() => {
+      const updatedUserList = userList.map((userData, index) => {
+        if (index !== userTurn) {
+          userData.points += 1;
+        } else {
+          if (userData.points !== 0) {
+            userData.points -= 1;
+          }
+        }
+        return userData;
+      });
+  
+      socket.emit("updated_userlist", { room, userList: updatedUserList });
+      setUserList(updatedUserList);
+      setLostPoints(false);
+      socket.emit("updated_lost_points", { room, lostPoints: false });
+      nextUser();
+
+      if (Array.isArray(extractedQA) && extractedQA.length > 0) {
+        if (
+          extractedQA[questionIndex].quizType === 'MCQA' 
+        ) {
+          failCountDefault(2, "")
+        } else {
+          failCountDefault(1, "")
+        }
+      }
+    }, 2500);
+  }
+
 
   const submitAnswer = () => {
     if(selectedChoice === extractedQA[questionIndex].answer){
-      alert('Correct')
-      nextUser()
-      setSubmittedAnswer("")
-      failCountDefault(2, "")
-      setRemainingHints(3)
-      userList[userTurn].points += 1;
-      socket.emit("updated_userlist", {room, userList});
-      setUserList(userList)
+
+      setTimeout(() => {
+        setGainedPoints(true);
+        socket.emit("updated_gained_points", { room, gainedPoints: true });
+        setHideSubmitButton(true)
+      }, 100);
+      
+      setTimeout(() => {
+        setGainedPoints(false);
+        socket.emit("updated_gained_points", { room, gainedPoints: false });
+        nextUser()
+        setSubmittedAnswer("")
+        setRemainingHints(3)
+        userList[userTurn].points += 1;
+        socket.emit("updated_userlist", {room, userList});
+        setUserList(userList)
+        setHideSubmitButton(false)
+        failCountDefault(2, "")
+
+      }, 2500);
+
     } else {
-      if(failCount !== 0) {
-        alert('Wrong')
-        let currentFailCount = failCount - 1
-        failCountDefault(currentFailCount, "")
-        if (currentFailCount === 0) {
-          setTimeout(() => {
-            const updatedUserList = userList.map((userData, index) => {
-              if (index !== userTurn) {
-                userData.points += 1;
-              } else {
-                if (userData.points !== 0) {
-                  userData.points -= 1;
-                }
-              }
-              return userData;
-            });
-        
-            socket.emit("updated_userlist", { room, userList: updatedUserList });
-            setUserList(updatedUserList);
-            setSubmittedAnswer("");
-            failCountDefault(2, "");
-            nextUser();
-          }, 2500);
-          setLostPoints(true);
-          socket.emit("updated_lost_points", { room, lostPoints: true });
-          
-          setTimeout(() => {
-            setLostPoints(false);
-            socket.emit("updated_lost_points", { room, lostPoints: false });
-          }, 2500);
+
+      if (Array.isArray(extractedQA) && extractedQA.length > 0) {
+        if (
+          extractedQA[questionIndex].quizType === 'Identification' ||
+          extractedQA[questionIndex].quizType === 'FITB' ||
+          extractedQA[questionIndex].quizType === 'ToF'
+        ) {
+          failCountDefault(1, "")
+          failedItem()
+        } else {
+          if(failCount !== 0 && secondsReview !== 0) {
+            // failCountDefault(2, "")
+            let currentFailCount = failCount - 1
+            failCountDefault(currentFailCount, "")
+
+            if (currentFailCount === 0) {
+              failedItem()
+            }
+
+          } else {
+            failedItem()
+          }
         }
-        
-      } 
+      }
+
+      
+
+
       
     }
     
   };
-
+  
   
   const giveHint = () => {
 
@@ -475,35 +559,31 @@ export const GroupReviewerPage = () => {
     
   }
 
-  
-  const reviewHours = Math.floor(seconds / 3600);
-  const reviewMinutes = Math.floor((seconds % 3600) / 60);
-  const reviewRemainingSeconds = seconds % 60;
-
 
   
   useEffect(() => {
 
     let interval;
-    if (isRunningReview && secondsReview > 0) {
+    if (isRunningReview && secondsReview > 0 && userList.length > 1) {
       interval = setInterval(() => {
-        // setSeconds(prevSeconds => prevSeconds - 1);
 
         setSecondsReview(prevSeconds => {
           const updatedSeconds = prevSeconds - 1;
-          socket.emit('update_time_review', { room: assessementRoom, timeDurationVal: updatedSeconds });
+          socket.emit('update_time_review', { room: room, timeDurationValReview: updatedSeconds });
           return updatedSeconds;
         });
+
         
         socket.on("updated_time_review", (time) => {
           setSecondsReview(time);
         });
-
-
+        
+        
         
       }, 1000);
     } else if (secondsReview <= 0 && isRunningReview) {
       setIsRunning(false);
+      submitAnswer()
 
 
             
@@ -511,12 +591,12 @@ export const GroupReviewerPage = () => {
       }
   
     return () => clearInterval(interval);
-  }, [isRunningReview, secondsReview]);
+  }, [room, isRunningReview, secondsReview, userList.length]);
   
 
 
   return (
-    <div className='pt-5'>
+    <div className='pt-5 pb-20'>
         {sessionExpired ? (
           <div>
             <p className='pt-5 text-xl text-center'>Your session has expired due to inactivity. Please refresh the page to start a new session.</p>
@@ -549,31 +629,34 @@ export const GroupReviewerPage = () => {
                         ))}
                         <br />
                         <p className='mb-2'>Points:</p>
-                        {userList
-                          .sort((a, b) => b.points - a.points) // Sort userList by points in descending order
+                        {[...userList]
+                          .sort((a, b) => b.points - a.points)
                           .map((user, index) => (
                             <li key={user.userId}>
-                              <p className={(index === 0 && user.points > 0 ) ? 'text-emerald-500' : 'mcolor-900'}>
+                              <p className={index === 0 && userList.length > 1 && user.points > 0 ? 'text-emerald-500' : 'mcolor-900'}>
                                 <i className="fa-solid fa-user mr-1"></i>{" "}
                                 {user.username.charAt(0).toUpperCase() + user.username.slice(1)}:{" "}
                                 {user.points} 
+                                {index === 0 && userList.length > 1 && user.points > 0 && <i className="fa-solid fa-crown text-yellow-500 ml-2"></i>} 
                               </p>
                             </li>
-                          ))}
+                        ))}
+
+
 
 
                       </ul>
 
-                      {userList.length > 0 && userTurn < userList.length && (
+                      {userList.length > 0 &&  (
                         <div className='w-[80%]'>
                           {userList.length > 1 ? 
-                            (userList[userTurn % userList.length].userId === userId ? (
+                            (userList[userTurn].userId === userId ? (
                               <div>
                                 <p className={`mbg-200 mcolor-800 px-5 py-3 rounded-[5px] text-center text-xl ${userList[userTurn].userId === userId ? 'font-bold' : 'font-bold'}`}>{userList[userTurn].userId !== userId ? `${userList[userTurn].username.charAt(0).toUpperCase() + userList[userTurn].username.slice(1)}'s turn`: 'YOUR TURN'}</p>
 
 
-                      
-                                {isRunningReview === true && (
+ 
+                                {(isRunningReview === true) && (
                                   <div className='timer-container px-10 py-3'>
                                     <div className='rounded-[5px]' style={{ height: "15px", backgroundColor: "#B3C5D4" }}>
                                       <div
@@ -663,19 +746,27 @@ export const GroupReviewerPage = () => {
                                   <div>
         
                                     {lostPoints === true && (
-                                      <div className='text-red text-lg text-center mb-5'>You lost 1 point</div>
+                                      <div className='text-red text-lg text-center mb-3'>{selectedChoice === '' ? 'No answer.' : extractedQA[questionIndex].quizType !== 'MCQA' ? 'Wrong.' : ''} You lost 1 point</div>
+                                    )}
+
+                                    {gainedPoints === true && (
+                                      <div className='text-emerald-500 text-lg text-center mb-1'>Correct! You earned 1 point</div>
                                     )}
 
 
                                     {(selectedChoice !== "" && (extractedQA[questionIndex].quizType === 'MCQA' || extractedQA[questionIndex].quizType === 'ToF')) && 
                                       <div>
-                                        {failCount === 0 && (
+
+                                        {/* {failCount === 0 && (
                                           <p className='pb-4 font-normal text-lg text-red text-center'>Failed to answer</p>
-                                        )}
-                                        {failCount < 2 && (
+                                        )} */}
+                                        
+                                        {failCount < 2 && extractedQA[questionIndex].quizType === 'MCQA' && lostPoints === false && gainedPoints === false && (
                                           <p className='pb-5 pt-4 text-center font-normal text-lg mcolor-800'>{userList[userTurn].userId !== userId ? `${userList[userTurn].username.charAt(0).toUpperCase() + userList[userTurn].username.slice(1)}`: 'You'} selected <span className='font-bold'>{selectedChoice}</span> - {failCount} chance left
                                           </p>
                                         )}
+                                        
+                               
 
                                       </div>
                                     }
@@ -739,9 +830,11 @@ export const GroupReviewerPage = () => {
                                       </form>
                                     )}
 
-                                    <div className='flex justify-center mt-8'>
-                                      <button className='w-1/2 py-2 px-5 mbg-700 rounded-[5px] mcolor-100 text-lg' onClick={submitAnswer}>Submit Answer</button>
-                                    </div>
+                                    {hideSubmitButton === false && (
+                                      <div className='flex justify-center mt-8'>
+                                        <button className='w-1/2 py-2 px-5 mbg-700 rounded-[5px] mcolor-100 text-lg' onClick={submitAnswer}>Submit Answer</button>
+                                      </div>
+                                    )}
                                   </div>
                                 )}
 
@@ -751,7 +844,7 @@ export const GroupReviewerPage = () => {
                                 <p className={`mbg-200 mcolor-800 px-5 py-3 rounded-[5px] text-center text-xl ${userList[userTurn].userId === userId ? 'font-bold' : 'font-bold'}`}>{userList[userTurn].userId !== userId ? `${userList[userTurn].username.charAt(0).toUpperCase() + userList[userTurn].username.slice(1)}'s turn`: 'YOUR TURN'}</p>
 
 
-                                {isRunningReview === true && (
+                                {(isRunningReview === true) && (
                                   <div className='timer-container px-10 py-3'>
                                     <div className='rounded-[5px]' style={{ height: "15px", backgroundColor: "#B3C5D4" }}>
                                       <div
@@ -827,7 +920,13 @@ export const GroupReviewerPage = () => {
                                     </div>
 
                                     {lostPoints === true && (
-                                      <div className='text-emerald-500 text-lg text-center mb-5'>You earned 1 point</div>
+                                      <div className='text-emerald-500 text-lg text-center mb-1'>
+                                        You have gained 1 point as a result of {userList[userTurn].username}'s incorrect answer.
+                                      </div>
+                                    )}
+
+                                    {gainedPoints === true && (
+                                      <div className='text-emerald-500 text-lg text-center mb-1'>{userList[userTurn].username} earned 1 point</div>
                                     )}
 
                                     {(selectedChoice !== "" && (extractedQA[questionIndex].quizType === 'MCQA' || extractedQA[questionIndex].quizType === 'ToF')) && 
@@ -835,18 +934,19 @@ export const GroupReviewerPage = () => {
 
 
 
-                                        {failCount < 2 && (
-                                          <p className='py-1 text-center font-normal text-lg mcolor-800'>{userList[userTurn].userId !== userId ? `${userList[userTurn].username.charAt(0).toUpperCase() + userList[userTurn].username.slice(1)}`: 'You'} selected <span className='font-bold'>{selectedChoice}</span> <span className='mcolor-800'>- {failCount} chance left</span>
+                                        {failCount !== 0 && extractedQA[questionIndex].quizType === 'MCQA' && (
+                                          <p className='py-1 text-center font-normal text-lg mcolor-800 mb-3'>{userList[userTurn].userId !== userId ? `${userList[userTurn].username.charAt(0).toUpperCase() + userList[userTurn].username.slice(1)}`: 'You'} selected <span className={`font-bold ${selectedChoice === extractedQA[questionIndex].answer ? 'text-emerald-500' : 'text-red'}`}>{selectedChoice}</span> <span className='mcolor-800'>- {failCount} chance left</span>
                                           </p>
                                         )}
 
-                                        {failCount === 0 && (
-                                          <p className='pb-4 text-center font-normal text-lg text-red text-center'>Failed to answer</p>
-                                        )}
 
-                                        {failCount !== 0 && (
+                                        {/* {failCount === 0 && (
+                                          <p className='pb-4 text-center font-normal text-lg text-red text-center'>Failed to answer</p>
+                                        )} */}
+
+                                        {/* {failCount !== 0 &&  (
                                           <p className={`pb-4 text-center font-normal text-lg ${selectedChoice === extractedQA[questionIndex].answer ? 'text-emerald-500' : 'text-red'}`}>{userList[userTurn].username.charAt(0).toUpperCase() + userList[userTurn].username.slice(1)} selected {selectedChoice === extractedQA[questionIndex].answer ? 'the correct answer' : 'a wrong answer'}</p>
-                                        )}
+                                        )} */}
 
                                       </div>
                                     }

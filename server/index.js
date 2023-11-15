@@ -22,7 +22,7 @@ app.use(express.static(path.join(__dirname, 'client/build')));
 
 let rooms = {};
 let userTurnSer = 0;
-let selectedChoiceValCurr = '';
+let selectedChoiceValCurr = {};
 let currentFailCountVal = 0;
 let reviewShuffledChoices = {}
 let reviewUserTurnSer = {}
@@ -31,6 +31,7 @@ let reviewFailCount = {}
 let reviewNextQA = {}
 let reviewQuestionIndex = {}
 let reviewLostPoints = {}
+let reviewGainedPoints = {}
 let isRunningListReview = {}
 let setSecondsReview = {}
 
@@ -69,7 +70,7 @@ let generatedAnalysisList = {}
 
 io.on('connection', (socket) => {
   socket.on('join_room', (data) => {
-    const { room, username, userId, points, questionIndex, shuffledChoices, userList, failCount, lostPoints, isRunningReview, timeDurationValReview } = data;
+    const { room, username, userId, points, questionIndex, shuffledChoices, userList, failCount, lostPoints, gainedPoints, isRunningReview, timeDurationValReview } = data;
     socket.join(room);
   
     // Initialize arrays for the room if they don't exist
@@ -97,14 +98,18 @@ io.on('connection', (socket) => {
     if (!reviewLostPoints[room]) {
       reviewLostPoints[room] = false;
     }
+    if (!reviewGainedPoints[room]) {
+      reviewGainedPoints[room] = false;
+    }
 
     if (!isRunningListReview[room]) {
       isRunningListReview[room] = false;
     }
 
     if (!setSecondsReview[room]) {
-      setSecondsReview[room] = false;
+      setSecondsReview[room] = 0;
     }
+
 
   
     // Add user to the room's user list
@@ -114,6 +119,7 @@ io.on('connection', (socket) => {
     if (reviewShuffledChoices[room].length === 0) {
       reviewShuffledChoices[room] = shuffledChoices;
     }
+
     if (reviewUserTurnSer[room] === 0) {
       reviewUserTurnSer[room] = reviewUserTurnSer[room];
     }
@@ -131,6 +137,9 @@ io.on('connection', (socket) => {
     }
     if (reviewLostPoints[room] === false) {
       reviewLostPoints[room] = lostPoints;
+    }
+    if (reviewGainedPoints[room] === false) {
+      reviewGainedPoints[room] = gainedPoints;
     }
 
     if (isRunningListReview[room] === false) {
@@ -154,10 +163,18 @@ io.on('connection', (socket) => {
     io.to(room).emit('current_QA_index', reviewQuestionIndex[room]);
     io.to(room).emit('shuffled_join', reviewShuffledChoices[room]);
     io.to(room).emit('is_lost_points', reviewLostPoints[room]);
+    io.to(room).emit('is_gained_points', reviewGainedPoints[room]);
   
   });
 
 
+
+
+  socket.on("update_is_running_review", (data) => {
+    const {room, isRunningReview } = data
+    isRunningListReview[room] = isRunningReview;
+    io.to(room).emit("is_running_review", isRunningListReview[room])
+  })
 
   socket.on("update_time_review", (data) => {
     const {room, timeDurationValReview } = data
@@ -166,6 +183,14 @@ io.on('connection', (socket) => {
   })
 
 
+
+  socket.on('updated_gained_points', (data) => {
+
+    const {room, gainedPoints} = data;
+
+    reviewGainedPoints[room] = gainedPoints;
+    io.to(room).emit('is_gained_points', reviewGainedPoints[room]);
+  });
 
   socket.on('updated_lost_points', (data) => {
 
@@ -226,7 +251,7 @@ io.on('connection', (socket) => {
   });
 
   socket.on("updated_userlist", ({room, userList}) => {
-    io.to(room).emit("received_updated_userlist", userList)
+    io.to(room).emit("userList", userList)
     rooms[room] = userList
   })
 
@@ -235,9 +260,9 @@ io.on('connection', (socket) => {
 
   // to be repaired later
   socket.on("submitted_answer", ({room, currentFailCount, submittedAnswerVal}) => {
-    io.to(room).emit("received_submitted_answer", {currentFailCount, submittedAnswerVal})
-    currentFailCountVal = currentFailCount;
-    submittedAnswerValCurr = submittedAnswerVal;
+    reviewFailCount[room] = currentFailCount;
+    selectedChoiceValCurr[room] = submittedAnswerVal;
+    io.to(room).emit("received_submitted_answer", reviewFailCount[room])
   })
 
 
@@ -776,8 +801,13 @@ io.on('connection', (socket) => {
           reviewFailCount[room] = 2
           reviewNextQA[room] = 0
           reviewQuestionIndex[room] = 0
-          reviewLostPoints[room] = 0
+          reviewLostPoints[room] = false
+          reviewGainedPoints[room] = false
+          isRunningListReview[room] = false;
+          setSecondsReview[room] = 0;
         }
+
+
 
 
 
