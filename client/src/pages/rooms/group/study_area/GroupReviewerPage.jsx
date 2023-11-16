@@ -19,7 +19,7 @@ export const GroupReviewerPage = () => {
   
   
   const [username, setUsername] = useState("");
-  const [userId, setUserId] = useState("");
+  const [userId, setUserId] = useState(0);
   const [room, setRoom] = useState("");
   const [userList, setUserList] = useState([]);
   const [userTurn, setUserTurn] = useState(0);
@@ -108,7 +108,7 @@ export const GroupReviewerPage = () => {
   
 
   const failCountDefault = (num, val) => {
-    let currentFailCount = (extractedQA[questionIndex].quizType === 'Identification' || extractedQA[questionIndex].quizType === 'FITB' || extractedQA[questionIndex].quizType === 'ToF') ? 1 : num;
+    let currentFailCount = num;
     let submittedAnswerVal = val;
     setFailCount(currentFailCount);
     setSubmittedAnswer(submittedAnswerVal);
@@ -258,79 +258,59 @@ export const GroupReviewerPage = () => {
       setAlreadyFetched(true)
     }
     
+    // let userListCount = userList.length;
+    // socket.emit("user_list", {userListCount, room})
+    // socket.on("user_turn_disc", (userTurnCurr) => {
+    //   setUserTurn(userTurnCurr)
+    // })
+    
  
-    socket.on('userList', (users) => {
-      setUserList(users);
-    });
-
+    // Event listeners for socket events
+    socket.on('userList', (users) => setUserList(users));
     socket.on('received_next_user', (nextUser) => {
-      setUserTurn(nextUser);
+      setUserTurn(nextUser)
+      setCurrentCount(20)
+      socket.emit('update_time_review', { room: room, timeDurationValReview: 20 });  
     });
-    socket.on('received_next_qa', (nextQuestion) => {
-      setQuestionIndex(nextQuestion);
-    });
-    socket.on('next_qa_join', (nextQA) => {
-      setQuestionIndex(nextQA);
-    });
+    socket.on('received_question_index', (nextQuestion) => setQuestionIndex(nextQuestion));
+    socket.on('received_selected_choice', (selectedChoiceVal) => setSelectedChoice(selectedChoiceVal));
+    socket.on('received_submitted_answer', (currentFailCount) => setFailCount(currentFailCount));
+    // socket.on('received_next_user_join', (updatedUserList) => setUserList(updatedUserList));
 
-    socket.on('received_next_user_zero', (nextUser) => {
-      setUserTurn(nextUser);
-    });
 
-    // socket.on('received_shuffled_choices', (shuffledArray) => {
-    //   setShuffledChoices(shuffledArray);
-    // });
-    socket.on("received_selected_choice", (selectedChoiceVal) => {
-      setSelectedChoice(selectedChoiceVal)
-    })
 
-    socket.on("received_submitted_answer", (currentFailCount) => {
-      setFailCount(currentFailCount)
-    })
-
-    socket.on("update_QA_data", (updatedData) => {
+    socket.on("extracted_qa_data", (updatedData) => {
       setQA(updatedData);
     });
 
-    socket.on("received_updated_userlist", (userList) => {
-      setUserList(userList);
-    });
-    console.log(userList.length);
 
-    // if(failCount === 0) {
-    //   let currentFailCount = 2
-    //   setFailCount(currentFailCount)
-    //   socket.emit("submitted_answer", {room, currentFailCount})
-    // }
-
-    let userListCount = userList.length;
-    socket.emit("user_list", {userListCount, room})
-    socket.on("user_turn_disc", (userTurnCurr) => {
-      setUserTurn(userTurnCurr)
-    })
+    
     
     
     console.log("userTurn:", userTurn);
     console.log("userList:", userList);
+    console.log(userList.length);
     
     // Cleanup function to handle disconnection
     socket.on('disconnect', (newUserTurn) => {
-      setUserList(prevUsers => prevUsers.filter(user => user.userId !== userId));
-      setUserTurn(newUserTurn); 
-      nextUser()
+      console.log('user turn:', userTurn);
+      nextUser();
     });
-
 
 
 
     window.addEventListener('mousemove', handleUserActivity);
     window.addEventListener('keypress', handleUserActivity);
 
+    if (userId === undefined) {
+      console.log('undefined');
+    }
+
     
     return () => {
       socket.off('userList');
       socket.off('disconnect');
-      socket.off('received_next_user_zero');
+      // socket.off('received_next_user_zero');
       window.removeEventListener('mousemove', handleUserActivity);
       window.removeEventListener('keypress', handleUserActivity);
     };
@@ -343,7 +323,7 @@ export const GroupReviewerPage = () => {
     let points = 0;
     setFailCount(2)
 
-    socket.emit("join_room", { room, username, userId, points, questionIndex, shuffledChoices, userList, failCount, lostPoints, gainedPoints, isRunningReview: true, timeDurationValReview: currentCount });
+    socket.emit("join_room", { room, username, userId, points, questionIndex, shuffledChoices, userList, failCount, lostPoints, gainedPoints, isRunningReview: true, timeDurationValReview: currentCount, extractedQA });
 
     setShowPreJoin(false);
     setIsJoined(true);
@@ -391,6 +371,13 @@ export const GroupReviewerPage = () => {
       console.log(isrunning);
     });
   
+    socket.on('extracted_qa_data', (extractedQA) => {
+      setQA(extractedQA);
+    });
+
+    socket.on('received_question_index', (nextQuestion) => setQuestionIndex(nextQuestion));
+
+  
 
   };
 
@@ -399,23 +386,13 @@ export const GroupReviewerPage = () => {
 
   const nextUser = () => {
 
-    let nextUser = 0;
-    
-    if (userTurn <= 0 || userTurn >= userList.length) {
-      console.log(`Index ${userTurn} exists in the array.`);
-      nextUser = (userTurn + 1) % userList.length;
-      setUserTurn(nextUser)
-    } else {
-      console.log(`Index ${userTurn} does not exist in the array.`);
-      setUserTurn(0)
-    }
-
+    let nextUser = (userTurn + 1) % userList.length;
     
     socket.emit('next_turn', {nextUser, room});
     let questionIndexVal = (questionIndex + 1) % extractedQA.length;
-    let studyMaterialsLength = extractedQA.length;
+    // let studyMaterialsLength = extractedQA.length;
 
-    socket.emit('next_qa', {questionIndexVal, room, studyMaterialsLength });
+    socket.emit('updated_next_qa', {questionIndex: questionIndexVal, room });
 
     let selectedChoiceVal = "";
     setSelectedChoice(selectedChoiceVal)
@@ -459,7 +436,7 @@ export const GroupReviewerPage = () => {
 
       if (Array.isArray(extractedQA) && extractedQA.length > 0) {
         if (
-          extractedQA[questionIndex].quizType === 'MCQA' 
+          extractedQA[questionIndex].quizType !== 'ToF' 
         ) {
           failCountDefault(2, "")
         } else {
@@ -475,8 +452,11 @@ export const GroupReviewerPage = () => {
 
       setTimeout(() => {
         setGainedPoints(true);
-        socket.emit("updated_gained_points", { room, gainedPoints: true });
         setHideSubmitButton(true)
+        setIsRunningReview(false)
+        socket.emit("updated_gained_points", { room, gainedPoints: true });
+        socket.emit("update_is_running_review", { room, isRunningReview: false });
+        
       }, 100);
       
       setTimeout(() => {
@@ -489,16 +469,24 @@ export const GroupReviewerPage = () => {
         socket.emit("updated_userlist", {room, userList});
         setUserList(userList)
         setHideSubmitButton(false)
-        failCountDefault(2, "")
+        setIsRunningReview(true)
+        socket.emit("update_is_running_review", { room, isRunningReview: true });
 
+        if (Array.isArray(extractedQA) && extractedQA.length > 0) {
+          if (
+            extractedQA[questionIndex].quizType !== 'ToF' 
+          ) {
+            failCountDefault(2, "")
+          } else {
+            failCountDefault(1, "")
+          }
+        }
       }, 2500);
 
     } else {
 
       if (Array.isArray(extractedQA) && extractedQA.length > 0) {
         if (
-          extractedQA[questionIndex].quizType === 'Identification' ||
-          extractedQA[questionIndex].quizType === 'FITB' ||
           extractedQA[questionIndex].quizType === 'ToF'
         ) {
           failCountDefault(1, "")
@@ -650,9 +638,9 @@ export const GroupReviewerPage = () => {
                       {userList.length > 0 &&  (
                         <div className='w-[80%]'>
                           {userList.length > 1 ? 
-                            (userList[userTurn].userId === userId ? (
+                            ((userList.length > 0 && userList[userTurn]?.userId === userId) ? (
                               <div>
-                                <p className={`mbg-200 mcolor-800 px-5 py-3 rounded-[5px] text-center text-xl ${userList[userTurn].userId === userId ? 'font-bold' : 'font-bold'}`}>{userList[userTurn].userId !== userId ? `${userList[userTurn].username.charAt(0).toUpperCase() + userList[userTurn].username.slice(1)}'s turn`: 'YOUR TURN'}</p>
+                                <p className={`mbg-200 mcolor-800 px-5 py-3 rounded-[5px] text-center text-xl ${(userList.length > 0 && userList[userTurn]?.userId === userId) ? 'font-bold' : 'font-bold'}`}>{userList[userTurn]?.userId !== userId ? `${userList[userTurn]?.username.charAt(0).toUpperCase() + userList[userTurn]?.username.slice(1)}'s turn`: 'YOUR TURN'}</p>
 
 
  
@@ -746,7 +734,7 @@ export const GroupReviewerPage = () => {
                                   <div>
         
                                     {lostPoints === true && (
-                                      <div className='text-red text-lg text-center mb-3'>{selectedChoice === '' ? 'No answer.' : extractedQA[questionIndex].quizType !== 'MCQA' ? 'Wrong.' : ''} You lost 1 point</div>
+                                      <div className='text-red text-lg text-center mb-3'>{selectedChoice === '' ? 'No answer.' : (extractedQA[questionIndex].quizType !== 'MCQA' && userList[userTurn]?.points > 0) ? 'Wrong. You lost 1 point' : 'Wrong answer.'}</div>
                                     )}
 
                                     {gainedPoints === true && (
@@ -761,8 +749,8 @@ export const GroupReviewerPage = () => {
                                           <p className='pb-4 font-normal text-lg text-red text-center'>Failed to answer</p>
                                         )} */}
                                         
-                                        {failCount < 2 && extractedQA[questionIndex].quizType === 'MCQA' && lostPoints === false && gainedPoints === false && (
-                                          <p className='pb-5 pt-4 text-center font-normal text-lg mcolor-800'>{userList[userTurn].userId !== userId ? `${userList[userTurn].username.charAt(0).toUpperCase() + userList[userTurn].username.slice(1)}`: 'You'} selected <span className='font-bold'>{selectedChoice}</span> - {failCount} chance left
+                                        {failCount < 2 && extractedQA[questionIndex].quizType !== 'ToF' && lostPoints === false && gainedPoints === false && (
+                                          <p className='pb-5 pt-4 text-center font-normal text-lg mcolor-800'>{userList[userTurn]?.userId !== userId ? `${userList[userTurn]?.username.charAt(0).toUpperCase() + userList[userTurn]?.username.slice(1)}`: 'You'} selected <span className='font-bold'>{selectedChoice}</span> - {failCount} chance left
                                           </p>
                                         )}
                                         
@@ -841,7 +829,7 @@ export const GroupReviewerPage = () => {
                               </div>
                             ) : (
                               <div>
-                                <p className={`mbg-200 mcolor-800 px-5 py-3 rounded-[5px] text-center text-xl ${userList[userTurn].userId === userId ? 'font-bold' : 'font-bold'}`}>{userList[userTurn].userId !== userId ? `${userList[userTurn].username.charAt(0).toUpperCase() + userList[userTurn].username.slice(1)}'s turn`: 'YOUR TURN'}</p>
+                                <p className={`mbg-200 mcolor-800 px-5 py-3 rounded-[5px] text-center text-xl ${(userList.length > 0 && userList[userTurn]?.userId === userId) ? 'font-bold' : 'font-bold'}`}>{userList[userTurn]?.userId !== userId ? `${userList[userTurn]?.username.charAt(0).toUpperCase() + userList[userTurn]?.username.slice(1)}'s turn`: 'YOUR TURN'}</p>
 
 
                                 {(isRunningReview === true) && (
@@ -899,13 +887,13 @@ export const GroupReviewerPage = () => {
                                               {/* answer */}
                                               <div className='text-center'>
                                                 {(extractedQA[questionIndex].quizType === 'MCQA' || extractedQA[questionIndex].quizType === 'ToF') && (
-                                                  <p className={`py-7 ${selectedChoice === '' ? 'mcolor-400' : 'mcolor-900'}`}>{selectedChoice === '' ? `${userList[userTurn].userId !== userId ? `${userList[userTurn].username.charAt(0).toUpperCase() + userList[userTurn].username.slice(1)}'s answer goes here`: 'your answer goes here'}` : selectedChoice}</p>
+                                                  <p className={`py-7 ${selectedChoice === '' ? 'mcolor-400' : 'mcolor-900'}`}>{selectedChoice === '' ? `${userList[userTurn]?.userId !== userId ? `${userList[userTurn]?.username.charAt(0).toUpperCase() + userList[userTurn]?.username.slice(1)}'s answer goes here`: 'your answer goes here'}` : selectedChoice}</p>
 
                                                 )}
 
 
-                                                { (extractedQA[questionIndex].quizType === 'Identification' || extractedQA[questionIndex].quizType === 'FITB') && (
-                                                  <input type="text" placeholder={`${selectedChoice === '' ? `${userList[userTurn].userId !== userId ? `${userList[userTurn].username.charAt(0).toUpperCase() + userList[userTurn].username.slice(1)}'s answer goes here`: 'your answer goes here'}` : selectedChoice}`} className='w-full h-full text-center py-5 my-2' readOnly value={selectedChoice || ''} onChange={(event) => {
+                                                {(extractedQA[questionIndex].quizType === 'Identification' || extractedQA[questionIndex].quizType === 'FITB') && (
+                                                  <input type="text" placeholder={`${selectedChoice === '' ? `${userList[userTurn]?.userId !== userId ? `${userList[userTurn]?.username.charAt(0).toUpperCase() + userList[userTurn]?.username.slice(1)}'s answer goes here`: 'your answer goes here'}` : selectedChoice}`} className='w-full h-full text-center py-5 my-2' readOnly value={selectedChoice || ''} onChange={(event) => {
                                                     setSelectedChoice(event.target.value)
                                                   }} style={{ height: '100%' }} />
                                                 )}
@@ -921,42 +909,42 @@ export const GroupReviewerPage = () => {
 
                                     {lostPoints === true && (
                                       <div className='text-emerald-500 text-lg text-center mb-1'>
-                                        You have gained 1 point as a result of {userList[userTurn].username}'s incorrect answer.
+                                        You have gained 1 point as a result of {userList[userTurn]?.username}'s incorrect answer.
                                       </div>
                                     )}
 
                                     {gainedPoints === true && (
-                                      <div className='text-emerald-500 text-lg text-center mb-1'>{userList[userTurn].username} earned 1 point</div>
+                                      <div className='text-emerald-500 text-lg text-center mb-1'>{userList[userTurn]?.username} earned 1 point</div>
                                     )}
 
                                     {(selectedChoice !== "" && (extractedQA[questionIndex].quizType === 'MCQA' || extractedQA[questionIndex].quizType === 'ToF')) && 
                                       <div>
-
-
-
-                                        {failCount !== 0 && extractedQA[questionIndex].quizType === 'MCQA' && (
-                                          <p className='py-1 text-center font-normal text-lg mcolor-800 mb-3'>{userList[userTurn].userId !== userId ? `${userList[userTurn].username.charAt(0).toUpperCase() + userList[userTurn].username.slice(1)}`: 'You'} selected <span className={`font-bold ${selectedChoice === extractedQA[questionIndex].answer ? 'text-emerald-500' : 'text-red'}`}>{selectedChoice}</span> <span className='mcolor-800'>- {failCount} chance left</span>
+   
+                                        {failCount < 2 && extractedQA[questionIndex].quizType === 'MCQA' && lostPoints === false && gainedPoints === false && (
+                                          <p className='pb-5 pt-4 text-center font-normal text-lg mcolor-800'>{userList[userTurn]?.userId !== userId ? `${userList[userTurn]?.username.charAt(0).toUpperCase() + userList[userTurn]?.username.slice(1)}`: 'You'} selected <span className='font-bold'>{selectedChoice}</span> - {failCount} chance left
                                           </p>
                                         )}
-
-
-                                        {/* {failCount === 0 && (
-                                          <p className='pb-4 text-center font-normal text-lg text-red text-center'>Failed to answer</p>
-                                        )} */}
-
-                                        {/* {failCount !== 0 &&  (
-                                          <p className={`pb-4 text-center font-normal text-lg ${selectedChoice === extractedQA[questionIndex].answer ? 'text-emerald-500' : 'text-red'}`}>{userList[userTurn].username.charAt(0).toUpperCase() + userList[userTurn].username.slice(1)} selected {selectedChoice === extractedQA[questionIndex].answer ? 'the correct answer' : 'a wrong answer'}</p>
-                                        )} */}
-
+                                       
                                       </div>
                                     }
+
+                                    {(failCount < 2 && (extractedQA[questionIndex].quizType === 'Identification' || extractedQA[questionIndex].quizType === 'FITB')) && lostPoints === false && gainedPoints === false &&  (
+                                      <p className={`pb-5 pt-4 text-center font-normal text-lg mcolor-800 ${selectedChoice === extractedQA[questionIndex].answer ? 'text-emerald-500' : 'text-red'}`}>{userList[userTurn]?.userId !== userId ? `${userList[userTurn]?.username.charAt(0).toUpperCase() + userList[userTurn]?.username.slice(1)} is`: 'You are'} typing a {selectedChoice === extractedQA[questionIndex].answer ? 'correct' : 'wrong'} answer...
+                                      </p>
+                                    )}
+
+                                    {(failCount < 2 && (extractedQA[questionIndex].quizType === 'Identification' || extractedQA[questionIndex].quizType === 'FITB')) && lostPoints === false && gainedPoints === false && (
+                                      <p className='pb-5 pt-4 text-center font-normal text-lg mcolor-800'>{userList[userTurn]?.userId !== userId ? `${userList[userTurn]?.username.charAt(0).toUpperCase() + userList[userTurn]?.username.slice(1)}`: 'You'} submitted a wrong answer. {failCount} chance left
+                                      </p>
+                                    )}
+                                        
 
                                     {extractedQA[questionIndex].quizType === 'MCQA' && (
                                       <ul className='grid-result gap-4'>
                                         {shuffledChoices && shuffledChoices[questionIndex].map((choice, index) => {
                                           return (
                                             <li
-                                              className={`${choice === selectedChoice ? "mbg-600 mcolor-100" : "mbg-200 mcolor-800"} px-5 py-3 text-xl text-center choice border-thin-800 rounded-[5px]`}
+                                              className={`${choice === selectedChoice ? choice === extractedQA[questionIndex].answer ? 'mbg-700 mcolor-100' : 'bg-red mcolor-100' : "mbg-200 mcolor-800"} px-5 py-3 text-xl text-center choice border-thin-800 rounded-[5px]`}
                                               key={index}
                                             >
                                               {choice}
@@ -969,19 +957,21 @@ export const GroupReviewerPage = () => {
                                     {extractedQA[questionIndex].quizType === 'ToF' && (
                                       <ul className='grid-result gap-4'>
                                         <li
-                                          className={`${'True' === selectedChoice ? "mbg-600 mcolor-100" : "mbg-200 mcolor-800"} px-5 py-3 text-xl text-center choice border-thin-800 rounded-[5px]`}
+                                          className={`${'True' === selectedChoice ? 'True' === extractedQA[questionIndex].answer ? 'mbg-700 mcolor-100' : 'bg-red mcolor-100' : "mbg-200 mcolor-800"} px-5 py-3 text-xl text-center choice border-thin-800 rounded-[5px]`}
                                           key={1}
                                         >
                                           {'True'}
                                         </li>
                                         <li
-                                          className={`${'False' === selectedChoice ? "mbg-600 mcolor-100" : "mbg-200 mcolor-800"} px-5 py-3 text-xl text-center choice border-thin-800 rounded-[5px]`}
+                                          className={`${'False' === selectedChoice ? 'False' === extractedQA[questionIndex].answer ? 'mbg-700 mcolor-100' : 'bg-red mcolor-100' : "mbg-200 mcolor-800"} px-5 py-3 text-xl text-center choice border-thin-800 rounded-[5px]`}
                                           key={1}
                                         >
                                           {'False'}
                                         </li>
                                       </ul>
                                     )}
+
+
 
                                   </div>
                                   ) : (

@@ -34,6 +34,7 @@ let reviewLostPoints = {}
 let reviewGainedPoints = {}
 let isRunningListReview = {}
 let setSecondsReview = {}
+let reviewExtractedQA = {}
 
 
 
@@ -70,7 +71,7 @@ let generatedAnalysisList = {}
 
 io.on('connection', (socket) => {
   socket.on('join_room', (data) => {
-    const { room, username, userId, points, questionIndex, shuffledChoices, userList, failCount, lostPoints, gainedPoints, isRunningReview, timeDurationValReview } = data;
+    const { room, username, userId, points, questionIndex, shuffledChoices, userList, failCount, lostPoints, gainedPoints, isRunningReview, timeDurationValReview, extractedQA } = data;
     socket.join(room);
   
     // Initialize arrays for the room if they don't exist
@@ -110,7 +111,27 @@ io.on('connection', (socket) => {
       setSecondsReview[room] = 0;
     }
 
+    if (!reviewExtractedQA[room]) {
+      reviewExtractedQA[room] = [];
+    }
 
+    
+    // Check if the user with the same userId already exists in the room
+    const userExists = rooms[room].some(user => user.userId === userId);
+
+    if (userExists) {
+      // Kick out the existing user with the same userId
+      const duplicateUserIndex = rooms[room].findIndex(user => user.userId === userId);
+      if (duplicateUserIndex !== -1) {
+        const duplicateSocketId = rooms[room][duplicateUserIndex].socketId;
+
+        // Remove the duplicate user from the room's user list
+        rooms[room].splice(duplicateUserIndex, 1);
+
+        // Notify the removed user about being kicked
+        io.to(duplicateSocketId).emit('duplicate_user_kicked');
+      }
+    }
   
     // Add user to the room's user list
     rooms[room].push({ socketId: socket.id, username, userId, points });
@@ -141,6 +162,9 @@ io.on('connection', (socket) => {
     if (reviewGainedPoints[room] === false) {
       reviewGainedPoints[room] = gainedPoints;
     }
+    if (reviewExtractedQA[room].length === 0) {
+      reviewExtractedQA[room] = extractedQA;
+    }
 
     if (isRunningListReview[room] === false) {
       isRunningListReview[room] = isRunningReview;
@@ -160,14 +184,20 @@ io.on('connection', (socket) => {
     io.to(room).emit('received_selected_choice_join', reviewSelectedChoiceValCurr[room]);
     io.to(room).emit('received_current_fail_val', reviewFailCount[room]);
     io.to(room).emit('next_qa_join', reviewNextQA[room]);
-    io.to(room).emit('current_QA_index', reviewQuestionIndex[room]);
+    io.to(room).emit('received_question_index', reviewQuestionIndex[room]);
     io.to(room).emit('shuffled_join', reviewShuffledChoices[room]);
     io.to(room).emit('is_lost_points', reviewLostPoints[room]);
     io.to(room).emit('is_gained_points', reviewGainedPoints[room]);
+    io.to(room).emit('extracted_qa_data', reviewExtractedQA[room]);
   
   });
 
 
+
+  socket.on('updated_next_qa', ({ questionIndex, room }) => {
+    reviewQuestionIndex[room] = questionIndex;
+    io.to(room).emit('received_question_index', reviewQuestionIndex[room]);
+  });
 
 
   socket.on("update_is_running_review", (data) => {
@@ -211,20 +241,13 @@ io.on('connection', (socket) => {
     reviewUserTurnSer[room] = nextTurn;
   });
   
-  socket.on('next_qa', ({ questionIndexVal, room, studyMaterialsLength }) => {
-    io.to(room).emit('received_next_qa', questionIndexVal);
-    reviewNextQA[room] = questionIndexVal;
-  });
-  
+ 
   socket.on('shuffled_choices', ({ room, shuffledArray }) => {
     io.to(room).emit('received_shuffled_choices', shuffledArray);
     reviewShuffledChoices[room] = shuffledArray;
   });
   
-  socket.on('current_QA_index_rec', ({ questionIndex, room }) => {
-    io.to(room).emit('received_next_qa', nextQuestion);
-    reviewQuestionIndex[room] = questionIndex;
-  });
+
 
   socket.on("user_zero", ({userTurn, questionIndex, room}) => {
     io.to(room).emit('received_next_user_zero', {userTurnSer, questionIndex})
@@ -246,8 +269,9 @@ io.on('connection', (socket) => {
     reviewSelectedChoiceValCurr[room] = selectedChoiceVal
   })
 
-  socket.on('update_QA_data', (updatedData) => {
-    io.emit('update_QA_data', updatedData);
+  socket.on('updated_QA_data', ({room, extractedQA}) => {
+    reviewExtractedQA[room] = extractedQA;
+    io.emit('extracted_qa_data', reviewExtractedQA[room]);
   });
 
   socket.on("updated_userlist", ({room, userList}) => {
@@ -729,71 +753,71 @@ io.on('connection', (socket) => {
 
   
 
-
-
-
   socket.on('disconnect', () => {
-
     // Find the user index in the room
     Object.keys(rooms).forEach((room) => {
-
       const makePointsZero = () => {
-        if(rooms[room].length === 1) {
-          rooms[room][userTurnSer].points = 0;
+        if (rooms[room].length === 1 && rooms[room][0]) {
+          rooms[room][0].points = 0;
           let updateUserList = rooms[room];
           io.to(room).emit('userList', updateUserList);
         }
       }
-
-      const makeCountValTwo = () => {
-        currentFailCountVal[[room]] = 2;
-        io.to(room).emit('received_current_fail_val', currentFailCountVal[[room]]);
-      }
-
-      const userIndex = rooms[room].findIndex(user => user.socketId === socket.id);
+  
+      const userIndex = rooms[room].findIndex((user) => user.socketId === socket.id);
+  
       if (userIndex !== -1) {
+        const isUserAtIndexZero = userIndex === 0;
+  
         rooms[room].splice(userIndex, 1);
         io.to(room).emit('userList', rooms[room]);
-    
-        // Check if the user being disconnected is the current turn user
-        if (userIndex === userTurnSer[room]) {
-          // If the last user is removed, set userTurnSer to 0
-          if (rooms[room].length === 0 || rooms[room].length === 1) {
-            userTurnSer[room] = 0;
-            selectedChoiceValCurr[room] = ""
-            io.to(room).emit('received_next_user', userTurnSer[room]);
+  
+        if (rooms[room].length === 0) {
+          reviewUserTurnSer[room] = 0; // Reset userTurnSer to 0 for the new userTurn
+          io.to(room).emit('received_next_user', reviewUserTurnSer[room]);
 
-            makeCountValTwo();
+          console.log('user turn: ' + reviewUserTurnSer[room]);
+        } else if (isUserAtIndexZero && reviewUserTurnSer[room] === 0) {
+          // If the user at index 0 disconnects and userTurn is 0, keep userTurn as 0
+          reviewUserTurnSer[room] = 0;
+          console.log('user turn: ' + reviewUserTurnSer[room]);
+        } else if (isUserAtIndexZero || userIndex < reviewUserTurnSer[room]) {
+          // Set userTurnSer to the previous user if the user at index 0 disconnects or before the current turn user
+          reviewUserTurnSer[room] = (reviewUserTurnSer[room] - 1 + rooms[room].length) % rooms[room].length;
+          console.log('user turn: ' + reviewUserTurnSer[room]);
+        }
+  
+        // Check if the user being disconnected is the current turn user
+        if (userIndex === reviewUserTurnSer[room]) {
+          if (rooms[room].length <= 1) {
+            selectedChoiceValCurr[room] = "";
             makePointsZero();
           } else {
-            // Otherwise, set it to the next user in the array
-            userTurnSer[room] = userTurnSer[room] % rooms[room].length;
-            io.to(room).emit('received_next_user', userTurnSer[room]);
-            makeCountValTwo();
+            reviewUserTurnSer[room] = reviewUserTurnSer[room] % rooms[room].length;
           }
-          io.to(room).emit('received_next_user_zero', userTurnSer[room]);
         } else {
-          if (rooms[room].length === 0 || rooms[room].length === 1) {
-            userTurnSer[room] = 0;
-            selectedChoiceValCurr[room] = ""
-            io.to(room).emit('received_next_user', userTurnSer[room]);
-            makePointsZero();
-            makeCountValTwo();
+          if (isUserAtIndexZero || userIndex < reviewUserTurnSer[room]) {
+            // Do nothing, no need to subtract if the user at index 0 disconnects or before the current turn user
           } else {
-            if(userIndex === -1){
-              let nextUser = userTurnSer[room] -= 1;
-              io.to(room).emit('received_next_user', nextUser);
-              makeCountValTwo();
+            if (rooms[room].length <= 1) {
+              selectedChoiceValCurr[room] = "";
+              makePointsZero();
             }
           }
         }
-    
+  
+        io.to(room).emit('received_next_user', reviewUserTurnSer[room]);
+        io.to(room).emit('userList', rooms[room]);
+  
+        console.log(rooms[room]);
+        console.log('user turn: ' + reviewUserTurnSer[room]);
+        console.log('user length: ' + rooms[room].length);
+  
         // Remove the room if there are no users in it
         if (rooms[room].length === 0) {
           delete rooms[room];
           selectedChoiceValCurr[room] = ""
-          userTurnSer[room] = 0
-          userTurnSer[room] = ""
+          reviewUserTurnSer[room] = 0
           currentFailCountVal[room] = 0
           reviewShuffledChoices[room] = []
           reviewUserTurnSer[room] = 0
@@ -806,18 +830,10 @@ io.on('connection', (socket) => {
           isRunningListReview[room] = false;
           setSecondsReview[room] = 0;
         }
-
-
-
-
-
-
       }
     });
-
-
-
-
+  
+  
     // Find and remove the user from all assessment rooms
     Object.keys(assessmentRoomList).forEach((assessmentRoom) => {
       const userIndex = assessmentRoomList[assessmentRoom].findIndex(user => user.socketId === socket.id);
