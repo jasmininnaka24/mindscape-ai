@@ -35,6 +35,8 @@ let reviewGainedPoints = {}
 let isRunningListReview = {}
 let setSecondsReview = {}
 let reviewExtractedQA = {}
+let isStartStudyButtonStartedList = {}
+let itemsDoneList = {}
 
 
 
@@ -68,10 +70,9 @@ let generatedAnalysisList = {}
 
 
 
-
 io.on('connection', (socket) => {
   socket.on('join_room', (data) => {
-    const { room, username, userId, points, questionIndex, shuffledChoices, userList, failCount, lostPoints, gainedPoints, isRunningReview, timeDurationValReview, extractedQA } = data;
+    const { room, username, userId, points, questionIndex, shuffledChoices, userList, failCount, lostPoints, gainedPoints, isRunningReview, timeDurationValReview, extractedQA, isStudyStarted, itemsDone } = data;
     socket.join(room);
   
     // Initialize arrays for the room if they don't exist
@@ -113,6 +114,14 @@ io.on('connection', (socket) => {
 
     if (!reviewExtractedQA[room]) {
       reviewExtractedQA[room] = [];
+    }
+
+    if (!isStartStudyButtonStartedList[room]) {
+      isStartStudyButtonStartedList[room] = false;
+    }
+
+    if (!itemsDoneList[room]) {
+      itemsDoneList[room] = 0;
     }
 
     
@@ -165,13 +174,32 @@ io.on('connection', (socket) => {
     if (reviewExtractedQA[room].length === 0) {
       reviewExtractedQA[room] = extractedQA;
     }
+    if (isStartStudyButtonStartedList[room] === false) {
+      isStartStudyButtonStartedList[room] = isStudyStarted;
+    }
+    if (itemsDoneList[room] === 0) {
+      itemsDoneList[room] = itemsDone;
+    }
+
+
 
     if (isRunningListReview[room] === false) {
-      isRunningListReview[room] = isRunningReview;
-      setSecondsReview[room] = timeDurationValReview;
-      
-      io.to(room).emit('updated_time_review', setSecondsReview[room]);
-      io.to(room).emit('is_running_review', isRunningListReview[room]);
+      if (itemsDoneList[room] !== 0) {
+        isRunningListReview[room] = false;
+        setSecondsReview[room] = timeDurationValReview;
+        
+        io.to(room).emit('updated_time_review', setSecondsReview[room]);
+        io.to(room).emit('is_running_review', isRunningListReview[room]);
+
+      } else {
+
+        isRunningListReview[room] = isRunningReview;
+        setSecondsReview[room] = timeDurationValReview;
+        
+        io.to(room).emit('updated_time_review', setSecondsReview[room]);
+        io.to(room).emit('is_running_review', isRunningListReview[room]);
+
+      }
     } else {
       io.to(room).emit('updated_time_review', setSecondsReview[room]);
       io.to(room).emit('is_running_review', isRunningListReview[room]);
@@ -189,12 +217,28 @@ io.on('connection', (socket) => {
     io.to(room).emit('is_lost_points', reviewLostPoints[room]);
     io.to(room).emit('is_gained_points', reviewGainedPoints[room]);
     io.to(room).emit('extracted_qa_data', reviewExtractedQA[room]);
+    io.to(room).emit('study_session_started', isStartStudyButtonStartedList[room]);
+    io.to(room).emit('items_done', itemsDoneList[room]);
   
   });
 
 
 
-  socket.on('updated_next_qa', ({ questionIndex, room }) => {
+  socket.on('updated_items_done', ({ itemsDone, room }) => {
+    itemsDoneList[room] = itemsDone;
+    io.to(room).emit('items_done', itemsDoneList[room]);
+    console.log(itemsDoneList[room]);
+  });
+
+
+  socket.on('updated_study_session_started', ({ isStarted, room }) => {
+    isStartStudyButtonStartedList[room] = isStarted;
+    io.to(room).emit('study_session_started', isStartStudyButtonStartedList[room]);
+    console.log(isStartStudyButtonStartedList[room]);
+  });
+
+
+  socket.on('updated_question_index', ({ questionIndex, room }) => {
     reviewQuestionIndex[room] = questionIndex;
     io.to(room).emit('received_question_index', reviewQuestionIndex[room]);
   });
@@ -805,6 +849,12 @@ io.on('connection', (socket) => {
             }
           }
         }
+
+
+        if (rooms[room].length === 1) {
+          isStartStudyButtonStartedList[room] = false
+          io.to(room).emit('study_session_started', isStartStudyButtonStartedList[room]);
+        }
   
         io.to(room).emit('received_next_user', reviewUserTurnSer[room]);
         io.to(room).emit('userList', rooms[room]);
@@ -829,6 +879,9 @@ io.on('connection', (socket) => {
           reviewGainedPoints[room] = false
           isRunningListReview[room] = false;
           setSecondsReview[room] = 0;
+          reviewExtractedQA[room] = [];
+          isStartStudyButtonStartedList[room] = false;
+          itemsDoneList[room] = 0;
         }
       }
     });

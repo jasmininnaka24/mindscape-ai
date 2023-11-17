@@ -222,7 +222,7 @@ export const PreJoinPage = (props) => {
                 <input type="text" className='px-3 py-2 rounded-[5px] text-lg mbg-200 mcolor-800 border-thin-800 font-normal' placeholder='user id' onChange={(event) => { setUserId(event.target.value) }} />
 
 
-                <button className='px-6 py-2 rounded-[5px] text-lg mbg-200 mcolor-800 border-thin-800 font-normal' onClick={startStudySession}>Start Study Session</button>
+                <button className='px-6 py-2 rounded-[5px] text-lg mbg-200 mcolor-800 border-thin-800 font-normal' onClick={startStudySession}>Join Study Room</button>
               </div>
 
 

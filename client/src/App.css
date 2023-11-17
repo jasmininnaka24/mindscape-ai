@@ -291,6 +291,18 @@ input:focus{
 
 
 
+/* medal colors */
+.gold-medal {
+  color: goldenrod;
+}
+.silver-medal {
+  color: #878686; 
+}
+.bronze-medal {
+  color: #cd7f32; 
+}
+
+
 /* true or false bg-colors */
 
 .red-bg {
