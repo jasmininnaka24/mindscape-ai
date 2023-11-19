@@ -227,14 +227,12 @@ io.on('connection', (socket) => {
   socket.on('updated_items_done', ({ itemsDone, room }) => {
     itemsDoneList[room] = itemsDone;
     io.to(room).emit('items_done', itemsDoneList[room]);
-    console.log(itemsDoneList[room]);
   });
 
 
   socket.on('updated_study_session_started', ({ isStarted, room }) => {
     isStartStudyButtonStartedList[room] = isStarted;
     io.to(room).emit('study_session_started', isStartStudyButtonStartedList[room]);
-    console.log(isStartStudyButtonStartedList[room]);
   });
 
 
@@ -319,8 +317,8 @@ io.on('connection', (socket) => {
   });
 
   socket.on("updated_userlist", ({room, userList}) => {
-    io.to(room).emit("userList", userList)
     rooms[room] = userList
+    io.to(room).emit("userList", rooms[room])
   })
 
 
@@ -820,15 +818,12 @@ io.on('connection', (socket) => {
           reviewUserTurnSer[room] = 0; // Reset userTurnSer to 0 for the new userTurn
           io.to(room).emit('received_next_user', reviewUserTurnSer[room]);
 
-          console.log('user turn: ' + reviewUserTurnSer[room]);
         } else if (isUserAtIndexZero && reviewUserTurnSer[room] === 0) {
           // If the user at index 0 disconnects and userTurn is 0, keep userTurn as 0
           reviewUserTurnSer[room] = 0;
-          console.log('user turn: ' + reviewUserTurnSer[room]);
         } else if (isUserAtIndexZero || userIndex < reviewUserTurnSer[room]) {
           // Set userTurnSer to the previous user if the user at index 0 disconnects or before the current turn user
           reviewUserTurnSer[room] = (reviewUserTurnSer[room] - 1 + rooms[room].length) % rooms[room].length;
-          console.log('user turn: ' + reviewUserTurnSer[room]);
         }
   
         // Check if the user being disconnected is the current turn user
@@ -859,9 +854,7 @@ io.on('connection', (socket) => {
         io.to(room).emit('received_next_user', reviewUserTurnSer[room]);
         io.to(room).emit('userList', rooms[room]);
   
-        console.log(rooms[room]);
-        console.log('user turn: ' + reviewUserTurnSer[room]);
-        console.log('user length: ' + rooms[room].length);
+
   
         // Remove the room if there are no users in it
         if (rooms[room].length === 0) {

@@ -8,6 +8,7 @@ import seedrandom from 'seedrandom';
 import { PreJoinPage } from '../../../../components/group/PreJoinPage';
 import { AssessmentPage } from '../../../../components/group/AssessmentPage';
 import axios from 'axios';
+import { VideoCall } from '../../../../components/group/video-calls/VideoCall';
 
 const socket = io.connect("http://localhost:3001");
 
@@ -37,6 +38,9 @@ export const GroupReviewerPage = () => {
   const [isStartStudyButtonStarted, setIsStartStudyButtonStarted] = useState(false)
   const [itemsLength, setItemsLength] = useState(0);
   const [itemsDone, setItemsDone] = useState(0);
+  const [userScores, setUserScores] = useState([]);
+  const [doneCheckingScores, setDoneCheckingScores] = useState(false)
+  // const [inCall, setInCall] = useState(false);
   
   
   // study material
@@ -281,10 +285,21 @@ export const GroupReviewerPage = () => {
     socket.on('received_selected_choice', (selectedChoiceVal) => setSelectedChoice(selectedChoiceVal));
     socket.on('received_submitted_answer', (currentFailCount) => setFailCount(currentFailCount));
     socket.on('study_session_started', (isStarted) => setIsStartStudyButtonStarted(isStarted));
-    socket.on('items_done', (itemsDone) => {setItemsDone(itemsDone)
+    socket.on('items_done', (itemsDone) => setItemsDone(itemsDone));
+
+    if (itemsLength !== itemsDone) {
+      setDoneCheckingScores(false);
+    }
     
-      console.log('done ' + itemsDone);
-    });
+    if (itemsLength === itemsDone && !doneCheckingScores) {
+      const uniqueUserScores = Array.from(new Set(userList.map((user) => user.points)));
+    
+      const sortedUserScores = uniqueUserScores.sort((a, b) => b - a);
+
+      setUserScores(sortedUserScores);
+      setDoneCheckingScores(true);
+    }
+    
 
     // socket.on('received_next_user_join', (updatedUserList) => setUserList(updatedUserList));
 
@@ -292,18 +307,16 @@ export const GroupReviewerPage = () => {
     // socket.on("extracted_qa_data", (updatedData) => {
     //   setQA(updatedData);
     // });
+    
 
 
+
     
     
-    
-    console.log("userTurn:", userTurn);
-    console.log("userList:", userList);
-    console.log(userList.length);
+
     
     // Cleanup function to handle disconnection
     socket.on('disconnect', (newUserTurn) => {
-      console.log('user turn:', userTurn);
       nextUser();
     });
 
@@ -312,11 +325,7 @@ export const GroupReviewerPage = () => {
     window.addEventListener('mousemove', handleUserActivity);
     window.addEventListener('keypress', handleUserActivity);
 
-    if (userId === undefined) {
-      console.log('undefined');
-    }
 
-    console.log('started: ' + isStartStudyButtonStarted);
     return () => {
       socket.off('userList', setUserList);
       socket.off('received_next_user');
@@ -329,7 +338,7 @@ export const GroupReviewerPage = () => {
       window.removeEventListener('mousemove', handleUserActivity);
       window.removeEventListener('keypress', handleUserActivity);
     };
-  }, [groupId, userTurn, materialId, questionIndex, room, userId, userList.length, alreadyFetched, userList, extractedQA.length, isStartStudyButtonStarted, itemsDone]);
+  }, [groupId, userTurn, materialId, questionIndex, room, userId, userList.length, alreadyFetched, userList, extractedQA.length, isStartStudyButtonStarted, itemsDone, itemsLength, userScores, doneCheckingScores]);
 
 
   
@@ -337,6 +346,7 @@ export const GroupReviewerPage = () => {
   const joinRoom = () => {
     let points = 0;
     setFailCount(2)
+    // setInCall(true)
 
     socket.emit("join_room", { room, username, userId, points, questionIndex, shuffledChoices, userList, failCount, lostPoints, gainedPoints, isRunningReview: true, timeDurationValReview: currentCount, extractedQA, isStudyStarted: false, itemsDone: itemsDone });
 
@@ -416,12 +426,36 @@ export const GroupReviewerPage = () => {
 
 
   const studyAgain = () => {
+
     setIsRunningReview(true)
-    socket.emit("update_is_running_review", { room, isRunningReview: true });
-    socket.emit('updated_items_done', {itemsDone: 0, room });
     setItemsDone(0)
 
-    otherUserFunctionalities()
+          
+    setSelectedChoice("")
+    setRemainingHints(3)
+    setCurrentCount(20)
+    setQuestionIndex(0)
+
+    let nextUser = (userTurn + 1) % userList.length;
+
+    
+    if (Array.isArray(extractedQA) && extractedQA.length > 0) {
+      if (
+        extractedQA[0].quizType !== 'ToF' 
+        ) {
+          failCountDefault(2, "")
+        } else {
+          failCountDefault(1, "")
+        }
+      }
+      
+      socket.emit('next_turn', {nextUser, room});
+      socket.emit('updated_question_index', {questionIndex: 0, room });
+      socket.emit("selected_choice", {room, selectedChoiceVal: ""})
+      socket.emit('update_time_review', { room: room, timeDurationValReview: 20 });
+      
+    socket.emit("update_is_running_review", { room, isRunningReview: true });
+    socket.emit('updated_items_done', {itemsDone: 0, room });
 
   }
 
@@ -441,8 +475,9 @@ export const GroupReviewerPage = () => {
     setCurrentCount(20)
 
 
-    socket.emit('next_turn', {nextUser: 0, room});
-    socket.emit('updated_question_index', {questionIndex: 0, room });
+    socket.emit('next_turn', { nextUser: 0, room });
+    socket.emit('updated_question_index', { questionIndex: 0, room });
+    socket.emit('updated_userlist', { room, userList: updatedUserList });
 
 
     socket.emit("selected_choice", {room, selectedChoiceVal: ""})
@@ -701,10 +736,7 @@ export const GroupReviewerPage = () => {
                             </li>
                           ))}
                           <br />
-                          <p className='mb-2'>Points:</p>
-                          <p>{itemsLength}</p>
-                          <p>{itemsDone}</p>
-                          <p>{itemsDone === itemsLength ? 'Done' : 'Not yet done'}</p>
+                          {/* <p className='mb-2'>Points:</p>
                           {[...userList]
                             .sort((a, b) => b.points - a.points)
                             .map((user, index) => (
@@ -716,7 +748,7 @@ export const GroupReviewerPage = () => {
                                   {index === 0 && userList.length > 1 && user.points > 0 && <i className="fa-solid fa-crown text-yellow-500 ml-2"></i>} 
                                 </p>
                               </li>
-                          ))}
+                          ))} */}
                         </ul>
                       )}
 
@@ -828,6 +860,11 @@ export const GroupReviewerPage = () => {
 
                                           {gainedPoints === true && (
                                             <div className='text-emerald-500 text-lg text-center mb-1'>Correct! You earned 1 point</div>
+                                          )}
+
+                                          {(failCount < 2 && (extractedQA[questionIndex].quizType === 'Identification' || extractedQA[questionIndex].quizType === 'FITB')) && lostPoints === false && gainedPoints === false && (
+                                            <p className='pb-5 pt-2 text-center font-normal text-lg mcolor-800'>{userList[userTurn]?.userId !== userId ? `${userList[userTurn]?.username.charAt(0).toUpperCase() + userList[userTurn]?.username.slice(1)}`: 'You'} submitted a wrong answer. {failCount} chance left
+                                            </p>
                                           )}
 
 
@@ -1089,28 +1126,42 @@ export const GroupReviewerPage = () => {
                                           <span>Users</span>
                                           <span className='mr-4'>Scores</span>
                                         </div>
-
                                         <ul>
-                                          
-
                                           {[...userList]
-                                          .sort((a, b) => b.points - a.points)
-                                          .map((user, index) => (
-                                            <li key={user.userId} className='mb-4'>
-                                              <p className={`${index === 0 && userList.length > 1 && user.points > 0 ? 'text-emerald-500' : 'mcolor-800'} text- mbg-200 shadows p-3 flex justify-between items-center font-medium rounded`}>
-                                                <span>
-                                                  <WorkspacePremiumIcon fontSize="large" className={`${index === 0 ? 'mr-3 gold-medal' : index === 1 ? 'mr-3 silver-medal' : index === 2 ? 'mr-3 bronze-medal' : 'mcolor-700'}`} />
-                                                  <span className='text-xl pt-3'>
-                                                    {user.username.charAt(0).toUpperCase() + user.username.slice(1)}:{" "}
-                                                  </span>
-                                                </span>
-                                                <span className='mr-4'>
-                                                  {user.points} {user.points > 1 ? 'points' : 'point'}
-                                                </span>
-                                              </p>
-                                            </li>
-                                          ))}
+                                            .sort((a, b) => b.points - a.points)
+                                            .map((user, index) => {
+                                              let medalClass = ''; 
+
+                                              if (user.points === userScores[0]) {
+                                                medalClass = 'gold-medal'
+                                              } else if (user.points === userScores[1]) {
+                                                medalClass = 'silver-medal'
+                                              } else if (user.points === userScores[2]) {
+                                                medalClass = 'bronze-medal'
+                                              }
+
+                                      
+                                              return (
+                                                <li key={user.userId} className='mb-4'>
+                                                  <p className={`mbg-200 shadows p-3 flex justify-between items-center font-medium rounded mcolor-800`}>
+                                                    <span>
+                                                      <WorkspacePremiumIcon fontSize="large" className={`mr-3 ${user.points !== 0 ? medalClass : ''}`} />
+                                                      <span className='text-xl pt-3'>
+                                                        {user.username.charAt(0).toUpperCase() + user.username.slice(1)}:{" "}
+                                                      </span>
+                                                    </span>
+                                                    <span className='mr-4'>
+                                                      {user.points} {user.points > 1 ? 'points' : 'point'}
+                                                    </span>
+                                                  </p>
+                                                </li>
+                                              );
+                                            })}
                                         </ul>
+
+
+
+
                                       
                                       </div>
                                     </div>
@@ -1126,6 +1177,8 @@ export const GroupReviewerPage = () => {
                               <div className='flex items-center justify-center w-full min-h-[90vh]'>
                                 <div className='py-14 px-14 shadows'>
                                   <p className='text-xl text-center mcolor-800 py-3 my-1'>Waiting for other users to join...</p>
+
+                                  {/* {inCall ? <VideoCall setInCall={setInCall} /> : ''} */}
 
                                   <ul className='pt-3 pb-8'>
                                     {userList.map(user => (
