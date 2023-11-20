@@ -8,7 +8,6 @@ import seedrandom from 'seedrandom';
 import { PreJoinPage } from '../../../../components/group/PreJoinPage';
 import { AssessmentPage } from '../../../../components/group/AssessmentPage';
 import axios from 'axios';
-import { VideoCall } from '../../../../components/group/video-calls/VideoCall';
 
 const socket = io.connect("http://localhost:3001");
 
@@ -66,7 +65,6 @@ export const GroupReviewerPage = () => {
 
 
 
-
   // assessment socket userstates
   const [userListAssessment, setUserListAssessment] = useState([]);
 
@@ -94,7 +92,10 @@ export const GroupReviewerPage = () => {
   const [assessmentCountMoreThanOne, setAssessmentCountMoreThanOne] = useState(false);
   const [generatedAnalysis, setGeneratedAnalysis] = useState('');
   const [currentCount, setCurrentCount] = useState(20);
-
+  const [shuffledChoicesAssessment, setShuffledChoicesAssessment] = useState([])
+  const [extractedQAAssessment, setQAAssessment] = useState([])
+  const [assessmentUsersChoices, setAssessmentUsersChoices] = useState([]);
+  
 
 
 
@@ -222,6 +223,7 @@ export const GroupReviewerPage = () => {
         );
 
         setQA(updatedData);
+        setQAAssessment(updatedData)
         setItemCount(updatedData.length * 60)
         socket.emit("update_QA_data", updatedData);
 
@@ -243,7 +245,17 @@ export const GroupReviewerPage = () => {
           try {
             const shuffledChoices = await Promise.all(shuffledChoicesPromises);
             setShuffledChoices(shuffledChoices);
+            setShuffledChoicesAssessment(shuffledChoices);
 
+            const arrayOfObjects = shuffledChoices.map(choices => {
+              return choices.map(choice => ({
+                  choice,
+                  numOfWhoChoose: 0,
+                  userIds: []
+              }));
+            });
+
+            setAssessmentUsersChoices(arrayOfObjects)
             socket.emit("shuffled_choices", {room, shuffledChoices})
           } catch (error) {
             console.error('Error processing choices:', error);
@@ -703,7 +715,7 @@ export const GroupReviewerPage = () => {
 
 
   return (
-    <div className='pt-5 pb-20'>
+    <div className=''>
         {sessionExpired ? (
           <div>
             <p className='pt-5 text-xl text-center'>Your session has expired due to inactivity. Please refresh the page to start a new session.</p>
@@ -714,11 +726,11 @@ export const GroupReviewerPage = () => {
               <div>
 
                 {showPreJoin && (
-                  <PreJoinPage setUsername={setUsername} setUserId={setUserId} joinRoom={joinRoom} materialId={materialId} groupId={groupId} setShowPreJoin={setShowPreJoin} setShowAssessmentPage={setShowAssessmentPage} room={room} assessementRoom={assessementRoom} username={username} userId={userId} userListAssessment={userListAssessment} setUserListAssessment={setUserListAssessment} selectedAssessmentAnswer={selectedAssessmentAnswer} setSelectedAssessmentAnswer={setSelectedAssessmentAnswer} isRunning={isRunning} setIsRunning={setIsRunning} seconds={seconds} setSeconds={setSeconds} itemCount={itemCount} setQA={setQA} extractedQA={extractedQA} shuffledChoices={shuffledChoices} setShuffledChoices={setShuffledChoices} isSubmittedButtonClicked={isSubmittedButtonClicked} setIsSubmittedButtonClicked={setIsSubmittedButtonClicked} idOfWhoSubmitted={idOfWhoSubmitted} setIdOfWhoSubmitted={setIdOfWhoSubmitted} usernameOfWhoSubmitted={usernameOfWhoSubmitted} setUsernameOfWhoSubmitted={setUsernameOfWhoSubmitted} score={score} setScore={setScore} isSubmitted={isSubmitted} setIsSubmitted={setIsSubmitted} isAssessmentDone={isAssessmentDone} setIsAssessmentDone={setIsAssessmentDone} showSubmittedAnswerModal={showSubmittedAnswerModal} setShowSubmittedAnswerModal={setShowSubmittedAnswerModal} showTexts={showTexts} setShowTexts={setShowTexts} showAnalysis={showAnalysis} setShowAnalysis={setShowAnalysis} showAssessment={showAssessment} setShowAssessment={setShowAssessment} overAllItems={overAllItems} setOverAllItems={setOverAllItems} preAssessmentScore={preAssessmentScore} setPreAssessmentScore={setPreAssessmentScore} assessmentScore={assessmentScore} setAssessmentScore={setAssessmentScore} assessmentImp={assessmentImp} setAssessmentImp={setAssessmentImp} assessmentScorePerf={assessmentScorePerf} setAssessmentScorePerf={setAssessmentScorePerf} completionTime={completionTime} setCompletionTime={setCompletionTime} confidenceLevel={confidenceLevel} setConfidenceLevel={setConfidenceLevel} overAllPerformance={overAllPerformance} setOverAllPerformance={setOverAllPerformance} assessmentCountMoreThanOne={assessmentCountMoreThanOne} setAssessmentCountMoreThanOne={setAssessmentCountMoreThanOne} generatedAnalysis={generatedAnalysis} setGeneratedAnalysis={setGeneratedAnalysis} />
+                  <PreJoinPage setUsername={setUsername} setUserId={setUserId} joinRoom={joinRoom} materialId={materialId} groupId={groupId} setShowPreJoin={setShowPreJoin} setShowAssessmentPage={setShowAssessmentPage} room={room} assessementRoom={assessementRoom} username={username} userId={userId} userListAssessment={userListAssessment} setUserListAssessment={setUserListAssessment} selectedAssessmentAnswer={selectedAssessmentAnswer} setSelectedAssessmentAnswer={setSelectedAssessmentAnswer} isRunning={isRunning} setIsRunning={setIsRunning} seconds={seconds} setSeconds={setSeconds} itemCount={itemCount} setQA={setQA} extractedQA={extractedQA} shuffledChoices={shuffledChoices} setShuffledChoices={setShuffledChoices} isSubmittedButtonClicked={isSubmittedButtonClicked} setIsSubmittedButtonClicked={setIsSubmittedButtonClicked} idOfWhoSubmitted={idOfWhoSubmitted} setIdOfWhoSubmitted={setIdOfWhoSubmitted} usernameOfWhoSubmitted={usernameOfWhoSubmitted} setUsernameOfWhoSubmitted={setUsernameOfWhoSubmitted} score={score} setScore={setScore} isSubmitted={isSubmitted} setIsSubmitted={setIsSubmitted} isAssessmentDone={isAssessmentDone} setIsAssessmentDone={setIsAssessmentDone} showSubmittedAnswerModal={showSubmittedAnswerModal} setShowSubmittedAnswerModal={setShowSubmittedAnswerModal} showTexts={showTexts} setShowTexts={setShowTexts} showAnalysis={showAnalysis} setShowAnalysis={setShowAnalysis} showAssessment={showAssessment} setShowAssessment={setShowAssessment} overAllItems={overAllItems} setOverAllItems={setOverAllItems} preAssessmentScore={preAssessmentScore} setPreAssessmentScore={setPreAssessmentScore} assessmentScore={assessmentScore} setAssessmentScore={setAssessmentScore} assessmentImp={assessmentImp} setAssessmentImp={setAssessmentImp} assessmentScorePerf={assessmentScorePerf} setAssessmentScorePerf={setAssessmentScorePerf} completionTime={completionTime} setCompletionTime={setCompletionTime} confidenceLevel={confidenceLevel} setConfidenceLevel={setConfidenceLevel} overAllPerformance={overAllPerformance} setOverAllPerformance={setOverAllPerformance} assessmentCountMoreThanOne={assessmentCountMoreThanOne} setAssessmentCountMoreThanOne={setAssessmentCountMoreThanOne} generatedAnalysis={generatedAnalysis} setGeneratedAnalysis={setGeneratedAnalysis} extractedQAAssessment={extractedQAAssessment} setQAAssessment={setQAAssessment} shuffledChoicesAssessment={shuffledChoicesAssessment} setShuffledChoicesAssessment={setShuffledChoicesAssessment} assessmentUsersChoices={assessmentUsersChoices} setAssessmentUsersChoices ={setAssessmentUsersChoices} />
                 )}
  
                 {showAssessmentPage && (
-                  <AssessmentPage groupId={groupId} materialId={materialId} setShowAssessmentPage={setShowAssessmentPage} userListAssessment={userListAssessment} setUserListAssessment={setUserListAssessment} room={room} assessementRoom={assessementRoom} username={username} userId={userId} selectedAssessmentAnswer={selectedAssessmentAnswer} setSelectedAssessmentAnswer={setSelectedAssessmentAnswer} isRunning={isRunning} setIsRunning={setIsRunning} seconds={seconds} setSeconds={setSeconds} setQA={setQA} extractedQA={extractedQA} shuffledChoices={shuffledChoices} setShuffledChoices={setShuffledChoices} isSubmittedButtonClicked={isSubmittedButtonClicked} setIsSubmittedButtonClicked={setIsSubmittedButtonClicked} idOfWhoSubmitted={idOfWhoSubmitted} setIdOfWhoSubmitted={setIdOfWhoSubmitted} usernameOfWhoSubmitted={usernameOfWhoSubmitted} setUsernameOfWhoSubmitted={setUsernameOfWhoSubmitted} score={score} setScore={setScore} isSubmitted={isSubmitted} setIsSubmitted={setIsSubmitted} isAssessmentDone={isAssessmentDone} setIsAssessmentDone={setIsAssessmentDone} showSubmittedAnswerModal={showSubmittedAnswerModal} setShowSubmittedAnswerModal={setShowSubmittedAnswerModal} showTexts={showTexts} setShowTexts={setShowTexts} showAnalysis={showAnalysis} setShowAnalysis={setShowAnalysis} showAssessment={showAssessment} setShowAssessment={setShowAssessment} overAllItems={overAllItems} setOverAllItems={setOverAllItems} preAssessmentScore={preAssessmentScore} setPreAssessmentScore={setPreAssessmentScore} assessmentScore={assessmentScore} setAssessmentScore={setAssessmentScore} assessmentImp={assessmentImp} setAssessmentImp={setAssessmentImp} assessmentScorePerf={assessmentScorePerf} setAssessmentScorePerf={setAssessmentScorePerf} completionTime={completionTime} setCompletionTime={setCompletionTime} confidenceLevel={confidenceLevel} setConfidenceLevel={setConfidenceLevel} overAllPerformance={overAllPerformance} setOverAllPerformance={setOverAllPerformance} assessmentCountMoreThanOne={assessmentCountMoreThanOne} setAssessmentCountMoreThanOne={setAssessmentCountMoreThanOne} generatedAnalysis={generatedAnalysis} setGeneratedAnalysis={setGeneratedAnalysis}  />
+                  <AssessmentPage groupId={groupId} materialId={materialId} setShowAssessmentPage={setShowAssessmentPage} userListAssessment={userListAssessment} setUserListAssessment={setUserListAssessment} room={room} assessementRoom={assessementRoom} username={username} userId={userId} selectedAssessmentAnswer={selectedAssessmentAnswer} setSelectedAssessmentAnswer={setSelectedAssessmentAnswer} isRunning={isRunning} setIsRunning={setIsRunning} seconds={seconds} setSeconds={setSeconds} setQA={setQA} extractedQA={extractedQA} shuffledChoices={shuffledChoices} setShuffledChoices={setShuffledChoices} isSubmittedButtonClicked={isSubmittedButtonClicked} setIsSubmittedButtonClicked={setIsSubmittedButtonClicked} idOfWhoSubmitted={idOfWhoSubmitted} setIdOfWhoSubmitted={setIdOfWhoSubmitted} usernameOfWhoSubmitted={usernameOfWhoSubmitted} setUsernameOfWhoSubmitted={setUsernameOfWhoSubmitted} score={score} setScore={setScore} isSubmitted={isSubmitted} setIsSubmitted={setIsSubmitted} isAssessmentDone={isAssessmentDone} setIsAssessmentDone={setIsAssessmentDone} showSubmittedAnswerModal={showSubmittedAnswerModal} setShowSubmittedAnswerModal={setShowSubmittedAnswerModal} showTexts={showTexts} setShowTexts={setShowTexts} showAnalysis={showAnalysis} setShowAnalysis={setShowAnalysis} showAssessment={showAssessment} setShowAssessment={setShowAssessment} overAllItems={overAllItems} setOverAllItems={setOverAllItems} preAssessmentScore={preAssessmentScore} setPreAssessmentScore={setPreAssessmentScore} assessmentScore={assessmentScore} setAssessmentScore={setAssessmentScore} assessmentImp={assessmentImp} setAssessmentImp={setAssessmentImp} assessmentScorePerf={assessmentScorePerf} setAssessmentScorePerf={setAssessmentScorePerf} completionTime={completionTime} setCompletionTime={setCompletionTime} confidenceLevel={confidenceLevel} setConfidenceLevel={setConfidenceLevel} overAllPerformance={overAllPerformance} setOverAllPerformance={setOverAllPerformance} assessmentCountMoreThanOne={assessmentCountMoreThanOne} setAssessmentCountMoreThanOne={setAssessmentCountMoreThanOne} generatedAnalysis={generatedAnalysis} setGeneratedAnalysis={setGeneratedAnalysis} extractedQAAssessment={extractedQAAssessment} setQAAssessment={setQAAssessment} shuffledChoicesAssessment={shuffledChoicesAssessment} setShuffledChoicesAssessment={setShuffledChoicesAssessment} assessmentUsersChoices={assessmentUsersChoices} setAssessmentUsersChoices={setAssessmentUsersChoices} />
                 )}
                 
               </div>

@@ -13,7 +13,7 @@ const socket = io.connect("http://localhost:3001");
 
 export const AssessmentPage = (props) => {
 
-  const { groupId, materialId, username, userId, userListAssessment, setUserListAssessment, selectedAssessmentAnswer, setSelectedAssessmentAnswer, assessementRoom, isRunning, setIsRunning, seconds, setSeconds, setQA, extractedQA, shuffledChoices, setShuffledChoices, isSubmittedButtonClicked, setIsSubmittedButtonClicked, idOfWhoSubmitted, setIdOfWhoSubmitted, usernameOfWhoSubmitted, setUsernameOfWhoSubmitted, score, setScore, isSubmitted, setIsSubmitted, isAssessmentDone, setIsAssessmentDone, showSubmittedAnswerModal, setShowSubmittedAnswerModal, showTexts, setShowTexts, showAnalysis, setShowAnalysis, showAssessment, setShowAssessment, overAllItems, setOverAllItems, preAssessmentScore, setPreAssessmentScore, assessmentScore, setAssessmentScore, assessmentImp, setAssessmentImp, assessmentScorePerf, setAssessmentScorePerf, completionTime, setCompletionTime, confidenceLevel, setConfidenceLevel, overAllPerformance, setOverAllPerformance, assessmentCountMoreThanOne, setAssessmentCountMoreThanOne, generatedAnalysis, setGeneratedAnalysis } = props;
+  const { groupId, materialId, username, userId, userListAssessment, setUserListAssessment, selectedAssessmentAnswer, setSelectedAssessmentAnswer, assessementRoom, isRunning, setIsRunning, seconds, setSeconds, setQA, extractedQA, shuffledChoices, setShuffledChoices, isSubmittedButtonClicked, setIsSubmittedButtonClicked, idOfWhoSubmitted, setIdOfWhoSubmitted, usernameOfWhoSubmitted, setUsernameOfWhoSubmitted, score, setScore, isSubmitted, setIsSubmitted, isAssessmentDone, setIsAssessmentDone, showSubmittedAnswerModal, setShowSubmittedAnswerModal, showTexts, setShowTexts, showAnalysis, setShowAnalysis, showAssessment, setShowAssessment, overAllItems, setOverAllItems, preAssessmentScore, setPreAssessmentScore, assessmentScore, setAssessmentScore, assessmentImp, setAssessmentImp, assessmentScorePerf, setAssessmentScorePerf, completionTime, setCompletionTime, confidenceLevel, setConfidenceLevel, overAllPerformance, setOverAllPerformance, assessmentCountMoreThanOne, setAssessmentCountMoreThanOne, generatedAnalysis, setGeneratedAnalysis, shuffledChoicesAssessment, setShuffledChoicesAssessment, extractedQAAssessment, setQAAssessment, assessmentUsersChoices, setAssessmentUsersChoices } = props;
 
   let studyProfeciencyTarget = 90;
 
@@ -92,11 +92,16 @@ export const AssessmentPage = (props) => {
       setIsAssessmentDone(isAssessmentDone);
     });
 
+    socket.on("assessment_users_choices", (choices) => {
+      setAssessmentUsersChoices(choices);
+    });
+
 
     if (isAssessmentDone === true) { 
       const targetElement = document.getElementById("currSec");
       targetElement.scrollIntoView({ behavior: 'smooth' });
     }
+
     
     return () => {
       socket.off('assessment_user_list');
@@ -106,12 +111,13 @@ export const AssessmentPage = (props) => {
 
     };
     
-  }, [groupId, isSubmittedButtonClicked, idOfWhoSubmitted, isAssessmentDone, materialId, setIdOfWhoSubmitted, setIsSubmitted, setScore, setSelectedAssessmentAnswer, seconds, setUserListAssessment, userListAssessment, isRunning, userId, setIsAssessmentDone, showAnalysis, score, isSubmitted, setOverAllItems, setAssessmentCountMoreThanOne])
+  }, [groupId, isSubmittedButtonClicked, idOfWhoSubmitted, isAssessmentDone, materialId, setIdOfWhoSubmitted, setIsSubmitted, setScore, setSelectedAssessmentAnswer, seconds, setUserListAssessment, userListAssessment, isRunning, userId, setIsAssessmentDone, showAnalysis, score, isSubmitted, setOverAllItems, setAssessmentCountMoreThanOne, setAssessmentUsersChoices])
 
 
 
 
   const handleRadioChange = (choice, index) => {
+
     const selectedAssessmentAnswers = [...selectedAssessmentAnswer];
     selectedAssessmentAnswers[index] = choice;
     setSelectedAssessmentAnswer(selectedAssessmentAnswers);
@@ -119,6 +125,7 @@ export const AssessmentPage = (props) => {
     socket.emit("updated_answers", { assessementRoom, selectedAssessmentAnswers });
     socket.on("selected_assessment_answers", (selectedChoicesData) => {
       setSelectedAssessmentAnswer(selectedChoicesData);
+      console.log(selectedChoicesData);
     });
     
   };
@@ -155,7 +162,7 @@ export const AssessmentPage = (props) => {
     });
 
     const score = selectedAssessmentAnswer.reduce((totalScore, item, index) => {
-      const qaItem = extractedQA[index];
+      const qaItem = extractedQAAssessment[index];
       if (qaItem && qaItem.answer !== undefined && qaItem.answer !== null && item) {
         return item.toLowerCase() === qaItem.answer.toLowerCase()
           ? totalScore + 1
@@ -172,7 +179,7 @@ export const AssessmentPage = (props) => {
 
 
     let completionTimeCalc = '';
-    let extractedQALengthInMinutes = extractedQA.length * 60;
+    let extractedQALengthInMinutes = extractedQAAssessment.length * 60;
     let timeleft = extractedQALengthInMinutes - seconds;
 
     if (seconds === 0) {
@@ -198,15 +205,15 @@ export const AssessmentPage = (props) => {
       // for pre-text functionality
       if (fetchedData.length === 0) {
 
-        let confidence = (((Math.round(extractedQA.length / 2)) / 8) * 100).toFixed(2);
+        let confidence = (((Math.round(extractedQAAssessment.length / 2)) / 8) * 100).toFixed(2);
 
         let data = {
           dashFor: 'Group',
-          overAllItems: extractedQA.length,
+          overAllItems: extractedQAAssessment.length,
           preAssessmentScore: score,
-          assessmentScorePerf: ((score / extractedQA.length) * 100).toFixed(2),
+          assessmentScorePerf: ((score / extractedQAAssessment.length) * 100).toFixed(2),
           completionTime: completionTimeCalc,
-          confidenceLevel: completionTimeCalc >= Math.round(extractedQA.length / 2) ? confidence : 100,
+          confidenceLevel: completionTimeCalc >= Math.round(extractedQAAssessment.length / 2) ? confidence : 100,
           StudyMaterialId: materialId,
           StudyGroupId: null
         }
@@ -228,18 +235,18 @@ export const AssessmentPage = (props) => {
         // for 1st assessment functionalitty
         if (fetchedData[0].assessmentScore === 'none') {
 
-          const improvement = Math.max(0, ((score - fetchedData[0].preAssessmentScore) / Math.max(extractedQA.length - fetchedData[0].preAssessmentScore, 1) * 100).toFixed(2));
+          const improvement = Math.max(0, ((score - fetchedData[0].preAssessmentScore) / Math.max(extractedQAAssessment.length - fetchedData[0].preAssessmentScore, 1) * 100).toFixed(2));
 
 
-          let confidence = (((Math.round(extractedQA.length / 2)) / completionTimeCalc) * 100).toFixed(2);
+          let confidence = (((Math.round(extractedQAAssessment.length / 2)) / completionTimeCalc) * 100).toFixed(2);
 
 
           let data = {
             assessmentScore: score,
             assessmentImp: parseInt(score) === parseInt(fetchedData[0].preAssessmentScore) ? 100 : improvement,
-            assessmentScorePerf: ((score / extractedQA.length) * 100).toFixed(2),
+            assessmentScorePerf: ((score / extractedQAAssessment.length) * 100).toFixed(2),
             completionTime: completionTimeCalc,
-            confidenceLevel: completionTimeCalc >= Math.round(extractedQA.length / 2) ? confidence : 100,
+            confidenceLevel: completionTimeCalc >= Math.round(extractedQAAssessment.length / 2) ? confidence : 100,
           }
 
 
@@ -276,21 +283,21 @@ export const AssessmentPage = (props) => {
         else {
 
 
-          const improvement = Math.max(0, ((score - fetchedData[0].assessmentScore) / Math.max(extractedQA.length - fetchedData[0].assessmentScore, 1) * 100).toFixed(2));
+          const improvement = Math.max(0, ((score - fetchedData[0].assessmentScore) / Math.max(extractedQAAssessment.length - fetchedData[0].assessmentScore, 1) * 100).toFixed(2));
           const validImprovement = isNaN(improvement) ? 0 : improvement;
           
 
-          let confidence = (((Math.round(extractedQA.length / 2)) / completionTimeCalc) * 100).toFixed(2);
+          let confidence = (((Math.round(extractedQAAssessment.length / 2)) / completionTimeCalc) * 100).toFixed(2);
 
           let data = {
             dashFor: 'Group',
-            overAllItems: extractedQA.length,
+            overAllItems: extractedQAAssessment.length,
             preAssessmentScore: fetchedData[0].preAssessmentScore,
             assessmentScore: score,
             assessmentImp: parseInt(score) === parseInt(fetchedData[0].assessmentScore) ? 100 : validImprovement,
-            assessmentScorePerf: ((score / extractedQA.length) * 100).toFixed(2),
+            assessmentScorePerf: ((score / extractedQAAssessment.length) * 100).toFixed(2),
             completionTime: completionTimeCalc,
-            confidenceLevel: completionTimeCalc >= Math.round(extractedQA.length / 2) ? confidence : 100,
+            confidenceLevel: completionTimeCalc >= Math.round(extractedQAAssessment.length / 2) ? confidence : 100,
             numOfTakes: fetchedData[0].numOfTakes + 1,
             StudyMaterialId: materialId,
             StudyGroupId: null
@@ -372,7 +379,7 @@ export const AssessmentPage = (props) => {
 
     } else {
       
-      if ((selectedAssessmentAnswer.length !== extractedQA.length) || selectedAssessmentAnswer.some(answer => answer === '' || answer === undefined)) {
+      if ((selectedAssessmentAnswer.length !== extractedQAAssessment.length) || selectedAssessmentAnswer.some(answer => answer === '' || answer === undefined)) {
         alert('There are some empty fields');
       } else {
           dataForSubmittingAnswers(userId);
@@ -535,7 +542,7 @@ export const AssessmentPage = (props) => {
       }
   
     return () => clearInterval(interval);
-  }, [isRunning, seconds]);
+  }, [assessementRoom, isRunning, seconds, setIsRunning, setSeconds]);
   
 
 
@@ -560,199 +567,285 @@ export const AssessmentPage = (props) => {
   return (
     <div className='py-8 poppins mbg-200 mcolor-900' id='currSec'>
 
-      <ul className='w-[18%] relative top-0 left-0 py-5 px-8 mbg-200 rounded-[5px]'>
-        <p>Connected users:</p>
-        {userListAssessment.map(user => (
-          <li key={user.userId}>
-            <p><i className="fa-solid fa-circle text-green-500 mr-1"></i> {user.username.charAt(0).toUpperCase() + user.username.slice(1)}</p>
-          </li>
-        ))}
-      </ul>
+
       
 
       {showAssessment === true && (
-        <div className='container' id='assessmentSection'>
-          <p className='text-center text-3xl font-medium mcolor-700 pt-5'>Assessment for {materialTitle} of {materialCategory}</p>
-
-          <br /><br />
-          <br /><br />
-          {(showAnalysis === false && isAssessmentDone === true) && (
+        <div className='flex justify-betweeen'>
+          <div className='w-1/2 relative fixed mbg-100 shadows ml-5 rounded'>
             <div>
-              <div>
-                <p className='text-center mcolor-500 font-medium mb-8 text-xl'>Your score is: </p>
-                <p className='text-center text-6xl font-bold mcolor-800 mb-20'>{score}/{extractedQA.length}</p>
+              <p className='pt-4 px-5'>Connected users:</p>
+              <ul className='py-2 px-5 rounded-[5px] flex items-center gap-5'>
+                {userListAssessment.map(user => (
+                  <li key={user.userId}>
+                    <p><i className="fa-solid fa-circle text-green-500 mr-1"></i> {user.username.charAt(0).toUpperCase() + user.username.slice(1)}</p>
+                  </li>
+                ))}
+              </ul>
+            </div>
 
-                <div className=' flex items-center justify-center gap-5'>
+            {/* <button className='mx-5 px-4 py-2 rounded mbg-300 mt-3'>Users' requests <span className='bg-pink mcolor-100 px-2 rounded-full'>1</span></button> */}
 
-                  {(generatedAnalysis === '' && !showScoreForPreAssessment) ? (
-                    <button
-                      className='border-thin-800 px-5 py-3 rounded-[5px] w-1/4'
-                      onClick={() => {
-                        setShowSubmittedAnswerModal(true);
-                        setIsRunning(false)
+            {/* <div className={`absolute top-0 modal-bg left-0 w-full h-full`}>
+              <div className='flex items-center justify-center h-full'>
+                <div className='relative mbg-100 min-h-[75vh] w-1/2 z-10 relative p-10 rounded-[5px]'>
 
-                        socket.emit('updated_show_submitted_answer_modal', {room: assessementRoom, showSubmittedAnswerModal: true});
+                  <p className='text-lg mcolor-900 font-medium mb-5'>Leaderboard</p>  
 
-                      }}
-                    >
-                      Analyze the Data
-                    </button>
-                  ): (
-                    <button
-                      className='border-thin-800 px-5 py-3 rounded-[5px] w-1/4'
-                      onClick={() => {
-                        setShowAnalysis(true)
-                        setShowAssessment(false);
-                        setShowSubmittedAnswerModal(false);
-                        setIsRunning(false)
-                      }}
-                    >
-                      View Analysis
-                    </button>
-                  )}
+                  <div className='flex items-center justify-between mb-5 gap-5'>
+                    <button onClick={resetAndStudy} className='w-1/2 py-2 rounded mcolor-900 mbg-200 border-thin-800'>Reset Points & Study Again</button>
+                    <button onClick={studyAgain} className='w-1/2 py-2 rounded mcolor-100 mbg-700'>Study Again</button>
+                  </div>
 
-                  <Link to={`/main/personal/study-area/personal-review/${materialId}`} className='border-thin-800 px-5 py-3 rounded-[5px] w-1/4 text-center'>
-                    <button>Back to Study Area</button>
-                  </Link>
+                  <div className='flex items-center justify-between px-3 mb-3 mcolor-800'>
+                    <span>Users</span>
+                    <span className='mr-4'>Scores</span>
+                  </div>
+                  <ul>
+                    {[...userList]
+                      .sort((a, b) => b.points - a.points)
+                      .map((user, index) => {
+                        let medalClass = ''; 
 
-                  <Link to={`/main/personal/dashboard/category-list/topic-list/topic-page/${categoryID}/${materialId}`} className='mbg-800 mcolor-100 px-5 py-3 rounded-[5px] w-1/4 text-center'>
-                    <button>View Analytics</button>
-                  </Link>  
+                        if (user.points === userScores[0]) {
+                          medalClass = 'gold-medal'
+                        } else if (user.points === userScores[1]) {
+                          medalClass = 'silver-medal'
+                        } else if (user.points === userScores[2]) {
+                          medalClass = 'bronze-medal'
+                        }
+
+                
+                        return (
+                          <li key={user.userId} className='mb-4'>
+                            <p className={`mbg-200 shadows p-3 flex justify-between items-center font-medium rounded mcolor-800`}>
+                              <span>
+                                <WorkspacePremiumIcon fontSize="large" className={`mr-3 ${user.points !== 0 ? medalClass : ''}`} />
+                                <span className='text-xl pt-3'>
+                                  {user.username.charAt(0).toUpperCase() + user.username.slice(1)}:{" "}
+                                </span>
+                              </span>
+                              <span className='mr-4'>
+                                {user.points} {user.points > 1 ? 'points' : 'point'}
+                              </span>
+                            </p>
+                          </li>
+                        );
+                      })}
+                  </ul>
+
+
+
+
+                
                 </div>
               </div>
+            </div> */}
 
+            <div>
 
+            </div>
+          </div>
+          <div className='w-3/4 px-10' id='assessmentSection'>
+            <p className='text-center text-3xl font-medium mcolor-700 pt-5'>Assessment for {materialTitle} of {materialCategory}</p>
 
-              {showSubmittedAnswerModal === true && (
-                <div className={`absolute top-0 modal-bg left-0 w-full h-full`}>
-                  <div className='flex items-center justify-center h-full'>
-                    <div className='relative mbg-100 min-h-[40vh] w-1/2 z-10 relative p-10 rounded-[5px]'>
+            {(showAnalysis === false && isAssessmentDone === true) && (
+              <div>
+                <div>
+                  <p className='text-center mcolor-500 font-medium mb-8 text-xl'>Your score is: </p>
+                  <p className='text-center text-6xl font-bold mcolor-800 mb-20'>{score}/{extractedQAAssessment.length}</p>
 
-                    {showTexts === true ? (
-                      <div>
-                        <p className='text-center text-xl font-medium mcolor-800 mt-5'>Kindly be advised that the data analysis process by the system AI may require 2-3 minutes, depending on your internet speed. Would you be comfortable waiting for that duration?</p>
+                  <div className=' flex items-center justify-center gap-5'>
 
-                        <div className='w-full absolute bottom-10 flex items-center justify-center left-0 gap-4'>
+                    {(generatedAnalysis === '' && !showScoreForPreAssessment) ? (
+                      <button
+                        className='border-thin-800 px-5 py-3 rounded-[5px] w-1/4'
+                        onClick={() => {
+                          setShowSubmittedAnswerModal(true);
+                          setIsRunning(false)
 
-                          <button className='mbg-200 border-thin-800 px-5 py-2 rounded-[5px]' onClick={() => {
-                            setShowSubmittedAnswerModal(false);
-                            setIsRunning(false)
-                            socket.emit('updated_show_submitted_answer_modal', {room: assessementRoom, showSubmittedAnswerModal: false});
+                          socket.emit('updated_show_submitted_answer_modal', {room: assessementRoom, showSubmittedAnswerModal: true});
 
-                          }} >No</button>
-
-
-                          <button className='mbg-800 mcolor-100 border-thin-800 px-5 py-2 rounded-[5px]' onClick={() => generateAnalysis(analysisId)}>Yes</button>
-                        </div>
-                      </div>
-                    ) : (
-                      <div class="loading-container">
-                        <p class="loading-text mcolor-900">Analyzing data...</p>
-                        <div class="loading-spinner"></div>
-                      </div>                    
+                        }}
+                      >
+                        Analyze the Data
+                      </button>
+                    ): (
+                      <button
+                        className='border-thin-800 px-5 py-3 rounded-[5px] w-1/4'
+                        onClick={() => {
+                          setShowAnalysis(true)
+                          setShowAssessment(false);
+                          setShowSubmittedAnswerModal(false);
+                          setIsRunning(false)
+                        }}
+                      >
+                        View Analysis
+                      </button>
                     )}
-                    </div>
+
+                    <Link to={`/main/personal/study-area/personal-review/${materialId}`} className='border-thin-800 px-5 py-3 rounded-[5px] w-1/4 text-center'>
+                      <button>Back to Study Area</button>
+                    </Link>
+
+                    <Link to={`/main/personal/dashboard/category-list/topic-list/topic-page/${categoryID}/${materialId}`} className='mbg-800 mcolor-100 px-5 py-3 rounded-[5px] w-1/4 text-center'>
+                      <button>View Analytics</button>
+                    </Link>  
                   </div>
                 </div>
-              )}
-            </div>
-          )}
-          <br /><br />
-        
-          {isRunning === true && (
-            <div className='timer-container px-10 py-3'>
-              <div className='rounded-[5px]' style={{ height: "15px", backgroundColor: "#B3C5D4" }}>
-                <div
-                  className='rounded-[5px]'
-                  style={{
-                    width: `${(seconds / (extractedQA.length * 60)) * 100}%`,
-                    height: "100%",
-                    backgroundColor: seconds <= 10 ? "#af4242" : "#667F93", 
-                  }}
-                  />
+
+
+
+                {showSubmittedAnswerModal === true && (
+                  <div className={`absolute top-0 modal-bg left-0 w-full h-full`}>
+                    <div className='flex items-center justify-center h-full'>
+                      <div className='relative mbg-100 min-h-[40vh] w-1/2 z-10 relative p-10 rounded-[5px]'>
+
+                      {showTexts === true ? (
+                        <div>
+                          <p className='text-center text-xl font-medium mcolor-800 mt-5'>Kindly be advised that the data analysis process by the system AI may require 2-3 minutes, depending on your internet speed. Would you be comfortable waiting for that duration?</p>
+
+                          <div className='w-full absolute bottom-10 flex items-center justify-center left-0 gap-4'>
+
+                            <button className='mbg-200 border-thin-800 px-5 py-2 rounded-[5px]' onClick={() => {
+                              setShowSubmittedAnswerModal(false);
+                              setIsRunning(false)
+                              socket.emit('updated_show_submitted_answer_modal', {room: assessementRoom, showSubmittedAnswerModal: false});
+
+                            }} >No</button>
+
+
+                            <button className='mbg-800 mcolor-100 border-thin-800 px-5 py-2 rounded-[5px]' onClick={() => generateAnalysis(analysisId)}>Yes</button>
+                          </div>
+                        </div>
+                      ) : (
+                        <div class="loading-container">
+                          <p class="loading-text mcolor-900">Analyzing data...</p>
+                          <div class="loading-spinner"></div>
+                        </div>                    
+                      )}
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
+            )}
+            <br /><br />
+          
+            {isRunning === true && (
+              <div className='timer-container px-10 py-3'>
+                <div className='rounded-[5px]' style={{ height: "8px", backgroundColor: "#B3C5D4" }}>
+                  <div
+                    className='rounded-[5px]'
+                    style={{
+                      width: `${(seconds / (extractedQAAssessment.length * 60)) * 100}%`,
+                      height: "100%",
+                      backgroundColor: seconds <= 10 ? "#af4242" : "#667F93", 
+                    }}
+                    />
+                </div>
 
 
-              <h1 className='mcolor-900 text-lg pt-3'>
-                Remaining time:{' '}
-                {hours > 0 && String(hours).padStart(2, "0") + " hours and "}
-                {(hours > 0 || minutes > 0) && String(minutes).padStart(2, "0") + " minutes and "}{String(remainingSeconds).padStart(2, "0") + " seconds"}
-              </h1>
-            </div>
-          )}
+                <h1 className='mcolor-900 text-sm pt-1'>
+                  Remaining time:{' '}
+                  {hours > 0 && String(hours).padStart(2, "0") + " hours and "}
+                  {(hours > 0 || minutes > 0) && String(minutes).padStart(2, "0") + " minutes and "}{String(remainingSeconds).padStart(2, "0") + " seconds"}
+                </h1>
+              </div>
+            )}
 
-          <br /><br />
+            <br /><br />
 
-          {Array.isArray(extractedQA) && shuffledChoices.length > 0 && extractedQA.map((item, index) => (
-            <div key={index} className='mb-20'>
-              <p className='mcolor-900 text-xl mb-8'>{index + 1}. {item.question}</p>
-              <ul className='grid-result gap-4 mcolor-800'>
-                {item.quizType === 'MCQA' && (
-                  shuffledChoices[index].map((choice, choiceIndex) => (
+            {Array.isArray(extractedQAAssessment) && shuffledChoicesAssessment.length > 0 && extractedQAAssessment.map((item, index) => (
+              <div key={index} className='mb-20'>
+                <p className='mcolor-900 text-xl mb-8'>{index + 1}. {item.question}</p>
+                <ul className='grid-result gap-4 mcolor-800'>
+                  {item.quizType === 'MCQA' && (
+                    shuffledChoicesAssessment[index].map((choice, choiceIndex) => (
+                      userListAssessment && userListAssessment.length > 0 && userListAssessment[0] && userListAssessment[0].userId === userId) ? (
+
+                        <div
+                        key={choiceIndex}
+                        className={`flex items-center justify-center px-5 py-3 text-center choice rounded-[5px] 
+                        ${(isSubmitted === true && extractedQAAssessment[index].answer === choice) ? 'border-thin-800-correct' : 
+                        (isSubmitted === true && selectedAssessmentAnswer[index] !== extractedQAAssessment[index].answer && selectedAssessmentAnswer[index] === choice) ? 'border-thin-800-wrong' : 'border-thin-800'}`}
+                        >
+
+
+                          <div className='flex items-center justify-center'>
+                            <input
+                              type="radio"
+                              name={`option-${index}`}
+                              value={choice}
+                              id={`choice-${choiceIndex}-${index}`}
+                              className={`custom-radio cursor-pointer`}
+                              onClick={() => handleRadioChange(choice, index)}
+                              checked={selectedAssessmentAnswer[index] === choice}
+                            />
+                              <div className={`flex items-center `}>
+                                <label htmlFor={`choice-${choiceIndex}-${index}`} className={`mr-5 pt-1 cursor-pointer text-xl`}>
+                                  {choice}
+                                </label>
+                              </div>
+                          </div>
+                          
+  
+
+
+                        </div>
+
+                      ) : (
+                        <div className={`flex items-center justify-center px-5 py-3 text-center choice rounded-[5px] border-thin-800 text-xl ${selectedAssessmentAnswer[index] === choice ? 'mbg-700 mcolor-100' : ''}`}>
+                          {choice}
+                        </div>
+                      ))
+                    )}
+                </ul>
+
+
+
+                {item.quizType === 'ToF' && (
+                  <div className='grid-result gap-4 mcolor-800'>
+                    {(userListAssessment && userListAssessment.length > 0 && userListAssessment[0] && userListAssessment[0].userId === userId) ? (
                     <div
-                    key={choiceIndex}
-                    className={`flex items-center justify-center px-5 py-3 text-center choice rounded-[5px] 
-                    ${(isSubmitted === true && extractedQA[index].answer === choice) ? 'border-thin-800-correct' : 
-                    (isSubmitted === true && selectedAssessmentAnswer[index] !== extractedQA[index].answer && selectedAssessmentAnswer[index] === choice) ? 'border-thin-800-wrong' : 'border-thin-800'}`}
-                    >
+                      key={1}
+                      className={`flex items-center justify-center px-5 py-3 text-center choice rounded-[5px] 
+                      ${(isSubmitted === true && extractedQAAssessment[index].answer === 'True') ? 'border-thin-800-correct' : 
+                      (isSubmitted === true && selectedAssessmentAnswer[index] !== extractedQAAssessment[index].answer && selectedAssessmentAnswer[index] === 'True') ? 'border-thin-800-wrong' : 'border-thin-800'}`}
+                      >
 
                       <input
                         type="radio"
                         name={`option-${index}`}
-                        value={choice}
-                        id={`choice-${choiceIndex}-${index}`}
+                        value={'True'}
+                        id={`choice-${1}-${index}`}
                         className={`custom-radio cursor-pointer`}
-                        onChange={() => handleRadioChange(choice, index)}
-                        checked={selectedAssessmentAnswer[index] === choice}
+                        onClick={() => handleRadioChange('True', index)}
+                        checked={selectedAssessmentAnswer[index] === 'True'}
                         disabled={isSubmitted} 
                         />
 
+
                       <div className=''>
                         <div className={`flex items-center`}>
-                          <label htmlFor={`choice-${choiceIndex}-${index}`} className={`mr-5 pt-1 cursor-pointer text-xl`}>
-                            {choice}
+                          <label htmlFor={`choice-${1}-${index}`} className={`mr-5 pt-1 cursor-pointer text-xl`}>
+                            {'True'}
                           </label>
                         </div>
                       </div>
                     </div>
-                  ))
-                  )}
-              </ul>
-              {item.quizType === 'ToF' && (
-                <div className='grid-result gap-4 mcolor-800'>
-                    <div
-                      key={1}
-                      className={`flex items-center justify-center px-5 py-3 text-center choice rounded-[5px] 
-                      ${(isSubmitted === true && extractedQA[index].answer === 'True') ? 'border-thin-800-correct' : 
-                      (isSubmitted === true && selectedAssessmentAnswer[index] !== extractedQA[index].answer && selectedAssessmentAnswer[index] === 'True') ? 'border-thin-800-wrong' : 'border-thin-800'}`}
-                      >
-
-                    <input
-                      type="radio"
-                      name={`option-${index}`}
-                      value={'True'}
-                      id={`choice-${1}-${index}`}
-                      className={`custom-radio cursor-pointer`}
-                      onChange={() => handleRadioChange('True', index)}
-                      checked={selectedAssessmentAnswer[index] === 'True'}
-                      disabled={isSubmitted} 
-                      />
-
-
-                    <div className=''>
-                      <div className={`flex items-center`}>
-                        <label htmlFor={`choice-${1}-${index}`} className={`mr-5 pt-1 cursor-pointer text-xl`}>
-                          {'True'}
-                        </label>
-                      </div>
+                    ) : (
+                      <div className={`flex items-center justify-center px-5 py-3 text-center choice rounded-[5px] border-thin-800 text-xl ${selectedAssessmentAnswer[index] === 'True' ? 'mbg-700 mcolor-100' : ''}`}>
+                      {'True'}
                     </div>
-                  </div>
+                    )}
                   
-                  <div
+                  {(userListAssessment && userListAssessment.length > 0 && userListAssessment[0] && userListAssessment[0].userId === userId) ? (
+                    <div
                       key={2}
                       className={`flex items-center justify-center px-5 py-3 text-center choice rounded-[5px] 
-                      ${(isSubmitted === true && extractedQA[index].answer === 'False') ? 'border-thin-800-correct' : 
-                      (isSubmitted === true && selectedAssessmentAnswer[index] !== extractedQA[index].answer && selectedAssessmentAnswer[index] === 'False') ? 'border-thin-800-wrong' : 'border-thin-800'}`}
+                      ${(isSubmitted === true && extractedQAAssessment[index].answer === 'False') ? 'border-thin-800-correct' : 
+                      (isSubmitted === true && selectedAssessmentAnswer[index] !== extractedQAAssessment[index].answer && selectedAssessmentAnswer[index] === 'False') ? 'border-thin-800-wrong' : 'border-thin-800'}`}
                       >
 
                       <input
@@ -761,7 +854,7 @@ export const AssessmentPage = (props) => {
                         value={'False'}
                         id={`choice-${2}-${index}`}
                         className={`custom-radio cursor-pointer`}
-                        onChange={() => handleRadioChange('False', index)}
+                        onClick={() => handleRadioChange('False', index)}
                         checked={selectedAssessmentAnswer[index] === 'False'}
                         disabled={isSubmitted} 
                         />
@@ -775,80 +868,91 @@ export const AssessmentPage = (props) => {
                         </div>
                       </div>
                     </div>
-                </div>
-              )}
-              {(item.quizType === 'Identification' || item.quizType === 'FITB') && (
-                <div>
-                  <input
-                    className={`mb-5 w-full px-5 py-5 text-lg text-center choice rounded-[5px] box-shadoww ${
-                      isSubmitted && selectedAssessmentAnswer[index] && extractedQA[index] &&
-                      selectedAssessmentAnswer[index].toLowerCase() === extractedQA[index].answer.toLowerCase()
-                        ? 'border-thin-800-correct'
-                        : isSubmitted && selectedAssessmentAnswer[index] && extractedQA[index] &&
-                        selectedAssessmentAnswer[index].toLowerCase() !== extractedQA[index].answer.toLowerCase()
-                        ? 'border-thin-800-wrong'
-                        : selectedAssessmentAnswer[index] && extractedQA[index] && !isSubmitted
-                        ? 'border-thin-800'
-                        : ''
-                    }`}
-                    type="text"
-                    value={selectedAssessmentAnswer[index] || ''}
-                    placeholder='Answer here...'
-                    onChange={(event) => handleRadioChange(event.target.value, index)}
-                    disabled={isSubmitted} 
-                  />
-
-
-                  <p className='correct-color text-center text-xl'>
-                    {isSubmitted === true &&
-                    selectedAssessmentAnswer[index] &&
-                    extractedQA[index] &&
-                    selectedAssessmentAnswer[index].toLowerCase() !== extractedQA[index].answer.toLowerCase() 
-                    ? extractedQA[index].answer 
-                    : null}
-                  </p>
-
-                </div>
-
-
+                    ) : (
+                      <div className={`flex items-center justify-center px-5 py-3 text-center choice rounded-[5px] border-thin-800 text-xl ${selectedAssessmentAnswer[index] === 'False' ? 'mbg-700 mcolor-100' : ''}`}>
+                      {'False'}
+                    </div>
+                    )}
+                  </div>
                 )}
-            </div>
-          ))}
 
 
-          {(showAnalysis === false && isAssessmentDone === false) && (
-            <div className='flex justify-center mt-8'>
-              <button
-                className={`w-1/2 py-2 px-5 rounded-[5px] text-lg ${isSubmittedButtonClicked === true && idOfWhoSubmitted !== userId && usernameOfWhoSubmitted !== username ? 'disabled-button mbg-300 mcolor-800' : 'mbg-800 mcolor-100 '}`}
-                onClick={() => {
 
-                  socket.emit('submitted_button_clicked', { room: assessementRoom, isAnswersSubmitted: true });
+                {(item.quizType === 'Identification' || item.quizType === 'FITB') && (
+                  <div>
 
-                  if (userListAssessment && userListAssessment.length > 0) {
-                    socket.emit('updated_id_of_who_submitted', { room: assessementRoom, idOfWhoSubmitted: userId });
-                    socket.emit('updated_username_of_who_submitted', { room: assessementRoom, usernameOfWhoSubmitted: username });
 
-                    if (isSubmittedButtonClicked && idOfWhoSubmitted === userId && usernameOfWhoSubmitted === username) {
-                      submitAnswer();
+                    <input
+                      className={`mb-5 w-full px-5 py-5 text-lg text-center choice rounded-[5px] box-shadoww ${
+                        isSubmitted && selectedAssessmentAnswer[index] && extractedQAAssessment[index] &&
+                        selectedAssessmentAnswer[index].toLowerCase() === extractedQAAssessment[index].answer.toLowerCase()
+                          ? 'border-thin-800-correct'
+                          : isSubmitted && selectedAssessmentAnswer[index] && extractedQAAssessment[index] &&
+                          selectedAssessmentAnswer[index].toLowerCase() !== extractedQAAssessment[index].answer.toLowerCase()
+                          ? 'border-thin-800-wrong'
+                          : selectedAssessmentAnswer[index] && extractedQAAssessment[index] && !isSubmitted
+                          ? 'border-thin-800'
+                          : ''
+                      }`}
+                      type="text"
+                      value={selectedAssessmentAnswer[index] || ''}
+                      placeholder='Answer here...'
+                      onChange={(event) => handleRadioChange(event.target.value, index)}
+                      disabled={userListAssessment && userListAssessment.length > 0 && userListAssessment[0] && userListAssessment[0].userId !== userId} 
+                    />
+
+
+                    <p className='correct-color text-center text-xl'>
+                      {isSubmitted === true &&
+                      selectedAssessmentAnswer[index] &&
+                      extractedQAAssessment[index] &&
+                      selectedAssessmentAnswer[index].toLowerCase() !== extractedQAAssessment[index].answer.toLowerCase() 
+                      ? extractedQAAssessment[index].answer 
+                      : null}
+                    </p>
+
+                  </div>
+
+
+                  )}
+              </div>
+            ))}
+
+
+            {(showAnalysis === false && isAssessmentDone === false) && (
+              <div className='flex justify-center mt-8 mb-5'>
+                <button
+                  className={`w-1/2 py-2 px-5 rounded-[5px] text-lg ${isSubmittedButtonClicked === true && idOfWhoSubmitted !== userId && usernameOfWhoSubmitted !== username ? 'disabled-button mbg-300 mcolor-800' : 'mbg-800 mcolor-100 '}`}
+                  onClick={() => {
+
+                    socket.emit('submitted_button_clicked', { room: assessementRoom, isAnswersSubmitted: true });
+
+                    if (userListAssessment && userListAssessment.length > 0) {
+                      socket.emit('updated_id_of_who_submitted', { room: assessementRoom, idOfWhoSubmitted: userId });
+                      socket.emit('updated_username_of_who_submitted', { room: assessementRoom, usernameOfWhoSubmitted: username });
+
+                      if (isSubmittedButtonClicked && idOfWhoSubmitted === userId && usernameOfWhoSubmitted === username) {
+                        submitAnswer();
+                      }
                     }
+
+                      
+                  }}
+                  disabled={isSubmittedButtonClicked === true && idOfWhoSubmitted !== userId && usernameOfWhoSubmitted !== username}
+                  style={{ cursor: isSubmittedButtonClicked === true && idOfWhoSubmitted !== userId && usernameOfWhoSubmitted !== username ? 'not-allowed' : 'pointer' }}
+                >
+                  {isSubmittedButtonClicked === true ? 
+                    (idOfWhoSubmitted === userId ? 'Confirm Submission' : `${usernameOfWhoSubmitted} clicks the submit button`) : 
+                    'Submit Answer'
                   }
-
-                    
-                }}
-                disabled={isSubmittedButtonClicked === true && idOfWhoSubmitted !== userId && usernameOfWhoSubmitted !== username}
-                style={{ cursor: isSubmittedButtonClicked === true && idOfWhoSubmitted !== userId && usernameOfWhoSubmitted !== username ? 'not-allowed' : 'pointer' }}
-              >
-                {isSubmittedButtonClicked === true ? 
-                  (idOfWhoSubmitted === userId ? 'Confirm Submission' : `${usernameOfWhoSubmitted} clicks the submit button`) : 
-                  'Submit Answer'
-                }
-              </button>
-            </div>
-          )}
+                </button>
+              </div>
+            )}
 
 
 
-                
+                  
+          </div>
         </div>
       )}
 
@@ -864,15 +968,15 @@ export const AssessmentPage = (props) => {
               <div className='flex items-center justify-center'>
                 <div className='w-full ml-14'>
                   {assessmentCountMoreThanOne === true ? (
-                    <BarChartForAnalysis labelSet={["Pre-Assessment", "Last Assessment", "Latest Assessment"]} dataGathered={[preAssessmentScore, lastAssessmentScore, assessmentScore]} maxBarValue={extractedQA.length} />
+                    <BarChartForAnalysis labelSet={["Pre-Assessment", "Last Assessment", "Latest Assessment"]} dataGathered={[preAssessmentScore, lastAssessmentScore, assessmentScore]} maxBarValue={extractedQAAssessment.length} />
                     ) : (
-                    <BarChartForAnalysis labelSet={["Pre-Assessment", "Latest Assessment"]} dataGathered={[preAssessmentScore, assessmentScore]} maxBarValue={extractedQA.length} />
+                    <BarChartForAnalysis labelSet={["Pre-Assessment", "Latest Assessment"]} dataGathered={[preAssessmentScore, assessmentScore]} maxBarValue={extractedQAAssessment.length} />
                   )}
                 </div>
                 <div className='w-full ml-12'>
 
-                  <p className='text-2xl'>{assessmentCountMoreThanOne === true ? 'Last Assessment' : 'Pre-assessment'} score: {assessmentCountMoreThanOne === true ? lastAssessmentScore : preAssessmentScore}/{extractedQA.length}</p>
-                  <p className='text-2xl'>Assessment score: {assessmentScore}/{extractedQA.length}</p>
+                  <p className='text-2xl'>{assessmentCountMoreThanOne === true ? 'Last Assessment' : 'Pre-assessment'} score: {assessmentCountMoreThanOne === true ? lastAssessmentScore : preAssessmentScore}/{extractedQAAssessment.length}</p>
+                  <p className='text-2xl'>Assessment score: {assessmentScore}/{extractedQAAssessment.length}</p>
                   <p className='text-2xl font-bold'>Assessment improvement: {assessmentImp}%</p>
                   <p className='text-2xl font-bold'>Assessment score performance: {assessmentScorePerf}%</p>
 
@@ -895,14 +999,14 @@ export const AssessmentPage = (props) => {
               </div>
               {
                 (
-                  (completionTime && completionTime.match(/(\d+)\s*min/) ? parseInt(completionTime.match(/(\d+)\s*min/)[1], 10) : 0) >= Math.floor(extractedQA.length / 2) ||
+                  (completionTime && completionTime.match(/(\d+)\s*min/) ? parseInt(completionTime.match(/(\d+)\s*min/)[1], 10) : 0) >= Math.floor(extractedQAAssessment.length / 2) ||
                   assessmentImp < studyProfeciencyTarget ||
                   assessmentScorePerf < studyProfeciencyTarget
                 ) && (
                   <div className='mt-20'>
                     <p className='mb-5 font-bold text-2xl text-center'>Recommendations</p>
 
-                    {(completionTime && completionTime.match(/(\d+)\s*min/) ? parseInt(completionTime.match(/(\d+)\s*min/)[1], 10) : 0) >= Math.floor(extractedQA.length / 2) && (
+                    {(completionTime && completionTime.match(/(\d+)\s*min/) ? parseInt(completionTime.match(/(\d+)\s*min/)[1], 10) : 0) >= Math.floor(extractedQAAssessment.length / 2) && (
                       <p className='text-center text-xl mb-4'>
                         <CheckIcon className='mr-2' />
                         Challenge yourself to finish the assessment under{' '}
@@ -964,11 +1068,7 @@ export const AssessmentPage = (props) => {
 
 
     <br />
-    <br />
-    <br />
-    <br />
-    <br />
-    <br />
+
     </div>
   )
 }

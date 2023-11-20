@@ -278,6 +278,9 @@ input:focus{
 .text-red{
   color: rgb(200, 107, 107);
 }
+.bg-pink{
+  background-color: rgb(200, 107, 107);
+}
 
 
 .timer-container {

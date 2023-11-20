@@ -9,7 +9,7 @@ const socket = io.connect("http://localhost:3001");
 
 export const PreJoinPage = (props) => {
 
-  const { setUsername, setUserId, joinRoom, materialId, groupId, setShowPreJoin, setShowAssessmentPage, username, userId, assessementRoom, setUserListAssessment, selectedAssessmentAnswer, setSelectedAssessmentAnswer,  isRunning, setIsRunning, setSeconds, itemCount, setQA, extractedQA, shuffledChoices, setShuffledChoices, isSubmittedButtonClicked, setIsSubmittedButtonClicked, idOfWhoSubmitted, setIdOfWhoSubmitted, usernameOfWhoSubmitted, setUsernameOfWhoSubmitted, score, setScore, isSubmitted, setIsSubmitted, isAssessmentDone, setIsAssessmentDone, showSubmittedAnswerModal, setShowSubmittedAnswerModal, showTexts, setShowTexts, showAnalysis, setShowAnalysis, showAssessment, setShowAssessment, overAllItems, setOverAllItems, preAssessmentScore, setPreAssessmentScore, assessmentScore, setAssessmentScore, assessmentImp, setAssessmentImp, assessmentScorePerf, setAssessmentScorePerf, completionTime, setCompletionTime, confidenceLevel, setConfidenceLevel, overAllPerformance, setOverAllPerformance, assessmentCountMoreThanOne, setAssessmentCountMoreThanOne, generatedAnalysis, setGeneratedAnalysis } = props;
+  const { setUsername, setUserId, joinRoom, materialId, groupId, setShowPreJoin, setShowAssessmentPage, username, userId, assessementRoom, setUserListAssessment, selectedAssessmentAnswer, setSelectedAssessmentAnswer,  isRunning, setIsRunning, setSeconds, itemCount, setQA, extractedQA, shuffledChoices, setShuffledChoices, isSubmittedButtonClicked, setIsSubmittedButtonClicked, idOfWhoSubmitted, setIdOfWhoSubmitted, usernameOfWhoSubmitted, setUsernameOfWhoSubmitted, score, setScore, isSubmitted, setIsSubmitted, isAssessmentDone, setIsAssessmentDone, showSubmittedAnswerModal, setShowSubmittedAnswerModal, showTexts, setShowTexts, showAnalysis, setShowAnalysis, showAssessment, setShowAssessment, overAllItems, setOverAllItems, preAssessmentScore, setPreAssessmentScore, assessmentScore, setAssessmentScore, assessmentImp, setAssessmentImp, assessmentScorePerf, setAssessmentScorePerf, completionTime, setCompletionTime, confidenceLevel, setConfidenceLevel, overAllPerformance, setOverAllPerformance, assessmentCountMoreThanOne, setAssessmentCountMoreThanOne, generatedAnalysis, setGeneratedAnalysis, shuffledChoicesAssessment, setShuffledChoicesAssessment, extractedQAAssessment, setQAAssessment, assessmentUsersChoices, setAssessmentUsersChoices } = props;
 
 
 
@@ -87,7 +87,7 @@ export const PreJoinPage = (props) => {
       assessmentScore: score,
       isSubmittedChar: isSubmitted,
       isAssessmentDone: isAssessmentDone,
-      isRunning: true,
+      isRunning: false,
       showSubmittedAnswerModal: showSubmittedAnswerModal,
       showTexts: showTexts,
       showAnalysis: showAnalysis,
@@ -101,8 +101,12 @@ export const PreJoinPage = (props) => {
       confidenceLevel: confidenceLevel, 
       overAllPerformance: overAllPerformance, 
       assessmentCountMoreThanOne: assessmentCountMoreThanOne,
-      generatedAnalysis: generatedAnalysis
+      generatedAnalysis: generatedAnalysis,
+      shuffledChoicesAssess: shuffledChoicesAssessment,
+      extractedQAAssessment: extractedQAAssessment,
+      assessmentUsersChoices: assessmentUsersChoices
     };  
+
   
     socket.emit('join_assessment_room', data);
   
@@ -200,6 +204,18 @@ export const PreJoinPage = (props) => {
   
     socket.on('generated_analysis', (data) => {
       setGeneratedAnalysis(data);
+    });
+
+    socket.on('shuffled_choices_assessment', (data) => {
+      setShuffledChoicesAssessment(data);
+    });
+
+    socket.on('extracted_QA_assessment', (data) => {
+      setQAAssessment(data);
+    });
+
+    socket.on('assessment_users_choices', (data) => {
+      setAssessmentUsersChoices(data);
     });
 
   };

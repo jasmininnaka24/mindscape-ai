@@ -65,6 +65,9 @@ let confidenceLevelList = {}
 let overAllPerformanceList = {}
 let assessmentCountMoreThanOneList = {}
 let generatedAnalysisList = {}
+let shuffledChoicesAssessmentData = {}
+let extractedQAAssessmentList = {}
+let assessmentUsersChoicesList = {}
 
 
 
@@ -371,9 +374,13 @@ io.on('connection', (socket) => {
       confidenceLevel,
       overAllPerformance,
       assessmentCountMoreThanOne,
-      generatedAnalysis
+      generatedAnalysis,
+      shuffledChoicesAssess,
+      extractedQAAssessment,
+      assessmentUsersChoices
     } = data;
     socket.join(room);
+
 
     if (!assessmentRoomList[room]) {
       assessmentRoomList[room] = [];
@@ -480,6 +487,18 @@ io.on('connection', (socket) => {
       generatedAnalysisList[room] = '';
     }
 
+    if (!shuffledChoicesAssessmentData[room]) {
+      shuffledChoicesAssessmentData[room] = [];
+    }
+
+    if (!extractedQAAssessmentList[room]) {
+      extractedQAAssessmentList[room] = [];
+    }
+
+    if (!assessmentUsersChoicesList[room]) {
+      assessmentUsersChoicesList[room] = [];
+    }
+
 
 
 
@@ -569,6 +588,18 @@ io.on('connection', (socket) => {
     if (generatedAnalysisList[room] === '') {
       generatedAnalysisList[room] = generatedAnalysis;
     }
+    
+    if (shuffledChoicesAssessmentData[room].length === 0) {
+      shuffledChoicesAssessmentData[room] = shuffledChoicesAssess;
+    }
+    
+    if (extractedQAAssessmentList[room].length === 0) {
+      extractedQAAssessmentList[room] = extractedQAAssessment;
+    }
+    
+    if (assessmentUsersChoicesList[room].length === 0) {
+      assessmentUsersChoicesList[room] = assessmentUsersChoices;
+    }
 
 
 
@@ -612,13 +643,23 @@ io.on('connection', (socket) => {
     io.to(room).emit('over_all_performance', overAllPerformanceList[room]);
     io.to(room).emit('assessment_count_more_than_one', assessmentCountMoreThanOneList[room]);
     io.to(room).emit('generated_analysis', generatedAnalysisList[room]);
-
+    io.to(room).emit('shuffled_choices_assessment', shuffledChoicesAssessmentData[room]);
+    io.to(room).emit('extracted_QA_assessment', extractedQAAssessmentList[room]);
+    io.to(room).emit('assessment_users_choices', assessmentUsersChoicesList[room]);
+    console.log(extractedQAAssessmentList[room]);
   });
 
 
 
 
 
+
+  socket.on("updated_assessment_users_choices", (data) => {
+    const {assessementRoom, assessmentUsersChoices } = data
+    assessmentUsersChoicesList[assessementRoom] = assessmentUsersChoices;
+    io.to(assessementRoom).emit('assessment_users_choices', assessmentUsersChoicesList[assessementRoom]);
+    console.log(assessmentUsersChoicesList[assessementRoom]);
+  })
 
   socket.on("updated_generated_analysis", (data) => {
     const {room, generatedAnalysis } = data
@@ -911,6 +952,11 @@ io.on('connection', (socket) => {
           overAllPerformanceList[assessmentRoom] = 0
           assessmentCountMoreThanOneList[assessmentRoom] = false
           generatedAnalysisList[assessmentRoom] = ''
+          shuffledChoicesAssessmentData[assessmentRoom] = []
+          extractedQAAssessmentList[assessmentRoom] = []
+          assessmentUsersChoicesList[assessmentRoom] = []
+
+      
         }
         io.to(assessmentRoom).emit('assessment_user_list', assessmentRoomList[assessmentRoom]);
 
