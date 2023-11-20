@@ -573,8 +573,8 @@ export const AssessmentPage = (props) => {
       {showAssessment === true && (
         <div className='flex justify-betweeen'>
           <div className='w-1/2 relative fixed mbg-100 shadows ml-5 rounded'>
-            <div>
-              <p className='pt-4 px-5'>Connected users:</p>
+            <div className='fixed'>
+              <p className='pt-4 px-5 '>Connected users:</p>
               <ul className='py-2 px-5 rounded-[5px] flex items-center gap-5'>
                 {userListAssessment.map(user => (
                   <li key={user.userId}>
@@ -582,6 +582,16 @@ export const AssessmentPage = (props) => {
                   </li>
                 ))}
               </ul>
+            </div>
+            <br /><br />
+            <br />
+            <div className='flex justify-center'>
+              <div className='h-[73vh] border-thin-800 mx-5 mt-4 rounded fixed w-1/3'>
+                <div className='absolute bottom-0 left-0 w-full flex items-center justify-between'  style={{borderTop: '1px #777 solid'}}>
+                  <input type="text" className='px-5 w-[100%]' placeholder='Type your message...' />
+                  <button className='px-5 py-3 mbg-700 mcolor-100'>Send</button>
+                </div>
+              </div>
             </div>
 
             {/* <button className='mx-5 px-4 py-2 rounded mbg-300 mt-3'>Users' requests <span className='bg-pink mcolor-100 px-2 rounded-full'>1</span></button> */}
