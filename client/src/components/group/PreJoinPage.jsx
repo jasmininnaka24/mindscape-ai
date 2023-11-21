@@ -87,7 +87,7 @@ export const PreJoinPage = (props) => {
       assessmentScore: score,
       isSubmittedChar: isSubmitted,
       isAssessmentDone: isAssessmentDone,
-      isRunning: false,
+      isRunning: true,
       showSubmittedAnswerModal: showSubmittedAnswerModal,
       showTexts: showTexts,
       showAnalysis: showAnalysis,

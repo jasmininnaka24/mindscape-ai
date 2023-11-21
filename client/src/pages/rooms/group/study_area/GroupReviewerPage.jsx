@@ -3,6 +3,7 @@ import io from 'socket.io-client';
 import { useParams } from 'react-router-dom';
 import VpnKeyIcon from '@mui/icons-material/VpnKey';
 import WorkspacePremiumIcon from '@mui/icons-material/WorkspacePremium';
+import ScrollToBottom from "react-scroll-to-bottom";
 
 import seedrandom from 'seedrandom';
 import { PreJoinPage } from '../../../../components/group/PreJoinPage';
@@ -39,6 +40,9 @@ export const GroupReviewerPage = () => {
   const [itemsDone, setItemsDone] = useState(0);
   const [userScores, setUserScores] = useState([]);
   const [doneCheckingScores, setDoneCheckingScores] = useState(false)
+  const [messageReview, setMessageReview] = useState("");
+  const [messageListReview, setMessageListReview] = useState([])
+
   // const [inCall, setInCall] = useState(false);
   
   
@@ -95,7 +99,7 @@ export const GroupReviewerPage = () => {
   const [shuffledChoicesAssessment, setShuffledChoicesAssessment] = useState([])
   const [extractedQAAssessment, setQAAssessment] = useState([])
   const [assessmentUsersChoices, setAssessmentUsersChoices] = useState([]);
-  const [message, setMessage] = useState({});
+  const [message, setMessage] = useState("");
   const [messageList, setMessageList] = useState([])
 
 
@@ -301,6 +305,10 @@ export const GroupReviewerPage = () => {
     socket.on('study_session_started', (isStarted) => setIsStartStudyButtonStarted(isStarted));
     socket.on('items_done', (itemsDone) => setItemsDone(itemsDone));
 
+    socket.on("message_list_review", (message) => {
+      setMessageListReview(message);
+    });
+
     if (itemsLength !== itemsDone) {
       setDoneCheckingScores(false);
     }
@@ -352,7 +360,7 @@ export const GroupReviewerPage = () => {
       window.removeEventListener('mousemove', handleUserActivity);
       window.removeEventListener('keypress', handleUserActivity);
     };
-  }, [groupId, userTurn, materialId, questionIndex, room, userId, userList.length, alreadyFetched, userList, extractedQA.length, isStartStudyButtonStarted, itemsDone, itemsLength, userScores, doneCheckingScores]);
+  }, [groupId, userTurn, materialId, questionIndex, room, userId, userList.length, alreadyFetched, userList, extractedQA.length, isStartStudyButtonStarted, itemsDone, itemsLength, userScores, doneCheckingScores, messageListReview, setMessageListReview]);
 
 
   
@@ -382,24 +390,11 @@ export const GroupReviewerPage = () => {
     socket.on('received_question_index', (nextQuestion) => setQuestionIndex(nextQuestion));
     socket.on('study_session_started', (isStarted) => setIsStartStudyButtonStarted(isStarted));
 
-    
-
-    // socket.off("received_next_user_join");    
-    // socket.off("userList");    
-    // socket.off("shuffled_join");
-    // socket.off("received_selected_choice_join");
-    // socket.off("received_current_fail_val");
-    // socket.off("received_updated_userlist");
-    // socket.off("is_lost_points" );
-    // socket.off("is_gained_points");
-    // socket.off('updated_time_review');  
-    // socket.off('is_running_review');  
-    // socket.off('extracted_qa_data');    
-    // socket.off('received_question_index');
-    // socket.off('study_session_started');
-
-    
-
+    socket.on("message_list_review", (message) => {
+      if (message.length !== 0) {
+        setMessageListReview(message)
+      }
+    });
   
 
   };
@@ -714,7 +709,21 @@ export const GroupReviewerPage = () => {
     return () => clearInterval(interval);
   }, [room, isRunningReview, secondsReview, userList.length, isStartStudyButtonStarted]);
   
+  const sendMessageReview = async () => {
+    let data = {
+      room: room,
+      userId: userId,
+      author: username,
+      message: messageReview,
+      time: new Date(Date.now()).getHours() + ':' + new Date(Date.now()).getMinutes()
+    }
 
+    if (messageReview !== '') {
+      await socket.emit('sent_messages_review', data)
+    }
+
+    setMessageReview('')
+  }
 
   return (
     <div className=''>
@@ -738,36 +747,76 @@ export const GroupReviewerPage = () => {
               </div>
 
               {isJoined && (
-                <div className='poppins container w-full flex flex-col items-center min-h-[100vh]'>
+                <div className='poppins w-full flex flex-col items-center min-h-[100vh]'>
                   <div className='w-full'>
                     <div className='flex justify-between'>
-                      {isStartStudyButtonStarted && (
-                        <ul className='w-[18%] relative top-0 left-0 py-5 px-8 mbg-200 rounded-[5px]'>
-                          <p>Connected users:</p>
-                          {userList.map(user => (
-                            <li key={user.userId}>
-                              <p><i className="fa-solid fa-circle text-green-500 mr-1"></i> {user.username.charAt(0).toUpperCase() + user.username.slice(1)}</p>
-                            </li>
-                          ))}
+                        <div className='w-1/2 relative fixed min-h-[100vh] mbg-100 shadows rounded'>
+                          <div className='fixed'>
+                            <p className='pt-4 px-5 '>Connected users:</p>
+                            <ul className='py-2 px-5 rounded-[5px] flex items-center gap-5'>
+                              {userList.map(user => (
+                                <li key={user.userId}>
+                                  <p><i className="fa-solid fa-circle text-green-500 mr-1"></i> {user.username.charAt(0).toUpperCase() + user.username.slice(1)}</p>
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                          <br /><br />
                           <br />
-                          {/* <p className='mb-2'>Points:</p>
-                          {[...userList]
-                            .sort((a, b) => b.points - a.points)
-                            .map((user, index) => (
-                              <li key={user.userId}>
-                                <p className={index === 0 && userList.length > 1 && user.points > 0 ? 'text-emerald-500' : 'mcolor-900'}>
-                                  <i className="fa-solid fa-user mr-1"></i>{" "}
-                                  {user.username.charAt(0).toUpperCase() + user.username.slice(1)}:{" "}
-                                  {user.points} 
-                                  {index === 0 && userList.length > 1 && user.points > 0 && <i className="fa-solid fa-crown text-yellow-500 ml-2"></i>} 
-                                </p>
-                              </li>
-                          ))} */}
-                        </ul>
-                      )}
+                          <div className='flex justify-center'>
+                            <div className='h-[65vh] border-thin-800 mx-5 mt-6 rounded fixed w-1/3'>
+
+                              <div className="chat-window">
+                                <div className="chat-header">
+                                  <p>Live Chat</p>
+                                </div>
+                                <div className="chat-body">
+                                  <ScrollToBottom className="message-container">
+                                    {messageListReview.map((messageContent) => {
+                                      return (
+                                        <div
+                                          className="message"
+                                          id={username === messageContent.author ? "you" : "other"}
+                                        >
+                                          <div>
+                                            <div className="message-content">
+                                              <p>{messageContent.message}</p>
+                                            </div>
+                                            <div className="message-meta">
+                                              <p id="time">{messageContent.time}</p>
+                                              <p id="author" className='capitalize'>{messageContent.author}</p>
+                                            </div>
+                                          </div>
+                                        </div>
+                                      );
+                                    })}
+                                  </ScrollToBottom>
+                                </div>
+                                <div className="chat-footer">
+                                  <input
+                                    type="text"
+                                    placeholder="Hey..."
+                                    value={messageReview}
+                                    onChange={(event) => {
+                                      setMessageReview(event.target.value);
+                                    }}
+                                    onKeyPress={(event) => {
+                                      event.key === "Enter" && sendMessageReview();
+                                    }}
+                                  />
+                                  <button onClick={sendMessageReview}>&#9658;</button>
+                                </div>
+                              </div>
+                  
+                            </div>
+                          </div>
+                      </div>
+
+                      
+   
 
                       {userList.length > 0 && (
-                        <div className={isStartStudyButtonStarted ? 'w-[80%]' : 'w-full'}>
+                        <div className={'w-3/4 mx-10 min-h-[100vh] mt-5 mb-16'}>
                           {(userList.length > 1 && isStartStudyButtonStarted) ? 
                             (
 
@@ -781,7 +830,7 @@ export const GroupReviewerPage = () => {
       
                                       {(isRunningReview === true) && (
                                         <div className='timer-container px-10 py-3'>
-                                          <div className='rounded-[5px]' style={{ height: "15px", backgroundColor: "#B3C5D4" }}>
+                                          <div className='rounded-[5px]' style={{ height: "5px", backgroundColor: "#B3C5D4" }}>
                                             <div
                                               className='rounded-[5px]'
                                               style={{
@@ -792,7 +841,7 @@ export const GroupReviewerPage = () => {
                                               />
                                           </div>
 
-                                          <h1 className='mcolor-900 text-lg pt-3'>
+                                          <h1 className='mcolor-900 text-sm pt-1'>
                                             Remaining time:{' '}
                                             {secondsReview} seconds
                                           </h1>

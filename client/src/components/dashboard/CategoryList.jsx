@@ -1,13 +1,16 @@
 import axios from 'axios'
 import React, { useEffect, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useParams } from 'react-router-dom'
 import RemoveRedEyeIcon from '@mui/icons-material/RemoveRedEye';
 
 
 export const CategoryList = () => {
 
+  const { groupId } = useParams()
+
   const [materialCategories, setMaterialCategories] = useState([])
   const [materialsTopicsLength, setMaterialsTopicsLength] = useState([])
+  const [categoryFor, setCategoryFor] = useState('Personal')
 
   const UserId = 1;
   
@@ -15,10 +18,18 @@ export const CategoryList = () => {
 
     async function fetchLatestMaterialStudied() {
       try {  
-
-
-
-        const materialCategories = await axios.get(`http://localhost:3001/studyMaterialCategory/Personal/${UserId}`)
+        let category = categoryFor;
+        if (groupId !== undefined) {
+          category = 'Group'
+          setCategoryFor(category)
+        }
+        console.log(category);
+        let materialCategories = '';
+        if (category === 'Personal') {
+          materialCategories = await axios.get(`http://localhost:3001/studyMaterialCategory/Personal/${UserId}`)
+        } else {
+          materialCategories = await axios.get(`http://localhost:3001/studyMaterialCategory/${category}/${groupId}/${UserId}`)
+        }
         
         const materialCategoriesResponse = materialCategories.data;
         setMaterialCategories(materialCategoriesResponse)
@@ -78,7 +89,11 @@ export const CategoryList = () => {
               <td className='text-center py-3 text-lg mcolor-800'>{item.studyPerformance >= 90 ? 'Passing' : 'Requires Improvement'}</td>
               <td className='text-center py-3 text-lg mcolor-800'>{materialsTopicsLength[index]}</td>
               <td className='text-center py-3 text-lg mcolor-800'>
-                <Link to={`/main/personal/dashboard/category-list/topic-list/${item.id}`}><RemoveRedEyeIcon /></Link>
+                {groupId !== undefined ? (
+                  <Link to={`/main/group/dashboard/category-list/topic-list/${groupId}/${item.id}`}><RemoveRedEyeIcon /></Link>
+                  ) : (
+                  <Link to={`/main/personal/dashboard/category-list/topic-list/${item.id}`}><RemoveRedEyeIcon /></Link>
+                )}
               </td>
             </tr>
           })}

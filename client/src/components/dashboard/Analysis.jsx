@@ -102,7 +102,7 @@ export const Analysis = () => {
                 <p className='text-2xl font-bold'>Assessment score performance: {assessmentScorePerf}%</p>
 
                 <br /><br />
-                <p className='text-2xl'>Completion time: {completionTime} min{(completionTime > 1) ? 's' : ''}</p>
+                <p className='text-2xl'>Completion time: {completionTime}</p>
                 <p className='text-2xl font-bold'>Confidence level: {confidenceLevel}%</p>
 
               </div>

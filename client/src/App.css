@@ -436,6 +436,8 @@ input:focus{
 }
 
 
+
+
 /* medal colors */
 .gold-medal {
   color: goldenrod;
@@ -660,8 +662,8 @@ input:focus{
 
 /* Scrollbar thumb (draggable part) */
 ::-webkit-scrollbar-thumb {
-  background-color: #3a4f53; /* Scrollbar thumb color */
-  border-radius: 3px;
+  background-color: #667F93; /* Scrollbar thumb color */
+  border-radius: 2px;
 }
 
 /* Scrollbar thumb on hover */

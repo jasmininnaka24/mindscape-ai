@@ -154,9 +154,16 @@ export const MainDash = () => {
             })}
           </tbody>
         </table>
-        <Link to={'/main/personal/dashboard/category-list'}>
+
+        {groupId !== undefined ? (
+          <Link to={`/main/group/dashboard/category-list/${groupId}`}>
           <button className='absolute bottom-5 right-5 mbg-800 mcolor-100 px-5 py-2 rounded-[5px]'>View All Subjects</button>
         </Link>
+        ) : (
+          <Link to={'/main/personal/dashboard/category-list'}>
+          <button className='absolute bottom-5 right-5 mbg-800 mcolor-100 px-5 py-2 rounded-[5px]'>View All Subjects</button>
+          </Link>
+        )}
       </div>
     </div>
   )

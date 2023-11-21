@@ -13,7 +13,7 @@ export const TopicList = ({categoryFor}) => {
   const [unpreparedLength, setUnpreparedLength] = useState(0)
   const [extractedCategory, setExtractedCategory] = useState([])
 
-  const { categoryID } = useParams()
+  const { groupId, categoryID } = useParams()
 
   const UserId = 1;
   
@@ -108,12 +108,21 @@ export const TopicList = ({categoryFor}) => {
             </tr>
           </thead>
           <tbody>
-            {studyMaterials.map((item, index) => {
-              const assessmentScorePerf = materialsTopicsData[index]?.[0]?.assessmentScorePerf || 'N/A';
-              const confidenceLevel = materialsTopicsData[index]?.[0]?.confidenceLevel || 'N/A';
-              const assessmentImp = materialsTopicsData[index]?.[0]?.assessmentImp || 'N/A';
+            
+          {studyMaterials.map((item, index) => {
+            const assessmentScorePerf = materialsTopicsData[index]?.[0]?.assessmentScorePerf || 'N/A';
+            const confidenceLevel = materialsTopicsData[index]?.[0]?.confidenceLevel || 'N/A';
+            const assessmentImp = materialsTopicsData[index]?.[0]?.assessmentImp || 'N/A';
 
-              return <tr className='border-bottom-thin-gray rounded-[5px]' key={index}>
+            console.log(assessmentImp);
+
+            // Check if assessmentImp is 'none', if true, skip rendering the row
+            if (assessmentImp.toLowerCase() === 'none') {
+              return null;
+            }
+
+            return (
+              <tr className='border-bottom-thin-gray rounded-[5px]' key={index}>
                 <td className='text-center py-3 text-lg mcolor-800'>{item.title}</td>
                 <td className='text-center py-3 text-lg mcolor-800'>{item.studyPerformance}%</td>
                 <td className='text-center py-3 text-lg mcolor-800'>{assessmentScorePerf}%</td>
@@ -121,10 +130,16 @@ export const TopicList = ({categoryFor}) => {
                 <td className='text-center py-3 text-lg mcolor-800'>{assessmentImp}%</td>
                 <td className='text-center py-3 text-lg mcolor-800'>{item.studyPerformance >= 90 ? 'Prepared' : 'Unprepared'}</td>
                 <td className='text-center py-3 text-lg mcolor-800'>
-                  <Link to={`/main/personal/dashboard/category-list/topic-list/topic-page/${categoryID}/${item.id}`}><RemoveRedEyeIcon /></Link>
+                  {groupId !== undefined ? (
+                    <Link to={`/main/group/dashboard/category-list/topic-list/topic-page/${groupId}/${categoryID}/${item.id}`}><RemoveRedEyeIcon /></Link>
+                  ) : (
+                    <Link to={`/main/personal/dashboard/category-list/topic-list/topic-page/${categoryID}/${item.id}`}><RemoveRedEyeIcon /></Link>
+                  )}
                 </td>
               </tr>
-            })}
+            );
+          })}
+
           </tbody>
         </table>
       </div>

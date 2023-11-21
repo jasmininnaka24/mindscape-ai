@@ -187,21 +187,25 @@ export const AssessmentPage = (props) => {
     let completionTimeCalc = '';
     let extractedQALengthInMinutes = extractedQAAssessment.length * 60;
     let timeleft = extractedQALengthInMinutes - seconds;
-
+    
     if (seconds === 0) {
         completionTimeCalc = '0 seconds';
     } else {
         const minutes = Math.floor(timeleft / 60);
         const secondsRemainder = timeleft % 60;
     
-        if (minutes >= 0) {
-            completionTimeCalc += `${minutes} min `;
+        if (minutes > 0) {
+            completionTimeCalc += `${minutes} min`;
+            if (secondsRemainder > 0) {
+                completionTimeCalc += ' ';
+            }
         }
-        
+    
         if (secondsRemainder > 0) {
-            completionTimeCalc += (minutes > 0 ? ' ' : '') + `${secondsRemainder} second${secondsRemainder !== 1 ? 's' : ''}`;
+            completionTimeCalc += `${secondsRemainder} second${secondsRemainder !== 1 ? 's' : ''}`;
         }
     }
+    
     
     
 
@@ -404,7 +408,7 @@ export const AssessmentPage = (props) => {
     socket.emit('updated_show_texts', {room: assessementRoom, showTexts: false});
 
     
-    const generateAnalysisUrl = 'https://57ef-34-125-116-81.ngrok.io/generate_analysis';
+    const generateAnalysisUrl = 'https://a806-34-124-197-174.ngrok.io/generate_analysis';
 
     
     let predictionText = overAllPerformance.toFixed(2) >= 90 ? 'ready' : 'not yet ready';
@@ -569,6 +573,8 @@ export const AssessmentPage = (props) => {
     if (message !== '') {
       await socket.emit('sent_messages', data)
     }
+
+    setMessage('')
   }
 
   
@@ -584,14 +590,11 @@ export const AssessmentPage = (props) => {
 
 
   return (
-    <div className='py-8 poppins mbg-200 mcolor-900' id='currSec'>
-
-
-      
+    <div className='poppins mbg-200 mcolor-900' id='currSec'>
 
       {showAssessment === true && (
         <div className='flex justify-betweeen'>
-          <div className='w-1/2 relative fixed mbg-100 shadows ml-5 rounded'>
+          <div className='w-1/2 relative fixed mbg-100 shadows rounded'>
             <div className='fixed'>
               <p className='pt-4 px-5 '>Connected users:</p>
               <ul className='py-2 px-5 rounded-[5px] flex items-center gap-5'>
@@ -605,7 +608,7 @@ export const AssessmentPage = (props) => {
             <br /><br />
             <br />
             <div className='flex justify-center'>
-              <div className='h-[60vh] border-thin-800 mx-5 mt-4 rounded fixed w-1/3'>
+              <div className='h-[65vh] border-thin-800 mx-5 mt-6 rounded fixed w-1/3'>
 
                 <div className="chat-window">
                   <div className="chat-header">
@@ -625,7 +628,7 @@ export const AssessmentPage = (props) => {
                               </div>
                               <div className="message-meta">
                                 <p id="time">{messageContent.time}</p>
-                                <p id="author">{messageContent.author}</p>
+                                <p id="author" className='capitalize'>{messageContent.author}</p>
                               </div>
                             </div>
                           </div>
@@ -636,8 +639,8 @@ export const AssessmentPage = (props) => {
                   <div className="chat-footer">
                     <input
                       type="text"
-                      value={message}
                       placeholder="Hey..."
+                      value={message}
                       onChange={(event) => {
                         setMessage(event.target.value);
                       }}
@@ -652,69 +655,9 @@ export const AssessmentPage = (props) => {
               </div>
             </div>
 
-            {/* <button className='mx-5 px-4 py-2 rounded mbg-300 mt-3'>Users' requests <span className='bg-pink mcolor-100 px-2 rounded-full'>1</span></button> */}
-
-            {/* <div className={`absolute top-0 modal-bg left-0 w-full h-full`}>
-              <div className='flex items-center justify-center h-full'>
-                <div className='relative mbg-100 min-h-[75vh] w-1/2 z-10 relative p-10 rounded-[5px]'>
-
-                  <p className='text-lg mcolor-900 font-medium mb-5'>Leaderboard</p>  
-
-                  <div className='flex items-center justify-between mb-5 gap-5'>
-                    <button onClick={resetAndStudy} className='w-1/2 py-2 rounded mcolor-900 mbg-200 border-thin-800'>Reset Points & Study Again</button>
-                    <button onClick={studyAgain} className='w-1/2 py-2 rounded mcolor-100 mbg-700'>Study Again</button>
-                  </div>
-
-                  <div className='flex items-center justify-between px-3 mb-3 mcolor-800'>
-                    <span>Users</span>
-                    <span className='mr-4'>Scores</span>
-                  </div>
-                  <ul>
-                    {[...userList]
-                      .sort((a, b) => b.points - a.points)
-                      .map((user, index) => {
-                        let medalClass = ''; 
-
-                        if (user.points === userScores[0]) {
-                          medalClass = 'gold-medal'
-                        } else if (user.points === userScores[1]) {
-                          medalClass = 'silver-medal'
-                        } else if (user.points === userScores[2]) {
-                          medalClass = 'bronze-medal'
-                        }
-
-                
-                        return (
-                          <li key={user.userId} className='mb-4'>
-                            <p className={`mbg-200 shadows p-3 flex justify-between items-center font-medium rounded mcolor-800`}>
-                              <span>
-                                <WorkspacePremiumIcon fontSize="large" className={`mr-3 ${user.points !== 0 ? medalClass : ''}`} />
-                                <span className='text-xl pt-3'>
-                                  {user.username.charAt(0).toUpperCase() + user.username.slice(1)}:{" "}
-                                </span>
-                              </span>
-                              <span className='mr-4'>
-                                {user.points} {user.points > 1 ? 'points' : 'point'}
-                              </span>
-                            </p>
-                          </li>
-                        );
-                      })}
-                  </ul>
-
-
-
-
-                
-                </div>
-              </div>
-            </div> */}
-
-            <div>
-
-            </div>
+  
           </div>
-          <div className='w-3/4 px-10' id='assessmentSection'>
+          <div className='w-3/4 px-10 py-10' id='assessmentSection'>
             <p className='text-center text-3xl font-medium mcolor-700 pt-5'>Assessment for {materialTitle} of {materialCategory}</p>
 
             {(showAnalysis === false && isAssessmentDone === true) && (
@@ -988,7 +931,7 @@ export const AssessmentPage = (props) => {
 
 
             {(showAnalysis === false && isAssessmentDone === false) && (
-              <div className='flex justify-center mt-8 mb-5'>
+              <div className='flex justify-center pt-8 mb-5'>
                 <button
                   className={`w-1/2 py-2 px-5 rounded-[5px] text-lg ${isSubmittedButtonClicked === true && idOfWhoSubmitted !== userId && usernameOfWhoSubmitted !== username ? 'disabled-button mbg-300 mcolor-800' : 'mbg-800 mcolor-100 '}`}
                   onClick={() => {
@@ -1027,7 +970,7 @@ export const AssessmentPage = (props) => {
       {showAnalysis === true && (
         <div className='mcolor-800 container'>
 
-          <div className='mt-14 flex items-center justify-between'>
+          <div className='pt-14 flex items-center justify-between'>
             <div>
               <p className='text-center mx-10 mb-16 text-2xl'>You have a substantial <span className='font-bold'>{overAllPerformance.toFixed(2)}%</span> probability of success of taking the real-life exam and that the analysis classifies that you are <span className='font-bold'>{overAllPerformance.toFixed(2) >= 90 ? 'ready' : 'not yet ready'}</span> to take it as to your preference study profeciency target is <span className='font-bold'>90%</span>.</p>
 
@@ -1120,22 +1063,35 @@ export const AssessmentPage = (props) => {
               setShowAnalysis(false)
               setIsRunning(false)
             }}>Review Answers</button> */}
+            
+            {groupId !== undefined ? (
 
-            <Link to={`/main/personal/study-area/personal-review/${materialId}`} className='border-thin-800 px-5 py-3 rounded-[5px] w-1/4 text-center'>
+              <Link to={`/main/group/study-area/group-review/${groupId}/${materialId}`} className='border-thin-800 px-5 py-3 rounded-[5px] w-1/4 text-center'>
               <button>Back to Study Area</button>
             </Link>      
-
-            <Link to={`/main/personal/dashboard/category-list/topic-list/topic-page/${categoryID}/${materialId}`} className='mbg-800 mcolor-100 px-5 py-3 rounded-[5px] w-1/4 text-center'>
-              <button>View Analytics</button>
+            ) : (
+              <Link to={`/main/personal/study-area/personal-review/${materialId}`} className='border-thin-800 px-5 py-3 rounded-[5px] w-1/4 text-center'>
+              <button>Back to Study Area</button>
             </Link>      
-          </div>
+            )}
 
+            {groupId !== undefined ? (
+              <Link to={`/main/group/dashboard/category-list/topic-list/topic-page/${groupId}/${categoryID}/${materialId}`} className='mbg-800 mcolor-100 px-5 py-3 rounded-[5px] w-1/4 text-center'>
+                <button>View Analytics</button>
+              </Link>      
+            ) : (
+              <Link to={`/main/personal/dashboard/category-list/topic-list/topic-page/${categoryID}/${materialId}`} className='mbg-800 mcolor-100 px-5 py-3 rounded-[5px] w-1/4 text-center'>
+                <button>View Analytics</button>
+              </Link>      
+            )}
+          </div>
+          <br />
+          <br />
         </div>
       )}
 
 
 
-    <br />
 
     </div>
   )

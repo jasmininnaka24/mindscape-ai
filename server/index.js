@@ -37,6 +37,7 @@ let setSecondsReview = {}
 let reviewExtractedQA = {}
 let isStartStudyButtonStartedList = {}
 let itemsDoneList = {}
+let messageListReview = {}
 
 
 
@@ -128,6 +129,10 @@ io.on('connection', (socket) => {
       itemsDoneList[room] = 0;
     }
 
+    if (!messageListReview[room]) {
+      messageListReview[room] = [];
+    }
+
     
     // Check if the user with the same userId already exists in the room
     const userExists = rooms[room].some(user => user.userId === userId);
@@ -185,6 +190,9 @@ io.on('connection', (socket) => {
       itemsDoneList[room] = itemsDone;
     }
 
+    if (messageListReview[room].length === 0) {
+      messageListReview[room] = [];
+    }
 
 
     if (isRunningListReview[room] === false) {
@@ -223,7 +231,32 @@ io.on('connection', (socket) => {
     io.to(room).emit('extracted_qa_data', reviewExtractedQA[room]);
     io.to(room).emit('study_session_started', isStartStudyButtonStartedList[room]);
     io.to(room).emit('items_done', itemsDoneList[room]);
+
+    if (messageListReview.length !== 0) {
+      io.to(room).emit('message_list_review', messageListReview[room]);
+    } else {
+      io.to(room).emit('message_list_review', []);
+    }
+
   
+  });
+
+  socket.on("sent_messages_review", (data) => {
+    const { room } = data;
+  
+    // Ensure messageListData[assessementRoom] is initialized as an array
+    if (!messageListReview[room]) {
+      messageListReview[room] = [];
+    }
+  
+    // Push the new data to the array
+    messageListReview[room].push(data);
+  
+    // Emit the updated message list to clients in the room
+    io.to(room).emit('message_list_review', messageListReview[room]);
+  
+    // Log the updated message list
+    console.log(messageListReview[room]);
   });
 
 
@@ -949,6 +982,7 @@ io.on('connection', (socket) => {
           reviewExtractedQA[room] = [];
           isStartStudyButtonStartedList[room] = false;
           itemsDoneList[room] = 0;
+          messageListReview[room] = []
         }
       }
     });
@@ -988,8 +1022,8 @@ io.on('connection', (socket) => {
           shuffledChoicesAssessmentData[assessmentRoom] = []
           extractedQAAssessmentList[assessmentRoom] = []
           assessmentUsersChoicesList[assessmentRoom] = []
+          messageListData[assessmentRoom] = []
 
-      
         }
         io.to(assessmentRoom).emit('assessment_user_list', assessmentRoomList[assessmentRoom]);
 

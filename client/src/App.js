@@ -23,6 +23,10 @@ import { GroupQAGenerator } from './pages/rooms/group/study_area/GroupQAGenerato
 import { GroupTasks } from './pages/rooms/group/task/GroupTasks';
 import { GroupReviewerPage } from './pages/rooms/group/study_area/GroupReviewerPage'
 import { GroupDashboard } from './pages/rooms/group/dashboard/GroupDashboard';
+import { GroupCategoryList } from './pages/rooms/group/dashboard/GroupCategoryList';
+import { GroupTopicList } from './pages/rooms/group/dashboard/GroupTopicList';
+import { GroupTopicPage } from './pages/rooms/group/dashboard/GroupTopicPage';
+import { GroupAnalysisPage } from './pages/rooms/group/dashboard/GroupAnalysisPage';
 
 import { PersonalRoom } from './pages/rooms/personal/PersonalRoom';
 import { PersonalStudyArea } from './pages/rooms/personal/study_area/PersonalStudyArea';
@@ -34,7 +38,7 @@ import { PersonalDashboard } from './pages/rooms/personal/dashboard/PersonalDash
 import { PersonalCategoryList } from './pages/rooms/personal/dashboard/PersonalCategoryList';
 import { PersonalTopicList } from './pages/rooms/personal/dashboard/PersonalTopicList';
 import { PersonalTopicPage } from './pages/rooms/personal/dashboard/PersonalTopicPage';
-import { PersonalAnalysisPage } from './pages/rooms/personal/study_area/PersonalAnalysisPage'; 
+import { PersonalAnalysisPage } from './pages/rooms/personal/dashboard/PersonalAnalysisPage'; 
 
 
 // dependecies
@@ -75,6 +79,16 @@ function App() {
             {/* <Route path='/main/group/study-area/group-review' element={<GroupReviewPage />} />  */}
             <Route path='/main/group/study-area/group-review/:groupId/:materialId' element={<GroupReviewerPage />} />
 
+
+            {/* Group Dashboard */}
+            <Route path='/main/group/dashboard/:groupId' element={<GroupDashboard />} />
+            <Route path='/main/group/dashboard/category-list/:groupId' element={<GroupCategoryList />} />
+            <Route path='/main/group/dashboard/category-list/topic-list/:groupId/:categoryID' element={<GroupTopicList />} />
+            <Route path='/main/group/dashboard/category-list/topic-list/topic-page/:groupId/:categoryID/:materialID' element={<GroupTopicPage />} />
+            <Route path='/main/group/dashboard/category-list/topic-list/topic-page/analysis/:groupId/:categoryID/:materialID/:dashID' element={<GroupAnalysisPage />} />
+
+
+
             {/* Personal Study Room Routes */}
             <Route path='/main/personal/' element={<PersonalRoom />} /> 
             <Route path='/main/personal/study-area' element={<PersonalStudyArea />} /> 
@@ -90,8 +104,6 @@ function App() {
             <Route path='/main/personal/dashboard/category-list/topic-list/topic-page/:categoryID/:materialID' element={<PersonalTopicPage />} />
             <Route path='/main/personal/dashboard/category-list/topic-list/topic-page/analysis/:categoryID/:materialID/:dashID' element={<PersonalAnalysisPage />} />
 
-            {/* Group Dashboard */}
-            <Route path='/main/group/dashboard/:groupId' element={<GroupDashboard />} />
               
             {/* If page does not exist */}
             <Route path='*' element={<h1 className='text-center text-4xl font-bold primary-text-color pt-40'>404: Page Not Found</h1>} /> 

@@ -8,7 +8,7 @@ import { PieChart } from '../charts/PieChart';
 
 export const TopicPage = () => {
 
-  const { categoryID, materialID } = useParams();
+  const { categoryID, materialID, groupId } = useParams();
   const navigate = useNavigate();
 
   const [studyMaterials, setStudyMaterials] = useState([]);
@@ -121,7 +121,11 @@ export const TopicPage = () => {
       setShowModal(true)
       setShowFirstText(true)
     } else {
-      navigate(`/main/personal/dashboard/category-list/topic-list/topic-page/analysis/${categoryID}/${materialID}/${id}`)
+      if (groupId !== undefined) {
+        navigate(`/main/group/dashboard/category-list/topic-list/topic-page/analysis/${groupId}/${categoryID}/${materialID}/${id}`)
+      } else {
+        navigate(`/main/personal/dashboard/category-list/topic-list/topic-page/analysis/${categoryID}/${materialID}/${id}`)
+      }
     }
   }
 
@@ -171,7 +175,7 @@ export const TopicPage = () => {
                 <td className='text-center py-3 text-lg mcolor-800'>{item.assessmentScore}/{item.overAllItems}</td>
 
 
-                <td className='text-center py-3 text-lg mcolor-800'>{item.completionTime} min{item.completionTime < 2 ? '' : 's'}</td>
+                <td className='text-center py-3 text-lg mcolor-800'>{item.completionTime}</td>
 
                 <td className='text-center py-3 text-lg mcolor-800'>{item.assessmentImp}%</td>
 
