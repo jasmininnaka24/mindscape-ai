@@ -3,6 +3,8 @@ import React, { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom';
 import CheckIcon from '@mui/icons-material/Check';
 import io from 'socket.io-client';
+import ScrollToBottom from "react-scroll-to-bottom";
+
 
 // chart
 import { BarChartForAnalysis } from '../charts/BarChartForAnalysis';
@@ -13,7 +15,7 @@ const socket = io.connect("http://localhost:3001");
 
 export const AssessmentPage = (props) => {
 
-  const { groupId, materialId, username, userId, userListAssessment, setUserListAssessment, selectedAssessmentAnswer, setSelectedAssessmentAnswer, assessementRoom, isRunning, setIsRunning, seconds, setSeconds, setQA, extractedQA, shuffledChoices, setShuffledChoices, isSubmittedButtonClicked, setIsSubmittedButtonClicked, idOfWhoSubmitted, setIdOfWhoSubmitted, usernameOfWhoSubmitted, setUsernameOfWhoSubmitted, score, setScore, isSubmitted, setIsSubmitted, isAssessmentDone, setIsAssessmentDone, showSubmittedAnswerModal, setShowSubmittedAnswerModal, showTexts, setShowTexts, showAnalysis, setShowAnalysis, showAssessment, setShowAssessment, overAllItems, setOverAllItems, preAssessmentScore, setPreAssessmentScore, assessmentScore, setAssessmentScore, assessmentImp, setAssessmentImp, assessmentScorePerf, setAssessmentScorePerf, completionTime, setCompletionTime, confidenceLevel, setConfidenceLevel, overAllPerformance, setOverAllPerformance, assessmentCountMoreThanOne, setAssessmentCountMoreThanOne, generatedAnalysis, setGeneratedAnalysis, shuffledChoicesAssessment, setShuffledChoicesAssessment, extractedQAAssessment, setQAAssessment, assessmentUsersChoices, setAssessmentUsersChoices } = props;
+  const { groupId, materialId, username, userId, userListAssessment, setUserListAssessment, selectedAssessmentAnswer, setSelectedAssessmentAnswer, assessementRoom, isRunning, setIsRunning, seconds, setSeconds, setQA, extractedQA, shuffledChoices, setShuffledChoices, isSubmittedButtonClicked, setIsSubmittedButtonClicked, idOfWhoSubmitted, setIdOfWhoSubmitted, usernameOfWhoSubmitted, setUsernameOfWhoSubmitted, score, setScore, isSubmitted, setIsSubmitted, isAssessmentDone, setIsAssessmentDone, showSubmittedAnswerModal, setShowSubmittedAnswerModal, showTexts, setShowTexts, showAnalysis, setShowAnalysis, showAssessment, setShowAssessment, overAllItems, setOverAllItems, preAssessmentScore, setPreAssessmentScore, assessmentScore, setAssessmentScore, assessmentImp, setAssessmentImp, assessmentScorePerf, setAssessmentScorePerf, completionTime, setCompletionTime, confidenceLevel, setConfidenceLevel, overAllPerformance, setOverAllPerformance, assessmentCountMoreThanOne, setAssessmentCountMoreThanOne, generatedAnalysis, setGeneratedAnalysis, shuffledChoicesAssessment, setShuffledChoicesAssessment, extractedQAAssessment, setQAAssessment, assessmentUsersChoices, setAssessmentUsersChoices, message, setMessage, messageList, setMessageList } = props;
 
   let studyProfeciencyTarget = 90;
 
@@ -96,6 +98,11 @@ export const AssessmentPage = (props) => {
       setAssessmentUsersChoices(choices);
     });
 
+    socket.on("message_list", (message) => {
+      setMessageList(message);
+      console.log(message);
+    });
+    
 
     if (isAssessmentDone === true) { 
       const targetElement = document.getElementById("currSec");
@@ -111,7 +118,7 @@ export const AssessmentPage = (props) => {
 
     };
     
-  }, [groupId, isSubmittedButtonClicked, idOfWhoSubmitted, isAssessmentDone, materialId, setIdOfWhoSubmitted, setIsSubmitted, setScore, setSelectedAssessmentAnswer, seconds, setUserListAssessment, userListAssessment, isRunning, userId, setIsAssessmentDone, showAnalysis, score, isSubmitted, setOverAllItems, setAssessmentCountMoreThanOne, setAssessmentUsersChoices])
+  }, [groupId, isSubmittedButtonClicked, idOfWhoSubmitted, isAssessmentDone, materialId, setIdOfWhoSubmitted, setIsSubmitted, setScore, setSelectedAssessmentAnswer, seconds, setUserListAssessment, userListAssessment, isRunning, userId, setIsAssessmentDone, showAnalysis, score, isSubmitted, setOverAllItems, setAssessmentCountMoreThanOne, setAssessmentUsersChoices, messageList, setMessageList])
 
 
 
@@ -125,7 +132,6 @@ export const AssessmentPage = (props) => {
     socket.emit("updated_answers", { assessementRoom, selectedAssessmentAnswers });
     socket.on("selected_assessment_answers", (selectedChoicesData) => {
       setSelectedAssessmentAnswer(selectedChoicesData);
-      console.log(selectedChoicesData);
     });
     
   };
@@ -551,6 +557,19 @@ export const AssessmentPage = (props) => {
     setIsRunning(false);
   };
 
+  const sendMessage = async () => {
+    let data = {
+      assessementRoom: assessementRoom,
+      userId: userId,
+      author: username,
+      message: message,
+      time: new Date(Date.now()).getHours() + ':' + new Date(Date.now()).getMinutes()
+    }
+
+    if (message !== '') {
+      await socket.emit('sent_messages', data)
+    }
+  }
 
   
   
@@ -586,11 +605,50 @@ export const AssessmentPage = (props) => {
             <br /><br />
             <br />
             <div className='flex justify-center'>
-              <div className='h-[73vh] border-thin-800 mx-5 mt-4 rounded fixed w-1/3'>
-                <div className='absolute bottom-0 left-0 w-full flex items-center justify-between'  style={{borderTop: '1px #777 solid'}}>
-                  <input type="text" className='px-5 w-[100%]' placeholder='Type your message...' />
-                  <button className='px-5 py-3 mbg-700 mcolor-100'>Send</button>
+              <div className='h-[60vh] border-thin-800 mx-5 mt-4 rounded fixed w-1/3'>
+
+                <div className="chat-window">
+                  <div className="chat-header">
+                    <p>Live Chat</p>
+                  </div>
+                  <div className="chat-body">
+                    <ScrollToBottom className="message-container">
+                      {messageList.map((messageContent) => {
+                        return (
+                          <div
+                            className="message"
+                            id={username === messageContent.author ? "you" : "other"}
+                          >
+                            <div>
+                              <div className="message-content">
+                                <p>{messageContent.message}</p>
+                              </div>
+                              <div className="message-meta">
+                                <p id="time">{messageContent.time}</p>
+                                <p id="author">{messageContent.author}</p>
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </ScrollToBottom>
+                  </div>
+                  <div className="chat-footer">
+                    <input
+                      type="text"
+                      value={message}
+                      placeholder="Hey..."
+                      onChange={(event) => {
+                        setMessage(event.target.value);
+                      }}
+                      onKeyPress={(event) => {
+                        event.key === "Enter" && sendMessage();
+                      }}
+                    />
+                    <button onClick={sendMessage}>&#9658;</button>
+                  </div>
                 </div>
+     
               </div>
             </div>
 

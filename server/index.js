@@ -68,6 +68,7 @@ let generatedAnalysisList = {}
 let shuffledChoicesAssessmentData = {}
 let extractedQAAssessmentList = {}
 let assessmentUsersChoicesList = {}
+let messageListData = {}
 
 
 
@@ -327,7 +328,6 @@ io.on('connection', (socket) => {
 
 
 
-  // to be repaired later
   socket.on("submitted_answer", ({room, currentFailCount, submittedAnswerVal}) => {
     reviewFailCount[room] = currentFailCount;
     selectedChoiceValCurr[room] = submittedAnswerVal;
@@ -377,7 +377,8 @@ io.on('connection', (socket) => {
       generatedAnalysis,
       shuffledChoicesAssess,
       extractedQAAssessment,
-      assessmentUsersChoices
+      assessmentUsersChoices,
+      messageList
     } = data;
     socket.join(room);
 
@@ -499,6 +500,10 @@ io.on('connection', (socket) => {
       assessmentUsersChoicesList[room] = [];
     }
 
+    if (!messageListData[room]) {
+      messageListData[room] = [];
+    }
+
 
 
 
@@ -600,7 +605,10 @@ io.on('connection', (socket) => {
     if (assessmentUsersChoicesList[room].length === 0) {
       assessmentUsersChoicesList[room] = assessmentUsersChoices;
     }
-
+    
+    if (messageListData[room].length === 0) {
+      messageListData[room] = [];
+    }
 
 
     if (isRunningList[room] === false) {
@@ -646,13 +654,38 @@ io.on('connection', (socket) => {
     io.to(room).emit('shuffled_choices_assessment', shuffledChoicesAssessmentData[room]);
     io.to(room).emit('extracted_QA_assessment', extractedQAAssessmentList[room]);
     io.to(room).emit('assessment_users_choices', assessmentUsersChoicesList[room]);
-    console.log(extractedQAAssessmentList[room]);
+
+    if (messageListData.length !== 0) {
+      io.to(room).emit('message_list', messageListData[room]);
+    } else {
+      io.to(room).emit('message_list', []);
+    }
+
   });
 
 
 
 
 
+
+  socket.on("sent_messages", (data) => {
+    const { assessementRoom } = data;
+  
+    // Ensure messageListData[assessementRoom] is initialized as an array
+    if (!messageListData[assessementRoom]) {
+      messageListData[assessementRoom] = [];
+    }
+  
+    // Push the new data to the array
+    messageListData[assessementRoom].push(data);
+  
+    // Emit the updated message list to clients in the room
+    io.to(assessementRoom).emit('message_list', messageListData[assessementRoom]);
+  
+    // Log the updated message list
+    console.log(messageListData[assessementRoom]);
+  });
+  
 
   socket.on("updated_assessment_users_choices", (data) => {
     const {assessementRoom, assessmentUsersChoices } = data
