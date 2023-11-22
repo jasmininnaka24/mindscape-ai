@@ -13,6 +13,7 @@ export const MainDash = () => {
   const [familiarLength, setFamiliarLength] = useState(0)
   const [needsPracticeLength, setNeedsPracticeLength] = useState(0)
   const [itemsCount, setItemsCount] = useState(0);
+  const [groupStudyPerformance, setGroupStudyPerformance] = useState(0);
 
   const UserId = 1;
 
@@ -24,11 +25,19 @@ export const MainDash = () => {
 
     async function fetchLatestMaterialStudied() {
       try {  
-        const response = await axios.get(`http://localhost:3001/studyMaterial/latestMaterialStudied/${UserId}`);
+
+        let response = '';
+
+        if (groupId !== undefined) {
+          response = await axios.get(`http://localhost:3001/studyMaterial/latestMaterialStudied/group/${groupId}/${UserId}`)
+        } else {
+          response = await axios.get(`http://localhost:3001/studyMaterial/latestMaterialStudied/${UserId}`)
+        }
+ 
+          
         const latestMaterialStudied = response.data;
         
         const materialId = latestMaterialStudied[0].id;
-        
 
 
         let materialCategories = '';
@@ -51,16 +60,21 @@ export const MainDash = () => {
         }
 
 
-
         
         const materialCategoriesResponse = materialCategories.data;
+        
         setMaterialCategories(materialCategoriesResponse)
-
         
-        setMaterialTitle(materialTitleResponse.data.title)
-        
-        
-        setMaterialCategory(materialCategoryResponse.data.category)
+        if (groupId !== undefined) {
+          
+          setMaterialTitle(materialTitleResponse.data[0].title)       
+          setMaterialCategory(materialCategories.data[0].category)
+          setGroupStudyPerformance(materialTitleResponse.data[0].studyPerformance);
+        } else {
+          
+          setMaterialTitle(materialTitleResponse.data.title)       
+          setMaterialCategory(materialCategoryResponse.data.category)
+        }
 
         const materialResponse = await axios.get(`http://localhost:3001/quesAns/study-material-mcq/${materialId}`);
         const fetchedQA = materialResponse.data;
@@ -78,7 +92,6 @@ export const MainDash = () => {
     
     fetchLatestMaterialStudied();
   
-
 
       
   }, [])
@@ -121,9 +134,9 @@ export const MainDash = () => {
             <div className='mt-5'>
               <div className='text-center'>
                 <p className='text-4xl mcolor-800 font-medium'>
-                  {isNaN((familiarLength / itemsCount) * 100)
-                    ? 0 + '%'
-                    : ((familiarLength / itemsCount) * 100).toFixed(2) + '%'}
+                  {
+                    isNaN((familiarLength / itemsCount) * 100) ? 0 + '%' : ((familiarLength / itemsCount) * 100).toFixed(2) + '%'
+                  }
                 </p>
                 <p className='mt-1 mcolor-400'>Study Performance</p>
               </div>

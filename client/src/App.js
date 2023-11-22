@@ -41,6 +41,10 @@ import { PersonalTopicPage } from './pages/rooms/personal/dashboard/PersonalTopi
 import { PersonalAnalysisPage } from './pages/rooms/personal/dashboard/PersonalAnalysisPage'; 
 
 
+// Virtual library pages import
+import { VirtualLibraryMain } from './pages/rooms/library/VirtualLibraryMain';
+
+
 // dependecies
 import AOS from 'aos';
 import 'aos/dist/aos.css';
@@ -103,6 +107,15 @@ function App() {
             <Route path='/main/personal/dashboard/category-list/topic-list/:categoryID' element={<PersonalTopicList />} />
             <Route path='/main/personal/dashboard/category-list/topic-list/topic-page/:categoryID/:materialID' element={<PersonalTopicPage />} />
             <Route path='/main/personal/dashboard/category-list/topic-list/topic-page/analysis/:categoryID/:materialID/:dashID' element={<PersonalAnalysisPage />} />
+
+
+
+
+
+
+            {/* Virtual library */}
+            <Route path='/main/library' element={<VirtualLibraryMain />} />
+
 
               
             {/* If page does not exist */}

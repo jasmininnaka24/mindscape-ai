@@ -30,6 +30,11 @@ module.exports = (sequelize, DataTypes) => {
       allowNull: false,
       defaultValue: 0.00,
     },
+    tag: {
+      type: DataTypes.TEXT,
+      allowNull: false,
+      defaultValue: 'Own Record',
+    },
   });
 
   StudyMaterials.associate = (models) => {

@@ -65,8 +65,6 @@ export const PreJoinPage = (props) => {
 
   const startStudySession = async () => {
 
-    await axios.put(`http://localhost:3001/studyMaterial/update-data/${materialId}`, {isStarted: 'true'});
-
     joinRoom();
 
   }

@@ -7,7 +7,7 @@ import { BarChartForAnalysis } from '../charts/BarChartForAnalysis';
 
 export const Analysis = () => {
 
-  const { categoryID, materialID, dashID } = useParams();
+  const { groupId, categoryID, materialID, dashID } = useParams();
 
   let studyProfeciencyTarget = 90;
 
@@ -168,13 +168,26 @@ export const Analysis = () => {
             setIsRunning(false)
           }}>Review Answers</button> */}
 
-          <Link to={`/main/personal/study-area/personal-review/${materialID}`} className='border-thin-800 px-5 py-3 rounded-[5px] w-1/4 text-center'>
-            <button>Go to Study Area</button>
-          </Link>      
+          {groupId !== undefined ? (
 
-          <Link to={`/main/personal/dashboard/category-list/topic-list/topic-page/${categoryID}/${materialID}`} className='mbg-800 mcolor-100 px-5 py-3 rounded-[5px] w-1/4 text-center'>
-            <button>View Analytics</button>
-          </Link>      
+            <Link to={`/main/group/study-area/group-review/${groupId}/${materialID}`} className='border-thin-800 px-5 py-3 rounded-[5px] w-1/4 text-center'>
+            <button>Go to Study Area</button>
+            </Link>      
+            ) : (
+            <Link to={`/main/personal/study-area/personal-review/${materialID}`} className='border-thin-800 px-5 py-3 rounded-[5px] w-1/4 text-center'>
+            <button>Go to Study Area</button>
+            </Link>      
+            )}
+
+            {groupId !== undefined ? (
+            <Link to={`/main/group/dashboard/category-list/topic-list/topic-page/${groupId}/${categoryID}/${materialID}`} className='mbg-800 mcolor-100 px-5 py-3 rounded-[5px] w-1/4 text-center'>
+              <button>View Analytics</button>
+            </Link>      
+            ) : (
+            <Link to={`/main/personal/dashboard/category-list/topic-list/topic-page/${categoryID}/${materialID}`} className='mbg-800 mcolor-100 px-5 py-3 rounded-[5px] w-1/4 text-center'>
+              <button>View Analytics</button>
+            </Link>      
+          )}     
         </div>
 
       </div>

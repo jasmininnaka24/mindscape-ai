@@ -83,6 +83,18 @@ router.get('/study-material-category/:materialFor/:UserId', async(req, res) => {
 });
 
 
+router.get('/shared-materials', async(req, res) => {
+  const latestMaterial = await StudyMaterials.findAll({
+    where: { 
+      tag: 'Shared',
+    },
+    order: [['id', 'DESC']]
+  });
+
+  res.json(latestMaterial);
+});
+
+
 
 router.put('/update-data/:id', async (req, res) => {
   const materialId = req.params.id;
@@ -101,6 +113,31 @@ router.put('/update-data/:id', async (req, res) => {
 
     console.log('Dashboard data updated successfully:', StudyMaterialsData);
     res.json(StudyMaterialsData);
+  } catch (error) {
+    console.error('Error updating dashboard data:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
+
+router.put('/update-tag/:id', async (req, res) => {
+  const materialId = req.params.id;
+  const { tag } = req.body;
+
+  try {
+    const StudyMaterialsData = await StudyMaterials.findByPk(materialId);
+
+    if (!StudyMaterialsData) {
+      return res.status(404).json({ error: 'Dashboard data not found' });
+    }
+
+    StudyMaterialsData.tag = tag;
+
+    const savedMaterialData = await StudyMaterialsData.save();
+
+    console.log('Dashboard data updated successfully:', StudyMaterialsData);
+    res.json(savedMaterialData);
+
   } catch (error) {
     console.error('Error updating dashboard data:', error);
     res.status(500).json({ error: 'Internal Server Error' });
@@ -142,6 +179,27 @@ router.get('/latestMaterialStudied/:UserId', async (req, res) => {
       where: {
         UserId: UserId,
         materialFor: 'Personal',
+        isStarted: 'true'
+      },
+      order: [['updatedAt', 'DESC']]
+    });
+
+    res.json(latestMaterial);
+  } catch (error) {
+    console.error('Error fetching latest material studied:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
+router.get('/latestMaterialStudied/group/:StudyGroupId/:UserId', async (req, res) => {
+  const { UserId, StudyGroupId } = req.params;
+
+  try {
+    const latestMaterial = await StudyMaterials.findAll({
+      where: {
+        UserId: UserId,
+        materialFor: 'Group',
+        StudyGroupId: StudyGroupId,
         isStarted: 'true'
       },
       order: [['updatedAt', 'DESC']]

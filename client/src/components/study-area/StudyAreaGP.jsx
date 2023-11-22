@@ -174,162 +174,141 @@ export const StudyAreaGP = (props) => {
   // console.log(groupMemberIndex);
   console.log(tempUserList);
   useEffect(() => {
-    
-    const reloadParamExists = searchParams.has('reload');
-
-    if (reloadParamExists) {    
-      window.location.reload();
-      if(categoryFor === 'Personal') {
-        navigate(`/main/personal/study-area/`)
-      } else {
-        navigate(`/main/group/study-area/${id}`)
-      }
-    }
-
-    let studyMaterialCatPersonalLink = '';
-    let studyMaterialGroupLink = '';
-    let studyLastMaterialLink = '';
-
-    if (categoryFor === 'Personal') {
-      studyMaterialCatPersonalLink = `http://localhost:3001/studyMaterialCategory/${categoryFor}/${UserId}`;
-
-      studyMaterialGroupLink = `http://localhost:3001/studyMaterial/study-material-category/${categoryFor}/${UserId}`;
-    } else {
-      studyMaterialCatPersonalLink = `http://localhost:3001/studyMaterialCategory/${categoryFor}/${groupNameId}/${UserId}`;
-
-      studyMaterialGroupLink = `http://localhost:3001/studyMaterial/study-material-category/${categoryFor}/${groupNameId}/${UserId}`;
-    }
-
-    if(categoryFor === 'Group') {
-      axios.get(`http://localhost:3001/studyGroup/extract-all-group/${groupNameId}`).then((response) => {
-        setCode(response.data.code);
-        setGroupName(response.data.groupName);
-        setPrevGroupName(response.data.groupName);
-      })
-
-      const getUserListNames = async () => {
-
-        await axios.get(`http://localhost:3001/studyGroupMembers/get-members/${groupNameId}`).then((response) => {
-
-          setGroupMemberIndex(response.data);
+    const fetchData = async () => {
+      const reloadParamExists = searchParams.has('reload');
   
-          let userListResponse = response.data;
-
-          const allUserResponses = [];
-
-          userListResponse.forEach((user, index) => {
-            axios.get(`http://localhost:3001/users/get-user/${user.UserId}`)
-              .then((response) => {
-                allUserResponses.push(response.data); 
-
-                if (allUserResponses.length === userListResponse.length) {
-                  setUserList(allUserResponses); 
-                  setTempUserList(allUserResponses); 
-                }
-              })
-              .catch((error) => {
-                console.error("Error fetching user data:", error);
-              });
-          });
-          
-
-        });  
-
-
-      }
-
-      getUserListNames();
-    }
-    
-    axios.get(studyMaterialCatPersonalLink).then((response) => {
-      setMaterialCategories(response.data);
-    });
-
-    axios.get(studyMaterialGroupLink).then((response) => {
-      let sortedData = response.data.sort((a, b) => b.id - a.id);
-      setSudyMaterialsCategory(sortedData);
-
-      const lastMaterial = sortedData.length > 0 ? sortedData[0] : null;
-      setLastMaterial(lastMaterial);
-
-      if (
-        lastMaterial &&
-        lastMaterial.StudyMaterialsCategoryId &&
-        categoryFor &&
-        UserId
-      ) {
-        
-        let studyLastMaterialLink;
-
+      if (reloadParamExists) {
+        window.location.reload();
         if (categoryFor === 'Personal') {
-          studyLastMaterialLink = `http://localhost:3001/studyMaterialCategory/get-lastmaterial/${lastMaterial.StudyMaterialsCategoryId}/${categoryFor}/${UserId}`;
+          navigate(`/main/personal/study-area/`);
         } else {
-          studyLastMaterialLink = `http://localhost:3001/studyMaterialCategory/get-lastmaterial/${lastMaterial.StudyMaterialsCategoryId}/${groupNameId}/${categoryFor}/${UserId}`;
+          navigate(`/main/group/study-area/${id}`);
         }
-
-        axios
-          .get(studyLastMaterialLink)
-          .then((response) => {
-            if (response.data && response.data.category) {
-              setMaterialCategory(response.data.category);
+      }
+  
+      let studyMaterialCatPersonalLink = '';
+      let studyMaterialGroupLink = '';
+  
+      if (categoryFor === 'Personal') {
+        studyMaterialCatPersonalLink = `http://localhost:3001/studyMaterialCategory/${categoryFor}/${UserId}`;
+        studyMaterialGroupLink = `http://localhost:3001/studyMaterial/study-material-category/${categoryFor}/${UserId}`;
+      } else {
+        studyMaterialCatPersonalLink = `http://localhost:3001/studyMaterialCategory/${categoryFor}/${groupNameId}/${UserId}`;
+        studyMaterialGroupLink = `http://localhost:3001/studyMaterial/study-material-category/${categoryFor}/${groupNameId}/${UserId}`;
+      }
+  
+      if (categoryFor === 'Group') {
+        try {
+          const groupResponse = await axios.get(`http://localhost:3001/studyGroup/extract-all-group/${groupNameId}`);
+          setCode(groupResponse.data.code);
+          setGroupName(groupResponse.data.groupName);
+          setPrevGroupName(groupResponse.data.groupName);
+  
+          const userResponse = await axios.get(`http://localhost:3001/studyGroupMembers/get-members/${groupNameId}`);
+          setGroupMemberIndex(userResponse.data);
+  
+          const userListResponse = userResponse.data;
+          const allUserResponses = [];
+  
+          for (const user of userListResponse) {
+            try {
+              const userDetails = await axios.get(`http://localhost:3001/users/get-user/${user.UserId}`);
+              allUserResponses.push(userDetails.data);
+  
+              if (allUserResponses.length === userListResponse.length) {
+                setUserList(allUserResponses);
+                setTempUserList(allUserResponses);
+              }
+            } catch (error) {
+              console.error("Error fetching user data:", error);
+            }
+          }
+        } catch (error) {
+          console.error("Error fetching group data:", error);
+        }
+      }
+  
+      try {
+        const catPersonalResponse = await axios.get(studyMaterialCatPersonalLink);
+        setMaterialCategories(catPersonalResponse.data);
+  
+        const groupResponse = await axios.get(studyMaterialGroupLink);
+        let sortedData = groupResponse.data.sort((a, b) => b.id - a.id);
+        setSudyMaterialsCategory(sortedData);
+  
+        const lastMaterial = sortedData.length > 0 ? sortedData[0] : null;
+        setLastMaterial(lastMaterial);
+  
+        if (lastMaterial && lastMaterial.StudyMaterialsCategoryId && categoryFor && UserId) {
+          let studyLastMaterialLink;
+  
+          if (categoryFor === 'Personal') {
+            studyLastMaterialLink = `http://localhost:3001/studyMaterialCategory/get-lastmaterial/${lastMaterial.StudyMaterialsCategoryId}/${categoryFor}/${UserId}`;
+          } else {
+            studyLastMaterialLink = `http://localhost:3001/studyMaterialCategory/get-lastmaterial/${lastMaterial.StudyMaterialsCategoryId}/${groupNameId}/${categoryFor}/${UserId}`;
+          }
+  
+          try {
+            const lastMaterialResponse = await axios.get(studyLastMaterialLink);
+  
+            if (lastMaterialResponse.data && lastMaterialResponse.data.category) {
+              setMaterialCategory(lastMaterialResponse.data.category);
             } else {
               console.log('Category not found in the response data');
             }
-          })
-          .catch((error) => {
-            console.error('Error fetching data:', error);
-          });
-      } else {
-        console.error(
-          'Missing required data for constructing the URL and making the request'
-        );
-      }
-
-      if (lastMaterial) {
-        axios
-          .get(`http://localhost:3001/quesAns/study-material-mcq/${lastMaterial.id}`)
-          .then((response) => {
-            setMaterialMCQ(response.data);
-
-            if (Array.isArray(response.data)) {
-              const materialChoices = response.data.map((materialChoice) => {
-                return axios.get(
-                  `http://localhost:3001/quesAnsChoices/study-material/${lastMaterial.id}/${materialChoice.id}`
-                );
-              });
-
-              Promise.all(materialChoices)
-                .then((responses) => {
-                  const allChoices = responses.map((response) => response.data).flat();
-                  setMaterialMCQChoices(allChoices);
-                })
-                .catch((error) => {
+          } catch (error) {
+            console.error('Error fetching last material data:', error);
+          }
+        } else {
+          console.error('Missing required data for constructing the URL and making the request');
+        }
+  
+        if (lastMaterial) {
+          try {
+            const mcqResponse = await axios.get(`http://localhost:3001/quesAns/study-material-mcq/${lastMaterial.id}`);
+            setMaterialMCQ(mcqResponse.data);
+  
+            if (Array.isArray(mcqResponse.data)) {
+              const materialChoices = mcqResponse.data.map(async (materialChoice) => {
+                try {
+                  const choiceResponse = await axios.get(`http://localhost:3001/quesAnsChoices/study-material/${lastMaterial.id}/${materialChoice.id}`);
+                  return choiceResponse.data;
+                } catch (error) {
                   console.error('Error fetching data:', error);
-                });
+                }
+              });
+  
+              const responses = await Promise.all(materialChoices);
+              const allChoices = responses.flat();
+              setMaterialMCQChoices(allChoices);
             }
-          })
-          .catch((error) => {
+          } catch (error) {
             console.error('Error fetching study material by ID:', error);
-          });
-
-        axios
-          .get(`http://localhost:3001/quesRev/study-material-rev/${lastMaterial.id}`)
-          .then((response) => {
-            setMaterialRev(response.data);
-          })
-          .catch((error) => {
+          }
+  
+          try {
+            const revResponse = await axios.get(`http://localhost:3001/quesRev/study-material-rev/${lastMaterial.id}`);
+            setMaterialRev(revResponse.data);
+          } catch (error) {
             console.error('Error fetching study material by ID:', error);
-          });
+          }
+        }
+      } catch (error) {
+        console.error('Error:', error);
       }
-    });
-
-    const initialExpandedState = {};
-    materialCategories.forEach((category) => {
-      initialExpandedState[category.id] = true;
-    });
-    setExpandedCategories(initialExpandedState);
+  
+      const initialExpandedState = {};
+      materialCategories.forEach((category) => {
+        initialExpandedState[category.id] = true;
+      });
+      setExpandedCategories(initialExpandedState);
+    };
+  
+    fetchData();
   }, [UserId, categoryFor, groupNameId, navigate, currentModalVal, modalList, isCodeCopied]);
+  
 
+  
   const choicesById = {};
 
   materialMCQChoices.forEach((choice) => {

@@ -43,7 +43,28 @@ router.get('/get-lastmaterial/:id/:categoryFor/:UserId', async (req, res) => {
     },
   });
   res.json(extractedCategory);
+  // console.log(id);
 })
+
+
+router.get('/shared-material-category/:id/:categoryFor/:UserId', async (req, res) => {
+  const { id } = req.params;
+  const extractedCategory = await StudyMaterialsCategories.findOne({
+    where: {
+      id: id, 
+    },
+  });
+  console.log(id);
+
+  res.json(extractedCategory);
+
+})
+
+
+
+
+
+
 
 router.get('/get-lastmaterial/:id/:StudyGroupId/:categoryFor/:UserId', async (req, res) => {
   const { id, categoryFor, StudyGroupId, UserId } = req.params;

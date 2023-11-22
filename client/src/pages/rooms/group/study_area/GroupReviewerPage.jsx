@@ -401,7 +401,14 @@ export const GroupReviewerPage = () => {
 
 
 
-
+  const responseStateUpdate = async (questionId, responseStateInp) => {
+    const data = {
+      response_state: responseStateInp, 
+    };
+    
+    await axios.put(`http://localhost:3001/quesAns/update-response-state/${materialId}/${questionId}`, data);
+    
+  }
 
 
 
@@ -541,6 +548,8 @@ export const GroupReviewerPage = () => {
       setLostPoints(true);
       setDisabledSubmitButton(true)
       setDisabledSubmitButton(true)
+      responseStateUpdate(extractedQA[questionIndex].id, "Wrong")
+      
 
       socket.emit("updated_lost_points", { room, lostPoints: true });
     }, 100);
@@ -573,6 +582,9 @@ export const GroupReviewerPage = () => {
   }
 
 
+
+
+
   const submitAnswer = () => {
     if(selectedChoice === extractedQA[questionIndex].answer){
 
@@ -581,6 +593,7 @@ export const GroupReviewerPage = () => {
         setDisabledSubmitButton(true)
         setIsRunningReview(false)
         setDisabledSubmitButton(true)
+        responseStateUpdate(extractedQA[questionIndex].id, "Correct")
 
         socket.emit("updated_gained_points", { room, gainedPoints: true });
         socket.emit("update_is_running_review", { room, isRunningReview: false });
@@ -670,9 +683,11 @@ export const GroupReviewerPage = () => {
 
 
 
-  const startStudySessionBtn = () => {
+  const startStudySessionBtn = async () => {
     setIsStartStudyButtonStarted(true)
     socket.emit('updated_study_session_started', { isStarted: true, room })
+
+    await axios.put(`http://localhost:3001/studyMaterial/update-data/${materialId}`, {isStarted: 'true'});
   }
 
 

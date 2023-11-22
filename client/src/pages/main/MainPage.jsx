@@ -64,7 +64,9 @@ export const MainPage = () => {
             <div className='flex justify-between items-center mt-3'>
               <p className='font-medium text-2xl'>Virtual Library Room</p>
               <div>
+                <Link to={'/main/library'}>
                 <button className='mbg-800 font-medium text-lg mcolor-100 px-14 py-2 rounded-[5px]'>Go visit</button>
+                </Link>
               </div>
             </div>
           </div>

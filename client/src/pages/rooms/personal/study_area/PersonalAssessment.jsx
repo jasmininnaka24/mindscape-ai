@@ -208,22 +208,19 @@ export const PersonalAssessment = () => {
     let completionTimeCalc = '';
     let extractedQALengthInMinutes = extractedQA.length * 60;
     let timeleft = extractedQALengthInMinutes - seconds;
-    
+
     if (seconds === 0) {
         completionTimeCalc = '0 seconds';
     } else {
         const minutes = Math.floor(timeleft / 60);
         const secondsRemainder = timeleft % 60;
     
-        if (minutes > 0) {
-            completionTimeCalc += `${minutes} min`;
-            if (secondsRemainder > 0) {
-                completionTimeCalc += ' ';
-            }
+        if (minutes >= 0) {
+            completionTimeCalc += `${minutes} min `;
         }
-    
+        
         if (secondsRemainder > 0) {
-            completionTimeCalc += `${secondsRemainder} second${secondsRemainder !== 1 ? 's' : ''}`;
+            completionTimeCalc += (minutes > 0 ? ' ' : '') + `${secondsRemainder} second${secondsRemainder !== 1 ? 's' : ''}`;
         }
     }
     
