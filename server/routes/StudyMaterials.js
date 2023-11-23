@@ -54,13 +54,12 @@ router.get('/study-material-personal/:materialFor/:UserId/:id', async(req,res) =
 
 
 
-router.get('/study-material-category/:materialFor/:StudyGroupId/:UserId', async(req, res) => {
+router.get('/study-material-group-category/:materialFor/:StudyGroupId', async(req, res) => {
   const { materialFor, StudyGroupId, UserId} = req.params;
   const latestMaterial = await StudyMaterials.findAll({
     where: { 
       materialFor: materialFor,
       StudyGroupId: StudyGroupId,
-      UserId: UserId
     },
     order: [['id', 'DESC']]
   });

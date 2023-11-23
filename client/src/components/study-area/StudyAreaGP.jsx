@@ -47,6 +47,19 @@ export const StudyAreaGP = (props) => {
   const [isExpanded, setIsExpanded] = useState(true);
   const [expandedCategories, setExpandedCategories] = useState({}); 
 
+
+
+
+
+  // shared materials usestates
+  const [sharedMaterials, setSharedMaterials] = useState([]);
+  const [sharedMaterialsCategories, setSharedMaterialsCategories] = useState([]);
+
+
+
+
+
+
   const toggleExpand = () => {
     setIsExpanded(!isExpanded);
   };  
@@ -155,7 +168,6 @@ export const StudyAreaGP = (props) => {
     }
   };
 
-  console.log(groupMemberIndex);
   const removeSelectedUser = (itemId, groupNameId) => {
     const updatedTempUserList = tempUserList.filter(user => user.id !== itemId);
 
@@ -172,7 +184,6 @@ export const StudyAreaGP = (props) => {
 
 
   // console.log(groupMemberIndex);
-  console.log(tempUserList);
   useEffect(() => {
     const fetchData = async () => {
       const reloadParamExists = searchParams.has('reload');
@@ -186,15 +197,15 @@ export const StudyAreaGP = (props) => {
         }
       }
   
-      let studyMaterialCatPersonalLink = '';
-      let studyMaterialGroupLink = '';
+      let studyMaterialCategoryLink = '';
+      let studyMaterialLink = '';
   
       if (categoryFor === 'Personal') {
-        studyMaterialCatPersonalLink = `http://localhost:3001/studyMaterialCategory/${categoryFor}/${UserId}`;
-        studyMaterialGroupLink = `http://localhost:3001/studyMaterial/study-material-category/${categoryFor}/${UserId}`;
+        studyMaterialCategoryLink = `http://localhost:3001/studyMaterialCategory/personal-study-material/${categoryFor}/${UserId}`;
+        studyMaterialLink = `http://localhost:3001/studyMaterial/study-material-category/${categoryFor}/${UserId}`;
       } else {
-        studyMaterialCatPersonalLink = `http://localhost:3001/studyMaterialCategory/${categoryFor}/${groupNameId}/${UserId}`;
-        studyMaterialGroupLink = `http://localhost:3001/studyMaterial/study-material-category/${categoryFor}/${groupNameId}/${UserId}`;
+        studyMaterialCategoryLink = `http://localhost:3001/studyMaterialCategory/${categoryFor}/${groupNameId}`;
+        studyMaterialLink = `http://localhost:3001/studyMaterial/study-material-group-category/${categoryFor}/${groupNameId}`;
       }
   
       if (categoryFor === 'Group') {
@@ -229,17 +240,42 @@ export const StudyAreaGP = (props) => {
       }
   
       try {
-        const catPersonalResponse = await axios.get(studyMaterialCatPersonalLink);
+        const catPersonalResponse = await axios.get(studyMaterialCategoryLink);
         setMaterialCategories(catPersonalResponse.data);
+        console.log(catPersonalResponse.data);
   
-        const groupResponse = await axios.get(studyMaterialGroupLink);
+        const groupResponse = await axios.get(studyMaterialLink);
         let sortedData = groupResponse.data.sort((a, b) => b.id - a.id);
-        setSudyMaterialsCategory(sortedData);
+
+        let ownOrSharedRecords = sortedData.filter(tag => tag.tag !== 'Bookmarked');
+        let bookmarkedStudyMaterials = groupResponse.data.filter(tag => tag.tag === 'Bookmarked');
+
+
+        
+        
+        setSharedMaterials(bookmarkedStudyMaterials);
+
+        const fetchedSharedStudyMaterialCategory = await Promise.all(
+          bookmarkedStudyMaterials.map(async (material, index) => {
+            const materialCategoryResponse = await axios.get(`http://localhost:3001/studyMaterialCategory/get-categoryy/${material.StudyMaterialsCategoryId}`);
+            return materialCategoryResponse.data; // Return the data from each promise
+          })
+        );
+
+
+        setSharedMaterialsCategories(fetchedSharedStudyMaterialCategory)
+        setSudyMaterialsCategory(ownOrSharedRecords);
   
         const lastMaterial = sortedData.length > 0 ? sortedData[0] : null;
         setLastMaterial(lastMaterial);
+
+
+
+
+
+
   
-        if (lastMaterial && lastMaterial.StudyMaterialsCategoryId && categoryFor && UserId) {
+        if (lastMaterial && lastMaterial.StudyMaterialsCategoryId && categoryFor) {
           let studyLastMaterialLink;
   
           if (categoryFor === 'Personal') {
@@ -305,6 +341,7 @@ export const StudyAreaGP = (props) => {
     };
   
     fetchData();
+
   }, [UserId, categoryFor, groupNameId, navigate, currentModalVal, modalList, isCodeCopied]);
   
 
@@ -476,7 +513,7 @@ export const StudyAreaGP = (props) => {
         </div>
    
       {/* Side */}
-      <div className={`flex flex-col justify-between min-h-[100vh] w-1/4 p-5 sidebar mbg-300 mcolor-900`}>
+      <div className={`flex flex-col justify-between h-[100vh] w-1/4 p-5 sidebar mbg-300 mcolor-900`} style={{ overflowY: 'auto' }}>
         <div className="my-5 shelf-categories">
           
           <p className="text-2xl mb-10 font-bold text-center opacity-90">{categoryFor === 'Group' ? `${groupName.toUpperCase()}'S ` : 'PERSONAL'} SHELF</p>
@@ -518,11 +555,17 @@ export const StudyAreaGP = (props) => {
                           </p>
                         ))
                     )}
+
+
                     {expandedCategories[category.id] && studyMaterialsCategory
                       .filter((material) => material.StudyMaterialsCategoryId === category.id)
                       .length === 0 && (
-                        <p className='text-center mt-2'>No study material under this category</p>
+                        <p className='text-center mt-2'>No own record of study material under this category</p>
                       )}
+
+
+
+
                   </div>
                 </div>
                 ))
@@ -536,6 +579,15 @@ export const StudyAreaGP = (props) => {
               <button onClick={toggleExpand} className='ml-2'>{!isExpanded ? <i className="fa-solid fa-chevron-down"></i> : <i className="fa-solid fa-chevron-up"></i>}</button>
             </div>
           </div> */}
+          
+          <p className='mb-5 mt-5'>Bookmarked Materials:</p>
+          {sharedMaterials.map((material, index) => (
+            <p key={index} className='mt-2 shadows mcolor-900 rounded-[5px] p-5 my-3   mbg-100'>
+              <i className="fa-solid fa-book mr-2"></i>
+              {material.title} - {sharedMaterialsCategories[index]?.category || 'No Category'}
+            </p>
+          ))}
+
         </div>
       </div>
 

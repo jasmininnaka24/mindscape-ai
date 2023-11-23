@@ -35,9 +35,15 @@ module.exports = (sequelize, DataTypes) => {
       allowNull: false,
       defaultValue: 'Own Record',
     },
+    bookmarkedBy: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      defaultValue: 0,
+    },
   });
 
   StudyMaterials.associate = (models) => {
+
     StudyMaterials.hasMany(models.QuesAns, {
       onDelete: 'cascade',
     })
@@ -49,7 +55,13 @@ module.exports = (sequelize, DataTypes) => {
     })
     StudyMaterials.hasMany(models.DashForPersonalAndGroup, {
       onDelete: 'cascade',
-    })
+    })   
+
+    StudyMaterials.beforeDestroy(async (instance, options) => {
+      if (instance.bookmarkedBy !== 0) {
+        options.cascade = false;
+      }
+    });
   }
 
   return StudyMaterials;

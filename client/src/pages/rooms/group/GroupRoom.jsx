@@ -8,17 +8,24 @@ import axios from 'axios';
 
 export const GroupRoom = () => {
 
-  const [savedGroupNotif, setSavedGroupNotif] = useState('hidden');
+  const [savedGroupNotif, setSavedGroupNotif] = useState(false);
   const [groupList, setGroupList] = useState([]);
   const [expandedGroupId, setExpandedGroupId] = useState(null);
 
+  const UserId = 1
 
+  const fetchGroupListData = async () => {
+          
+    await axios.get(`http://localhost:3001/studyGroup/extract-group-through-user/${UserId}`).then((response) => {
+      setGroupList(response.data);
+    })
+
+  }
 
   useEffect(() => {
     
-    axios.get('http://localhost:3001/studyGroup/extract-all-group').then((response) => {
-      setGroupList(response.data);
-    })
+    fetchGroupListData();
+
   }, [])
 
   const toggleExpansion = (groupId) => {
@@ -31,8 +38,9 @@ export const GroupRoom = () => {
         <Navbar linkBack={'/main/'} linkBackName={'Main'} currentPageName={'Groups'} username={'Jennie Kim'}/>
       </div>
 
-
-      <p className={`${savedGroupNotif} my-5 py-2 mbg-300 mcolor-800 text-center rounded-[5px] text-lg`}>New Created group saved!</p>
+      {savedGroupNotif && (
+        <p className={`my-5 py-2 mbg-300 mcolor-800 text-center rounded-[5px] text-lg`}>New Created group saved!</p>
+      )}
 
 
       <div className='flex flex-col lg:flex-row gap-3'>
@@ -43,7 +51,7 @@ export const GroupRoom = () => {
         {/* Room */}
         <div className='py-4'>
           
-          <CreateGroupComp setGroupList={setGroupList} groupList={setGroupList} setSavedGroupNotif={setSavedGroupNotif} />
+          <CreateGroupComp setGroupList={setGroupList} groupList={setGroupList} setSavedGroupNotif={setSavedGroupNotif} fetchGroupListData={fetchGroupListData} />
 
           <div className='mt-6'>
             <p className='text-xl mcolor-900 font-medium'>Rooms:</p>

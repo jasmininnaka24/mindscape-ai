@@ -4,6 +4,8 @@ import axios from 'axios'
 
 export const VirtualLibraryMain = () => {
 
+  const [groupList, setGroupList] = useState([]);
+
   const [personalStudyMaterials, setPersonalStudyMaterials] = useState([]);
   const [personalStudyMaterialsCategory, setPersonalStudyMaterialsCategory] = useState([]);
   const [groupStudyMaterials, setGroupStudyMaterials] = useState([]);
@@ -18,6 +20,7 @@ export const VirtualLibraryMain = () => {
   const [materialMCQChoices, setMaterialMCQChoices] = useState([]);
   const [materialNotes, setMaterialNotes] = useState([])
 
+  const [currentSharedMaterialIndex, setCurrentSharedMaterialIndex] = useState(0);
 
 
   // modals
@@ -25,6 +28,10 @@ export const VirtualLibraryMain = () => {
   const [showPresentStudyMaterials, setShowPresentStudyMaterials] = useState(false)
   const [showMaterialDetails, setShowMaterialDetails] = useState(false)
   const [enableBackButton, setEnableBackButton] = useState(false)
+  const [showBookmarkModal, setShowBookmarkModal] = useState(false);
+  const [chooseRoom, setChooseRoom] = useState(false);
+  const [chooseGroupRoom, setChooseGroupRoom] = useState(false);
+
 
   // tabs
   const [showContext, setShowContext] = useState(false);
@@ -38,7 +45,7 @@ export const VirtualLibraryMain = () => {
  
     // for fetching personal
     const personalStudyMaterial = await axios.get(`http://localhost:3001/studyMaterial/study-material-category/Personal/${UserId}`)
-    const filteredPersonalStudyMaterials = personalStudyMaterial.data.filter(item => item.tag !== 'Shared');
+    const filteredPersonalStudyMaterials = personalStudyMaterial.data.filter(item => item.tag === 'Own Record');
     setPersonalStudyMaterials(filteredPersonalStudyMaterials);
 
 
@@ -55,7 +62,7 @@ export const VirtualLibraryMain = () => {
     
     
     const groupStudyMaterial = await axios.get(`http://localhost:3001/studyMaterial/study-material-category/Group/${UserId}`)
-    const filteredGroupStudyMaterials = groupStudyMaterial.data.filter(item => item.tag !== 'Shared');
+    const filteredGroupStudyMaterials = groupStudyMaterial.data.filter(item => item.tag === 'Own Record');
     setGroupStudyMaterials(filteredGroupStudyMaterials);
     
     
@@ -93,7 +100,9 @@ export const VirtualLibraryMain = () => {
       
       
       
-
+    await axios.get(`http://localhost:3001/studyGroup/extract-group-through-user/${UserId}`).then((response) => {
+      setGroupList(response.data);
+    })
 
 
 
@@ -225,6 +234,297 @@ export const VirtualLibraryMain = () => {
     fetchData()
 
   }
+
+
+
+
+
+
+  function generateRandomString() {
+    const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+    const numbers = '0123456789';
+  
+    let randomString = '';
+  
+    // Generate 3 random letters
+    for (let i = 0; i < 5; i++) {
+      const randomLetter = letters.charAt(Math.floor(Math.random() * letters.length));
+      randomString += randomLetter;
+    }
+    
+    // Generate 4 random numbers
+    for (let i = 0; i < 5; i++) {
+      const randomNumber = numbers.charAt(Math.floor(Math.random() * numbers.length));
+      randomString += randomNumber;
+    }
+    
+    // Generate 5 random letters
+    for (let i = 0; i < 5; i++) {
+      const randomLetter = letters.charAt(Math.floor(Math.random() * letters.length));
+      randomString += randomLetter;
+    }
+    return randomString;
+  }
+
+
+
+
+
+  const bookmarkMaterial = async (index, id) => {
+   
+   const title = sharedMaterials[index].title;
+   const body = sharedMaterials[index].body;
+   const numInp = sharedMaterials[index].numInp;
+   const materialId = sharedMaterials[index].StudyMaterialsCategoryId;
+   const userId = sharedMaterials[index].UserId;
+   ;
+   
+
+   let genQAData = []
+   
+   let genMCQAData = []
+   let genToF = []
+   let genIdentification = []
+   let genFITB = []
+
+   let mcqaDistractors = []
+   let tofDistractors = []
+   let genQADataRev = []
+
+
+
+
+    const studyMaterialsData = {
+      title: title,
+      body: body,
+      numInp: numInp,
+      materialFor: 'Group',
+      code: generateRandomString(),
+      StudyGroupId: id,
+      StudyMaterialsCategoryId: materialId,
+      UserId: userId,
+      bookmarkedBy: UserId,
+      tag: 'Bookmarked'
+    };
+
+
+    
+    try {
+      let mcqResponse = await axios.get(`http://localhost:3001/quesAns/study-material-mcq/${sharedMaterials[index].id}`);
+
+      genQAData = mcqResponse.data
+
+      genMCQAData = genQAData.filter(data => data.quizType === 'MCQA')
+      genToF = genQAData.filter(data => data.quizType === 'ToF')
+      genIdentification = genQAData.filter(data => data.quizType === 'Identification')
+      genFITB = genQAData.filter(data => data.quizType === 'FITB')
+
+
+
+    // MCQA Distractors
+    if (Array.isArray(genMCQAData)) {
+      const materialChoices = genMCQAData.map(async (materialChoice) => {
+        try {
+          let choiceResponse = await axios.get(`http://localhost:3001/quesAnsChoices/study-material/${sharedMaterials[index].id}/${materialChoice.id}`);
+
+            return choiceResponse.data;
+          } catch (error) {
+            console.error('Error fetching data:', error);
+          }
+        });
+        
+        const responses = await Promise.all(materialChoices);
+        const allChoices = responses.flat();
+        mcqaDistractors = responses;
+      }
+    
+
+      // True or False distractors
+
+    if (Array.isArray(genToF)) {
+      const materialChoices = genToF.map(async (materialChoice) => {
+        try {
+          let choiceResponse = await axios.get(`http://localhost:3001/quesAnsChoices/study-material/${sharedMaterials[index].id}/${materialChoice.id}`);
+
+            return choiceResponse.data;
+          } catch (error) {
+            console.error('Error fetching data:', error);
+          }
+        });
+        
+        const responses = await Promise.all(materialChoices);
+        const allChoices = responses.flat();
+        tofDistractors = responses;
+      }
+
+
+    } catch (error) {
+      console.error('Error fetching study material by ID:', error);
+    }
+
+    try {
+
+      let revResponse = await axios.get(`http://localhost:3001/quesRev/study-material-rev/${sharedMaterials[index].id}`);
+
+      genQADataRev = revResponse.data;
+      
+    } catch (error) {
+      console.error('Error fetching study material by ID:', error);
+    }
+
+
+
+
+
+
+    try {
+      const smResponse = await axios.post(
+        'http://localhost:3001/studyMaterial',
+        studyMaterialsData
+      );
+
+
+      // genMCQAData = genQAData.filter(data => data.quizType === 'MCQA')
+      // genToF = genQAData.filter(data => data.quizType === 'ToF')
+      // genIdentification = genQAData.filter(data => data.quizType === 'Identification')
+      // genFITB = genQAData.filter(data => data.quizType === 'FITB')
+
+      for (let i = 0; i < genMCQAData.length; i++) {      
+
+        const qaData = {
+          question: genMCQAData[i].question,
+          answer: genMCQAData[i].answer,
+          bgColor: genMCQAData[i].bgColor,
+          quizType: 'MCQA',
+          StudyMaterialId: smResponse.data.id,
+          UserId: smResponse.data.UserId,
+        };
+
+        const qaResponse = await axios.post(
+          'http://localhost:3001/quesAns',
+          qaData
+        );
+
+        for (let j = 0; j < mcqaDistractors[i].length; j++) {
+          let qacData = {
+              choice: tofDistractors[i][j].choice, // Extract the string value from the object
+              QuesAnId: qaResponse.data.id,
+              StudyMaterialId: smResponse.data.id,
+              UserId: smResponse.data.UserId,
+          };
+  
+          try {
+              await axios.post('http://localhost:3001/quesAnsChoices', qacData);
+              console.log("Saved! mcq");
+          } catch (error) {
+              console.error(error);
+          }
+        }
+
+      }
+
+
+      for (let i = 0; i < genQADataRev.length; i++) {      
+
+        const qaDataRev = {
+          question:genQADataRev[i].question,
+          answer: genQADataRev[i].answer,
+          StudyMaterialId: smResponse.data.id,
+          UserId: smResponse.data.UserId,
+        };
+
+        await axios.post('http://localhost:3001/quesRev', qaDataRev);
+
+      }
+
+
+      for (let i = 0; i < genToF.length; i++) {
+
+        const trueSentencesData = {
+          question: genToF[i].question,
+          answer: 'True',
+          quizType: 'ToF',
+          bgColor: genToF[i].bgColor,
+          StudyMaterialId: smResponse.data.id,
+          UserId: smResponse.data.UserId,
+        };
+      
+        try {
+          // Create the question and get the response
+          const qaResponse = await axios.post('http://localhost:3001/quesAns', trueSentencesData);
+      
+          // Iterate through mcqaDistractors and create question choices
+          for (let j = 0; j < tofDistractors[i].length; j++) {
+            let qacData = {
+                choice: tofDistractors[i][j].choice, // Extract the string value from the object
+                QuesAnId: qaResponse.data.id,
+                StudyMaterialId: smResponse.data.id,
+                UserId: smResponse.data.UserId,
+            };
+    
+            try {
+                await axios.post('http://localhost:3001/quesAnsChoices', qacData);
+                console.log("Saved! choice");
+            } catch (error) {
+                console.error(error);
+            }
+          }
+        } catch (error) {
+          console.error(error);
+        }
+      }
+      
+
+      for (let i = 0; i < genFITB.length; i++) {
+
+        const fillInTheBlankData = {
+          question: genFITB[i].question,
+          answer: genFITB[i].answer,
+          quizType: 'FITB',
+          bgColor: genFITB[i].bgColor,
+          StudyMaterialId: smResponse.data.id,
+          UserId: smResponse.data.UserId,
+        }
+
+        try {
+          await axios.post(
+            'http://localhost:3001/quesAns',
+            fillInTheBlankData
+            );
+        } catch (error) {
+          console.error();
+        }
+      }
+      
+
+      for (let i = 0; i < genIdentification.length; i++) {
+
+        const identificationData = {
+          question: genIdentification[i].question,
+          answer: genIdentification[i].answer,
+          quizType: 'FITB',
+          bgColor: genIdentification[i].bgColor,
+          StudyMaterialId: smResponse.data.id,
+          UserId: smResponse.data.UserId,
+        }
+
+        try {
+          await axios.post(
+            'http://localhost:3001/quesAns',
+            identificationData
+            );
+        } catch (error) {
+          console.error();
+        }
+      }
+
+ 
+    } catch (error) {
+      console.error('Error saving study material:', error);
+    }
+
+    console.log(tofDistractors);
+  }
   
 
 
@@ -262,15 +562,113 @@ export const VirtualLibraryMain = () => {
 
                     <div className='flex items-center gap-3'>
                       <button className='mbg-100 mcolor-900 border-thin-800 px-5 py-2 rounded' onClick={() => viewStudyMaterialDetails(index, 'shared')}>View</button>
-                      <button className='mbg-700 mcolor-100 px-5 py-2 rounded' onClick={() => shareMaterial(index, 'personal')}>Bookmark</button>
+                      <button className='mbg-700 mcolor-100 px-5 py-2 rounded' onClick={() => {
+                        setShowBookmarkModal(true)
+                        setChooseRoom(true)
+                        setCurrentSharedMaterialIndex(index)
+                        }}>Bookmark</button>
                     </div>
                   </div>
               })}
             </div>
 
           </div>
+
           
 
+
+          {/* user choosing to bookmark */}
+          {showBookmarkModal && (
+            <div className={`absolute top-0 modal-bg left-0 w-full h-full`}>
+              <div className='flex items-center justify-center h-full'>
+                <div className='relative mbg-100 h-[50vh] w-1/3 z-10 relative py-5 px-5 rounded-[5px]' style={{overflowY: 'auto'}}>
+
+                  <button className='absolute right-5 top-5 font-medium text-xl' onClick={() => {
+                    setShowBookmarkModal(false)
+                  }}>&#10006;</button>
+
+                {chooseRoom && (
+                  <div className='flex items-center justify-center h-full'>
+                    <div className='w-full'>
+                      <div>
+                        <p className='text-lg mb-5'>Bookmark to: </p>
+                        <div className='flex flex-col gap-4'>
+                          <button className='mbg-300 py-4 rounded text-md font-medium'>Personal Study Room</button>
+                          <button className='mbg-300 py-4 rounded text-md font-medium' onClick={() => {
+                            setChooseRoom(false)
+                            setChooseGroupRoom(true)
+                          }}>Group Study Room</button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {chooseGroupRoom && (
+                  <div>
+                    <button className='mbg-200 mcolor-900 rounded px-4 py-1 rounded border-thin-800' onClick={() => {
+                      setChooseGroupRoom(false)
+                      setChooseRoom(true)
+                    }}>Back</button>
+
+                    {groupList.slice().sort((a, b) => b.id - a.id).map(({ id, groupName}) => (
+                      <div key={id} className='shadows mcolor-900 rounded-[5px] p-5 my-6 mbg-100 flex items-center justify-between relative'>
+
+
+                        <p className='px-1'>{groupName}</p>
+                       <button  className='px-2 py-2 mbg-700 mcolor-100 rounded text-sm' onClick={() => bookmarkMaterial(currentSharedMaterialIndex, id)}>Bookmark here</button>
+
+                        {/* {expandedGroupId === id && (
+
+                          <div className='absolute right-0 bottom-0 px-7 mb-[-114px] mbg-700 mcolor-100 rounded pt-3 pb-4 opacity-80'>
+                            <Link to={`/main/group/study-area/${id}`}>
+                              <p className='pt-1'>Study Area</p>
+                            </Link>
+                            <Link to={`/main/group/tasks/${id}`}>
+                              <p className='pt-1'>Tasks</p>
+                            </Link>
+                            <Link to={`/main/group/dashboard/${id}`}>
+                              <p className='pt-1'>Dashboard</p>
+                            </Link>
+                          </div>
+                        )}  */}
+
+                      </div>
+                    ))}
+                  </div>
+                )}
+                      
+
+
+
+                </div>
+              </div>
+            </div>
+          )}
+          
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+          {/* user sharing */}
           {showModal && (
             <div className={`absolute top-0 modal-bg left-0 w-full h-full`}>
               <div className='flex items-center justify-center h-full'>

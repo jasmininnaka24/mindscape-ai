@@ -8,19 +8,31 @@ router.post('/', async (req, res) => {
   res.json(addedCategory);
 });
 
-router.get('/:categoryFor/:StudyGroupId/:UserId', async (req, res) => {
-  const { categoryFor, StudyGroupId, UserId } = req.params;
+
+
+router.get('/get-categoryy/:id', async (req, res) => {
+  const id = req.params.id;
+  const extractedUserDetails = await StudyMaterialsCategories.findByPk(id);
+  res.json(extractedUserDetails)
+})
+
+
+
+
+
+
+router.get('/:categoryFor/:StudyGroupId', async (req, res) => {
+  const { categoryFor, StudyGroupId } = req.params;
   const extractedCategories = await StudyMaterialsCategories.findAll({
     where: {
       categoryFor: categoryFor,
       StudyGroupId: StudyGroupId, 
-      UserId, 
     },
   });
   res.json(extractedCategories);
 })
 
-router.get('/:categoryFor/:UserId', async (req, res) => {
+router.get('/personal-study-material/:categoryFor/:UserId', async (req, res) => {
   const { categoryFor, UserId } = req.params;
   const extractedCategories = await StudyMaterialsCategories.findAll({
     where: {

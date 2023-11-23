@@ -27,9 +27,9 @@ export const SavedGeneratedData = (props) => {
     let studyMaterialCatPersonalLink = '';
 
     if (materialFor === 'Personal') {
-      studyMaterialCatPersonalLink = `http://localhost:3001/studyMaterialCategory/${materialFor}/${userId}`;
+      studyMaterialCatPersonalLink = `http://localhost:3001/studyMaterialCategory/personal-study-material/${materialFor}/${userId}`;
     } else {
-      studyMaterialCatPersonalLink = `http://localhost:3001/studyMaterialCategory/${materialFor}/${groupNameId}/${userId}`;
+      studyMaterialCatPersonalLink = `http://localhost:3001/studyMaterialCategory/${materialFor}/${groupNameId}`;
     }
     
 

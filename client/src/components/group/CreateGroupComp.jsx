@@ -4,7 +4,7 @@ import axios from 'axios';
 
 export const CreateGroupComp = (props) => {
 
-  const { setSavedGroupNotif, groupList, setGroupList } = props;
+  const { setSavedGroupNotif, savedGroupNotif, groupList, setGroupList, fetchGroupListData } = props;
 
   const [hidden, setHidden] = useState("hidden");
   const [createGroup, setCreateGroup] = useState("hidden");
@@ -92,48 +92,56 @@ export const CreateGroupComp = (props) => {
     }
   };
 
-  const createGroupBtn = () => {
-    const groupData = {
-      groupName: groupNameInp,
-      role: 'Super Admin', 
-      code: generateRandomString(),
-      UserId: UserId
-    }
-
-    axios.post('http://localhost:3001/studyGroup/create-group', groupData).then((response) => {
-      const { id } = response.data;
-      chosenData.map((item) => {
+  const createGroupBtn = async () => {
+    try {
+      const groupData = {
+        groupName: groupNameInp,
+        role: 'Super Admin',
+        code: generateRandomString(),
+        UserId: UserId,
+      };
+  
+      const groupResponse = await axios.post('http://localhost:3001/studyGroup/create-group', groupData);
+      const { id } = groupResponse.data;
+  
+      const groupMemberPromises = chosenData.map(async (item) => {
         const groupMemberData = {
           role: 'Member',
           StudyGroupId: id,
           UserId: item,
-        }
-        axios.post('http://localhost:3001/studyGroupMembers/add-member', groupMemberData).then((response) => {
-          console.log('Saved!');
-          // setChosenData([]);
-          setHidden('hidden');
-          setGroupNameInp('')
+        };
+  
+        const response = await axios.post('http://localhost:3001/studyGroupMembers/add-member', groupMemberData);
+        console.log('Saved!', response);
+      });
+  
+      await Promise.all(groupMemberPromises);
+  
+      // Additional actions after all group members are added
+      setHidden('hidden');
+      setGroupNameInp('');
+  
+      const groupListResponse = await axios.get(`http://localhost:3001/studyGroup/extract-group-through-user/${UserId}`);
+      setGroupList(groupListResponse.data);
+  
+      setTimeout(() => {
+        setSavedGroupNotif(true);
+      }, 0);
+      
+  
+      setTimeout(() => {
+        setSavedGroupNotif(false);
+        fetchFollowerData();
+        fetchGroupListData();
+      }, 1800);
+      
+    } catch (error) {
+      console.error('Error creating group:', error);
+      // Handle errors as needed
+    }
 
-          axios.get('http://localhost:3001/studyGroup/extract-all-group').then((response) => {
-            setGroupList(response.data);
-          })
-
-          setTimeout(() => {
-            setSavedGroupNotif('hidden')
-          }, 0);
-          
-          setTimeout(() => {
-            setSavedGroupNotif('');
-          }, 1000);
-          
-          setTimeout(() => {
-            setSavedGroupNotif('hidden')
-            fetchFollowerData();
-          }, 1800);
-        })
-      })
-    })
-  }
+  };
+  
   
   // console.log(searchTermApp);
   // console.log(data);
@@ -152,12 +160,12 @@ export const CreateGroupComp = (props) => {
       <button className='w-1/2 mbg-100 shadows font-medium mcolor-900 px-6 py-3 rounded-[5px]' onClick={() => {
         setHidden('')
         setJoinGroup('')
-      }}>Join Room</button>
+      }}>Join Group</button>
       <button className='w-1/2 mbg-100 shadows font-medium mcolor-900 px-6 py-3 rounded-[5px]' onClick={() => {
         setHidden('')
         setCreateGroup('')
         }}>
-        Create Room +
+        Create Group +
       </button>
 
       <div className={`${hidden} absolute top-0 left-0 modal-bg w-full h-full`}>

@@ -3,8 +3,15 @@ const router = express.Router();
 const { StudyGroup } = require('../models')
 
 // rendering group names
-router.get('/extract-all-group', async (req, res) => {
-  const listOfGroup = await StudyGroup.findAll();
+router.get('/extract-group-through-user/:UserId', async (req, res) => {
+
+  const { UserId } = req.params;
+
+  const listOfGroup = await StudyGroup.findAll({
+    where: {
+      UserId: UserId
+    }
+  });
   res.json(listOfGroup);
 })
 
