@@ -22,6 +22,18 @@ export const VirtualLibraryMain = () => {
 
   const [currentSharedMaterialIndex, setCurrentSharedMaterialIndex] = useState(0);
 
+  const [filteredSharedCategories, setFilteredSharedCategories] = useState([]);
+  const [filteredStudyMaterialsByCategory, setFilteredStudyMaterialsByCategory] = useState([]);
+  const [currentFilteredCategory, setCurrentFilteredCategory] = useState('');
+
+  // search
+  const [searchValue, setSearchValue] = useState('');
+  const [searchCategoryValue, setSearchCategoryValue] = useState('');
+  const [searchedMaterials, setSearchedMaterials] = useState([]);
+  const [searchedMaterialsCategories, setSearchedMaterialsCategories] = useState([]);
+  const [searchCategory, setSearchCategory] = useState([]);
+  const [searchCategoryMaterials, setSearchCategoryMaterials] = useState([]);
+  const [searchedCategories, setSearchedCategories] = useState([]);
 
   // modals
   const [showModal, setShowModal] = useState(false);
@@ -67,12 +79,11 @@ export const VirtualLibraryMain = () => {
     
     
     
-
+    // console.log(filteredGroupStudyMaterials);
     
-    const fetchedGroupStudyMaterial = groupStudyMaterial.data;
 
     const fetchedGroupStudyMaterialCategory = await Promise.all(
-      fetchedGroupStudyMaterial.map(async (material, index) => {
+      filteredGroupStudyMaterials.map(async (material, index) => {
         const materialCategoryResponse = await axios.get(`http://localhost:3001/studyMaterialCategory/get-lastmaterial/${material.StudyMaterialsCategoryId}/Group/${UserId}`);
         return materialCategoryResponse.data; // Return the data from each promise
       })
@@ -80,6 +91,7 @@ export const VirtualLibraryMain = () => {
       
     setGroupStudyMaterialsCategory(fetchedGroupStudyMaterialCategory);
       
+    // console.log(fetchedGroupStudyMaterialCategory);
       
       
       
@@ -95,14 +107,51 @@ export const VirtualLibraryMain = () => {
     );
           
     setSharedMaterialsCategory(fetchedSharedStudyMaterialCategory);
+
+
+    const uniqueCategories = [...new Set(fetchedSharedStudyMaterialCategory.map(item => item.category))];
+
+    // Sort the unique categories alphabetically
+    const sortedCategories = uniqueCategories.sort((a, b) => a.localeCompare(b));
     
-      
-      
+    // Create an array of promises for each unique category
+    const promiseArray = sortedCategories.map(async (category) => {
+      // Find the first occurrence of the category in the original array
+      const firstOccurrence = fetchedSharedStudyMaterialCategory.find(item => item.category === category);
+    
+      // Simulate an asynchronous operation (replace with your actual asynchronous operation)
+      await new Promise(resolve => setTimeout(resolve, 100));
+    
+      // Return a new object with the category details
+      return {
+        id: firstOccurrence.id,
+        category: category,
+        categoryFor: firstOccurrence.categoryFor,
+        studyPerformance: firstOccurrence.studyPerformance,
+        createdAt: firstOccurrence.createdAt,
+        updatedAt: firstOccurrence.updatedAt,
+        StudyGroupId: firstOccurrence.StudyGroupId,
+        UserId: firstOccurrence.UserId
+      };
+    });
+    
+    // Use Promise.all to wait for all promises to resolve
+    Promise.all(promiseArray)
+      .then(sortedCategoryObjects => {
+        // console.log(sortedCategoryObjects);
+        setFilteredSharedCategories(sortedCategoryObjects);      
+
+      })
+      .catch(error => {
+        console.error('Error:', error);
+      });
+    
       
       
     await axios.get(`http://localhost:3001/studyGroup/extract-group-through-user/${UserId}`).then((response) => {
       setGroupList(response.data);
     })
+
 
 
 
@@ -118,97 +167,251 @@ export const VirtualLibraryMain = () => {
 
 
   
-  const viewStudyMaterialDetails = async (index, materialFor) => {
+  const viewStudyMaterialDetails = async (index, materialFor, filter, category) => {
 
     setShowPresentStudyMaterials(false)
 
-
-    if (materialFor === 'personal') {
-      setCurrentMaterialTitle(personalStudyMaterials[index].title)
-      setCurrentMaterialCategory(personalStudyMaterialsCategory[index].category)
-    } else if (materialFor === 'group') {
-      setCurrentMaterialTitle(groupStudyMaterials[index].title)
-      setCurrentMaterialCategory(groupStudyMaterialsCategory[index].category)
-    } else {
-      setCurrentMaterialTitle(sharedMaterials[index].title)
-      setCurrentMaterialCategory(sharedMaterialsCategory[index].category)
-    }
-
-
-    try {
-      let mcqResponse = []
+    if (filter === 'not filtered') {
       if (materialFor === 'personal') {
-
-      mcqResponse = await axios.get(`http://localhost:3001/quesAns/study-material-mcq/${personalStudyMaterials[index].id}`);
-
-      setContext(personalStudyMaterials[index].body)
-    } else if (materialFor === 'group') {
-      mcqResponse = await axios.get(`http://localhost:3001/quesAns/study-material-mcq/${groupStudyMaterials[index].id}`);
-      setContext(groupStudyMaterials[index].body)
-    } else {
-      mcqResponse = await axios.get(`http://localhost:3001/quesAns/study-material-mcq/${sharedMaterials[index].id}`);
-      setContext(sharedMaterials[index].body)
-    }
-    
-    setMaterialMCQ(mcqResponse.data);
-    
-    if (Array.isArray(mcqResponse.data)) {
-      const materialChoices = mcqResponse.data.map(async (materialChoice) => {
-        try {
-          let choiceResponse = []
-
-          if (materialFor === 'personal') {
-            choiceResponse = await axios.get(`http://localhost:3001/quesAnsChoices/study-material/${personalStudyMaterials[index].id}/${materialChoice.id}`);
-          } else if (materialFor === 'group') {
-            choiceResponse = await axios.get(`http://localhost:3001/quesAnsChoices/study-material/${groupStudyMaterials[index].id}/${materialChoice.id}`);
-          } else {
-            choiceResponse = await axios.get(`http://localhost:3001/quesAnsChoices/study-material/${sharedMaterials[index].id}/${materialChoice.id}`);
-          }
-            return choiceResponse.data;
-          } catch (error) {
-            console.error('Error fetching data:', error);
-          }
-        });
-        
-        const responses = await Promise.all(materialChoices);
-        const allChoices = responses.flat();
-        setMaterialMCQChoices(allChoices);
-      }
-    } catch (error) {
-      console.error('Error fetching study material by ID:', error);
-    }
-
-    try {
-
-      let revResponse = []
-
-      if (materialFor === 'personal') {
-        revResponse = await axios.get(`http://localhost:3001/quesRev/study-material-rev/${personalStudyMaterials[index].id}`);
+        setCurrentMaterialTitle(personalStudyMaterials[index].title)
+        setCurrentMaterialCategory(personalStudyMaterialsCategory[index].category)
       } else if (materialFor === 'group') {
-        revResponse = await axios.get(`http://localhost:3001/quesRev/study-material-rev/${groupStudyMaterials[index].id}`);
+        setCurrentMaterialTitle(groupStudyMaterials[index].title)
+        setCurrentMaterialCategory(groupStudyMaterialsCategory[index].category)
       } else {
-        revResponse = await axios.get(`http://localhost:3001/quesRev/study-material-rev/${sharedMaterials[index].id}`);
+        setCurrentMaterialTitle(sharedMaterials[index].title)
+        setCurrentMaterialCategory(sharedMaterialsCategory[index].category)
       }
-
-
-
+  
+  
+      try {
+        let mcqResponse = []
+        if (materialFor === 'personal') {
+  
+        mcqResponse = await axios.get(`http://localhost:3001/quesAns/study-material-mcq/${personalStudyMaterials[index].id}`);
+  
+        setContext(personalStudyMaterials[index].body)
+      } else if (materialFor === 'group') {
+        mcqResponse = await axios.get(`http://localhost:3001/quesAns/study-material-mcq/${groupStudyMaterials[index].id}`);
+        setContext(groupStudyMaterials[index].body)
+      } else {
+        mcqResponse = await axios.get(`http://localhost:3001/quesAns/study-material-mcq/${sharedMaterials[index].id}`);
+        setContext(sharedMaterials[index].body)
+      }
       
-      setMaterialNotes(revResponse.data);
-    } catch (error) {
-      console.error('Error fetching study material by ID:', error);
-    }
-    
-    if (materialFor !== 'shared') {
-      setShowQuiz(false)
-      setShowNotes(false) 
-      setShowContext(true)
-      setEnableBackButton(true)
-    } else {
+      setMaterialMCQ(mcqResponse.data);
+      
+      if (Array.isArray(mcqResponse.data)) {
+        const materialChoices = mcqResponse.data.map(async (materialChoice) => {
+          try {
+            let choiceResponse = []
+  
+            if (materialFor === 'personal') {
+              choiceResponse = await axios.get(`http://localhost:3001/quesAnsChoices/study-material/${personalStudyMaterials[index].id}/${materialChoice.id}`);
+            } else if (materialFor === 'group') {
+              choiceResponse = await axios.get(`http://localhost:3001/quesAnsChoices/study-material/${groupStudyMaterials[index].id}/${materialChoice.id}`);
+            } else {
+              choiceResponse = await axios.get(`http://localhost:3001/quesAnsChoices/study-material/${sharedMaterials[index].id}/${materialChoice.id}`);
+            }
+              return choiceResponse.data;
+            } catch (error) {
+              console.error('Error fetching data:', error);
+            }
+          });
+          
+          const responses = await Promise.all(materialChoices);
+          const allChoices = responses.flat();
+          setMaterialMCQChoices(allChoices);
+        }
+      } catch (error) {
+        console.error('Error fetching study material by ID:', error);
+      }
+  
+      try {
+  
+        let revResponse = []
+  
+        if (materialFor === 'personal') {
+          revResponse = await axios.get(`http://localhost:3001/quesRev/study-material-rev/${personalStudyMaterials[index].id}`);
+        } else if (materialFor === 'group') {
+          revResponse = await axios.get(`http://localhost:3001/quesRev/study-material-rev/${groupStudyMaterials[index].id}`);
+        } else {
+          revResponse = await axios.get(`http://localhost:3001/quesRev/study-material-rev/${sharedMaterials[index].id}`);
+        }
+  
+  
+  
+        
+        setMaterialNotes(revResponse.data);
+      } catch (error) {
+        console.error('Error fetching study material by ID:', error);
+      }
+      
+      if (materialFor !== 'shared') {
+        setShowQuiz(false)
+        setShowNotes(false) 
+        setShowContext(true)
+        setEnableBackButton(true)
+      } else {
+        setShowModal(true)
+        setShowContext(true)
+        setEnableBackButton(false)
+      }
+      setShowMaterialDetails(true)
+    } else if (filter === 'filtered') {
+      setCurrentMaterialTitle(filteredStudyMaterialsByCategory[index].title)
+      setCurrentMaterialCategory(category)
+      // console.log(filteredStudyMaterialsByCategory[index].title)
+
+
+
+
+      try {
+        let mcqResponse = await axios.get(`http://localhost:3001/quesAns/study-material-mcq/${filteredStudyMaterialsByCategory[index].id}`);
+  
+        setContext(filteredStudyMaterialsByCategory[index].body)
+        setMaterialMCQ(mcqResponse.data);
+      
+      if (Array.isArray(mcqResponse.data)) {
+        const materialChoices = mcqResponse.data.map(async (materialChoice) => {
+          try {
+            let choiceResponse = await axios.get(`http://localhost:3001/quesAnsChoices/study-material/${filteredStudyMaterialsByCategory[index].id}/${materialChoice.id}`);
+            
+              return choiceResponse.data;
+            } catch (error) {
+              console.error('Error fetching data:', error);
+            }
+          });
+          
+          const responses = await Promise.all(materialChoices);
+          const allChoices = responses.flat();
+          setMaterialMCQChoices(allChoices);
+        }
+      } catch (error) {
+        console.error('Error fetching study material by ID:', error);
+      }
+  
+      try {
+  
+        let revResponse = await axios.get(`http://localhost:3001/quesRev/study-material-rev/${filteredStudyMaterialsByCategory[index].id}`);
+       
+  
+        setMaterialNotes(revResponse.data);
+      } catch (error) {
+        console.error('Error fetching study material by ID:', error);
+      }
+      
       setShowModal(true)
       setShowContext(true)
-      setEnableBackButton(false)
+      setEnableBackButton(false) 
+      //   setShowContext(true)
+      //   setEnableBackButton(true)
+      // } else {
+      // }
+      setShowMaterialDetails(true)
+    } else if (filter === 'searched') {
+      setCurrentMaterialTitle(searchedMaterials[index].title)
+      setCurrentMaterialCategory(category)
+      // console.log(searchedMaterials[index].title)
+
+
+
+
+      try {
+        let mcqResponse = await axios.get(`http://localhost:3001/quesAns/study-material-mcq/${searchedMaterials[index].id}`);
+  
+        setContext(searchedMaterials[index].body)
+        setMaterialMCQ(mcqResponse.data);
+      
+      if (Array.isArray(mcqResponse.data)) {
+        const materialChoices = mcqResponse.data.map(async (materialChoice) => {
+          try {
+            let choiceResponse = await axios.get(`http://localhost:3001/quesAnsChoices/study-material/${searchedMaterials[index].id}/${materialChoice.id}`);
+            
+              return choiceResponse.data;
+            } catch (error) {
+              console.error('Error fetching data:', error);
+            }
+          });
+          
+          const responses = await Promise.all(materialChoices);
+          const allChoices = responses.flat();
+          setMaterialMCQChoices(allChoices);
+        }
+      } catch (error) {
+        console.error('Error fetching study material by ID:', error);
+      }
+  
+      try {
+  
+        let revResponse = await axios.get(`http://localhost:3001/quesRev/study-material-rev/${searchedMaterials[index].id}`);
+       
+  
+        setMaterialNotes(revResponse.data);
+      } catch (error) {
+        console.error('Error fetching study material by ID:', error);
+      }
+      
+      setShowModal(true)
+      setShowContext(true)
+      setEnableBackButton(false) 
+      //   setShowContext(true)
+      //   setEnableBackButton(true)
+      // } else {
+      // }
+      setShowMaterialDetails(true)
+    } else {
+      setCurrentMaterialTitle(searchCategoryMaterials[index].title)
+      setCurrentMaterialCategory(category)
+      // console.log(searchedMaterials[index].title)
+
+
+
+
+      try {
+        let mcqResponse = await axios.get(`http://localhost:3001/quesAns/study-material-mcq/${searchCategoryMaterials[index].id}`);
+  
+        setContext(searchCategoryMaterials[index].body)
+        setMaterialMCQ(mcqResponse.data);
+      
+      if (Array.isArray(mcqResponse.data)) {
+        const materialChoices = mcqResponse.data.map(async (materialChoice) => {
+          try {
+            let choiceResponse = await axios.get(`http://localhost:3001/quesAnsChoices/study-material/${searchCategoryMaterials[index].id}/${materialChoice.id}`);
+            
+              return choiceResponse.data;
+            } catch (error) {
+              console.error('Error fetching data:', error);
+            }
+          });
+          
+          const responses = await Promise.all(materialChoices);
+          const allChoices = responses.flat();
+          setMaterialMCQChoices(allChoices);
+        }
+      } catch (error) {
+        console.error('Error fetching study material by ID:', error);
+      }
+  
+      try {
+  
+        let revResponse = await axios.get(`http://localhost:3001/quesRev/study-material-rev/${searchCategoryMaterials[index].id}`);
+       
+  
+        setMaterialNotes(revResponse.data);
+      } catch (error) {
+        console.error('Error fetching study material by ID:', error);
+      }
+      
+      setShowModal(true)
+      setShowContext(true)
+      setEnableBackButton(false) 
+      //   setShowContext(true)
+      //   setEnableBackButton(true)
+      // } else {
+      // }
+      setShowMaterialDetails(true)
     }
-    setShowMaterialDetails(true)
   }
 
   const shareMaterial = async (index, materialFor) => {
@@ -270,16 +473,22 @@ export const VirtualLibraryMain = () => {
 
 
 
-  const bookmarkMaterial = async (index, id) => {
+  const bookmarkMaterial = async (index, id, materialFor) => {
+
+   const groupID = id;
    
    const title = sharedMaterials[index].title;
    const body = sharedMaterials[index].body;
    const numInp = sharedMaterials[index].numInp;
    const materialId = sharedMaterials[index].StudyMaterialsCategoryId;
-   const userId = sharedMaterials[index].UserId;
-   ;
+   const materialForDb = sharedMaterials[index].materialFor;
+   const materialCode = sharedMaterials[index].code;
+   const materialTag = sharedMaterials[index].tag;
    
 
+
+   const savedFunctionality = async () => {
+    
    let genQAData = []
    
    let genMCQAData = []
@@ -298,11 +507,11 @@ export const VirtualLibraryMain = () => {
       title: title,
       body: body,
       numInp: numInp,
-      materialFor: 'Group',
-      code: generateRandomString(),
-      StudyGroupId: id,
+      materialFor: materialFor,
+      code: materialCode,
+      StudyGroupId: materialFor === 'Group' ? groupID : null,
       StudyMaterialsCategoryId: materialId,
-      UserId: userId,
+      UserId: UserId,
       bookmarkedBy: UserId,
       tag: 'Bookmarked'
     };
@@ -523,53 +732,308 @@ export const VirtualLibraryMain = () => {
       console.error('Error saving study material:', error);
     }
 
-    console.log(tofDistractors);
+
+
+    fetchData()
+   }
+
+
+   if (materialFor === 'Personal') {
+
+    const personalStudyMaterial = await axios.get(`http://localhost:3001/studyMaterial/study-material-category/Personal/${UserId}`)
+
+    let bookmarkedPersonalMaterial = personalStudyMaterial.data;
+
+
+     const filteredMaterialResult = bookmarkedPersonalMaterial.filter(material => (material.code === materialCode && material.materialFor === materialFor && material.UserId === UserId));
+
+     if (filteredMaterialResult.length === 0) {
+       savedFunctionality()
+      } else {
+      alert('Already exists.')
+     }
+
+
+    } else {
+
+      const groupStudyMaterial = await axios.get(`http://localhost:3001/studyMaterial/study-material-category/Group/${UserId}`)
+
+      let bookmarkedPersonalMaterial = groupStudyMaterial.data;
+
+
+      const filteredMaterialResult = bookmarkedPersonalMaterial.filter(material => (material.code === materialCode && material.materialFor === materialFor && material.StudyGroupId === groupID));
+
+
+      if (filteredMaterialResult.length === 0) {
+        savedFunctionality()
+        } else {
+        alert('Already exists.')
+      }
+    }
+
+  }
+  
+
+  const filterMaterial = async (categoryTitle) => {
+    let filteredCategory = sharedMaterialsCategory.filter(category => category.category === categoryTitle);
+
+
+    
+    const uniqueIds = new Set();
+
+    const filteredUniqueCategory = filteredCategory.filter(category => {
+      // Check if the id is already in the Set
+      if (!uniqueIds.has(category.id)) {
+        // If not, add the id to the Set and keep this entry
+        uniqueIds.add(category.id);
+        return true;
+      }
+      // If the id is already in the Set, filter out this entry
+      return false;
+    });
+
+    // console.log(filteredUniqueCategory);
+    let matchingMaterials = [];
+
+    filteredUniqueCategory.forEach(biologyItem => {
+      sharedMaterials.forEach(material => {
+          if (biologyItem.id === material.StudyMaterialsCategoryId) {
+              matchingMaterials.push(material);
+          }
+      });
+  });
+
+  setFilteredStudyMaterialsByCategory(matchingMaterials);
+  setCurrentFilteredCategory(categoryTitle)
+  }
+
+
+
+
+  const handleSearchChange = async (value) => {
+    // Convert the input value to lowercase
+    const lowercaseValue = value.toLowerCase();
+  
+    // Filter shared materials based on case-insensitive title or body comparison
+    let filteredMaterials = sharedMaterials.filter(material => {
+      const lowercaseTitle = material.title.toLowerCase();
+      const lowercaseBody = material.body.toLowerCase(); // Replace 'body' with the actual property name
+  
+      return lowercaseTitle.includes(lowercaseValue) || lowercaseBody.includes(lowercaseValue);
+    });
+  
+    // Filter shared categories based on case-insensitive category comparison
+    let filteredCategories = filteredSharedCategories.filter(category => {
+      const lowercaseCategory = category.category.toLowerCase();
+      return lowercaseCategory.includes(lowercaseValue);
+    });
+
+
+    const fetchedSharedStudyMaterialCategory = await Promise.all(
+      filteredMaterials.map(async (material, index) => {
+        const materialCategorySharedResponse = await axios.get(`http://localhost:3001/studyMaterialCategory/shared-material-category/${material.StudyMaterialsCategoryId}/Group/${UserId}`);
+        return materialCategorySharedResponse.data;
+      })
+    );
+
+    const fetchedSearchCategoryMaterials = await Promise.all(
+      filteredCategories.map(async (material, index) => {
+        const sharedStudyMaterial = await axios.get(`http://localhost:3001/studyMaterial/shared-materials/${material.id}`);
+        return sharedStudyMaterial.data;
+      })
+    );
+
+  
+    setSearchedMaterials(filteredMaterials);
+    setSearchCategory(fetchedSharedStudyMaterialCategory)
+    setSearchedMaterialsCategories(filteredCategories);
+    setSearchCategoryMaterials(fetchedSearchCategoryMaterials);
   }
   
 
 
+  const handleCategorySearch = async (value) => {
+    const lowercaseValue = value.toLowerCase();
+
+    let filteredCategories = filteredSharedCategories.filter(category => {
+      const lowercaseCategory = category.category.toLowerCase();
+      return lowercaseCategory.includes(lowercaseValue);
+    });
+
+    setSearchedCategories(filteredCategories);
+  }
+  
 
   return (
     <div>
       <div className='poppins mcolor-900 container py-10'>
         <Navbar linkBack={'/main/'} linkBackName={'Main'} currentPageName={'Virtual Library Room'} username={'Jennie Kim'}/>
 
-        <div className='my-10'>
-          <div className='flex items-center justify-center'>
-            <button className='mbg-300 px-5 py-2 rounded border-thin-800' onClick={() => {
-              setShowModal(true);
-              setShowPresentStudyMaterials(true);
+        <div className='my-10'>        
 
-              }}>Share a Study Material</button>
-          </div>
-          
+          <div className='flex mt-8 gap-8'>
 
-          <div className='flex items-center justify-between mt-8'>
+          <div className='w-1/3 min-h-[70vh]' style={{ borderRight: '2px solid #999' }}>
 
-            <div className='w-1/2'>
 
+              <p className='font-medium text-lg'>Search for Categories: </p>
+              <div className='mr-5 my-3 border-thin-800 rounded'>
+                <input type="text" placeholder='Search for a category...' className='w-full py-2 rounded text-center' value={searchCategoryValue !== '' ? searchCategoryValue : ''} onChange={(event) => {
+                  handleCategorySearch(event.target.value)
+                  setSearchCategoryValue(event.target.value)
+                }} />
+              </div>
+
+
+              <p className='font-medium text-lg'>Categories: </p>
+              <div className='grid grid-result gap-3 mr-5 my-5'>
+
+              
+              {searchCategoryValue === '' && (
+                filteredSharedCategories.map((material, index) => {
+                  return <div key={index} className='mbg-200 border-thin-800 py-2 rounded flex items-center justify-center'>
+                      <button onClick={() => {
+                        filterMaterial(material.category)
+                        setSearchValue('')
+                      }}>{material.category}</button>
+                    </div>
+                })
+              )}
+
+              {searchCategoryValue !== '' && (
+                searchedCategories.map((material, index) => {
+                  return <div key={index} className='mbg-200 border-thin-800 py-2 rounded flex items-center justify-center'>
+                      <button onClick={() => {
+                        filterMaterial(material.category)
+                        setSearchValue('')
+                      }}>{material.category}</button>
+                    </div>
+                })
+              )}
+              </div>
             </div>
             <div className='w-3/4'>
-              
-              {sharedMaterials.map((material, index) => {
-                const category = sharedMaterialsCategory[index]?.category || 'Category not available';
 
-                return <div key={index} className='my-3 mbg-200 border-thin-800 p-4 rounded flex items-center justify-between'>
-                    <div>
-                      <p className='font-medium text-lg'>Title: {material.title}</p>
-                      <p className='text-sm mt-1'>Category: {category}</p>
-                    </div>
+            <div className='flex items-center justify-between mb-14 gap-5'>
+              <div className='border-thin-800 w-1/2 rounded'>
+                <input type="text" placeholder='Search for title/category/anything...' className='w-full py-2 rounded text-center' value={searchValue !== '' ? searchValue : ''} onChange={(event) => {
+                  handleSearchChange(event.target.value)
+                  setSearchValue(event.target.value)
+                }} />
+              </div>
+              <div className='flex items-center justify-center w-1/2'>
 
-                    <div className='flex items-center gap-3'>
-                      <button className='mbg-100 mcolor-900 border-thin-800 px-5 py-2 rounded' onClick={() => viewStudyMaterialDetails(index, 'shared')}>View</button>
-                      <button className='mbg-700 mcolor-100 px-5 py-2 rounded' onClick={() => {
-                        setShowBookmarkModal(true)
-                        setChooseRoom(true)
-                        setCurrentSharedMaterialIndex(index)
-                        }}>Bookmark</button>
+                <button className='mbg-300 px-5 py-2 rounded border-thin-800 w-full' onClick={() => {
+                  setShowModal(true);
+                  setShowPresentStudyMaterials(true);
+
+                  }}>Share a Study Material</button>
+              </div>
+            </div>
+
+
+              <div className='flex items-center justify-between'>
+                <p className='font-medium text-lg mb-2'>Latest Shared Study Materials:</p>
+                <button className='mbg-300 rounded px-4 py-1' onClick={() => {
+                  setFilteredStudyMaterialsByCategory([])
+                  setSearchValue('')
+                  }}>Clear Filter</button>
+              </div>
+              <div className='grid grid-result gap-3'>
+
+
+                {((filteredStudyMaterialsByCategory && filteredStudyMaterialsByCategory.length === 0) && searchValue === '') &&
+                sharedMaterials.map((material, index) => {
+                  const category = sharedMaterialsCategory[index]?.category || 'Category not available';
+  
+                  return <div key={index} className='my-3 mbg-200 border-thin-800 p-4 rounded flex items-center justify-between'>
+                      <div>
+                        <p className='font-medium text-lg'>Title: {material.title}</p>
+                        <p className='text-sm mt-1'>Category: {category}</p>
+                      </div>
+  
+                      <div className='flex items-center gap-3'>
+                        <button className='mbg-100 mcolor-900 border-thin-800 px-5 py-2 rounded' onClick={() => viewStudyMaterialDetails(index, 'shared', 'not filtered', category)}>View</button>
+                        <button className='mbg-700 mcolor-100 px-5 py-2 rounded' onClick={() => {
+                          setShowBookmarkModal(true)
+                          setChooseRoom(true)
+                          setCurrentSharedMaterialIndex(index)
+                          }}>Bookmark</button>
+                      </div>
                     </div>
-                  </div>
-              })}
+                })
+                }
+
+                {(filteredStudyMaterialsByCategory && filteredStudyMaterialsByCategory.length > 0 && searchValue === '') &&
+                    filteredStudyMaterialsByCategory.map((material, index) => {
+                      const category = currentFilteredCategory;
+      
+                      return <div key={index} className='my-3 mbg-200 border-thin-800 p-4 rounded flex items-center justify-between'>
+                          <div>
+                            <p className='font-medium text-lg'>Title: {material.title}</p>
+                            <p className='text-sm mt-1'>Category: {category}</p>
+                          </div>
+      
+                          <div className='flex items-center gap-3'>
+                            <button className='mbg-100 mcolor-900 border-thin-800 px-5 py-2 rounded' onClick={() => viewStudyMaterialDetails(index, 'shared', 'filtered', category)}>View</button>
+                            <button className='mbg-700 mcolor-100 px-5 py-2 rounded' onClick={() => {
+                              setShowBookmarkModal(true)
+                              setChooseRoom(true)
+                              setCurrentSharedMaterialIndex(index)
+                              }}>Bookmark</button>
+                          </div>
+                        </div>
+                    })
+                }
+
+
+
+
+                {searchValue !== '' && (
+                    searchedMaterials.map((material, index) => {
+                      const category = searchCategory[index]?.category || 'Category not available';
+      
+                      return <div key={index} className='my-3 mbg-200 border-thin-800 p-4 rounded flex items-center justify-between'>
+                          <div>
+                            <p className='font-medium text-lg'>Title: {material.title}</p>
+                            <p className='text-sm mt-1'>Category: {category}</p>
+                          </div>
+      
+                          <div className='flex items-center gap-3'>
+                            <button className='mbg-100 mcolor-900 border-thin-800 px-5 py-2 rounded' onClick={() => viewStudyMaterialDetails(index, 'shared', 'searched', category)}>View</button>
+                            <button className='mbg-700 mcolor-100 px-5 py-2 rounded' onClick={() => {
+                              setShowBookmarkModal(true)
+                              setChooseRoom(true)
+                              setCurrentSharedMaterialIndex(index)
+                              }}>Bookmark</button>
+                          </div>
+                        </div>
+                    })
+                )}
+
+                {searchValue !== '' && (
+                  searchedMaterialsCategories.map((material, index) => {
+                    const category = searchedMaterialsCategories[index]?.category || 'Category not available';
+                    const title = searchCategoryMaterials[index].title;
+    
+                    return <div key={index} className='my-3 mbg-200 border-thin-800 p-4 rounded flex items-center justify-between'>
+                        <div>
+                          <p className='font-medium text-lg'>Title: {title}</p>
+                          <p className='text-sm mt-1'>Category: {category}</p>
+                        </div>
+    
+                        <div className='flex items-center gap-3'>
+                          <button className='mbg-100 mcolor-900 border-thin-800 px-5 py-2 rounded' onClick={() => viewStudyMaterialDetails(index, 'shared', 'searched-category', category)}>View</button>
+                          <button className='mbg-700 mcolor-100 px-5 py-2 rounded' onClick={() => {
+                            setShowBookmarkModal(true)
+                            setChooseRoom(true)
+                            setCurrentSharedMaterialIndex(index)
+                            }}>Bookmark</button>
+                        </div>
+                      </div>
+                  })
+                )}
+              </div>
             </div>
 
           </div>
@@ -585,6 +1049,8 @@ export const VirtualLibraryMain = () => {
 
                   <button className='absolute right-5 top-5 font-medium text-xl' onClick={() => {
                     setShowBookmarkModal(false)
+                    setChooseGroupRoom(false)
+                    setChooseRoom(false)
                   }}>&#10006;</button>
 
                 {chooseRoom && (
@@ -593,7 +1059,7 @@ export const VirtualLibraryMain = () => {
                       <div>
                         <p className='text-lg mb-5'>Bookmark to: </p>
                         <div className='flex flex-col gap-4'>
-                          <button className='mbg-300 py-4 rounded text-md font-medium'>Personal Study Room</button>
+                          <button className='mbg-300 py-4 rounded text-md font-medium' onClick={() => bookmarkMaterial(currentSharedMaterialIndex, null, 'Personal')}>Personal Study Room</button>
                           <button className='mbg-300 py-4 rounded text-md font-medium' onClick={() => {
                             setChooseRoom(false)
                             setChooseGroupRoom(true)
@@ -616,7 +1082,7 @@ export const VirtualLibraryMain = () => {
 
 
                         <p className='px-1'>{groupName}</p>
-                       <button  className='px-2 py-2 mbg-700 mcolor-100 rounded text-sm' onClick={() => bookmarkMaterial(currentSharedMaterialIndex, id)}>Bookmark here</button>
+                       <button  className='px-2 py-2 mbg-700 mcolor-100 rounded text-sm' onClick={() => bookmarkMaterial(currentSharedMaterialIndex, id, 'Group')}>Bookmark here</button>
 
                         {/* {expandedGroupId === id && (
 
@@ -699,10 +1165,11 @@ export const VirtualLibraryMain = () => {
                             <div>
                               <p className='font-medium text-lg'>Title: {material.title}</p>
                               <p className='text-sm mt-1'>Category: {category}</p>
+                              
                             </div>
 
                             <div className='flex items-center gap-3'>
-                              <button className='mbg-100 mcolor-900 border-thin-800 px-5 py-2 rounded' onClick={() => viewStudyMaterialDetails(index, 'personal')} >View</button>
+                              <button className='mbg-100 mcolor-900 border-thin-800 px-5 py-2 rounded' onClick={() => viewStudyMaterialDetails(index, 'personal', 'not filtered', category)} >View</button>
                               <button className='mbg-700 mcolor-100 px-5 py-2 rounded' onClick={() => shareMaterial(index, 'personal')}>Share</button>
                             </div>
                           </div>
@@ -719,10 +1186,11 @@ export const VirtualLibraryMain = () => {
                             <div>
                               <p className='font-medium text-lg'>Title: {material.title}</p>
                               <p className='text-sm mt-1'>Category: {category}</p>
+
                             </div>
 
                             <div className='flex items-center gap-3'>
-                              <button className='mbg-100 mcolor-900 border-thin-800 px-5 py-2 rounded' onClick={() => viewStudyMaterialDetails(index, 'group')}>View</button>
+                              <button className='mbg-100 mcolor-900 border-thin-800 px-5 py-2 rounded' onClick={() => viewStudyMaterialDetails(index, 'group', 'not filtered', category)}>View</button>
                               <button className='mbg-700 mcolor-100 px-5 py-2 rounded' onClick={() => shareMaterial(index, 'Group')}>Share</button>
                             </div>
                           </div>

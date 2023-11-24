@@ -80,7 +80,7 @@ export const SavedGeneratedData = (props) => {
       body: pdfDetails,
       numInp: numInp,
       materialFor: materialFor,
-      code: materialFor === 'Group' ? generateRandomString() : "None",
+      code: generateRandomString(),
       StudyGroupId: materialFor === 'Group' ? groupNameId : null,
       StudyMaterialsCategoryId: studyMaterialCategoryId,
       UserId: userId

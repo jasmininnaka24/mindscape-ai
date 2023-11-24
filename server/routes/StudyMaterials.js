@@ -93,6 +93,19 @@ router.get('/shared-materials', async(req, res) => {
   res.json(latestMaterial);
 });
 
+router.get('/shared-materials/:StudyMaterialsCategoryId', async(req, res) => {
+  const { StudyMaterialsCategoryId } = req.params;
+  const latestMaterial = await StudyMaterials.findOne({
+    where: { 
+      tag: 'Shared',
+      StudyMaterialsCategoryId: StudyMaterialsCategoryId,
+    },
+    order: [['id', 'DESC']]
+  });
+
+  res.json(latestMaterial);
+});
+
 
 
 router.put('/update-data/:id', async (req, res) => {

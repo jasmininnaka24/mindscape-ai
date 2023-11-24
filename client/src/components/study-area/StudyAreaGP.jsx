@@ -242,7 +242,6 @@ export const StudyAreaGP = (props) => {
       try {
         const catPersonalResponse = await axios.get(studyMaterialCategoryLink);
         setMaterialCategories(catPersonalResponse.data);
-        console.log(catPersonalResponse.data);
   
         const groupResponse = await axios.get(studyMaterialLink);
         let sortedData = groupResponse.data.sort((a, b) => b.id - a.id);
@@ -265,8 +264,9 @@ export const StudyAreaGP = (props) => {
 
         setSharedMaterialsCategories(fetchedSharedStudyMaterialCategory)
         setSudyMaterialsCategory(ownOrSharedRecords);
+        console.log(ownOrSharedRecords);
   
-        const lastMaterial = sortedData.length > 0 ? sortedData[0] : null;
+        const lastMaterial = ownOrSharedRecords.length > 0 ? ownOrSharedRecords[0] : null;
         setLastMaterial(lastMaterial);
 
 
