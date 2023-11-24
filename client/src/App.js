@@ -43,7 +43,7 @@ import { PersonalAnalysisPage } from './pages/rooms/personal/dashboard/PersonalA
 
 // Virtual library pages import
 import { VirtualLibraryMain } from './pages/rooms/library/VirtualLibraryMain';
-
+import { GenerateQuiz } from './pages/rooms/library/GenerateQuiz';
 
 // dependecies
 import AOS from 'aos';
@@ -115,6 +115,7 @@ function App() {
 
             {/* Virtual library */}
             <Route path='/main/library' element={<VirtualLibraryMain />} />
+            <Route path='/main/library/generate-quiz' element={<GenerateQuiz />} />
 
 
               

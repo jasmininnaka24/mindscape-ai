@@ -5,6 +5,7 @@ import './studyArea.css';
 
 // CRUD Command Imports
 import { SavedGeneratedData } from './SavedGeneratedData';
+import axios from 'axios';
 
 
 export const PDFDetails = createContext();
@@ -36,6 +37,62 @@ export const QAGenerator = (props) => {
   const [addedFITBSentence, setAddedFITBSentence] = useState("");
   const [addedFITBAnswer, setAddedFITBAnswer] = useState("");
 
+  const [studyMaterialCategories, setStudyMaterialCategories] = useState([]);
+  const [studyMaterialCategoryId, setStudyMaterialCategoryId] = useState("");
+
+
+  const UserId = 1;
+  
+  const fetchSharedCategory = async () => {
+    const sharedStudyMaterialResponse = await axios.get(`http://localhost:3001/studyMaterial/shared-materials`);
+    console.log('API Response:', sharedStudyMaterialResponse.data);
+    
+    const fetchedSharedStudyMaterialCategory = await Promise.all(
+      sharedStudyMaterialResponse.data.map(async (material, index) => {
+        const materialCategorySharedResponse = await axios.get(`http://localhost:3001/studyMaterialCategory/shared-material-category/${material.StudyMaterialsCategoryId}/Group/${UserId}`);
+        return materialCategorySharedResponse.data;
+      })
+    );
+
+    const uniqueCategories = [...new Set(fetchedSharedStudyMaterialCategory.map(item => item.category))];
+
+    // Sort the unique categories alphabetically
+    const sortedCategories = uniqueCategories.sort((a, b) => a.localeCompare(b));
+    
+    // Create an array of promises for each unique category
+    const promiseArray = sortedCategories.map(async (category) => {
+      // Find the first occurrence of the category in the original array
+      const firstOccurrence = fetchedSharedStudyMaterialCategory.find(item => item.category === category);
+    
+      // Simulate an asynchronous operation (replace with your actual asynchronous operation)
+      await new Promise(resolve => setTimeout(resolve, 100));
+    
+      // Return a new object with the category details
+      return {
+        id: firstOccurrence.id,
+        category: category,
+        categoryFor: firstOccurrence.categoryFor,
+        studyPerformance: firstOccurrence.studyPerformance,
+        createdAt: firstOccurrence.createdAt,
+        updatedAt: firstOccurrence.updatedAt,
+        StudyGroupId: firstOccurrence.StudyGroupId,
+        UserId: firstOccurrence.UserId
+      };
+    });
+    
+    // Use Promise.all to wait for all promises to resolve
+    const sortedCategoryObjects = await Promise.all(promiseArray);
+    console.log(sortedCategoryObjects);
+    setStudyMaterialCategories(sortedCategoryObjects);
+    
+    if (sortedCategoryObjects.length > 0) {
+      setStudyMaterialCategoryId(sortedCategoryObjects[0].id);
+    }
+    
+
+  }
+
+
   useEffect(() => {
     // Check if there is data in generatedQA
     if (generatedQA.length > 0) {
@@ -47,6 +104,8 @@ export const QAGenerator = (props) => {
         targetElement.scrollIntoView({ behavior: 'smooth' });
       }
     }
+    fetchSharedCategory()
+
   }, [generatedQA]);
 
 
@@ -304,7 +363,7 @@ export const QAGenerator = (props) => {
               <div>
                 {/* Save data button */}
                 <div className='flex justify-center mb-10'>
-                  <SavedGeneratedData generatedQA={generatedQA} setGeneratedQA={setGeneratedQA} pdfDetails={pdfDetails} setPDFDetails={setPDFDetails} numInp={numInp} setNumInp={setNumInp} materialFor={materialFor} groupNameId={groupNameId} />
+                  <SavedGeneratedData generatedQA={generatedQA} setGeneratedQA={setGeneratedQA} pdfDetails={pdfDetails} setPDFDetails={setPDFDetails} numInp={numInp} setNumInp={setNumInp} materialFor={materialFor} groupNameId={groupNameId} studyMaterialCategories={studyMaterialCategories} setStudyMaterialCategories={setStudyMaterialCategories} studyMaterialCategoryId={studyMaterialCategoryId} setStudyMaterialCategoryId={setStudyMaterialCategoryId} />
                 </div>
 
 

@@ -5,12 +5,10 @@ import { useNavigate } from 'react-router-dom';
 export const SavedGeneratedData = (props) => {
 
   const [studyMaterialTitle, setStudyMaterialTitle] = useState("");
-  const [studyMaterialCategories, setStudyMaterialCategories] = useState([]);
-  const [studyMaterialCategoryId, setStudyMaterialCategoryId] = useState("");
   const [isLoading, setIsLoading] = useState(false); 
 
   
-  const { generatedQA, setGeneratedQA, pdfDetails, setPDFDetails, numInp, setNumInp, materialFor, groupNameId } = props;
+  const { generatedQA, setGeneratedQA, pdfDetails, setPDFDetails, numInp, setNumInp, materialFor, groupNameId, studyMaterialCategories, setStudyMaterialCategories, studyMaterialCategoryId, setStudyMaterialCategoryId } = props;
 
   const genQAData = generatedQA.question_answer_pairs;
   const genQADataRev = generatedQA.reviewer_ques_pairs;
@@ -21,29 +19,37 @@ export const SavedGeneratedData = (props) => {
   const navigate = useNavigate();
 
 
-
-
   useEffect(() => {
-    let studyMaterialCatPersonalLink = '';
 
-    if (materialFor === 'Personal') {
-      studyMaterialCatPersonalLink = `http://localhost:3001/studyMaterialCategory/personal-study-material/${materialFor}/${userId}`;
-    } else {
-      studyMaterialCatPersonalLink = `http://localhost:3001/studyMaterialCategory/${materialFor}/${groupNameId}`;
-    }
-    
-
-
-    axios.get(studyMaterialCatPersonalLink).then((response) => {
-        setStudyMaterialCategories(response.data);
+    const fetchData = async () => {
+      if (materialFor !== 'Everyone') {
         
-        // Set studyMaterialCategoryId to the first category's ID
-        if (response.data.length > 0) {
-          setStudyMaterialCategoryId(response.data[0].id);
-        }
-      })
+        let studyMaterialCatPersonalLink = '';
+    
+        if (materialFor === 'Personal') {
+          studyMaterialCatPersonalLink = `http://localhost:3001/studyMaterialCategory/personal-study-material/${materialFor}/${userId}`;
+        } else if (materialFor === 'Group') {
+          studyMaterialCatPersonalLink = `http://localhost:3001/studyMaterialCategory/${materialFor}/${groupNameId}`;
+        } 
       
+  
+  
+        await axios.get(studyMaterialCatPersonalLink).then((response) => {
+  
+          setStudyMaterialCategories(response.data);
+          // Set studyMaterialCategoryId to the first category's ID
+          if (response.data.length > 0) {
+            setStudyMaterialCategoryId(response.data[0].id);
+          }
+          
+        })
+      } 
+    }
+
+    fetchData();
+    
   },[groupNameId, materialFor]);
+
   
   function generateRandomString() {
     const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';

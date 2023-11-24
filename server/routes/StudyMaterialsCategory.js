@@ -59,6 +59,17 @@ router.get('/get-lastmaterial/:id/:categoryFor/:UserId', async (req, res) => {
 })
 
 
+router.get('/shared-categories/:tag/:materialFor', async (req, res) => {
+  const { tag } = req.params;
+  const extractedCategories = await StudyMaterialsCategories.findAll({
+    where: {
+      tag: tag,
+    },
+  });
+  res.json(extractedCategories);
+})
+
+
 router.get('/shared-material-category/:id/:categoryFor/:UserId', async (req, res) => {
   const { id } = req.params;
   const extractedCategory = await StudyMaterialsCategories.findOne({

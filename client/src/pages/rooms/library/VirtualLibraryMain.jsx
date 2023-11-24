@@ -26,6 +26,8 @@ export const VirtualLibraryMain = () => {
   const [filteredStudyMaterialsByCategory, setFilteredStudyMaterialsByCategory] = useState([]);
   const [currentFilteredCategory, setCurrentFilteredCategory] = useState('');
 
+  const [groupNameValue, setGroupNameValue] = useState('');
+
   // search
   const [searchValue, setSearchValue] = useState('');
   const [searchCategoryValue, setSearchCategoryValue] = useState('');
@@ -43,6 +45,8 @@ export const VirtualLibraryMain = () => {
   const [showBookmarkModal, setShowBookmarkModal] = useState(false);
   const [chooseRoom, setChooseRoom] = useState(false);
   const [chooseGroupRoom, setChooseGroupRoom] = useState(false);
+  
+  const [showCreateGroupInput, setShowCreateGroupInput] = useState(false);
 
 
   // tabs
@@ -862,6 +866,35 @@ export const VirtualLibraryMain = () => {
 
     setSearchedCategories(filteredCategories);
   }
+
+
+
+
+  const createGroupBtn = async () => {
+
+    try {
+      const groupData = {
+        groupName: groupNameValue,
+        role: 'Super Admin',
+        code: generateRandomString(),
+        UserId: UserId,
+      };
+      
+      if (groupNameValue !== '') {
+        await axios.post('http://localhost:3001/studyGroup/create-group', groupData);
+  
+        fetchData();
+        setShowCreateGroupInput(false);
+      } else {
+        alert('Cannot save an empty field.')
+      }
+
+    } catch (error) {
+      console.error('Error creating group:', error);
+      // Handle errors as needed
+    }
+
+  };
   
 
   return (
@@ -1045,12 +1078,13 @@ export const VirtualLibraryMain = () => {
           {showBookmarkModal && (
             <div className={`absolute top-0 modal-bg left-0 w-full h-full`}>
               <div className='flex items-center justify-center h-full'>
-                <div className='relative mbg-100 h-[50vh] w-1/3 z-10 relative py-5 px-5 rounded-[5px]' style={{overflowY: 'auto'}}>
+                <div className='relative mbg-100 h-[60vh] w-1/3 z-10 relative py-5 px-5 rounded-[5px]' style={{overflowY: 'auto'}}>
 
                   <button className='absolute right-5 top-5 font-medium text-xl' onClick={() => {
                     setShowBookmarkModal(false)
                     setChooseGroupRoom(false)
                     setChooseRoom(false)
+                    setShowCreateGroupInput(false);
                   }}>&#10006;</button>
 
                 {chooseRoom && (
@@ -1077,30 +1111,55 @@ export const VirtualLibraryMain = () => {
                       setChooseRoom(true)
                     }}>Back</button>
 
-                    {groupList.slice().sort((a, b) => b.id - a.id).map(({ id, groupName}) => (
-                      <div key={id} className='shadows mcolor-900 rounded-[5px] p-5 my-6 mbg-100 flex items-center justify-between relative'>
+                    <div className='mt-5 flex items-center justify-center'>
+                      {/* back here */}
 
-
-                        <p className='px-1'>{groupName}</p>
-                       <button  className='px-2 py-2 mbg-700 mcolor-100 rounded text-sm' onClick={() => bookmarkMaterial(currentSharedMaterialIndex, id, 'Group')}>Bookmark here</button>
-
-                        {/* {expandedGroupId === id && (
-
-                          <div className='absolute right-0 bottom-0 px-7 mb-[-114px] mbg-700 mcolor-100 rounded pt-3 pb-4 opacity-80'>
-                            <Link to={`/main/group/study-area/${id}`}>
-                              <p className='pt-1'>Study Area</p>
-                            </Link>
-                            <Link to={`/main/group/tasks/${id}`}>
-                              <p className='pt-1'>Tasks</p>
-                            </Link>
-                            <Link to={`/main/group/dashboard/${id}`}>
-                              <p className='pt-1'>Dashboard</p>
-                            </Link>
+                      {showCreateGroupInput === false ? (
+                        <button className='px-4 py-2 rounded mbg-700 mcolor-100' onClick={() => {
+                          setShowCreateGroupInput(true)
+                        }}>Create a group</button>
+                      ) : (
+                        <div className='flex items-center gap-3'>
+                          <div className='my-3 border-thin-800 rounded'>
+                            <input type="text" placeholder='Group name...' className='w-full py-2 rounded text-center' value={groupNameValue !== '' ? groupNameValue : ''} onChange={(event) => {
+                              setGroupNameValue(event.target.value)
+                            }} />
                           </div>
-                        )}  */}
+                          <button className='px-4 py-2 rounded mbg-700 mcolor-100' onClick={createGroupBtn}>Create</button>
+                          <button className='px-4 py-2 rounded mbg-100 mcolor-900 border-thin-800' onClick={() => setShowCreateGroupInput(false)}>Cancel</button>
+                        </div>
+                      )}
 
-                      </div>
-                    ))}
+                      
+                    </div>
+
+                    {showCreateGroupInput === false && (
+                      groupList.slice().sort((a, b) => b.id - a.id).map(({ id, groupName}) => (
+                        <div key={id} className='shadows mcolor-900 rounded-[5px] p-5 my-6 mbg-100 flex items-center justify-between relative'>
+
+
+                          <p className='px-1'>{groupName}</p>
+                        <button  className='px-2 py-2 mbg-700 mcolor-100 rounded text-sm' onClick={() => bookmarkMaterial(currentSharedMaterialIndex, id, 'Group')}>Bookmark here</button>
+
+                          {/* {expandedGroupId === id && (
+
+                            <div className='absolute right-0 bottom-0 px-7 mb-[-114px] mbg-700 mcolor-100 rounded pt-3 pb-4 opacity-80'>
+                              <Link to={`/main/group/study-area/${id}`}>
+                                <p className='pt-1'>Study Area</p>
+                              </Link>
+                              <Link to={`/main/group/tasks/${id}`}>
+                                <p className='pt-1'>Tasks</p>
+                              </Link>
+                              <Link to={`/main/group/dashboard/${id}`}>
+                                <p className='pt-1'>Dashboard</p>
+                              </Link>
+                            </div>
+                          )}  */}
+
+                        </div>
+                      ))
+                    )}
+                    
                   </div>
                 )}
                       
