@@ -162,7 +162,7 @@ input[type="number"] {
 textarea{
   transition: all .2s ease-in-out;
 }
-textarea:focus{
+/* textarea:focus{
   padding-top: 1rem;
   border-bottom: #4D5F6E solid 2px;
-}
+} */

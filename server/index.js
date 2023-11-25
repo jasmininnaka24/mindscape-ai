@@ -6,6 +6,7 @@ const http = require('http');
 const { Server } = require('socket.io');
 const path = require('path');
 
+
 app.use(cors());
 app.use(express.json());
 
@@ -70,6 +71,13 @@ let shuffledChoicesAssessmentData = {}
 let extractedQAAssessmentList = {}
 let assessmentUsersChoicesList = {}
 let messageListData = {}
+
+
+
+
+// Discussion imports
+let discussionRoomList = {};
+let discussionCreatedRoomsList = {};
 
 
 
@@ -806,10 +814,6 @@ io.on('connection', (socket) => {
 
 
 
-
-
-
-
   socket.on("updated_show_assessment", (data) => {
     const {room, showAssessment } = data
     showAssessmentList[room] = showAssessment;
@@ -900,6 +904,75 @@ io.on('connection', (socket) => {
 
 
 
+
+
+  socket.on('join_discussion_room', (data) => {
+    const {
+      room,
+      username,
+      userId,
+    } = data;
+  
+    socket.join(room);
+  
+    if (!discussionRoomList[room]) {
+      discussionRoomList[room] = [];
+    }
+  
+    // Check if the user is already in the room
+    const existingUser = discussionRoomList[room].find(user => user.socketId === socket.id);
+    
+    if (!existingUser) {
+      // Add user to the room's user list
+      discussionRoomList[room].push({ socketId: socket.id, username, userId });
+  
+      // Emit the updated user list and current turn to all clients in the room
+      io.to(room).emit('discussion_room_list', discussionRoomList[room]);
+  
+    }
+  }); 
+
+
+
+
+  socket.on('created_discussion_forum', (data) => {
+    const {
+      room,
+      roomName,
+      username,
+      userId,
+      roomCategory,
+      roomDescription,
+      discussionForumRoom
+    } = data;
+  
+    socket.join(room);
+  
+    if (!discussionCreatedRoomsList[discussionForumRoom]) {
+      discussionCreatedRoomsList[discussionForumRoom] = [];
+    }
+
+    
+    
+    
+    discussionCreatedRoomsList[discussionForumRoom].push({ socketId: socket.id, room, username, userId, roomName, roomCategory, roomDescription });
+    
+    console.log(discussionCreatedRoomsList[discussionForumRoom]);
+    console.log(data);
+    console.log('break');
+ 
+  
+    // Emit the updated user list and current turn to all clients in the room
+    io.to(discussionForumRoom).emit('discussion_rooms_list', discussionCreatedRoomsList[discussionForumRoom]);
+    // io.to(room).emit('discussion_user_list', discussionCreatedRoomsList[room]);
+
+    console.log(discussionCreatedRoomsList[room]);
+    
+  }); 
+
+
+  
+  
   
 
   socket.on('disconnect', () => {
@@ -1027,6 +1100,27 @@ io.on('connection', (socket) => {
         }
         io.to(assessmentRoom).emit('assessment_user_list', assessmentRoomList[assessmentRoom]);
 
+      }
+    });
+
+      
+    // Find and remove the user from all assessment rooms
+    Object.keys(discussionRoomList).forEach((discussionRoom) => {
+      // Check if the discussion room exists and is an array
+      if (Array.isArray(discussionRoomList[discussionRoom])) {
+        const userIndex = discussionRoomList[discussionRoom].findIndex(user => user.socketId === socket.id);
+        
+        if (userIndex !== -1) {
+          discussionRoomList[discussionRoom].splice(userIndex, 1);
+          
+          // Remove the discussion room if there are no users in it
+          if (discussionRoomList[discussionRoom].length === 0) {
+            delete discussionRoomList[discussionRoom];
+            discussionCreatedRoomsList[discussionRoom] = []
+          }
+          
+          io.to(discussionRoom).emit('discussion_room_list', discussionRoomList[discussionRoom]);
+        }
       }
     });
 

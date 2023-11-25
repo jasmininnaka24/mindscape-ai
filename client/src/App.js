@@ -45,6 +45,11 @@ import { PersonalAnalysisPage } from './pages/rooms/personal/dashboard/PersonalA
 import { VirtualLibraryMain } from './pages/rooms/library/VirtualLibraryMain';
 import { GenerateQuiz } from './pages/rooms/library/GenerateQuiz';
 
+
+// Discussion forum pages import
+import { DiscussionForums } from './pages/rooms/forum/DiscussionForums';
+
+
 // dependecies
 import AOS from 'aos';
 import 'aos/dist/aos.css';
@@ -116,6 +121,12 @@ function App() {
             {/* Virtual library */}
             <Route path='/main/library' element={<VirtualLibraryMain />} />
             <Route path='/main/library/generate-quiz' element={<GenerateQuiz />} />
+
+
+            {/* Discussion Forums */}
+            <Route path='/main/forums' element={<DiscussionForums />} />
+
+
 
 
               

@@ -1074,38 +1074,37 @@ export const VirtualLibraryMain = () => {
                     })
                 )}
 
-{searchValue !== '' && (
-  // Check if searchedMaterials and searchCategoryMaterials have the same array of objects
-  searchedMaterials.length !== searchCategoryMaterials.length &&
-  searchedMaterials.every((material, index) => material.title && searchCategoryMaterials[index]?.title) && (
-    searchCategoryMaterials.map((material, index) => {
-      const category = searchedMaterialsCategories[0]?.category || 'Category not available';
-      const title = searchCategoryMaterials[index].title;
+                {searchValue !== '' && (
+                  // Check if searchedMaterials and searchCategoryMaterials have the same array of objects
+                  searchedMaterials.length !== searchCategoryMaterials.length &&
+                  searchedMaterials.every((material, index) => material.title && searchCategoryMaterials[index]?.title) && (
+                    searchCategoryMaterials.map((material, index) => {
+                      const category = searchedMaterialsCategories[0]?.category || 'Category not available';
+                      const title = searchCategoryMaterials[index].title;
 
-      return (
-        <div key={index} className='my-3 mbg-200 border-thin-800 p-4 rounded flex items-center justify-between'>
-          <div>
-            <p className='font-medium text-lg'>Title: {title}</p>
-            <p className='text-sm mt-1'>Category: {category}</p>
-          </div>
+                      return (
+                        <div key={index} className='my-3 mbg-200 border-thin-800 p-4 rounded flex items-center justify-between'>
+                          <div>
+                            <p className='font-medium text-lg'>Title: {title}</p>
+                            <p className='text-sm mt-1'>Category: {category}</p>
+                          </div>
 
-          <div className='flex items-center gap-3'>
-            <button className='mbg-100 mcolor-900 border-thin-800 px-5 py-2 rounded' onClick={() => viewStudyMaterialDetails(index, 'shared', 'searched-category', category)}>View</button>
-            <button className='mbg-700 mcolor-100 px-5 py-2 rounded' onClick={() => {
-              setShowBookmarkModal(true)
-              setChooseRoom(true)
-              setCurrentSharedMaterialIndex(index)
-            }}>Bookmark</button>
-          </div>
-        </div>
-      );
-    })
-  )
-)}
+                          <div className='flex items-center gap-3'>
+                            <button className='mbg-100 mcolor-900 border-thin-800 px-5 py-2 rounded' onClick={() => viewStudyMaterialDetails(index, 'shared', 'searched-category', category)}>View</button>
+                            <button className='mbg-700 mcolor-100 px-5 py-2 rounded' onClick={() => {
+                              setShowBookmarkModal(true)
+                              setChooseRoom(true)
+                              setCurrentSharedMaterialIndex(index)
+                            }}>Bookmark</button>
+                          </div>
+                        </div>
+                      );
+                    })
+                  )
+                )}
 
               </div>
             </div>
-
           </div>
 
           

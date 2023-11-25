@@ -237,13 +237,13 @@ body {
   color: #67a686;
 }
 
-input{
+input, textarea{
   outline: none;
 }
-textarea{
+/* textarea{
   outline: none;
   border: 0px solid #fff;
-}
+} */
 /* input{
   transition: all .2s ease-in-out;
 }

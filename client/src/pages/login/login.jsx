@@ -1,9 +1,36 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { LogReg } from '../../components/login_reg/LogReg';
 import GoogleImg from '../../assets/google.png';
-import { Link } from 'react-router-dom';
+import axios from 'axios'
+import { useNavigate } from 'react-router-dom';
+
 
 export const Login = () => {
+
+  const navigate = useNavigate();
+
+  const [passwordLogVal, setPasswordLogVal] = useState('')
+  const [emailLogVal, setEmailLogVal] = useState('')
+
+  const loginAccount = async (e) => {
+
+    e.preventDefault();
+
+    const data = {
+      password: passwordLogVal,
+      email: emailLogVal,
+    }
+
+    await axios.post('http://localhost:3001/users/login', data).then((response) => {
+      if (response.data.error) {
+        // navigate('/main')
+        console.log('error');
+      } else {
+        sessionStorage.setItem("accessToken", response.data)
+      }
+    });
+  }
+
   return (
     <div className='logreg poppins flex justify-between mcolor-900' data-aos='fade'>
       <section id='logreg-content' className='flex flex-col justify-center'>
@@ -28,15 +55,13 @@ export const Login = () => {
           <div className='mt-3'>
             <div className='mb-3'>
               <label htmlFor="" className='font-medium'>Email<span className='text-red'>*</span></label>
-              <input autoComplete='no' placeholder='Enter your email...' type="email" className='bg-transparent border-bottom-thin py-1 px-8 rounded-[5px]' />
+              <input autoComplete='no' placeholder='Enter your email...' type="email" className='bg-transparent border-bottom-thin py-1 px-8 rounded-[5px]' value={emailLogVal !== '' ? emailLogVal : ''} onChange={(event) => setEmailLogVal(event.target.value)} />
             </div>
             <div className='mb-5 mt-8'>
               <label htmlFor="" className='font-medium'>Password<span className='text-red'>*</span></label>
-              <input autoComplete='no' placeholder='Enter your password...' type="password" className='bg-transparent border-bottom-thin py-1 px-5 rounded-[5px]' />
+              <input autoComplete='no' placeholder='Enter your password...' type="password" className='bg-transparent border-bottom-thin py-1 px-5 rounded-[5px]' value={passwordLogVal !== '' ? passwordLogVal : ''} onChange={(event) => setPasswordLogVal(event.target.value)} />
             </div>
-            <Link to={'/main'} className='mt-10'>
-              <button className='font-medium input-btn mbg-800 mcolor-100 py-2 rounded-[20px]'>Sign In</button>
-            </Link>
+              <button className='font-medium input-btn mbg-800 mcolor-100 py-2 rounded-[20px]' onClick={(e) => loginAccount(e)}>Sign In</button>
           </div>
         </form>
 
