@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react'
 import { Navbar } from '../../../components/navbar/logged_navbar/navbar'
 import axios from 'axios'
+import { Link } from 'react-router-dom'
+
 
 export const VirtualLibraryMain = () => {
 
@@ -825,12 +827,40 @@ export const VirtualLibraryMain = () => {
   
       return lowercaseTitle.includes(lowercaseValue) || lowercaseBody.includes(lowercaseValue);
     });
-  
+
+
     // Filter shared categories based on case-insensitive category comparison
     let filteredCategories = filteredSharedCategories.filter(category => {
       const lowercaseCategory = category.category.toLowerCase();
       return lowercaseCategory.includes(lowercaseValue);
     });
+
+
+
+    const uniqueIds = new Set();
+
+    const filteredUniqueCategory = filteredMaterials.filter(category => {
+      // Check if the id is already in the Set
+      if (!uniqueIds.has(category.id)) {
+        // If not, add the id to the Set and keep this entry
+        uniqueIds.add(category.id);
+        return true;
+      }
+      // If the id is already in the Set, filter out this entry
+      return false;
+    });
+
+    // console.log(filteredUniqueCategory);
+    let matchingMaterials = [];
+
+    filteredUniqueCategory.forEach(biologyItem => {
+      sharedMaterials.forEach(material => {
+          if (biologyItem.id === material.StudyMaterialsCategoryId) {
+              matchingMaterials.push(material);
+          }
+      });
+    });
+
 
 
     const fetchedSharedStudyMaterialCategory = await Promise.all(
@@ -848,10 +878,10 @@ export const VirtualLibraryMain = () => {
     );
 
   
-    setSearchedMaterials(filteredMaterials);
-    setSearchCategory(fetchedSharedStudyMaterialCategory)
+    setSearchedMaterials(filteredUniqueCategory);
+    setSearchCategory(fetchedSharedStudyMaterialCategory);
     setSearchedMaterialsCategories(filteredCategories);
-    setSearchCategoryMaterials(fetchedSearchCategoryMaterials);
+    setSearchCategoryMaterials(fetchedSearchCategoryMaterials.flat());
   }
   
 
@@ -1044,28 +1074,35 @@ export const VirtualLibraryMain = () => {
                     })
                 )}
 
-                {searchValue !== '' && (
-                  searchedMaterialsCategories.map((material, index) => {
-                    const category = searchedMaterialsCategories[index]?.category || 'Category not available';
-                    const title = searchCategoryMaterials[index].title;
-    
-                    return <div key={index} className='my-3 mbg-200 border-thin-800 p-4 rounded flex items-center justify-between'>
-                        <div>
-                          <p className='font-medium text-lg'>Title: {title}</p>
-                          <p className='text-sm mt-1'>Category: {category}</p>
-                        </div>
-    
-                        <div className='flex items-center gap-3'>
-                          <button className='mbg-100 mcolor-900 border-thin-800 px-5 py-2 rounded' onClick={() => viewStudyMaterialDetails(index, 'shared', 'searched-category', category)}>View</button>
-                          <button className='mbg-700 mcolor-100 px-5 py-2 rounded' onClick={() => {
-                            setShowBookmarkModal(true)
-                            setChooseRoom(true)
-                            setCurrentSharedMaterialIndex(index)
-                            }}>Bookmark</button>
-                        </div>
-                      </div>
-                  })
-                )}
+{searchValue !== '' && (
+  // Check if searchedMaterials and searchCategoryMaterials have the same array of objects
+  searchedMaterials.length !== searchCategoryMaterials.length &&
+  searchedMaterials.every((material, index) => material.title && searchCategoryMaterials[index]?.title) && (
+    searchCategoryMaterials.map((material, index) => {
+      const category = searchedMaterialsCategories[0]?.category || 'Category not available';
+      const title = searchCategoryMaterials[index].title;
+
+      return (
+        <div key={index} className='my-3 mbg-200 border-thin-800 p-4 rounded flex items-center justify-between'>
+          <div>
+            <p className='font-medium text-lg'>Title: {title}</p>
+            <p className='text-sm mt-1'>Category: {category}</p>
+          </div>
+
+          <div className='flex items-center gap-3'>
+            <button className='mbg-100 mcolor-900 border-thin-800 px-5 py-2 rounded' onClick={() => viewStudyMaterialDetails(index, 'shared', 'searched-category', category)}>View</button>
+            <button className='mbg-700 mcolor-100 px-5 py-2 rounded' onClick={() => {
+              setShowBookmarkModal(true)
+              setChooseRoom(true)
+              setCurrentSharedMaterialIndex(index)
+            }}>Bookmark</button>
+          </div>
+        </div>
+      );
+    })
+  )
+)}
+
               </div>
             </div>
 
@@ -1211,7 +1248,9 @@ export const VirtualLibraryMain = () => {
 
                       <br />
                       <div className='flex items-center justify-center mb-2'>
-                        <button className='mbg-700 mcolor-100 px-5 py-2 rounded border-thin-800'>Generate a new Study Material</button>
+                        <Link to={'/main/library/generate-quiz'}>
+                          <button className='mbg-700 mcolor-100 px-5 py-2 rounded border-thin-800'>Generate a new Study Material</button>
+                        </Link>
                       </div>
                       <br />
 

@@ -89,7 +89,8 @@ export const SavedGeneratedData = (props) => {
       code: generateRandomString(),
       StudyGroupId: materialFor === 'Group' ? groupNameId : null,
       StudyMaterialsCategoryId: studyMaterialCategoryId,
-      UserId: userId
+      UserId: userId,
+      tag: materialFor === 'Everyone' ? 'Shared' : 'Own Record'
     };
   
     if (

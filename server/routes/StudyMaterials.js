@@ -95,7 +95,7 @@ router.get('/shared-materials', async(req, res) => {
 
 router.get('/shared-materials/:StudyMaterialsCategoryId', async(req, res) => {
   const { StudyMaterialsCategoryId } = req.params;
-  const latestMaterial = await StudyMaterials.findOne({
+  const latestMaterial = await StudyMaterials.findAll({
     where: { 
       tag: 'Shared',
       StudyMaterialsCategoryId: StudyMaterialsCategoryId,
