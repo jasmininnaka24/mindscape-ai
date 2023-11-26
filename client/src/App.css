@@ -312,7 +312,6 @@ input:focus{
 }
 .chat-window .chat-header p {
   display: block;
-  padding: 0 1em 0 2em;
   color: #fff;
   font-weight: 700;
   line-height: 45px;

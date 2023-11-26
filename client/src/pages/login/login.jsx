@@ -3,11 +3,14 @@ import { LogReg } from '../../components/login_reg/LogReg';
 import GoogleImg from '../../assets/google.png';
 import axios from 'axios'
 import { useNavigate } from 'react-router-dom';
+import { useUser } from '../../UserContext';
 
 
 export const Login = () => {
 
   const navigate = useNavigate();
+  const { setUserInformation } = useUser();
+
 
   const [passwordLogVal, setPasswordLogVal] = useState('')
   const [emailLogVal, setEmailLogVal] = useState('')
@@ -23,10 +26,11 @@ export const Login = () => {
 
     await axios.post('http://localhost:3001/users/login', data).then((response) => {
       if (response.data.error) {
-        // navigate('/main')
         console.log('error');
       } else {
-        sessionStorage.setItem("accessToken", response.data)
+        sessionStorage.setItem("accessToken", response.data.accessToken);
+        setUserInformation(response.data.user);
+        navigate('/main')
       }
     });
   }

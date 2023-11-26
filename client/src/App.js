@@ -2,6 +2,9 @@ import './App.css';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { createContext, useEffect } from 'react';
 
+import { UserProvider } from './UserContext';
+
+
 // page imports
 import { Home } from './pages/home/home';
 import { About } from './pages/home/about/about';
@@ -64,76 +67,78 @@ function App() {
   return (
     <div>
       <div className='primary-color'>
-        <Router>
-          <Routes>
-            <Route path='/' element={<Home />} />
-            <Route path='#about' element={<About />} />
-            <Route path='#benefits' element={<Benefits />} />
-            <Route path='#howtouse' element={<HowToUse />} />
-            <Route path='/login' element={<Login />} />
-            <Route path='/register' element={<Register />} />
-            <Route path='/classification-questions' element={<ClassificationQuestions />} />
-            <Route path='/data-submission' element={<DataSubmission/>} />
-            <Route path='/data-result' element={<VAKResult/>} />
+        <UserProvider>
+          <Router>
+            <Routes>
+              <Route path='/' element={<Home />} />
+              <Route path='#about' element={<About />} />
+              <Route path='#benefits' element={<Benefits />} />
+              <Route path='#howtouse' element={<HowToUse />} />
+              <Route path='/login' element={<Login />} />
+              <Route path='/register' element={<Register />} />
+              <Route path='/classification-questions' element={<ClassificationQuestions />} />
+              <Route path='/data-submission' element={<DataSubmission/>} />
+              <Route path='/data-result' element={<VAKResult/>} />
 
-            {/* Main Page Route */}
-            <Route path='/main' element={<MainPage/>} />
-      
-            {/* Room Routes */}
-            {/* Group Study Room Routes */}
-            <Route path='/main/group/' element={<GroupRoom />} /> 
-            <Route path='/main/group/tasks/:groupId' element={<GroupTasks />} /> 
-            <Route path='/main/group/study-area/:id' element={<GroupStudyArea />} /> 
-            <Route path='/main/group/study-area/qa-gen/:id' element={<GroupQAGenerator />} /> 
-            {/* <Route path='/main/group/study-area/group-review' element={<GroupReviewPage />} />  */}
-            <Route path='/main/group/study-area/group-review/:groupId/:materialId' element={<GroupReviewerPage />} />
-
-
-            {/* Group Dashboard */}
-            <Route path='/main/group/dashboard/:groupId' element={<GroupDashboard />} />
-            <Route path='/main/group/dashboard/category-list/:groupId' element={<GroupCategoryList />} />
-            <Route path='/main/group/dashboard/category-list/topic-list/:groupId/:categoryID' element={<GroupTopicList />} />
-            <Route path='/main/group/dashboard/category-list/topic-list/topic-page/:groupId/:categoryID/:materialID' element={<GroupTopicPage />} />
-            <Route path='/main/group/dashboard/category-list/topic-list/topic-page/analysis/:groupId/:categoryID/:materialID/:dashID' element={<GroupAnalysisPage />} />
+              {/* Main Page Route */}
+              <Route path='/main' element={<MainPage/>} />
+        
+              {/* Room Routes */}
+              {/* Group Study Room Routes */}
+              <Route path='/main/group/' element={<GroupRoom />} /> 
+              <Route path='/main/group/tasks/:groupId' element={<GroupTasks />} /> 
+              <Route path='/main/group/study-area/:id' element={<GroupStudyArea />} /> 
+              <Route path='/main/group/study-area/qa-gen/:id' element={<GroupQAGenerator />} /> 
+              {/* <Route path='/main/group/study-area/group-review' element={<GroupReviewPage />} />  */}
+              <Route path='/main/group/study-area/group-review/:groupId/:materialId' element={<GroupReviewerPage />} />
 
 
-
-            {/* Personal Study Room Routes */}
-            <Route path='/main/personal/' element={<PersonalRoom />} /> 
-            <Route path='/main/personal/study-area' element={<PersonalStudyArea />} /> 
-            <Route path='/main/personal/study-area/qa-gen' element={<PersonalQAGenerator />} /> 
-            <Route path='/main/personal/study-area/personal-review/:materialId' element={<PersonalReviewerPage />} />
-            <Route path='/main/personal/study-area/personal-review-start/:materialId' element={<PersonalReviewerStart />} />
-            <Route path='/main/personal/study-area/personal-assessment/:materialId' element={<PersonalAssessment />} />
-
-            {/* Personal Dashboard */}
-            <Route path='/main/personal/dashboard' element={<PersonalDashboard />} />
-            <Route path='/main/personal/dashboard/category-list' element={<PersonalCategoryList />} />
-            <Route path='/main/personal/dashboard/category-list/topic-list/:categoryID' element={<PersonalTopicList />} />
-            <Route path='/main/personal/dashboard/category-list/topic-list/topic-page/:categoryID/:materialID' element={<PersonalTopicPage />} />
-            <Route path='/main/personal/dashboard/category-list/topic-list/topic-page/analysis/:categoryID/:materialID/:dashID' element={<PersonalAnalysisPage />} />
+              {/* Group Dashboard */}
+              <Route path='/main/group/dashboard/:groupId' element={<GroupDashboard />} />
+              <Route path='/main/group/dashboard/category-list/:groupId' element={<GroupCategoryList />} />
+              <Route path='/main/group/dashboard/category-list/topic-list/:groupId/:categoryID' element={<GroupTopicList />} />
+              <Route path='/main/group/dashboard/category-list/topic-list/topic-page/:groupId/:categoryID/:materialID' element={<GroupTopicPage />} />
+              <Route path='/main/group/dashboard/category-list/topic-list/topic-page/analysis/:groupId/:categoryID/:materialID/:dashID' element={<GroupAnalysisPage />} />
 
 
 
+              {/* Personal Study Room Routes */}
+              <Route path='/main/personal/' element={<PersonalRoom />} /> 
+              <Route path='/main/personal/study-area' element={<PersonalStudyArea />} /> 
+              <Route path='/main/personal/study-area/qa-gen' element={<PersonalQAGenerator />} /> 
+              <Route path='/main/personal/study-area/personal-review/:materialId' element={<PersonalReviewerPage />} />
+              <Route path='/main/personal/study-area/personal-review-start/:materialId' element={<PersonalReviewerStart />} />
+              <Route path='/main/personal/study-area/personal-assessment/:materialId' element={<PersonalAssessment />} />
 
-
-
-            {/* Virtual library */}
-            <Route path='/main/library' element={<VirtualLibraryMain />} />
-            <Route path='/main/library/generate-quiz' element={<GenerateQuiz />} />
-
-
-            {/* Discussion Forums */}
-            <Route path='/main/forums' element={<DiscussionForums />} />
+              {/* Personal Dashboard */}
+              <Route path='/main/personal/dashboard' element={<PersonalDashboard />} />
+              <Route path='/main/personal/dashboard/category-list' element={<PersonalCategoryList />} />
+              <Route path='/main/personal/dashboard/category-list/topic-list/:categoryID' element={<PersonalTopicList />} />
+              <Route path='/main/personal/dashboard/category-list/topic-list/topic-page/:categoryID/:materialID' element={<PersonalTopicPage />} />
+              <Route path='/main/personal/dashboard/category-list/topic-list/topic-page/analysis/:categoryID/:materialID/:dashID' element={<PersonalAnalysisPage />} />
 
 
 
 
-              
-            {/* If page does not exist */}
-            <Route path='*' element={<h1 className='text-center text-4xl font-bold primary-text-color pt-40'>404: Page Not Found</h1>} /> 
-          </Routes>
-        </Router>
+
+
+              {/* Virtual library */}
+              <Route path='/main/library' element={<VirtualLibraryMain />} />
+              <Route path='/main/library/generate-quiz' element={<GenerateQuiz />} />
+
+
+              {/* Discussion Forums */}
+              <Route path='/main/forums' element={<DiscussionForums />} />
+
+
+
+
+                
+              {/* If page does not exist */}
+              <Route path='*' element={<h1 className='text-center text-4xl font-bold primary-text-color pt-40'>404: Page Not Found</h1>} /> 
+            </Routes>
+          </Router>
+        </UserProvider>
       </div>
     </div>
   );

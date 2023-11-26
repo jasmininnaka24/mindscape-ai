@@ -5,9 +5,11 @@ import personalStudyRoomImg from '../../assets/personal_study.jpg';
 import groupStudyRoomImg from '../../assets/group_study.jpg';
 import virtualLibraryRoomImg from '../../assets/library.jpg';
 import discussionFormusImg from '../../assets/discussion_forum.jpg';
+import { useUser } from '../../UserContext';
 
 export const MainPage = () => {
 
+  const { user } = useUser();
 
 
   return (

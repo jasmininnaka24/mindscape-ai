@@ -39,7 +39,8 @@ router.post('/login', async (req, res) => {
         const assessToken = sign({username: user.username, id: user.id}, "mindscapeprojectkeysecret");
 
         
-        res.json(assessToken);
+        res.json({ accessToken: assessToken, user: {username: user.username, id: user.id} });
+
       }
     });
   }
