@@ -6,6 +6,8 @@ import { useUser } from '../../../UserContext';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import GroupsIcon from '@mui/icons-material/Groups';import SupervisorAccountIcon from '@mui/icons-material/SupervisorAccount';
 import SensorDoorIcon from '@mui/icons-material/SensorDoor';
+import ClearAllIcon from '@mui/icons-material/ClearAll';
+
 
 import io from 'socket.io-client';
 import { Link } from 'react-router-dom';
@@ -33,12 +35,21 @@ export const DiscussionForums = () => {
   // messages
   const [currentMessageRoom, setCurrentMessageRoom] = useState('');
   const [currentRoom, setCurrentRoom] = useState('');
-  const [currentIndex, setCurrentIndex] = useState('');
+  const [currentIndex, setCurrentIndex] = useState(0);
 
   // tabs
   const [showRooms, setShowrooms] = useState(true);
   const [showJoinedRooms, setShowJoinedrooms] = useState(false);
   const [message, setMessage] = useState('');
+
+  // modal
+  const [showActiveUsers, setShowActiveUsers] = useState(false)
+  const [showCategories, setShowCategories] = useState(false)
+
+  // seach
+  const [searchTerm, setSearchTerm] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState(null);
+
 
   let discussionForumRoom = 'discussionForumsRoomXXX';
 
@@ -109,7 +120,7 @@ export const DiscussionForums = () => {
       socket.off('discussion_rooms_list');
     };
   
-  }, [alreadyJoined, user, roomList, showJoinedRooms, showRooms, message]);
+  }, [alreadyJoined, user]);
   
   const createRoom = async () => {
     let data = {
@@ -123,6 +134,13 @@ export const DiscussionForums = () => {
     };
     
     socket.emit('created_discussion_forum', data);
+
+    socket.on('discussion_rooms_list', (roomsListData) => {
+      const index = roomsListData.findIndex(roomData => roomData.room === data.room);
+      console.log('Index of the created room:', index);
+    });
+
+
   };
 
   const joinCreatedRoom = async (roomCode, users, index) => {
@@ -156,6 +174,45 @@ export const DiscussionForums = () => {
     socket.emit('message_joined_created_room', data);
     setMessage('')
   }
+
+
+  const capitalizeFirstLetter = (str) => {
+    if (typeof str !== 'string' || str.length === 0) {
+      return ''; // Return an empty string if the input is not a valid string
+    }
+  
+    return str.replace(/\b\w/g, (match) => match.toUpperCase());
+  };
+  
+
+  const handleSearch = (event) => {
+    setSearchTerm(event.target.value);
+    setSelectedCategory(null); // Reset selected category when searching
+  };
+
+  const handleCategoryClick = (category) => {
+    setSelectedCategory(category);
+    setSearchTerm(''); // Reset search term when clicking a category
+  };
+
+  const filteredRooms = roomList
+    .filter((room) => !selectedCategory || room?.roomCategory.toLowerCase() === selectedCategory.toLowerCase())
+    .filter((room) =>
+      room?.roomName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      room?.roomCategory.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      room?.roomDescription.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+
+  const uniqueCategories = [...new Set(roomList.map(room => capitalizeFirstLetter(room?.roomCategory)))];
+
+
+  const handleClear = () => {
+    setSearchTerm('');
+    setSelectedCategory(null);
+  };
+
+
+
 
   return (
     <div>
@@ -216,15 +273,26 @@ export const DiscussionForums = () => {
             </p>
 
             {/* inputs and buttons */}
-            <div className='w-full flex items-center justify-center mt-5 mb-14 gap-5'>
-              <div className='flex items-center gap-5 w-1/2'>
+            <div className='w-full flex items-center justify-center mt-5 gap-5'>
+              <div className='flex items-center gap-5 w-full'>
                 <div className='border-thin-800 w-full rounded'>
-                  <input type="text" placeholder='Search for a room...' className='w-full py-2 rounded text-center' />
+                  <input
+                    type="text"
+                    placeholder='Search for a room?...'
+                    className='w-full py-2 rounded text-center'
+                    value={searchTerm}
+                    onChange={handleSearch}
+                  />         
                 </div>
                 <div className='flex items-center justify-center w-full gap-1 my-5'>
                   <button className='mbg-700 mcolor-100 px-5 py-2 rounded w-full' onClick={() => {
                     setShowCreateRoomModal(true)
                   }}>Create a room</button>
+                </div>
+                <div className='flex items-center justify-center w-full gap-1 my-5'>
+                  <button className='mbg-300 mcolor-900 border-thin-800 px-5 py-2 rounded w-full' onClick={() => {
+                    setShowCategories(true)
+                  }}>View Categories</button>
                 </div>
               </div>
             </div>
@@ -287,63 +355,118 @@ export const DiscussionForums = () => {
                     <br />
                     <button className='mbg-700 mcolor-100 px-5 py-2 rounded w-full' onClick={createRoom}>Create a room</button>
 
+
+
                   </div>
                 </div>
               </div>
             )}
 
 
-            {/* Displaying room */}
+            {(searchTerm !== '' || selectedCategory !== null) && (
+              <div className='flex items-center justify-end mb-5'>
+                <button className='mbg-300 border-thin-800 rounded py-1 px-5 mcolor-900' onClick={handleClear}>
+                <ClearAllIcon /> Clear
+                </button>
+              </div>
+            )}
+
+            
+            {showCategories && (
+              <div className={`absolute top-0 modal-bg left-0 w-full h-full`}>
+                <div className='flex items-center justify-center h-full'>
+                  <div className='relative mbg-100 h-[70vh] w-1/3 z-10 relative p-8 rounded-[5px]' style={{overflowY: 'auto'}}>
+
+                    <button className='absolute right-5 top-5 font-medium text-xl' onClick={() => {
+                      setShowCategories(false)
+                    }}>&#10006;</button>
+
+                    <p className='text-center text-2xl mcolor-900 mb-5 mt-3'>Categories</p>
+
+
+                    <br />
+
+                    {uniqueCategories.map((uniqueCategory) => (
+                      <button
+                        key={uniqueCategory}
+                        className={`w-full my-1 mbg-300 border-thin-800 rounded py-1 ${selectedCategory === uniqueCategory ? 'bg-gray-400' : ''}`}
+                        onClick={() => handleCategoryClick(uniqueCategory)}
+                      >
+                        {uniqueCategory}
+                      </button>
+                    ))}
+
+
+
+
+                  </div>
+                </div>
+              </div>
+            )}
+
+  
+
+    
+
+            <p className='mcolor-900 font-medium my-4 text-lg'>Rooms: </p>
             <div className='grid grid-cols-3 gap-3'>
-              {roomList
-                .filter(room => room !== null)
-                .map((room, index) => {
-                  const userIdExists = room?.users?.some((userr) => userr.userId === user?.id);
 
-                  return (
-                    <div key={index} className='mbg-300 py-3 px-5 rounded'>
-                      {room && (
-                        <>
-                          <p className='mcolor-800'>
-                            Room name: <span className='font-medium mcolor-900'>{room.roomName}</span>
-                          </p>
-                          <p className='mcolor-800'>
-                            Room category: <span className='font-medium mcolor-900'>{room.roomCategory}</span>
-                          </p>
-                          <p className='mcolor-800'>
-                            Room Description: <span className='font-medium mcolor-900'>{room.roomDescription}</span>
-                          </p>
+            {filteredRooms
+              .filter(room => room !== null)
+              .map((room, index) => {
+                const userIdExists = room?.users?.some((userr) => userr.userId === user?.id);
+         
+                return (
+                  <div key={index} className='mbg-300 py-3 px-5 rounded'>
+                    {room && (
+                      <>
+                        <p className='mcolor-800'>
+                          Room name: <span className='font-medium mcolor-900'>{room?.roomName || 'N/A'}</span>
+                        </p>
+                        <p className='mcolor-800'>
+                          Room category: <span className='font-medium mcolor-900'>{room?.roomCategory || 'N/A'}</span>
+                        </p>
+                        <p className='mcolor-800'>
+                          Room Description: <span className='font-medium mcolor-900'>{room?.roomDescription || 'N/A'}</span>
+                        </p>
 
-                          <div className='flex justify-between mt-3'>
-                            <p>Users: {room?.users ? room.users.length : 0}</p>
-                            {
-                              !userIdExists ? (
-                                <button
-                                  className='mbg-700 mcolor-100 px-5 py-2 rounded'
-                                  onClick={() => joinCreatedRoom(room?.room, room?.users, index)}
-                                >
-                                  Join Room
-                                </button>
-                              ) : (
-                                <button
-                                  className='mbg-700 mcolor-100 px-5 py-2 rounded'
-                                  onClick={() => {
-                                    setCurrentMessageRoom(room?.roomName)
-                                  }}
-                                >
-                                  Visit
-                                </button>
-                              )
-                            }
-                          </div>
-                        </>
-                      )}
-                    </div>
-                  );
-                })}
+                        <div className='flex justify-between mt-3'>
+                          <p>Users: {room?.users ? room?.users.length : 0}</p>
+                          {!userIdExists ? (
+                            <button
+                              className='mbg-700 mcolor-100 px-5 py-2 rounded'
+                              onClick={() => {
+                                joinCreatedRoom(room?.room, room?.users, index)
+                                setCurrentRoom(room?.room)
+                                setCurrentMessageRoom(room?.roomName)
+                                setCurrentIndex(index)
+                              }}
+                            >
+                              Join Room
+                            </button>
+                          ) : (
+                            <button
+                              className='mbg-700 mcolor-100 px-5 py-2 rounded'
+                              onClick={() => {
+                                setCurrentRoom(room?.room)
+                                setCurrentMessageRoom(room?.roomName)
+                                setCurrentIndex(index)
+                                setShowrooms(false)
+                                setShowJoinedrooms(true)
+                              }}
+                            >
+                              Visit
+                            </button>
+                          )}
+                        </div>
+                      </>
+                    )}
+                  </div>
+                );
+              })}
             </div>
 
-          
+                      
           </div>
 
 
@@ -407,38 +530,52 @@ export const DiscussionForums = () => {
                 <p>Chat Rooms</p>
               </p>
 
-              {roomList
+
+              {filteredRooms
               .filter(room => room !== null)
               .map((room, index) => {
                 const userIdExists = room?.users?.some((userr) => userr.userId === user?.id);
-
-              if (userIdExists) {
+         
+                if (userIdExists) {
                   return (
                     <div key={index} className='mbg-300 py-3 px-5 my-5 rounded'>
                       {room && (
                         <>
-                          <p className='mcolor-800'>Room name: <span className='font-medium mcolor-900'>{room.roomName}</span></p>
-                          <p className='mcolor-800'>Room category: <span className='font-medium mcolor-900'>{room.roomCategory}</span></p>
-                          <p className='mcolor-800'>Room Description: <span className='font-medium mcolor-900'>{room.roomDescription}</span></p>
+                          <p className='mcolor-800'>Room name: <span className='font-medium mcolor-900'>{room?.roomName}</span></p>
+                          <p className='mcolor-800'>Room category: <span className='font-medium mcolor-900'>{room?.roomCategory}</span></p>
+                          <p className='mcolor-800'>Room Description: <span className='font-medium mcolor-900'>{room?.roomDescription}</span></p>
   
                           <div className='flex justify-between mt-3'>
-                              <p>Users: {room.users ? room.users.length : 0}</p>
+                              <p>Users: {room?.users ? room?.users.length : 0}</p>
                               {
-                                !userIdExists ? (
-                                    <button className='mbg-700 mcolor-100 px-5 py-2 rounded' onClick={() => joinCreatedRoom(room?.room, room?.users, index)}>Join Room</button>
-                                ) : (
+                                (roomList && roomList.length < 1 && roomList[currentIndex]?.users?.some((userr) => userr.userId === user?.id)) && (
                                   <button
                                     className='mbg-700 mcolor-100 px-5 py-2 rounded'
                                     onClick={() => {
-                                      setCurrentRoom(room?.room)
-                                      setCurrentMessageRoom(room?.roomName)
-                                      setCurrentIndex(index)
+                                      setCurrentRoom(room?.room);
+                                      setCurrentMessageRoom(room?.roomName);
+                                      setCurrentIndex(index);
                                     }}
                                   >
                                     View Chat Room
                                   </button>
                                 )
                               }
+                              {
+                                (currentRoom !== room?.room && roomList && roomList.length > 1) && (
+                                  <button
+                                    className='mbg-700 mcolor-100 px-5 py-2 rounded'
+                                    onClick={() => {
+                                      setCurrentRoom(room?.room);
+                                      setCurrentMessageRoom(room?.roomName);
+                                      setCurrentIndex(index);
+                                    }}
+                                  >
+                                    View Chat Room
+                                  </button>
+                                )
+                              }
+
                           </div>
                         </>
                       )}
@@ -449,55 +586,100 @@ export const DiscussionForums = () => {
             </div>
 
             <div className='border-thin-800 rounded w-1/2 h-[89vh]'>
-        
-            <div className="chat-window">
-              <div className="chat-header flex items-center justify-between px-5">
-                <p>{currentMessageRoom !== '' ? currentMessageRoom : 'Group Name'}</p>
-                <button className='mcolor-900 mbg-300 px-4 py-1 my-2 rounded'>Active Users</button>
-              </div>
-              <div className="chat-body">
-                <ScrollToBottom className="message-container">
-                  {roomList[currentIndex] && roomList[currentIndex].messages ? (
-                    roomList[currentIndex].messages.map((messageContent) => (
-                      <div
-                        className="message"
-                        id={username === messageContent.username ? "you" : "other"}
-                        key={messageContent.id} // Assuming there's an 'id' property for each message
-                      >
-                        <div>
-                          <div className="message-content">
-                            <p>{messageContent.message}</p>
-                          </div>
-                          <div className="message-meta">
-                            <p id="time">{messageContent.time}</p>
-                            <p id="author" className='capitalize'>{messageContent.username}</p>
-                          </div>
-                        </div>
-                      </div>
-                    ))
-                  ) : (
-                    <p>No messages available</p>
+
+              <div className="chat-window">
+                <div className="chat-header flex items-center justify-between px-5">
+
+                  <p>{currentMessageRoom !== '' ? currentMessageRoom : (roomList[currentIndex]?.room !== undefined ? (roomList[currentIndex]?.roomName && roomList[currentIndex]?.users?.some((userr) => userr.userId === user?.id) ? roomList[currentIndex]?.roomName : 'Group Name') : 'Group Name')}</p>
+
+                  {(roomList && roomList.length > 0 && roomList[currentIndex]?.users?.some((userr) => userr.userId === user?.id)) && (
+                    <button className='mcolor-900 mbg-300 px-4 py-1 my-2 rounded' onClick={() => setShowActiveUsers(true)}>Active Users</button>
                   )}
-                </ScrollToBottom>
-              </div>
-              <div className="chat-footer">
-                <input
-                  type="text"
-                  placeholder="Hey..."
-                  value={message}
-                  onChange={(event) => {
-                    setMessage(event.target.value);
-                  }}
-                  onKeyPress={(event) => {
-                    event.key === "Enter" && sendMessage();
-                  }}
-                />
-                <button onClick={sendMessage}>&#9658;</button>
-              </div>
+                </div>
+                <div className="chat-body">
+                  { (roomList && roomList.length > 0 && roomList[currentIndex]?.users?.some((userr) => userr.userId === user?.id)) && (
+                      roomList[currentIndex] && (
+                      <ScrollToBottom className="message-container">
+                        {roomList[currentIndex] && roomList[currentIndex].messages ? (
+                          roomList[currentIndex].messages.map((messageContent) => (
+                            <div
+                              className="message"
+                              id={username === messageContent.username ? "you" : "other"}
+                              key={messageContent.id} // Assuming there's an 'id' property for each message
+                            >
+                              <div>
+                                <div className="message-content">
+                                  <p>{messageContent.message}</p>
+                                </div>
+                                <div className="message-meta">
+                                  <p id="time">{messageContent.time}</p>
+                                  <p id="author" className='capitalize'>{messageContent.username}</p>
+                                </div>
+                              </div>
+                            </div>
+                          ))
+                        ) : (
+                          <p>No messages available</p>
+                        )}
+                      </ScrollToBottom>
+                      )
+                    )
+                  }
+                </div>
+                <div className="chat-footer">
+                  <input
+                    type="text"
+                    placeholder="Hey..."
+                    value={message}
+                    onChange={(event) => {
+                      setMessage(event.target.value);
+                    }}
+                    onKeyPress={(event) => {
+                      event.key === "Enter" && sendMessage();
+                    }}
+                  />
+                  <button onClick={sendMessage}>&#9658;</button>
+                </div>
 
+              </div>
+              
             </div>
 
-            </div>
+
+
+
+            {showActiveUsers && (
+              <div className={`absolute top-0 modal-bg left-0 w-full h-full`}>
+                <div className='flex items-center justify-center h-full'>
+                  <div className='relative mbg-100 h-[70vh] w-1/3 z-10 relative py-5 px-5 rounded-[5px]' style={{overflowY: 'auto'}}>
+
+                    <button className='absolute right-5 top-5 font-medium text-xl' onClick={() => {
+                      setShowActiveUsers(false)
+                    }}>&#10006;</button>
+
+                    <p className='text-center text-2xl mcolor-900 mb-5 mt-3'>Active Users</p>
+
+
+                    <br />
+
+                    {roomList[currentIndex] && roomList[currentIndex].users ? (
+                      roomList[currentIndex].users.map((user) => (
+                        <div
+                          key={user.userId} 
+                          className='text-center'
+                        >
+                          <p>{user.username}</p>
+                        </div>
+                      ))
+                    ) : (
+                      <p className='text-center opacity-50'>No Active User</p>
+                    )}
+
+
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
 
 
