@@ -1,20 +1,25 @@
 import axios from 'axios';
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useUser } from '../../UserContext';
 
 export const SavedGeneratedData = (props) => {
 
   const [studyMaterialTitle, setStudyMaterialTitle] = useState("");
   const [isLoading, setIsLoading] = useState(false); 
 
+  const { user } = useUser();
+
+  const userId = user?.id;
+
   
+
   const { generatedQA, setGeneratedQA, pdfDetails, setPDFDetails, numInp, setNumInp, materialFor, groupNameId, studyMaterialCategories, setStudyMaterialCategories, studyMaterialCategoryId, setStudyMaterialCategoryId } = props;
 
   const genQAData = generatedQA.question_answer_pairs;
   const genQADataRev = generatedQA.reviewer_ques_pairs;
   const genTrueSentences = generatedQA.true_or_false_sentences;
   const genFillInTheBlanks = generatedQA.fill_in_the_blanks;
-  const userId = 1;
 
   const navigate = useNavigate();
 
@@ -111,39 +116,57 @@ export const SavedGeneratedData = (props) => {
           quizType: 'MCQA',
         };
 
-        const trueSentencesData = {
-          question: genTrueSentences[i].sentence,
-          answer: 'True',
-          quizType: 'ToF'
-
-          
-        }
-
-      
-        const qaDataRev = {
-          question: genQADataRev[i].question,
-          answer: genQADataRev[i].answer,
-        };
-
-  
         if (
           qaData.question === "" ||
-          qaData.answer === "" ||
-          qaDataRev.question === "" ||
-          qaDataRev.answer === "" ||
-          trueSentencesData.question === '' ||
-          trueSentencesData.answer === '' 
+          qaData.answer === "" 
         ) {
           hasEmptyFields = true;
           alert("Cannot have empty fields.");
           break; 
         }
 
+
+        for (let j = 0; j < genQAData[i].distractors.length; j++) {
+          let qacData = {
+            choice: genQAData[i].distractors[j],
+          };
+
+          console.log(qacData.choice);
+
+          if (qacData.choice === "") {
+            hasEmptyFields = true;
+            alert("Cannot have empty fields.");
+            break;
+          } 
+        }
+      
+
         
       }
+  
+
+
 
 
       for (let i = 0; i < genTrueSentences.length; i++) {
+
+        const trueSentencesData = {
+          question: genTrueSentences[i].sentence,
+          answer: 'True',
+          quizType: 'ToF'
+        }
+
+
+        if (
+          trueSentencesData.question === '' ||
+          trueSentencesData.answer === '' 
+        ) {
+          hasEmptyFields = true;
+          alert("Cannot have empty fields.");
+          break; 
+        } 
+
+
 
         for (let j = 0; j < genTrueSentences[i].distractors.length; j++) {
           let qacData = {
@@ -158,6 +181,10 @@ export const SavedGeneratedData = (props) => {
             break;
           } 
         }
+      
+   
+
+  
       }
 
       for (let i = 0; i < genFillInTheBlanks.sentences.length; i++) {
@@ -169,6 +196,24 @@ export const SavedGeneratedData = (props) => {
         if (
           fillInTheBlank.question === "" ||
           fillInTheBlank.answer === ""  
+        ) {
+          hasEmptyFields = true;
+          alert("Cannot have empty fields.");
+          break; 
+        }
+      }
+
+
+      
+      for (let i = 0; i < genQADataRev.length; i++) {
+        const qaRev = {
+          question: genQADataRev[i].question,
+          answer: genQADataRev[i].answer,
+        }
+
+        if (
+          qaRev.question === "" ||
+          qaRev.answer === ""  
         ) {
           hasEmptyFields = true;
           alert("Cannot have empty fields.");
@@ -209,13 +254,7 @@ export const SavedGeneratedData = (props) => {
               UserId: smResponse.data.UserId,
             };
   
-            const qaDataRev = {
-              question: genQADataRev[i].question,
-              answer: genQADataRev[i].answer,
-              StudyMaterialId: smResponse.data.id,
-              UserId: smResponse.data.UserId,
-            };
-  
+
             const qaResponse = await axios.post(
               'http://localhost:3001/quesAns',
               qaData
@@ -237,10 +276,23 @@ export const SavedGeneratedData = (props) => {
                 console.log("Saved!");
               }
             }
+   
+          }
+
+
+          for (let i = 0; i < genQADataRev.length; i++) {
+
+            const qaDataRev = {
+              question: genQADataRev[i].question,
+              answer: genQADataRev[i].answer,
+              StudyMaterialId: smResponse.data.id,
+              UserId: smResponse.data.UserId,
+            };
   
             await axios.post('http://localhost:3001/quesRev', qaDataRev);
             console.log('Saved rev!');
           }
+
 
 
 
@@ -315,12 +367,11 @@ export const SavedGeneratedData = (props) => {
           setPDFDetails('');
           setNumInp('');
   
-          
           // Back to Personal Study Area
           if (materialFor === 'Personal') {
-            navigate(`/main/personal/study-area?reload`);
+            navigate(`/main/personal/study-area`);
           } else if (materialFor === 'Group') {
-            navigate(`/main/group/study-area/${groupNameId}?reload`);
+            navigate(`/main/group/study-area/${groupNameId}`);
           }
         } catch (error) {
           console.error('Error saving study material:', error);

@@ -5,6 +5,12 @@ import { Link, useLocation } from 'react-router-dom';
 import { useNavigate, useParams } from 'react-router-dom';
 import CategoryIcon from '@mui/icons-material/Category';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
+import DeleteIcon from '@mui/icons-material/Delete';
+import OpenInNewIcon from '@mui/icons-material/OpenInNew';
+
+
+import { useUser } from '../../UserContext';
+
 
 export const StudyAreaGP = (props) => {
   const navigate = useNavigate();
@@ -15,7 +21,13 @@ export const StudyAreaGP = (props) => {
   const { id } = useParams();
   const groupNameId = id;
 
-  const { UserId, categoryFor } = props;
+
+  const { user } = useUser();
+
+  const UserId = user?.id;
+
+
+  const { categoryFor } = props;
   const categoryForToLower = categoryFor.toLowerCase();
 
   const [showLesson, setShowLesson] = useState(true);
@@ -45,7 +57,9 @@ export const StudyAreaGP = (props) => {
   const [groupMemberIndex, setGroupMemberIndex] = useState("");
 
   const [isExpanded, setIsExpanded] = useState(true);
+  const [isBookmarkExpanded, setIsBookmarkExpanded] = useState(true);
   const [expandedCategories, setExpandedCategories] = useState({}); 
+  const [expandedSharedCategories, setExpandedSharedCategories] = useState({}); 
 
 
 
@@ -54,14 +68,20 @@ export const StudyAreaGP = (props) => {
   // shared materials usestates
   const [sharedMaterials, setSharedMaterials] = useState([]);
   const [sharedMaterialsCategories, setSharedMaterialsCategories] = useState([]);
+  const [sharedMaterialsCategoriesEach, setSharedMaterialsCategoriesEach] = useState([])
 
-
-
+  // deleting material
+  const [recentlyDeletedMaterial, setRecentlyDeletedMaterial] = useState('');
+  const [isMaterialDeleted, setIsMaterialDeleted] = useState('hidden');
 
 
 
   const toggleExpand = () => {
     setIsExpanded(!isExpanded);
+  };  
+
+  const toggleBookmarksExpand = () => {
+    setIsBookmarkExpanded(!isBookmarkExpanded);
   };  
 
   const addToModalList = () => {
@@ -73,42 +93,43 @@ export const StudyAreaGP = (props) => {
     }
   }
   
-  const saveCategories = () => {
+  const saveCategories = async () => {
     if (modalList.length > 0) {
-      modalList.forEach((item, index) => {
-        let categoryData = {
-          category: item,
-          categoryFor: categoryFor,
-          StudyGroupId: groupNameId,
-          UserId: UserId,
-        };
+      try {
+        // Use Promise.all to wait for all axios.post calls to complete
+        await Promise.all(modalList.map(async (item, index) => {
+          let categoryData = {
+            category: item,
+            categoryFor: categoryFor,
+            StudyGroupId: groupNameId,
+            UserId: UserId,
+          };
   
-        axios.post(`http://localhost:3001/studyMaterialCategory/`, categoryData)
-          .then(response => {
-            // Handle success if needed
-          })
-          .catch(error => {
-            // Handle error if needed
-          });
-      });
+          // Use await to wait for the axios.post call to complete
+          await axios.post(`http://localhost:3001/studyMaterialCategory/`, categoryData);
+        }));
   
-      setHidden("hidden")
-      setModalList([]);
-      setCurrentModalVal("");
-      setCategoryModal("hidden");
-      
-      setTimeout(() => {
-        setSavedGroupNotif("")
-      }, 500);
-      setTimeout(() => {
-        setSavedGroupNotif("hidden")
-        window.location.reload();
-      }, 1800);
+        setHidden("hidden");
+        setModalList([]);
+        setCurrentModalVal("");
+        setCategoryModal("hidden");
+  
+        setTimeout(() => {
+          setSavedGroupNotif("");
+        }, 500);
+        setTimeout(() => {
+          setSavedGroupNotif("hidden");
+          window.location.reload();
+        }, 1800);
+      } catch (error) {
+        // Handle error if needed
+        console.error("Error saving categories:", error);
+      }
     } else {
       alert("Cannot save empty field.");
     }
-
   };
+  
 
   const copyGroupCode = () => {
     navigator.clipboard.writeText(code)
@@ -168,20 +189,19 @@ export const StudyAreaGP = (props) => {
     }
   };
 
-  const removeSelectedUser = (itemId, groupNameId) => {
+  const removeSelectedUser = async (itemId, groupNameId) => {
     const updatedTempUserList = tempUserList.filter(user => user.id !== itemId);
 
     const updatedUserList = userList.filter(user => user.id !== itemId);  
     setTempUserList(updatedTempUserList);
     setUserList(updatedUserList);
 
-    axios.delete(`http://localhost:3001/studyGroupMembers/remove-member/${groupNameId}/${itemId}`).then(response => {
+    await axios.delete(`http://localhost:3001/studyGroupMembers/remove-member/${groupNameId}/${itemId}`).then(response => {
       // console.log(response.data); 
     }).catch(error => {
       console.error(error);
     });
   };
-
 
   // console.log(groupMemberIndex);
   useEffect(() => {
@@ -242,6 +262,7 @@ export const StudyAreaGP = (props) => {
       try {
         const catPersonalResponse = await axios.get(studyMaterialCategoryLink);
         setMaterialCategories(catPersonalResponse.data);
+
   
         const groupResponse = await axios.get(studyMaterialLink);
         let sortedData = groupResponse.data.sort((a, b) => b.id - a.id);
@@ -254,21 +275,35 @@ export const StudyAreaGP = (props) => {
         
         setSharedMaterials(bookmarkedStudyMaterials);
 
+
+
+
         const fetchedSharedStudyMaterialCategory = await Promise.all(
           bookmarkedStudyMaterials.map(async (material, index) => {
             const materialCategoryResponse = await axios.get(`http://localhost:3001/studyMaterialCategory/get-categoryy/${material.StudyMaterialsCategoryId}`);
             return materialCategoryResponse.data; // Return the data from each promise
           })
         );
+        
+        // Use a custom filter to remove objects with duplicate id values
+        const uniqueCategories = fetchedSharedStudyMaterialCategory.filter(
+          (category, index, self) =>
+            index ===
+            self.findIndex(
+              (t) => t.id === category.id
+            )
+        );
+        
+        setSharedMaterialsCategories(uniqueCategories);
+        setSharedMaterialsCategoriesEach(fetchedSharedStudyMaterialCategory);
+        
 
 
-        setSharedMaterialsCategories(fetchedSharedStudyMaterialCategory)
+
         setSudyMaterialsCategory(ownOrSharedRecords);
-        console.log(ownOrSharedRecords);
   
         const lastMaterial = ownOrSharedRecords.length > 0 ? ownOrSharedRecords[0] : null;
         setLastMaterial(lastMaterial);
-
 
 
 
@@ -279,9 +314,9 @@ export const StudyAreaGP = (props) => {
           let studyLastMaterialLink;
   
           if (categoryFor === 'Personal') {
-            studyLastMaterialLink = `http://localhost:3001/studyMaterialCategory/get-lastmaterial/${lastMaterial.StudyMaterialsCategoryId}/${categoryFor}/${UserId}`;
+            studyLastMaterialLink = `http://localhost:3001/studyMaterialCategory/get-categoryy/${lastMaterial.StudyMaterialsCategoryId}`;
           } else {
-            studyLastMaterialLink = `http://localhost:3001/studyMaterialCategory/get-lastmaterial/${lastMaterial.StudyMaterialsCategoryId}/${groupNameId}/${categoryFor}/${UserId}`;
+            studyLastMaterialLink = `http://localhost:3001/studyMaterialCategory/get-categoryy/${lastMaterial.StudyMaterialsCategoryId}`;
           }
   
           try {
@@ -338,6 +373,15 @@ export const StudyAreaGP = (props) => {
         initialExpandedState[category.id] = true;
       });
       setExpandedCategories(initialExpandedState);
+
+  
+      const initialSharedExpandedState = {};
+      sharedMaterialsCategories.forEach((category) => {
+        initialSharedExpandedState[category.id] = true; // Update to use the id
+      });
+      setExpandedSharedCategories(initialSharedExpandedState);
+      
+
     };
   
     fetchData();
@@ -378,6 +422,42 @@ export const StudyAreaGP = (props) => {
       [categoryId]: !prevExpandedCategories[categoryId], // Toggle the state
     }));
   };
+
+  const toggleSharedExpandId = (categoryId) => {
+    setExpandedSharedCategories((prevExpandedCategories) => ({
+      ...prevExpandedCategories,
+      [categoryId]: !prevExpandedCategories[categoryId], // Toggle the state
+    }));
+  };
+
+
+  const deleteStudyMaterial = async (id, title) => {
+    // Show a confirmation dialog
+    const confirmed = window.confirm(`Are you sure you want to delete ${title}?`);
+  
+    if (confirmed) {
+      await axios.delete(`http://localhost:3001/studyMaterial/delete-material/${id}`).then(() => {
+        const updatedMaterials = studyMaterialsCategory.filter((material) => material.id !== id);  
+        setSudyMaterialsCategory(updatedMaterials);
+        }
+      );
+
+
+      setTimeout(() => {
+        setIsMaterialDeleted('')
+        setRecentlyDeletedMaterial(title)
+      }, 100);
+
+      setTimeout(() => {
+        setIsMaterialDeleted('hidden')
+        setRecentlyDeletedMaterial('')
+      }, 1500);
+    }
+  }
+
+
+
+  console.log(sharedMaterialsCategoriesEach);
 
 
   return (
@@ -549,10 +629,24 @@ export const StudyAreaGP = (props) => {
                       studyMaterialsCategory
                         .filter((material) => material.StudyMaterialsCategoryId === category.id)
                         .map((material, index) => (
-                          <p key={index} className='mt-2'>
-                            <i className="fa-solid fa-book mr-2"></i>
-                            {material.title}
-                          </p>
+                          <div className='flex items-center justify-between'>
+                            <p key={index} className='mt-2'>
+                              <i className="fa-solid fa-book mr-2"></i>
+                              {material.title}
+                            </p>
+
+                            <div>
+                              <button 
+                                onClick={() => deleteStudyMaterial(material.id, material.title)}
+                                >
+                                  <DeleteIcon sx={{fontSize: '20px'}} />
+                              </button>
+
+                              <Link to={`/main/${categoryForToLower}/study-area/${categoryFor.toLowerCase()}-review/${groupNameId !== undefined ? groupNameId + '/' : ''}${material.id}`}>
+                                <OpenInNewIcon sx={{fontSize: '20px'}} />
+                              </Link>
+                            </div>
+                          </div>
                         ))
                     )}
 
@@ -580,31 +674,108 @@ export const StudyAreaGP = (props) => {
             </div>
           </div> */}
           
-          <p className='mb-5 mt-5'>Bookmarked Materials:</p>
-          {sharedMaterials.map((material, index) => (
+
+
+
+          <div className='mt-10'>
+            {sharedMaterialsCategories.length > 0 ? (
+              <div>
+                <span>Bookmarked Materials:</span>
+                <button onClick={toggleBookmarksExpand} className='ml-2'>
+                  {!isBookmarkExpanded ? <i className="fa-solid fa-chevron-down"></i> : <i className="fa-solid fa-chevron-up"></i>}
+                </button>
+              </div>
+            ) : (
+              <p className='text-center'>No bookmarks record.</p>
+            )}
+            <div className={`expandable-container ${isBookmarkExpanded ? 'expanded' : ''}`}>
+              {sharedMaterialsCategories.length > 0 && (
+                isBookmarkExpanded && [...new Set(sharedMaterialsCategories.map(category => category.category))].map((categoryName) => (
+                  <div className="shelf-category my-5" key={categoryName}>
+                    <div className="shadows mbg-100 mt-2 mcolor-900 p-4 rounded-[5px]">
+                      <div className='flex items-center'>
+                        <div className="text-lg font-medium">{categoryName}</div>
+                        <button onClick={() => toggleSharedExpandId(categoryName)} className='ml-2'>
+                          {!expandedSharedCategories[categoryName] ? (
+                            <i className="fa-solid fa-chevron-down"></i>
+                          ) : (
+                            <i className="fa-solid fa-chevron-up"></i>
+                          )}
+                        </button>
+                      </div>
+                      {/* Check if the category is expanded before rendering the study materials */}
+                      {expandedSharedCategories[categoryName] && (
+                        sharedMaterials
+                          .filter((material) => sharedMaterialsCategoriesEach.find(category => category.category === categoryName))
+                          .map((material, index) => {
+                            const matchingCategory = sharedMaterialsCategoriesEach.find(category => category.category === categoryName);
+
+                            // Check if the material's category matches the current categoryName
+                            if (matchingCategory && sharedMaterialsCategoriesEach[index].category === categoryName) {
+                              return (
+                                <div key={material.id} className='flex items-center justify-between'>
+                                  <p className='mt-2'>
+                                    <i className="fa-solid fa-book mr-2"></i>
+                                    {material.title}
+                                  </p>
+                                  <div>
+                                    <button
+                                      onClick={() => deleteStudyMaterial(material.id, material.title)}
+                                    >
+                                      <DeleteIcon sx={{ fontSize: '20px' }} />
+                                    </button>
+                                    <Link to={`/main/${categoryForToLower}/study-area/${categoryFor.toLowerCase()}-review/${groupNameId !== undefined ? groupNameId + '/' : ''}${material.id}`}>
+                                      <OpenInNewIcon sx={{ fontSize: '20px' }} />
+                                    </Link>
+                                  </div>
+                                </div>
+                              );
+                            }
+
+                            return null; // Skip rendering if the material is not in the current category
+                          })
+                      )}
+
+
+                      {expandedSharedCategories[categoryName] && sharedMaterials
+                        .filter((material) => sharedMaterialsCategoriesEach.find(category => category.category === categoryName)).length === 0 && (
+                          <p className='text-center mt-2'>No own record of study material under this category</p>
+                        )}
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+
+
+
+          {/* {sharedMaterials.map((material, index) => (
             <p key={index} className='mt-2 shadows mcolor-900 rounded-[5px] p-5 my-3   mbg-100'>
               <i className="fa-solid fa-book mr-2"></i>
               {material.title} - {sharedMaterialsCategories[index]?.category || 'No Category'}
             </p>
-          ))}
+          ))} */}
 
         </div>
       </div>
 
       <div className='py-6 px-10 w-3/4 '>
         
-        <Navbar linkBack={`/main/${categoryForToLower}/`} linkBackName={`${categoryFor === 'Personal' ? 'Personal Study Area' : 'Groups'}`} currentPageName={'Study Area'} username={'Jennie Kim'}/>
+        <Navbar linkBack={`${categoryFor === 'Group' ? `/main/${categoryForToLower}/` : '/main'}`} linkBackName={`${categoryFor === 'Personal' ? 'Main' : 'Groups'}`} currentPageName={'Study Area'} username={'Jennie Kim'}/>
         
 
         <div className='flex justify-between items-center mt-10 mb-6'>
 
-          <button className='rounded-[8px] px-6 py-2 font-medium font-lg mbg-800 mcolor-100' onClick={() => {
-            materialCategories.length > 0 ? (
-              navigate(`/main/${categoryForToLower}/study-area/qa-gen/${categoryFor === 'Group' ? groupNameId : ''}`)
-            ) : (
-              alert('No category saved. Add a category first.')
-            )
-          }}>Create Reviewer</button>
+        <button className='rounded-[8px] px-6 py-2 font-medium font-lg mbg-800 mcolor-100' onClick={() => {
+        materialCategories.length > 0
+          ? navigate(`/main/${categoryForToLower}/study-area/qa-gen/${categoryFor === 'Group' ? groupNameId : ''}`, {
+              state: {
+                categoryFor: categoryFor,
+              },
+            })
+          : alert('No category saved. Add a category first.');
+      }}>Create Reviewer</button>
 
           <div>
             <button className='mx-1 mbg-300 mcolor-800 px-6 py-2 rounded-[5px] font-medium font-lg' onClick={() => {
@@ -623,6 +794,8 @@ export const StudyAreaGP = (props) => {
         </div>
 
         <p className={`${savedGroupNotif} my-5 py-2 mbg-300 mcolor-800 text-center rounded-[5px] text-lg`}>New categories added!</p>
+
+        <p className={`${isMaterialDeleted} my-5 py-2 mbg-300 mcolor-800 text-center rounded-[5px] text-lg`}>{recentlyDeletedMaterial} has been deleted.</p>
 
 
         <div>

@@ -32,6 +32,20 @@ router.get('/:categoryFor/:StudyGroupId', async (req, res) => {
   res.json(extractedCategories);
 })
 
+router.get('/Personal/:UserId', async (req, res) => {
+  const { UserId } = req.params;
+  const extractedCategories = await StudyMaterialsCategories.findAll({
+    where: {
+      UserId: UserId, 
+    },
+  });
+  res.json(extractedCategories);
+})
+
+
+
+
+
 router.get('/personal-study-material/:categoryFor/:UserId', async (req, res) => {
   const { categoryFor, UserId } = req.params;
   const extractedCategories = await StudyMaterialsCategories.findAll({

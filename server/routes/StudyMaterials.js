@@ -21,6 +21,7 @@ router.get('/study-code/:StudyGroupId/:id', async (req, res) => {
 
 
 
+
 router.get('/study-material/:materialFor/:StudyGroupId/:UserId/:id', async(req, res) => {
   const { materialFor, StudyGroupId, UserId, id} = req.params;
   const latestMaterial = await StudyMaterials.findAll({
@@ -47,6 +48,14 @@ router.get('/study-material-personal/:materialFor/:UserId/:id', async(req,res) =
     },
     order: [['id', 'DESC']]
   });
+
+  res.json(personalStudyMaterial);
+
+})
+
+router.get('/get-material/:id', async(req,res) => {
+  const { id } = req.params;
+  const personalStudyMaterial = await StudyMaterials.findByPk(id);
 
   res.json(personalStudyMaterial);
 
@@ -183,7 +192,80 @@ router.put('/update-study-performance/:id', async (req, res) => {
 
 
 
-router.get('/latestMaterialStudied/:UserId', async (req, res) => {
+router.put('/update-study-title/:id', async (req, res) => {
+  const materialId = req.params.id;
+  const { title } = req.body;
+
+  try {
+    const StudyMaterialsData = await StudyMaterials.findByPk(materialId);
+
+    if (!StudyMaterialsData) {
+      return res.status(404).json({ error: 'Dashboard data not found' });
+    }
+
+    StudyMaterialsData.title = title;
+
+    const updatedStudyPerformance = await StudyMaterialsData.save();
+
+    console.log('Dashboard data updated successfully:', updatedStudyPerformance);
+    res.json(updatedStudyPerformance);
+  } catch (error) {
+    console.error('Error updating dashboard data:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
+router.put('/update-study-body/:id', async (req, res) => {
+  const materialId = req.params.id;
+  const { body } = req.body;
+
+  try {
+    const StudyMaterialsData = await StudyMaterials.findByPk(materialId);
+
+    if (!StudyMaterialsData) {
+      return res.status(404).json({ error: 'Dashboard data not found' });
+    }
+
+    StudyMaterialsData.body = body;
+
+    const updatedStudyPerformance = await StudyMaterialsData.save();
+
+    console.log('Dashboard data updated successfully:', updatedStudyPerformance);
+    res.json(updatedStudyPerformance);
+  } catch (error) {
+    console.error('Error updating dashboard data:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
+router.put('/update-study-categorId/:id', async (req, res) => {
+  const materialId = req.params.id;
+  const { StudyMaterialsCategoryId } = req.body;
+
+  try {
+    const StudyMaterialsData = await StudyMaterials.findByPk(materialId);
+
+    if (!StudyMaterialsData) {
+      return res.status(404).json({ error: 'Dashboard data not found' });
+    }
+
+    StudyMaterialsData.StudyMaterialsCategoryId = StudyMaterialsCategoryId;
+
+    const updatedStudyPerformance = await StudyMaterialsData.save();
+
+    console.log('Dashboard data updated successfully:', updatedStudyPerformance);
+    res.json(updatedStudyPerformance);
+  } catch (error) {
+    console.error('Error updating dashboard data:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
+
+
+
+
+router.get('/latestMaterialStudied/personal/:UserId', async (req, res) => {
   const { UserId } = req.params;
 
   try {
@@ -203,13 +285,12 @@ router.get('/latestMaterialStudied/:UserId', async (req, res) => {
   }
 });
 
-router.get('/latestMaterialStudied/group/:StudyGroupId/:UserId', async (req, res) => {
+router.get('/latestMaterialStudied/group/:StudyGroupId', async (req, res) => {
   const { UserId, StudyGroupId } = req.params;
 
   try {
     const latestMaterial = await StudyMaterials.findAll({
       where: {
-        UserId: UserId,
         materialFor: 'Group',
         StudyGroupId: StudyGroupId,
         isStarted: 'true'
@@ -235,6 +316,17 @@ router.get('/all-study-material/:StudyMaterialsCategoryId', async(req, res) => {
 
   res.json(studyMaterials);
 });
+
+
+
+
+router.delete('/delete-material/:id', async (req, res) => {
+  const materialId = req.params.id;
+  const studyMaterial = await StudyMaterials.findByPk(materialId);
+  await studyMaterial.destroy();
+  res.json(studyMaterial);
+})
+
 
 
 

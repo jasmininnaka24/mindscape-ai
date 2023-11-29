@@ -1,8 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import { SearchFunctionality } from '../search/SearchFunctionality';
 import axios from 'axios';
+import { useUser } from '../../UserContext';
 
 export const CreateGroupComp = (props) => {
+
+  const { user } = useUser();
+
 
   const { setSavedGroupNotif, savedGroupNotif, groupList, setGroupList, fetchGroupListData } = props;
 
@@ -15,7 +19,9 @@ export const CreateGroupComp = (props) => {
   const [listedData, setListedData] = useState([]);
   const [searchTermApp, setSearchTermApp] = useState('');
   const [groupNameInp, setGroupNameInp] = useState('');
-  const UserId = 1;
+
+  
+  const UserId = user?.id;
 
 
   const handleSearch = (searchTerm) => {
@@ -121,8 +127,9 @@ export const CreateGroupComp = (props) => {
       setHidden('hidden');
       setGroupNameInp('');
   
-      const groupListResponse = await axios.get(`http://localhost:3001/studyGroup/extract-group-through-user/${UserId}`);
-      setGroupList(groupListResponse.data);
+      await axios.get(`http://localhost:3001/studyGroup/extract-group-through-user/${UserId}`);
+      // setGroupList(groupListResponse.data);
+
   
       setTimeout(() => {
         setSavedGroupNotif(true);
@@ -152,7 +159,7 @@ export const CreateGroupComp = (props) => {
   useEffect(() => {
     // Call the fetchFollowerData function
     fetchFollowerData();
-  }, []);
+  }, [fetchFollowerData]);
     
   return (
     <div className='w-1/2 flex justify-between items-center gap-5'>

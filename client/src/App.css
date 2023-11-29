@@ -272,6 +272,12 @@ input:focus{
 .bg-red{
   background-color: #af4242;
 }
+.text-red-dark{
+  color: #af4242;
+}
+.text-greenn{
+  color: #476c50;
+}
 .bg-red-500{
   background-color: rgb(247, 215, 215);
 }

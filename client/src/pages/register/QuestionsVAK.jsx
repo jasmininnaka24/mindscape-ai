@@ -1,10 +1,16 @@
 import React from 'react';
 import './qavak.css';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 
 export const ClassificationQuestions = () => {
 
   const navigate = useNavigate();
+  const location = useLocation();
+
+
+  const { registeredUserId } = location.state;
+
+
 
 
   const radioButtons = document.querySelectorAll('.form__radio-input');
@@ -26,6 +32,7 @@ export const ClassificationQuestions = () => {
       navigate('/data-submission', {
         state: {
           selectedStr: data,
+          registeredUserId
         },
       });
 

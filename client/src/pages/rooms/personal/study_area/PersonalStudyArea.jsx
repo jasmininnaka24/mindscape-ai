@@ -1,9 +1,11 @@
 import React from 'react';
 import { StudyAreaGP } from '../../../../components/study-area/StudyAreaGP';
+import { useUser } from '../../../../UserContext';
 
 export const PersonalStudyArea = () => {
 
-  const UserId = 1;
+  const { user } = useUser()
+  const UserId = user?.id;
 
   return (
     <div>

@@ -222,7 +222,7 @@ export const AssessmentPage = (props) => {
           completionTime: completionTimeCalc,
           confidenceLevel: completionTimeCalc >= Math.round(extractedQAAssessment.length / 2) ? confidence : 100,
           StudyMaterialId: materialId,
-          StudyGroupId: null
+          StudyGroupId: groupId,
         }
 
 
@@ -307,7 +307,7 @@ export const AssessmentPage = (props) => {
             confidenceLevel: completionTimeCalc >= Math.round(extractedQAAssessment.length / 2) ? confidence : 100,
             numOfTakes: fetchedData[0].numOfTakes + 1,
             StudyMaterialId: materialId,
-            StudyGroupId: null
+            StudyGroupId: groupId
           }
 
           setLastAssessmentScore(fetchedData[0].assessmentScore)

@@ -8,6 +8,10 @@ import { AddingTask } from './AddingTask';
 import { UpdateTasks } from './UpdateTasks';
 import { DeleteTask } from './DeleteTask';
 import { CompletedTask } from './CompletedTask';
+import PushPinIcon from '@mui/icons-material/PushPin';
+import WatchLaterIcon from '@mui/icons-material/WatchLater';
+import PendingActionsIcon from '@mui/icons-material/PendingActions';
+import EditIcon from '@mui/icons-material/Edit';
 
 export const Tasks = (props) => {
 
@@ -15,7 +19,9 @@ export const Tasks = (props) => {
   const [task, setTask] = useState("");
   const [dueDate, setDueDate] = useState("");
   const [listOfTasks, setListOfTasks] = useState([]);
-  const [taskID, setTaskID] = useState(0)
+  const [taskID, setTaskID] = useState(0);
+  const [showAddTaskModal, setShowAddTaskModal] = useState(false)
+
   const room = props.room;
 
   // Modals Functionalities
@@ -39,17 +45,31 @@ export const Tasks = (props) => {
   }
   
 
-  return (
-    <div>
-      <div>
-        <Navbar page={'Tasks'} username={'Jennie Kim'} />
-        <RenderTasks setListOfTasks={setListOfTasks} />
-        <div data-aos='fade' className="border gen-box flex justify-between items-center">
-          <div className='box1 border-box w-1/2'>
-            <div className='scroll-box'>
+  
 
-              {/* Adding a task form */}
-              <AddingTask unhideModal={dynamicClassNameForUnhide} task={task} setTask={setTask} dueDate={dueDate} setDueDate={setDueDate} room={room} setTaskID={setTaskID} listOfTasks={listOfTasks} setListOfTasks={setListOfTasks} />
+  return (
+    <div className='my-8'>
+      <div>
+        <RenderTasks setListOfTasks={setListOfTasks} />
+        <div className="border-medium-800 gen-box flex justify-between items-center rounded">
+          <div className='box1 border-box w-1/2'>
+            <div className='scroll-box p-7'>
+
+              <div className='flex items-center justify-between'>
+                <p className='text-2xl font-normal'>List of Tasks</p>
+                {!showAddTaskModal ? (
+                  <button className='px-7 py-1 text-lg mbg-700 mcolor-100 rounded' onClick={() => setShowAddTaskModal(true)}>Add Task</button>
+                  ) : (
+                  <button className='px-7 py-1 text-4xl rounded' onClick={() => setShowAddTaskModal(false)}>&times;</button>
+                )}
+              </div>
+
+              {showAddTaskModal && (
+                <div>
+                  {/* Adding a task form */}
+                  <AddingTask unhideModal={dynamicClassNameForUnhide} task={task} setTask={setTask} dueDate={dueDate} setDueDate={setDueDate} room={room} setTaskID={setTaskID} listOfTasks={listOfTasks} setListOfTasks={setListOfTasks} />
+                </div>
+              )}
 
 
 
@@ -58,7 +78,7 @@ export const Tasks = (props) => {
 
 
               {/* Unaccomplished Tasks */}
-              <div className='m-5 pr-5'>
+              <div className='my-5'>
                 {/* List of tasks that are need to be accomplished */}
                 {listOfTasks
                   .filter(task => task.completedTask === 'Uncompleted' && task.id !== taskID) 
@@ -122,17 +142,24 @@ export const Tasks = (props) => {
                       hour: '2-digit',
                       minute: '2-digit',
                     });
+
+
+                    const abbreviatedMonth = formattedDueDate.slice(0, 3);
+                    const formattedDueDateAbbreviated = `${abbreviatedMonth} ${dueDate.getDate()}, ${dueDate.getFullYear()}`;
+
           
                     return (
-                      <div key={key}>
-                      <div>Task: {task.task}</div>
-                      <div>Due Date: {formattedDueDate}, {formattedTime}</div>
-                      <div>Task Due: {formattedTimeDifference}</div>
-                      <div className='mt-1 flex justify-start items-center gap-3'>
-                        <CompletedTask listOfTasks={listOfTasks} setListOfTasks={setListOfTasks} setTask={setTask} setDueDate={setDueDate} setTaskID={setTaskID} taskId={task.id} />
-                        <button className='px-3 py-1 rounded-[4px] border' onClick={() => openModal(task.id, task.task, task.dueDate)}>Update</button>
-                        <DeleteTask taskId={task.id} listOfTasks={listOfTasks} setListOfTasks={setListOfTasks} />
-                      </div>
+                      <div key={key} className='flex justify-between w-full mbg-200 px-4 py-3'>
+                        <div className='w-1/2'>
+                          <div><PushPinIcon className='text-red-dark' /> {task.task}</div>
+                          <div className='mt-1'><WatchLaterIcon sx={{ fontSize: '22px' }} /> {formattedDueDateAbbreviated}, {formattedTime}</div>
+                          <div className='mt-2'><PendingActionsIcon/> {formattedTimeDifference}</div>
+                        </div>
+                        <div className='mt-1 flex items-center justify-end w-1/2'>
+                          <CompletedTask listOfTasks={listOfTasks} setListOfTasks={setListOfTasks} setTask={setTask} setDueDate={setDueDate} setTaskID={setTaskID} taskId={task.id} />
+                          <DeleteTask taskId={task.id} listOfTasks={listOfTasks} setListOfTasks={setListOfTasks} />
+                          <button className='py-1' onClick={() => openModal(task.id, task.task, task.dueDate)}><EditIcon /></button>
+                        </div>
                       <br />
                     </div>
                     )

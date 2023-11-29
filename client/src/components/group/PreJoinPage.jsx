@@ -2,6 +2,8 @@ import React, { useEffect, useState } from 'react'
 import { Navbar } from '../navbar/logged_navbar/navbar';
 import axios from 'axios';
 import io from 'socket.io-client';
+import { useUser } from '../../UserContext';
+import { Link, useNavigate } from 'react-router-dom';
 
 const socket = io.connect("http://localhost:3001");
 
@@ -9,7 +11,10 @@ const socket = io.connect("http://localhost:3001");
 
 export const PreJoinPage = (props) => {
 
-  const { setUsername, setUserId, joinRoom, materialId, groupId, setShowPreJoin, setShowAssessmentPage, username, userId, assessementRoom, setUserListAssessment, selectedAssessmentAnswer, setSelectedAssessmentAnswer,  isRunning, setIsRunning, setSeconds, itemCount, setQA, extractedQA, shuffledChoices, setShuffledChoices, isSubmittedButtonClicked, setIsSubmittedButtonClicked, idOfWhoSubmitted, setIdOfWhoSubmitted, usernameOfWhoSubmitted, setUsernameOfWhoSubmitted, score, setScore, isSubmitted, setIsSubmitted, isAssessmentDone, setIsAssessmentDone, showSubmittedAnswerModal, setShowSubmittedAnswerModal, showTexts, setShowTexts, showAnalysis, setShowAnalysis, showAssessment, setShowAssessment, overAllItems, setOverAllItems, preAssessmentScore, setPreAssessmentScore, assessmentScore, setAssessmentScore, assessmentImp, setAssessmentImp, assessmentScorePerf, setAssessmentScorePerf, completionTime, setCompletionTime, confidenceLevel, setConfidenceLevel, overAllPerformance, setOverAllPerformance, assessmentCountMoreThanOne, setAssessmentCountMoreThanOne, generatedAnalysis, setGeneratedAnalysis, shuffledChoicesAssessment, setShuffledChoicesAssessment, extractedQAAssessment, setQAAssessment, assessmentUsersChoices, setAssessmentUsersChoices, message, setMessage, messageList, setMessageList } = props;
+  const { user } = useUser();
+  const navigate = useNavigate()
+
+  const { joinRoom, materialId, groupId, setShowPreJoin, setShowAssessmentPage, userId, assessementRoom, setUserListAssessment, selectedAssessmentAnswer, setSelectedAssessmentAnswer,  isRunning, setIsRunning, setSeconds, itemCount, setQA, extractedQA, shuffledChoices, setShuffledChoices, isSubmittedButtonClicked, setIsSubmittedButtonClicked, idOfWhoSubmitted, setIdOfWhoSubmitted, usernameOfWhoSubmitted, setUsernameOfWhoSubmitted, score, setScore, isSubmitted, setIsSubmitted, isAssessmentDone, setIsAssessmentDone, showSubmittedAnswerModal, setShowSubmittedAnswerModal, showTexts, setShowTexts, showAnalysis, setShowAnalysis, showAssessment, setShowAssessment, overAllItems, setOverAllItems, preAssessmentScore, setPreAssessmentScore, assessmentScore, setAssessmentScore, assessmentImp, setAssessmentImp, assessmentScorePerf, setAssessmentScorePerf, completionTime, setCompletionTime, confidenceLevel, setConfidenceLevel, overAllPerformance, setOverAllPerformance, assessmentCountMoreThanOne, setAssessmentCountMoreThanOne, generatedAnalysis, setGeneratedAnalysis, shuffledChoicesAssessment, setShuffledChoicesAssessment, extractedQAAssessment, setQAAssessment, assessmentUsersChoices, setAssessmentUsersChoices, message, setMessage, messageList, setMessageList } = props;
 
 
 
@@ -19,7 +24,8 @@ export const PreJoinPage = (props) => {
 
 
 
-  const UserId = 1
+  const UserId = user?.id;
+  const username = user?.username;
 
   const [showNotesReviewer, SetShowNotesReviewer] = useState(true);
   const [showLessonContext, SetShowLessonContext] = useState(false);
@@ -27,21 +33,26 @@ export const PreJoinPage = (props) => {
   const [lessonContext, setLessonContext] = useState("");
   const [takeAssessment, setTakeAssessment] = useState(false);
 
-  // assessment socket usestate hooks
+  // deleting material
+  const [recentlyDeletedMaterial, setRecentlyDeletedMaterial] = useState('');
+  const [isMaterialDeleted, setIsMaterialDeleted] = useState('hidden');
+  const [materialTitle, setMaterialTitle] = useState('');
 
 
   useEffect(() => {
-    axios.get(`http://localhost:3001/quesRev/study-material-rev/${materialId}`).then((response) => {
-      setNotesReviewer(response.data)
-    })
-
-    axios.get(`http://localhost:3001/studyMaterial/study-material/Group/${groupId}/${UserId}/${materialId}`).then((response) => {
-      setLessonContext(response.data[0].body);
-    })
-
+    
     const fetchData = async () => {
       try {
-
+        
+        await axios.get(`http://localhost:3001/quesRev/study-material-rev/${materialId}`).then((response) => {
+          setNotesReviewer(response.data)
+        })
+    
+        await axios.get(`http://localhost:3001/studyMaterial/study-material/Group/${groupId}/${UserId}/${materialId}`).then((response) => {
+          setLessonContext(response.data[0].body);
+          setMaterialTitle(response.data[0].title);
+          console.log();
+        })
         
         const previousSavedData = await axios.get(`http://localhost:3001/DashForPersonalAndGroup/get-latest-assessment/${materialId}`);
         const fetchedData = previousSavedData.data;
@@ -60,7 +71,7 @@ export const PreJoinPage = (props) => {
     fetchData();
 
 
-  },[groupId, materialId])
+  },[UserId, groupId, materialId])
 
 
   const startStudySession = async () => {
@@ -226,6 +237,31 @@ export const PreJoinPage = (props) => {
   };
   
 
+  const deleteStudyMaterial = async (id, title) => {
+    // Show a confirmation dialog
+    const confirmed = window.confirm(`Are you sure you want to delete ${title}?`);
+  
+    if (confirmed) {
+      await axios.delete(`http://localhost:3001/studyMaterial/delete-material/${id}`)
+
+      setTimeout(() => {
+        setIsMaterialDeleted('')
+        setRecentlyDeletedMaterial(title)
+      }, 100);
+
+      setTimeout(() => {
+        setIsMaterialDeleted('hidden')
+        setRecentlyDeletedMaterial('')
+      }, 1500);
+
+      setTimeout(() => {
+        navigate('/main/personal/study-area')
+      }, 2000);
+    }
+  }
+
+
+
 
   return (
     <div className='container py-8 poppins'>
@@ -233,16 +269,25 @@ export const PreJoinPage = (props) => {
       <div>
 
           <div className='flex justify-between items-center my-5 py-3'>
-            <button className='px-6 py-2 rounded-[5px] text-lg mbg-200 mcolor-800 border-thin-800 font-normal'>Delete Material</button>
+
+
+            {/* modify buttons */}
+            <div className='flex items-center gap-3'>
+              <button className='px-6 py-2 rounded-[5px] text-lg mbg-200 mcolor-800 border-thin-800 font-normal' onClick={() => deleteStudyMaterial(materialId, materialTitle)}>Delete Material</button>
+
+              {!takeAssessment && (
+                <Link to={`/main/group/study-area/update-material/${groupId}/${materialId}`}>
+                  <button className='px-6 py-2 rounded-[5px] text-lg mbg-200 mcolor-800 border-thin-800 font-normal'>Modify Material</button>
+                </Link>
+              )}
+            </div>
+
+
+
             <div className='flex justify-between items-center gap-4'>
               <div className='flex items-center gap-2'>
 
-                
-                {/* temporary while no authentication */}
-                <input type="text" className='px-3 py-2 rounded-[5px] text-lg mbg-200 mcolor-800 border-thin-800 font-normal' placeholder='username' onChange={(event) => { setUsername(event.target.value) }} />
-                <input type="text" className='px-3 py-2 rounded-[5px] text-lg mbg-200 mcolor-800 border-thin-800 font-normal' placeholder='user id' onChange={(event) => { setUserId(event.target.value) }} />
-
-
+              
                 <button className='px-6 py-2 rounded-[5px] text-lg mbg-200 mcolor-800 border-thin-800 font-normal' onClick={startStudySession}>Join Study Room</button>
               </div>
 

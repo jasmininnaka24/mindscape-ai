@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import axios from 'axios';
 import CheckIcon from '@mui/icons-material/Check';
-
+import { useUser } from '../../../../UserContext';
 // chart
 import { BarChartForAnalysis } from '../../../../components/charts/BarChartForAnalysis';
 
@@ -11,6 +11,7 @@ import { BarChartForAnalysis } from '../../../../components/charts/BarChartForAn
 export const PersonalAssessment = () => {
 
   const { materialId } = useParams();
+  const { user } = useUser()
 
   let studyProfeciencyTarget = 90;
 
@@ -39,13 +40,14 @@ export const PersonalAssessment = () => {
   const [generatedAnalysis, setGeneratedAnalysis] = useState('');
   const [showTexts, setShowTexts] = useState(true);
   const [showScoreForPreAssessment, setShowScoreForPreAssessment] = useState(false);
+  const [takeAssessment, setTakeAssessment] = useState(false);
 
   const [analysisId, setAnalysisId] = useState(0);
   const [categoryID, setCategoryID] = useState(0);
   const [seconds, setSeconds] = useState(0);
   const [isRunning, setIsRunning] = useState(false);
 
-  const UserId = 1;
+  const UserId = user?.id;
   
 
 
@@ -56,7 +58,7 @@ export const PersonalAssessment = () => {
       setMaterialTitle(materialTitleResponse.data.title)
       
 
-      const materialCategoryResponse = await axios.get(`http://localhost:3001/studyMaterialCategory/get-lastmaterial/${materialTitleResponse.data.StudyMaterialsCategoryId}/Personal/${UserId}`)
+      const materialCategoryResponse = await axios.get(`http://localhost:3001/studyMaterialCategory/get-categoryy/${materialTitleResponse.data.StudyMaterialsCategoryId}/`)
       setMaterialCategory(materialCategoryResponse.data.category)
 
       const materialResponse = await axios.get(`http://localhost:3001/quesAns/study-material-mcq/${materialId}`);
@@ -133,6 +135,22 @@ export const PersonalAssessment = () => {
       }
 
 
+      
+      try {
+        const previousSavedData = await axios.get(`http://localhost:3001/DashForPersonalAndGroup/get-latest-assessment/${materialId}`);
+        const fetchedData = previousSavedData.data;
+
+    
+        if (fetchedData && fetchedData.length >= 1 && fetchedData[0].assessmentScore !== undefined && fetchedData[0].assessmentScore === 'none') {
+          setTakeAssessment(true);
+        } else if (fetchedData && fetchedData.length >= 1 && fetchedData[0].assessmentScore !== undefined) {
+          setTakeAssessment(true);
+        }
+      } catch (error) {
+        console.error('Error fetching assessment data:', error);
+      }
+
+
         setSeconds(extractedQA.length * 60);
         setIsRunning(true)
       
@@ -141,6 +159,9 @@ export const PersonalAssessment = () => {
     if(isAssessmentDone === false) {
       fetchData();
     }
+
+
+
 
 
   }, [extractedQA.length, isAssessmentDone, materialId])
@@ -243,7 +264,8 @@ export const PersonalAssessment = () => {
         completionTime: completionTimeCalc,
         confidenceLevel: completionTimeCalc >= Math.round(extractedQA.length / 2) ? confidence : 100,
         StudyMaterialId: materialId,
-        StudyGroupId: null
+        StudyGroupId: null,
+        UserId: UserId
       }
 
 
@@ -325,7 +347,8 @@ export const PersonalAssessment = () => {
           confidenceLevel: completionTimeCalc >= Math.round(extractedQA.length / 2) ? confidence : 100,
           numOfTakes: fetchedData[0].numOfTakes + 1,
           StudyMaterialId: materialId,
-          StudyGroupId: null
+          StudyGroupId: null,
+          UserId: UserId,
         }
 
         setLastAssessmentScore(fetchedData[0].assessmentScore)
@@ -546,42 +569,48 @@ export const PersonalAssessment = () => {
             <div>
               <div>
                 <p className='text-center mcolor-500 font-medium mb-8 text-xl'>Your score is: </p>
-                <p className='text-center text-6xl font-bold mcolor-800 mb-20'>{score}/{overAllItems}</p>
+                <p className='text-center text-6xl font-bold mcolor-800 mb-20'>{score}/{extractedQA.length}</p>
 
                 <div className=' flex items-center justify-center gap-5'>
 
-                  {(generatedAnalysis === '' && !showScoreForPreAssessment) ? (
-                    <button
-                      className='border-thin-800 px-5 py-3 rounded-[5px] w-1/4'
-                      onClick={() => {
-                        console.log('button clicked');
-                        setShowSubmittedAnswerModal(true);
-                        setIsRunning(false)
-                      }}
-                    >
-                      Analyze the Data
-                    </button>
-                  ): (
-                    <button
-                      className='border-thin-800 px-5 py-3 rounded-[5px] w-1/4'
-                      onClick={() => {
-                        setShowAnalysis(true)
-                        setShowAssessment(false);
-                        setShowSubmittedAnswerModal(false);
-                        setIsRunning(false)
-                      }}
-                    >
-                      View Analysis
-                    </button>
-                  )}
+                  {takeAssessment && (
+                    (generatedAnalysis === '' && !showScoreForPreAssessment) ? (
+                      <button
+                        className='border-thin-800 px-5 py-3 rounded-[5px] w-1/4'
+                        onClick={() => {
+                          console.log('button clicked');
+                          setShowSubmittedAnswerModal(true);
+                          setIsRunning(false)
+                        }}
+                      >
+                        Analyze the Data
+                      </button>
+                    ): (
+                      <button
+                        className='border-thin-800 px-5 py-3 rounded-[5px] w-1/4'
+                        onClick={() => {
+                          setShowAnalysis(true)
+                          setShowAssessment(false);
+                          setShowSubmittedAnswerModal(false);
+                          setIsRunning(false)
+                        }}
+                      >
+                        View Analysis
+                      </button>
+                    )
+                  )
+                  }
 
                   <Link to={`/main/personal/study-area/personal-review/${materialId}`} className='border-thin-800 px-5 py-3 rounded-[5px] w-1/4 text-center'>
                     <button>Back to Study Area</button>
                   </Link>
 
-                  <Link to={`/main/personal/dashboard/category-list/topic-list/topic-page/${categoryID}/${materialId}`} className='mbg-800 mcolor-100 px-5 py-3 rounded-[5px] w-1/4 text-center'>
-                    <button>View Analytics</button>
-                  </Link>  
+                  {takeAssessment && (
+                    <Link to={`/main/personal/dashboard/category-list/topic-list/topic-page/${categoryID}/${materialId}`} className='mbg-800 mcolor-100 px-5 py-3 rounded-[5px] w-1/4 text-center'>
+                      <button>View Analytics</button>
+                    </Link>  
+                    )
+                  }
                 </div>
               </div>
 

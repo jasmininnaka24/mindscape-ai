@@ -1,9 +1,10 @@
 import axios from 'axios'
 import React, { useEffect, useState } from 'react'
-import { Link, useParams } from 'react-router-dom'
+import { Link, useNavigate, useParams } from 'react-router-dom'
 import RemoveRedEyeIcon from '@mui/icons-material/RemoveRedEye';
 import { PieChart } from '../charts/PieChart';
 import Category from '@mui/icons-material/Category';
+import { useUser } from '../../UserContext';
 
 export const TopicList = ({categoryFor}) => {
 
@@ -14,27 +15,39 @@ export const TopicList = ({categoryFor}) => {
   const [extractedCategory, setExtractedCategory] = useState([])
 
   const { groupId, categoryID } = useParams()
+  const { user } = useUser()
 
-  const UserId = 1;
+  const navigate = useNavigate()
+
+  const UserId = user?.id;
   
   useEffect(() => {
     async function fetchLatestMaterialStudied() {
       try {
-        const extractedCategoryResponse = await axios.get(`http://localhost:3001/studyMaterialCategory/get-lastmaterial/${categoryID}/${categoryFor}/${UserId}`);
+        const extractedCategoryResponse = await axios.get(`http://localhost:3001/studyMaterialCategory/get-categoryy/${categoryID}`);
         const extractedCategoryData = extractedCategoryResponse.data;
         setExtractedCategory(extractedCategoryData)
 
         const extractedStudyMaterials = await axios.get(`http://localhost:3001/studyMaterial/all-study-material/${categoryID}`);
         const extractedStudyMaterialsResponse = extractedStudyMaterials.data;
         setStudyMaterials(extractedStudyMaterialsResponse);
-    
 
 
 
         const fetchMaterialsLength = async () => {
           const promises = extractedStudyMaterialsResponse.map(async (material) => {
             try {
-              const extractedData = await axios.get(`http://localhost:3001/DashForPersonalAndGroup/get-latest-assessment/${material.id}`);
+
+              let extractedData = []
+
+              if (categoryFor === 'Personal') {
+                extractedData = await axios.get(`http://localhost:3001/DashForPersonalAndGroup/get-latest-assessment-personal/${material.id}/${UserId}`);
+              } else if (categoryFor === 'Group') {
+
+                extractedData = await axios.get(`http://localhost:3001/DashForPersonalAndGroup/get-latest-assessment-group/${material.id}/${groupId}`);
+
+              }
+
               return extractedData.data;
             } catch (error) {
               console.error('Error fetching study materials:', error);
@@ -82,6 +95,10 @@ export const TopicList = ({categoryFor}) => {
 
 
 
+  const noRecord = () => {
+
+  }
+
   return (
     <div className='my-8'>
       <div className='mb-12 w-full flex items-center justify-center'>
@@ -110,9 +127,9 @@ export const TopicList = ({categoryFor}) => {
           <tbody>
             
           {studyMaterials.map((item, index) => {
-            const assessmentScorePerf = materialsTopicsData[index]?.[0]?.assessmentScorePerf || 'N/A';
-            const confidenceLevel = materialsTopicsData[index]?.[0]?.confidenceLevel || 'N/A';
-            const assessmentImp = materialsTopicsData[index]?.[0]?.assessmentImp || 'N/A';
+            const assessmentScorePerf = materialsTopicsData[index]?.[0]?.assessmentScorePerf || '0';
+            const confidenceLevel = materialsTopicsData[index]?.[0]?.confidenceLevel || '0';
+            const assessmentImp = materialsTopicsData[index]?.[0]?.assessmentImp || '0';
 
             console.log(assessmentImp);
 
@@ -131,9 +148,23 @@ export const TopicList = ({categoryFor}) => {
                 <td className='text-center py-3 text-lg mcolor-800'>{item.studyPerformance >= 90 ? 'Prepared' : 'Unprepared'}</td>
                 <td className='text-center py-3 text-lg mcolor-800'>
                   {groupId !== undefined ? (
-                    <Link to={`/main/group/dashboard/category-list/topic-list/topic-page/${groupId}/${categoryID}/${item.id}`}><RemoveRedEyeIcon /></Link>
+
+                    <button onClick={() => {
+
+                      navigate(`/main/group/dashboard/category-list/topic-list/topic-page/${groupId}/${categoryID}/${item.id}`)
+                    }}>
+                      <RemoveRedEyeIcon />
+                    </button>
+                    
                   ) : (
-                    <Link to={`/main/personal/dashboard/category-list/topic-list/topic-page/${categoryID}/${item.id}`}><RemoveRedEyeIcon /></Link>
+
+                    
+                    <button onClick={() => {
+
+                      navigate(`/main/personal/dashboard/category-list/topic-list/topic-page/${categoryID}/${item.id}`)
+                    }}>
+                      <RemoveRedEyeIcon />
+                    </button>
                   )}
                 </td>
               </tr>

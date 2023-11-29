@@ -50,4 +50,22 @@ router.delete('/remove-member/:groupNameId/:itemId', async (req, res) => {
 
 
 
+// creating a member to the group
+router.get('/get-materialId/:userId', async (req, res) => {
+  const { userId } = req.params; 
+  try {
+    const savedGroupMemberDetails = await StudyGroupMembers.findAll({
+      where: {
+        UserId: userId,
+      },
+    });
+    res.json(savedGroupMemberDetails);
+  } catch (error) {
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
+
+
+
 module.exports = router;

@@ -1,7 +1,7 @@
 import axios from 'axios'
 import React, { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
-
+import { useUser } from '../../UserContext'
 
 
 export const MainDash = () => {
@@ -15,11 +15,14 @@ export const MainDash = () => {
   const [itemsCount, setItemsCount] = useState(0);
   const [groupStudyPerformance, setGroupStudyPerformance] = useState(0);
 
-  const UserId = 1;
 
-  // params
 
   const { groupId } = useParams()
+  const { user } = useUser()
+
+  const UserId = user?.id;
+
+
   
   useEffect(() => {
 
@@ -29,42 +32,43 @@ export const MainDash = () => {
         let response = '';
 
         if (groupId !== undefined) {
-          response = await axios.get(`http://localhost:3001/studyMaterial/latestMaterialStudied/group/${groupId}/${UserId}`)
+          response = await axios.get(`http://localhost:3001/studyMaterial/latestMaterialStudied/group/${groupId}`)
         } else {
-          response = await axios.get(`http://localhost:3001/studyMaterial/latestMaterialStudied/${UserId}`)
+          response = await axios.get(`http://localhost:3001/studyMaterial/latestMaterialStudied/personal/${UserId}`)
         }
- 
-          
+
         const latestMaterialStudied = response.data;
         
         const materialId = latestMaterialStudied[0].id;
 
+        console.log(materialId);
 
         let materialCategories = '';
         let materialTitleResponse = '';
         let materialCategoryResponse = '';
 
         if (groupId === '' || groupId === null || groupId === undefined) {
-          materialCategories = await axios.get(`http://localhost:3001/studyMaterialCategory/Personal/${UserId}`)
+          materialCategories = await axios.get(`http://localhost:3001/studyMaterialCategory/personal-study-material/Personal/${UserId}`)
 
-          materialTitleResponse = await axios.get(`http://localhost:3001/studyMaterial/study-material-personal/Personal/${UserId}/${materialId}`)
+          materialTitleResponse = await axios.get(`http://localhost:3001/studyMaterial/latestMaterialStudied/personal/${UserId}`)
           
-          materialCategoryResponse = await axios.get(`http://localhost:3001/studyMaterialCategory/get-lastmaterial/${materialTitleResponse.data.StudyMaterialsCategoryId}/Personal/${UserId}`)
+          materialCategoryResponse = await axios.get(`http://localhost:3001/studyMaterialCategory/get-categoryy/${materialTitleResponse.data[0].StudyMaterialsCategoryId}`)
           
         } else {
-          materialCategories = await axios.get(`http://localhost:3001/studyMaterialCategory/Group/${groupId}/${UserId}`)
+          materialCategories = await axios.get(`http://localhost:3001/studyMaterialCategory/Group/${groupId}`)
+
+          materialTitleResponse = await axios.get(`http://localhost:3001/studyMaterial/latestMaterialStudied/group/${groupId}`)
           
-          materialTitleResponse = await axios.get(`http://localhost:3001/studyMaterial/study-material/Group/${groupId}/${UserId}/${materialId}`)
-
-          materialCategoryResponse = await axios.get(`http://localhost:3001/studyMaterialCategory/get-lastmaterial/${materialTitleResponse.data.StudyMaterialsCategoryId}/${groupId}/Group/${UserId}`)
+          materialCategoryResponse = await axios.get(`http://localhost:3001/studyMaterialCategory/get-categoryy/${materialTitleResponse.data.StudyMaterialsCategoryId}`)
         }
+        
 
 
+        console.log(materialCategories.data);
         
         const materialCategoriesResponse = materialCategories.data;
         
         setMaterialCategories(materialCategoriesResponse)
-        
         if (groupId !== undefined) {
           
           setMaterialTitle(materialTitleResponse.data[0].title)       
@@ -74,6 +78,8 @@ export const MainDash = () => {
           
           setMaterialTitle(materialTitleResponse.data.title)       
           setMaterialCategory(materialCategoryResponse.data.category)
+          setGroupStudyPerformance(materialTitleResponse.data[0].studyPerformance);
+
         }
 
         const materialResponse = await axios.get(`http://localhost:3001/quesAns/study-material-mcq/${materialId}`);
@@ -94,7 +100,7 @@ export const MainDash = () => {
   
 
       
-  }, [])
+  }, [UserId, groupId])
 
 
   return (

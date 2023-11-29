@@ -36,10 +36,10 @@ router.post('/login', async (req, res) => {
       if (!match) {
         res.json({error: 'Wrong email and password combination.'});
       } else {
-        const assessToken = sign({username: user.username, id: user.id}, "mindscapeprojectkeysecret");
+        const assessToken = sign({username: user.username, id: user.id, typeOfLearner: user.typeOfLearner, studyProfTarget: user.studyProfTarget}, "mindscapeprojectkeysecret");
 
         
-        res.json({ accessToken: assessToken, user: {username: user.username, id: user.id} });
+        res.json({ accessToken: assessToken, user: {username: user.username, id: user.id, typeOfLearner: user.typeOfLearner, studyProfTarget: user.studyProfTarget} });
 
       }
     });
@@ -57,6 +57,39 @@ router.get('/get-user/:id', async (req, res) => {
   const extractedUserDetails = await User.findByPk(userId);
   res.json(extractedUserDetails)
 })
+
+
+
+
+router.put('/update-typeoflearner/:id', async (req, res) => {
+  const userId = req.params.id;
+  const { typeOfLearner } = req.body;
+
+  try {
+    const UserData = await User.findByPk(userId);
+
+    if (!UserData) {
+      return res.status(404).json({ error: 'Dashboard data not found' });
+    }
+
+    UserData.typeOfLearner = typeOfLearner;
+
+    const updatedUserData = await UserData.save();
+
+    res.json(updatedUserData);
+
+  } catch (error) {
+    console.error('Error updating dashboard data:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
+
+
+
+
+
+
 
 router.delete('/:id', async (req, res) => {
   const userId = req.params.id;

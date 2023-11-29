@@ -8,12 +8,13 @@ router.post('/', async (req, res) => {
   res.json(SavedAssessmentData)
 })
 
-router.get('/get-latest-assessment/:StudyMaterialId', async (req, res) => {
-  const { StudyMaterialId } = req.params;
+router.get('/get-latest-assessment-group/:StudyMaterialId/:groupId', async (req, res) => {
+  const { StudyMaterialId, groupId } = req.params;
   try {
     const extractedStudyMaterial = await DashForPersonalAndGroup.findAll({
       where: {
         StudyMaterialId: StudyMaterialId,
+        StudyGroupId: groupId
       },
       order: [['updatedAt', 'DESC']], 
     });
@@ -24,6 +25,28 @@ router.get('/get-latest-assessment/:StudyMaterialId', async (req, res) => {
     res.status(500).json({ error: 'Internal Server Error' });
   }
 });
+
+
+router.get('/get-latest-assessment-personal/:StudyMaterialId/:userId', async (req, res) => {
+  const { StudyMaterialId, userId } = req.params;
+  try {
+    const extractedStudyMaterial = await DashForPersonalAndGroup.findAll({
+      where: {
+        StudyMaterialId: StudyMaterialId,
+        UserId: userId
+      },
+      order: [['updatedAt', 'DESC']], 
+    });
+
+    res.json(extractedStudyMaterial);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
+
+
 
 router.get('/get-assessments/:StudyMaterialId', async (req, res) => {
   const { StudyMaterialId } = req.params;

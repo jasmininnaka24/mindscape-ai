@@ -3,12 +3,14 @@ import { Navbar } from '../../../../components/navbar/logged_navbar/navbar'
 import { Navigate, useNavigate, useParams } from 'react-router-dom';
 import axios from 'axios';
 import { Link } from 'react-router-dom';
+import { useUser } from '../../../../UserContext';
 
 
 export const PersonalReviewerPage = () => {
 
   const { materialId } = useParams();
-  const UserId = 1;
+  const { user } = useUser()
+  const UserId = user?.id;
 
   const navigate = useNavigate()
 
@@ -17,21 +19,34 @@ export const PersonalReviewerPage = () => {
   const [notesReviewer, setNotesReviewer] = useState([]);
   const [lessonContext, setLessonContext] = useState("");
   const [takeAssessment, setTakeAssessment] = useState(false);
+  const [materialTitle, setMaterialTitle] = useState('');
+
+  // deleting material
+  const [recentlyDeletedMaterial, setRecentlyDeletedMaterial] = useState('');
+  const [isMaterialDeleted, setIsMaterialDeleted] = useState('hidden');
+
+  
 
   useEffect(() => {
-    axios.get(`http://localhost:3001/quesRev/study-material-rev/${materialId}`).then((response) => {
-      setNotesReviewer(response.data)
-      console.log(response.data);
-    })
-
-    axios.get(`http://localhost:3001/studyMaterial/study-material-personal/Personal/${UserId}/${materialId}`).then((response) => {
-      setLessonContext(response.data.body);
-    })
-
+    
     const fetchData = async () => {
+
+      const groupResponse = await axios.get(`http://localhost:3001/studyMaterial/study-material-personal/Personal/${UserId}/${materialId}`);
+
+      setMaterialTitle(groupResponse.data.title);
+
+      await axios.get(`http://localhost:3001/quesRev/study-material-rev/${materialId}`).then((response) => {
+        setNotesReviewer(response.data)
+      })
+  
+      await axios.get(`http://localhost:3001/studyMaterial/study-material-personal/Personal/${UserId}/${materialId}`).then((response) => {
+        setLessonContext(response.data.body);
+      })
+
       try {
         const previousSavedData = await axios.get(`http://localhost:3001/DashForPersonalAndGroup/get-latest-assessment/${materialId}`);
         const fetchedData = previousSavedData.data;
+
     
         if (fetchedData && fetchedData.length >= 1 && fetchedData[0].assessmentScore !== undefined && fetchedData[0].assessmentScore === 'none') {
           setTakeAssessment(true);
@@ -62,6 +77,29 @@ export const PersonalReviewerPage = () => {
 
 
 
+  const deleteStudyMaterial = async (id, title) => {
+    // Show a confirmation dialog
+    const confirmed = window.confirm(`Are you sure you want to delete ${title}?`);
+  
+    if (confirmed) {
+      await axios.delete(`http://localhost:3001/studyMaterial/delete-material/${id}`)
+
+      setTimeout(() => {
+        setIsMaterialDeleted('')
+        setRecentlyDeletedMaterial(title)
+      }, 100);
+
+      setTimeout(() => {
+        setIsMaterialDeleted('hidden')
+        setRecentlyDeletedMaterial('')
+      }, 1500);
+
+      setTimeout(() => {
+        navigate('/main/personal/study-area')
+      }, 2000);
+    }
+  }
+
 
 
 
@@ -69,9 +107,22 @@ export const PersonalReviewerPage = () => {
     <div className='container py-8 poppins'>
       <Navbar linkBack={`/main/personal/study-area`} linkBackName={`Study Area`} currentPageName={'Reviewer Page Preview'} username={'Jennie Kim'}/>
 
+      <p className={`${isMaterialDeleted} mt-5 py-2 mbg-300 mcolor-800 text-center rounded-[5px] text-lg`}>{recentlyDeletedMaterial} has been deleted.</p>
+
       <div>
           <div className='flex justify-between items-center my-5 py-3'>
-            <button className='px-6 py-2 rounded-[5px] text-lg mbg-200 mcolor-800 border-thin-800 font-normal'>Delete Material</button>
+
+            {/* modify buttons */}
+            <div className='flex items-center gap-3'>
+              <button className='px-6 py-2 rounded-[5px] text-lg mbg-200 mcolor-800 border-thin-800 font-normal' onClick={() => deleteStudyMaterial(materialId, materialTitle)}>Delete Material</button>
+
+              {!takeAssessment && (
+                <Link to={`/main/personal/study-area/update-material/${materialId}`}>
+                  <button className='px-6 py-2 rounded-[5px] text-lg mbg-200 mcolor-800 border-thin-800 font-normal'>Modify Material</button>
+                </Link>
+              )}
+            </div>
+
             <div className='flex justify-between items-center gap-4'>
               <div className='flex items-center gap-2'>
                 <button className='px-6 py-2 rounded-[5px] text-lg mbg-200 mcolor-800 border-thin-800 font-normal' onClick={startStudySession}>Start Study Session</button>

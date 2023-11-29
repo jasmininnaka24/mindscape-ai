@@ -42,7 +42,7 @@ export const VAKResult = () => {
                 <p className='text-xl'>Based on your response data, the classification model has <span className='font-bold'>{probability}%</span> identified you as <span className='font-bold'>{learningStyle} learner.</span></p>
                 <p className='text-xl mt-8'>Lorem ipsum dolor sit amet consectetur adipisicing elit. Odit veritatis quod at amet ullam eaque iste dolore. Deleniti, harum quo! Lorem ipsum dolor sit amet consectetur adipisicing elit. Fugit velit placeat autem consectetur eveniet, nemo atque sapiente neque. Ipsa assumenda et, velit culpa suscipit cumque provident pariatur exercitationem iste incidunt esse facilis eveniet, alias dolorum impedit ab porro magni molestias.</p>
                 <p className='text-xl mt-8'>Understanding your learning style can help you tailor your study approach to maximize your learning potential.</p>
-                <Link to={'/main'}>
+                <Link to={'/login'}>
                   <button type="button" className ="mt-8 text-xl font-medium mbg-800 mcolor-100 px-16 py-2 rounded-[10px]">Done</button>
                 </Link>
               </div>

@@ -54,6 +54,58 @@ router.put('/update-stoppedAt/:studyMaterialID/:id', async (req, res) => {
   res.json(studyMaterial);
 });
 
+router.put('/update-qa/:id', async (req, res) => {
+  const id = req.params.id;
+  const { question, answer } = req.body;
+
+  const updatedQA = await QuesAns.findByPk(id);
+
+  updatedQA.question = question; 
+  updatedQA.answer = answer; 
+
+
+
+  await updatedQA.save();
+  res.json(updatedQA);
+});
+
+router.put('/update-question/:id', async (req, res) => {
+  const id = req.params.id;
+  const { question } = req.body;
+
+  const updatedQA = await QuesAns.findByPk(id);
+
+  updatedQA.question = question; 
+
+
+
+  await updatedQA.save();
+  res.json(updatedQA);
+});
+
+router.put('/update-answer/:id', async (req, res) => {
+  const id = req.params.id;
+  const { answer } = req.body;
+
+  const updatedQA = await QuesAns.findByPk(id);
+
+  updatedQA.answer = answer; 
+
+
+
+  await updatedQA.save();
+  res.json(updatedQA);
+});
+
+
+
+
+router.delete('/delete-qa/:id', async (req, res) => {
+  const qaId = req.params.id;
+  const deletedQAItem = await QuesAns.findByPk(qaId);
+  await deletedQAItem.destroy();
+  res.json(deletedQAItem);
+})
 
 
 

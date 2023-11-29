@@ -4,30 +4,65 @@ import { Navbar } from '../../../components/navbar/logged_navbar/navbar';
 import { Link } from 'react-router-dom';
 import { CreateGroupComp } from '../../../components/group/CreateGroupComp';
 import axios from 'axios';
+import { useUser } from '../../../UserContext';
 
 
 export const GroupRoom = () => {
+  
+  const { user } = useUser();
 
   const [savedGroupNotif, setSavedGroupNotif] = useState(false);
   const [groupList, setGroupList] = useState([]);
   const [expandedGroupId, setExpandedGroupId] = useState(null);
+  const [memberGroupList, setMemberGroupList] = useState([])
+  const [isDone, setIsDone] = useState(false);
+  const UserId = user?.id;
 
-  const UserId = 1
+
+
+
 
   const fetchGroupListData = async () => {
-          
-    await axios.get(`http://localhost:3001/studyGroup/extract-group-through-user/${UserId}`).then((response) => {
+    try {
+      const response = await axios.get(`http://localhost:3001/studyGroup/extract-group-through-user/${UserId}`);
+      
       setGroupList(response.data);
-    })
 
-  }
+      const userMemberGroupList = await axios.get(`http://localhost:3001/studyGroupMembers/get-materialId/${UserId}`);
+      
+      const materialPromises = userMemberGroupList.data.map(async (item) => {
+        const material = await axios.get(`http://localhost:3001/studyGroup/extract-all-group/${item.StudyGroupId}`);
+        return material.data;
+      });
+      
+      const materials = await Promise.all(materialPromises);
+      setMemberGroupList(materials);
+     
+    } catch (error) {
+      console.error('Error fetching study groups:', error);
+      // Handle the error as needed
+    }
+  };
 
+  
   useEffect(() => {
+
     
-    fetchGroupListData();
+    if (!isDone) {
+      setIsDone(true)
+    }
+  
+  }, [UserId]);
+  
+  useEffect(() => {
+    if (isDone) {
+      fetchGroupListData();
+      setIsDone(false)
+    }
+  }, [isDone])
+  
 
-  }, [])
-
+  console.log(isDone);
   const toggleExpansion = (groupId) => {
     setExpandedGroupId(expandedGroupId === groupId ? null : groupId);
   };
@@ -51,7 +86,7 @@ export const GroupRoom = () => {
         {/* Room */}
         <div className='py-4'>
           
-          <CreateGroupComp setGroupList={setGroupList} groupList={setGroupList} setSavedGroupNotif={setSavedGroupNotif} fetchGroupListData={fetchGroupListData} />
+          <CreateGroupComp groupList={setGroupList} setSavedGroupNotif={setSavedGroupNotif} fetchGroupListData={fetchGroupListData} />
 
           <div className='mt-6'>
             <p className='text-xl mcolor-900 font-medium'>Rooms:</p>
@@ -59,7 +94,32 @@ export const GroupRoom = () => {
 
           <div className='mt-5 grid grid-cols-3 gap-5'>
 
-            {groupList.slice().sort((a, b) => b.id - a.id).map(({ id, groupName}) => (
+            {groupList && groupList.length > 0 && groupList.slice().sort((a, b) => b.id - a.id).map(({ id, groupName}) => (
+              <div key={id} className='shadows mcolor-900 rounded-[5px] p-5 my-6 mbg-100 flex items-center justify-between relative'>
+
+
+                <p className='px-1'>{groupName}</p>
+                <button onClick={() => toggleExpansion(id)} className='px-5 py-2 mbg-700 mcolor-100 rounded'>View</button>
+
+                {expandedGroupId === id && (
+
+                  <div className='absolute right-0 bottom-0 px-7 mb-[-114px] mbg-700 mcolor-100 rounded pt-3 pb-4 opacity-80'>
+                    <Link to={`/main/group/study-area/${id}`}>
+                      <p className='pt-1'>Study Area</p>
+                    </Link>
+                    <Link to={`/main/group/tasks/${id}`}>
+                      <p className='pt-1'>Tasks</p>
+                    </Link>
+                    <Link to={`/main/group/dashboard/${id}`}>
+                      <p className='pt-1'>Dashboard</p>
+                    </Link>
+                  </div>
+                )}
+
+              </div>
+            ))}
+
+            {memberGroupList && memberGroupList.length > 0 && memberGroupList.slice().sort((a, b) => b.id - a.id).map(({ id, groupName}) => (
               <div key={id} className='shadows mcolor-900 rounded-[5px] p-5 my-6 mbg-100 flex items-center justify-between relative'>
 
 

@@ -30,6 +30,7 @@ import { GroupCategoryList } from './pages/rooms/group/dashboard/GroupCategoryLi
 import { GroupTopicList } from './pages/rooms/group/dashboard/GroupTopicList';
 import { GroupTopicPage } from './pages/rooms/group/dashboard/GroupTopicPage';
 import { GroupAnalysisPage } from './pages/rooms/group/dashboard/GroupAnalysisPage';
+import { UpdateGroupStudyMaterial } from './pages/rooms/group/study_area/UpdateGroupStudyMaterial';
 
 import { PersonalRoom } from './pages/rooms/personal/PersonalRoom';
 import { PersonalStudyArea } from './pages/rooms/personal/study_area/PersonalStudyArea';
@@ -42,7 +43,8 @@ import { PersonalCategoryList } from './pages/rooms/personal/dashboard/PersonalC
 import { PersonalTopicList } from './pages/rooms/personal/dashboard/PersonalTopicList';
 import { PersonalTopicPage } from './pages/rooms/personal/dashboard/PersonalTopicPage';
 import { PersonalAnalysisPage } from './pages/rooms/personal/dashboard/PersonalAnalysisPage'; 
-
+import { PersonalTask } from './pages/rooms/personal/task/PersonalTask';
+import { UpdatePersonalStudyMaterial } from './pages/rooms/personal/study_area/UpdatePersonalStudyMaterial';
 
 // Virtual library pages import
 import { VirtualLibraryMain } from './pages/rooms/library/VirtualLibraryMain';
@@ -91,6 +93,7 @@ function App() {
               <Route path='/main/group/study-area/qa-gen/:id' element={<GroupQAGenerator />} /> 
               {/* <Route path='/main/group/study-area/group-review' element={<GroupReviewPage />} />  */}
               <Route path='/main/group/study-area/group-review/:groupId/:materialId' element={<GroupReviewerPage />} />
+              <Route path='/main/group/study-area/update-material/:groupId/:materialID' element={<UpdateGroupStudyMaterial />} />
 
 
               {/* Group Dashboard */}
@@ -104,6 +107,7 @@ function App() {
 
               {/* Personal Study Room Routes */}
               <Route path='/main/personal/' element={<PersonalRoom />} /> 
+              <Route path='/main/personal/tasks' element={<PersonalTask />} />
               <Route path='/main/personal/study-area' element={<PersonalStudyArea />} /> 
               <Route path='/main/personal/study-area/qa-gen' element={<PersonalQAGenerator />} /> 
               <Route path='/main/personal/study-area/personal-review/:materialId' element={<PersonalReviewerPage />} />
@@ -116,6 +120,7 @@ function App() {
               <Route path='/main/personal/dashboard/category-list/topic-list/:categoryID' element={<PersonalTopicList />} />
               <Route path='/main/personal/dashboard/category-list/topic-list/topic-page/:categoryID/:materialID' element={<PersonalTopicPage />} />
               <Route path='/main/personal/dashboard/category-list/topic-list/topic-page/analysis/:categoryID/:materialID/:dashID' element={<PersonalAnalysisPage />} />
+              <Route path='/main/personal/study-area/update-material/:materialID' element={<UpdatePersonalStudyMaterial />} />
 
 
 

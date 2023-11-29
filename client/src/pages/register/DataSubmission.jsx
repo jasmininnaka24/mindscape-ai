@@ -5,7 +5,7 @@ import { useNavigate } from 'react-router-dom';
 
 export const DataSubmission = () => {
   const location = useLocation();
-  const { selectedStr } = location.state;
+  const { selectedStr, registeredUserId } = location.state;
 
   const [sentence, setSentence] = useState("");
   const [newSentence, setNewSentence] = useState("");
@@ -33,6 +33,15 @@ export const DataSubmission = () => {
 
     const learningStyle = response.data.learningStyle;
     const probability = response.data.probability;
+
+    // /update-typeoflearner/:id
+
+    let data = {
+      typeOfLearner: learningStyle
+    }
+
+    await axios.put(`http://localhost:3001/users/update-typeoflearner/${registeredUserId}`, data)
+
 
     navigate('/data-result', {
       state: {

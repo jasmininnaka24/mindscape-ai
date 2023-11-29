@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react'
 import { Navbar } from '../../../components/navbar/logged_navbar/navbar'
 import axios from 'axios'
 import { Link } from 'react-router-dom'
-
+import { useUser } from '../../../UserContext'
 
 export const VirtualLibraryMain = () => {
 
@@ -57,7 +57,8 @@ export const VirtualLibraryMain = () => {
   const [showNotes, setShowNotes] = useState(false);
   const [showQuiz, setShowQuiz] = useState(false);
 
-  const UserId = 1;
+  const { user } = useUser()
+  const UserId = user?.id;
 
   const fetchData = async () => {
  
@@ -71,7 +72,7 @@ export const VirtualLibraryMain = () => {
 
     const fetchedPersonalStudyMaterialCategory = await Promise.all(
       fetchedPersonalStudyMaterial.map(async (material, index) => {
-        const materialCategoryResponse = await axios.get(`http://localhost:3001/studyMaterialCategory/get-lastmaterial/${material.StudyMaterialsCategoryId}/Personal/${UserId}`);
+        const materialCategoryResponse = await axios.get(`http://localhost:3001/studyMaterialCategory/get-categoryy/${material.StudyMaterialsCategoryId}`);
         return materialCategoryResponse.data; // Return the data from each promise
       })
     );
@@ -82,7 +83,7 @@ export const VirtualLibraryMain = () => {
     const groupStudyMaterial = await axios.get(`http://localhost:3001/studyMaterial/study-material-category/Group/${UserId}`)
     const filteredGroupStudyMaterials = groupStudyMaterial.data.filter(item => item.tag === 'Own Record');
     setGroupStudyMaterials(filteredGroupStudyMaterials);
-    
+    console.log(filteredGroupStudyMaterials);
     
     
     // console.log(filteredGroupStudyMaterials);
@@ -90,7 +91,7 @@ export const VirtualLibraryMain = () => {
 
     const fetchedGroupStudyMaterialCategory = await Promise.all(
       filteredGroupStudyMaterials.map(async (material, index) => {
-        const materialCategoryResponse = await axios.get(`http://localhost:3001/studyMaterialCategory/get-lastmaterial/${material.StudyMaterialsCategoryId}/Group/${UserId}`);
+        const materialCategoryResponse = await axios.get(`http://localhost:3001/studyMaterialCategory/get-categoryy/${material.StudyMaterialsCategoryId}`);
         return materialCategoryResponse.data; // Return the data from each promise
       })
     );
@@ -154,9 +155,26 @@ export const VirtualLibraryMain = () => {
     
       
       
-    await axios.get(`http://localhost:3001/studyGroup/extract-group-through-user/${UserId}`).then((response) => {
+      const response = await axios.get(`http://localhost:3001/studyGroup/extract-group-through-user/${UserId}`);
       setGroupList(response.data);
-    })
+      
+      let dataLength = response.data.length;
+      console.log(dataLength); // should give the correct value
+      
+      if (dataLength !== 0) {
+        console.log('its not 0');
+      } else {
+        const userMemberGroupList = await axios.get(`http://localhost:3001/studyGroupMembers/get-materialId/${UserId}`);
+        
+        const materialPromises = userMemberGroupList.data.map(async (item) => {
+          const material = await axios.get(`http://localhost:3001/studyGroup/extract-all-group/${item.StudyGroupId}`);
+          return material.data;
+        });
+    
+        const materials = await Promise.all(materialPromises);
+        setGroupList(materials);
+      }
+
 
 
 
@@ -622,7 +640,7 @@ export const VirtualLibraryMain = () => {
 
         for (let j = 0; j < mcqaDistractors[i].length; j++) {
           let qacData = {
-              choice: tofDistractors[i][j].choice, // Extract the string value from the object
+              choice: mcqaDistractors[i][j].choice, // Extract the string value from the object
               QuesAnId: qaResponse.data.id,
               StudyMaterialId: smResponse.data.id,
               UserId: smResponse.data.UserId,

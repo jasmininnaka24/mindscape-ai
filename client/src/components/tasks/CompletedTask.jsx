@@ -1,5 +1,6 @@
 import axios from 'axios';
 import React from 'react'
+import DoneIcon from '@mui/icons-material/Done';
 
 export const CompletedTask = (props) => {
 
@@ -27,6 +28,6 @@ export const CompletedTask = (props) => {
   };
 
   return (
-    <button className='px-3 py-1 rounded-[4px] correct-bg' onClick={() => taskCompleted(taskId)}>Done</button>
+    <button className='py-1 text-greenn' onClick={() => taskCompleted(taskId)}><DoneIcon fontSize='medium' /></button>
   )
 }

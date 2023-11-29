@@ -2,17 +2,18 @@ import axios from 'axios'
 import React, { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import RemoveRedEyeIcon from '@mui/icons-material/RemoveRedEye';
-
+import { useUser } from '../../UserContext';
 
 export const CategoryList = () => {
 
   const { groupId } = useParams()
+  const { user } = useUser();
 
   const [materialCategories, setMaterialCategories] = useState([])
   const [materialsTopicsLength, setMaterialsTopicsLength] = useState([])
   const [categoryFor, setCategoryFor] = useState('Personal')
 
-  const UserId = 1;
+  const UserId = user?.id;
   
   useEffect(() => {
 
@@ -26,9 +27,9 @@ export const CategoryList = () => {
         console.log(category);
         let materialCategories = '';
         if (category === 'Personal') {
-          materialCategories = await axios.get(`http://localhost:3001/studyMaterialCategory/Personal/${UserId}`)
+          materialCategories = await axios.get(`http://localhost:3001/studyMaterialCategory/personal-study-material/Personal/${UserId}`)
         } else {
-          materialCategories = await axios.get(`http://localhost:3001/studyMaterialCategory/${category}/${groupId}/${UserId}`)
+          materialCategories = await axios.get(`http://localhost:3001/studyMaterialCategory/Group/${groupId}`)
         }
         
         const materialCategoriesResponse = materialCategories.data;

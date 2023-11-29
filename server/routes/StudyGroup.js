@@ -15,6 +15,8 @@ router.get('/extract-group-through-user/:UserId', async (req, res) => {
   res.json(listOfGroup);
 })
 
+
+
 router.get('/extract-all-group/:roomId', async (req, res) => {
   const { roomId } = req.params;
   const listOfGroup = await StudyGroup.findByPk(roomId);
