@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import { Navbar } from '../navbar/logged_navbar/navbar';
 import { DateTime, Interval } from 'luxon';
+import { useUser } from '../../UserContext';
 
 // Component imports
 import { RenderTasks } from './RenderTasks';
@@ -12,8 +13,9 @@ import PushPinIcon from '@mui/icons-material/PushPin';
 import WatchLaterIcon from '@mui/icons-material/WatchLater';
 import PendingActionsIcon from '@mui/icons-material/PendingActions';
 import EditIcon from '@mui/icons-material/Edit';
+import DoneIcon from '@mui/icons-material/Done';
 
-export const Tasks = (props) => {
+export const Tasks = ({room, groupId}) => {
 
   // States
   const [task, setTask] = useState("");
@@ -22,7 +24,8 @@ export const Tasks = (props) => {
   const [taskID, setTaskID] = useState(0);
   const [showAddTaskModal, setShowAddTaskModal] = useState(false)
 
-  const room = props.room;
+  const { user } = useUser()
+  const UserId = user?.id;
 
   // Modals Functionalities
   const [isButtonClicked, setIsButtonClicked] = useState(false)
@@ -50,11 +53,10 @@ export const Tasks = (props) => {
   return (
     <div className='my-8'>
       <div>
-        <RenderTasks setListOfTasks={setListOfTasks} />
+        <RenderTasks setListOfTasks={setListOfTasks} UserId={UserId} groupId={groupId} room={room} />
         <div className="border-medium-800 gen-box flex justify-between items-center rounded">
           <div className='box1 border-box w-1/2'>
             <div className='scroll-box p-7'>
-
               <div className='flex items-center justify-between'>
                 <p className='text-2xl font-normal'>List of Tasks</p>
                 {!showAddTaskModal ? (
@@ -67,14 +69,14 @@ export const Tasks = (props) => {
               {showAddTaskModal && (
                 <div>
                   {/* Adding a task form */}
-                  <AddingTask unhideModal={dynamicClassNameForUnhide} task={task} setTask={setTask} dueDate={dueDate} setDueDate={setDueDate} room={room} setTaskID={setTaskID} listOfTasks={listOfTasks} setListOfTasks={setListOfTasks} />
+                  <AddingTask unhideModal={dynamicClassNameForUnhide} task={task} setTask={setTask} dueDate={dueDate} setDueDate={setDueDate} room={room} setTaskID={setTaskID} listOfTasks={listOfTasks} setListOfTasks={setListOfTasks} UserId={UserId} groupId={groupId} />
                 </div>
               )}
 
 
 
               {/* Updating a task form */}
-              <UpdateTasks task={task} dueDate={dueDate} room={room} taskID={taskID} listOfTasks={listOfTasks} setListOfTasks={setListOfTasks} setTask={setTask} setDueDate={setDueDate} setTaskID={setTaskID} hideModal={dynamicClassNameForHidden} closeModal={closeModal} setIsButtonClicked={setIsButtonClicked} />
+              <UpdateTasks task={task} dueDate={dueDate} room={room} taskID={taskID} listOfTasks={listOfTasks} setListOfTasks={setListOfTasks} setTask={setTask} setDueDate={setDueDate} setTaskID={setTaskID} hideModal={dynamicClassNameForHidden} closeModal={closeModal} setIsButtonClicked={setIsButtonClicked} UserId={UserId} groupId={groupId} />
 
 
               {/* Unaccomplished Tasks */}
@@ -149,16 +151,16 @@ export const Tasks = (props) => {
 
           
                     return (
-                      <div key={key} className='flex justify-between w-full mbg-200 px-4 py-3'>
-                        <div className='w-1/2'>
+                      <div key={key} className='flex items-start justify-between w-full mbg-200 px-4 py-3 border-thin-800 rounded my-5'>
+                        <div className='w-3/4'  style={{ whiteSpace: 'pre-wrap' }}>
                           <div><PushPinIcon className='text-red-dark' /> {task.task}</div>
-                          <div className='mt-1'><WatchLaterIcon sx={{ fontSize: '22px' }} /> {formattedDueDateAbbreviated}, {formattedTime}</div>
-                          <div className='mt-2'><PendingActionsIcon/> {formattedTimeDifference}</div>
+                          <div className='mt-3'><WatchLaterIcon sx={{ fontSize: '22px' }} /> {formattedDueDateAbbreviated}, {formattedTime}</div>
+                          <div className={`mt-2`}><PendingActionsIcon/> <span className={`${formattedTimeDifference === 'Overdue' ? 'text-red-dark' : ''}`}>{formattedTimeDifference}</span></div>
                         </div>
-                        <div className='mt-1 flex items-center justify-end w-1/2'>
-                          <CompletedTask listOfTasks={listOfTasks} setListOfTasks={setListOfTasks} setTask={setTask} setDueDate={setDueDate} setTaskID={setTaskID} taskId={task.id} />
-                          <DeleteTask taskId={task.id} listOfTasks={listOfTasks} setListOfTasks={setListOfTasks} />
-                          <button className='py-1' onClick={() => openModal(task.id, task.task, task.dueDate)}><EditIcon /></button>
+                        <div className='mt-1 flex items-center justify-end w-1/4'>
+                          <CompletedTask listOfTasks={listOfTasks} setListOfTasks={setListOfTasks} setTask={setTask} setDueDate={setDueDate} setTaskID={setTaskID} taskId={task.id} UserId={UserId} groupId={groupId} />
+                          <DeleteTask taskId={task.id} listOfTasks={listOfTasks} setListOfTasks={setListOfTasks} UserId={UserId} groupId={groupId} />
+                          <button className='py-1' onClick={() => openModal(task.id, task.task, task.dueDate)}><EditIcon UserId={UserId} groupId={groupId} /></button>
                         </div>
                       <br />
                     </div>
@@ -169,20 +171,40 @@ export const Tasks = (props) => {
             </div>
           </div>
 
-          <div className='box2 border-box w-1/2'>
+          <div className='box2 border-box w-1/2 '>
 
             {/* Accomplished Tasks */}
-            <div className='scroll-box p-5'>
-              <div className='text-3xl font-bold'>Completed Tasks:</div><br />
+            <div className='scroll-box p-8'>
+              <p className='text-2xl font-normal'>Recently Accomplished</p>
               {listOfTasks
               .filter((task) => task.completedTask === "Completed")
               .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
               .map((task) => {
+
+                const dueDate = new Date(task.updatedAt);
+
+                // Format the date as "Month Day, Year"
+                const formattedDueDate = dueDate.toLocaleDateString('en-US', {
+                  year: 'numeric',
+                  month: 'long',
+                  day: 'numeric',
+                });
+
+                const formattedTime = dueDate.toLocaleTimeString('en-US', {
+                  hour: '2-digit',
+                  minute: '2-digit',
+                });
+
+
+                const abbreviatedMonth = formattedDueDate.slice(0, 3);
+                const formattedDueDateAbbreviated = `${abbreviatedMonth} ${dueDate.getDate()}, ${dueDate.getFullYear()}`;
+
                 return (
-                  <div key={task.id}>
-                    <div>Task: {task.task}</div>
-                    <div>Status: {task.completedTask}</div>
-                    <br />
+                  <div key={task.id} className='flex items-start justify-between w-full mbg-200 px-4 py-3 border-thin-800 rounded my-5'>
+                    <div>
+                      <div><DoneIcon /> {task.task}</div>
+                      <div className='my-1'><WatchLaterIcon sx={{ fontSize: '22px' }} /> {formattedDueDateAbbreviated} - {formattedTime}</div>
+                    </div>
                   </div>
                 );
               })}

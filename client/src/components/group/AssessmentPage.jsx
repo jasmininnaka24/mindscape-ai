@@ -24,6 +24,7 @@ export const AssessmentPage = (props) => {
   const [materialCategory, setMaterialCategory] = useState('')
   const [lastAssessmentScore, setLastAssessmentScore] = useState(0);
   const [showScoreForPreAssessment, setShowScoreForPreAssessment] = useState(false);
+  const [takeAssessment, setTakeAssessment] = useState(false);
 
   const [analysisId, setAnalysisId] = useState(0);
   const [categoryID, setCategoryID] = useState(0);
@@ -39,28 +40,35 @@ export const AssessmentPage = (props) => {
     const fetchData = async () => {
       
 
-      const materialTitleResponse = await axios.get(`http://localhost:3001/studyMaterial/study-material/Group/${groupId}/${UserId}/${materialId}`)
-      setMaterialTitle(materialTitleResponse.data[0].title)
+      const materialTitleResponse = await axios.get(`http://localhost:3001/studyMaterial/get-material/${materialId}`)
+      setMaterialTitle(materialTitleResponse.data.title)
+
       
 
-      const materialCategoryResponse = await axios.get(`http://localhost:3001/studyMaterialCategory/get-lastmaterial/${materialTitleResponse.data[0].StudyMaterialsCategoryId}/${groupId}/Group/${UserId}`)
+      const materialCategoryResponse = await axios.get(`http://localhost:3001/studyMaterialCategory/get-categoryy/${materialTitleResponse.data.StudyMaterialsCategoryId}`)
       setMaterialCategory(materialCategoryResponse.data.category)
 
 
-      const previousSavedData = await axios.get(`http://localhost:3001/DashForPersonalAndGroup/get-latest-assessment/${materialId}`);
+      const previousSavedData = await axios.get(`http://localhost:3001/DashForPersonalAndGroup/get-latest-assessment-group/${materialId}/${groupId}`);
       const fetchedData = previousSavedData.data;
+
+
 
       if (fetchedData && Array.isArray(fetchedData) && fetchedData.length > 0) {
         setOverAllItems(fetchedData[0].overAllItems)
-      }
+      } 
       
       if (fetchedData && Array.isArray(fetchedData) && fetchedData.length > 0 && fetchedData[0].assessmentScore !== 'none') {
         if (fetchedData.length >= 2) {
           setLastAssessmentScore(fetchedData[1].assessmentScore);
           setAssessmentCountMoreThanOne(true); 
         }
-      } else {
-        console.error('Invalid or empty data received:', fetchedData);
+      } 
+
+      if (fetchedData && fetchedData.length >= 1 && fetchedData[0].assessmentScore !== undefined && fetchedData[0].assessmentScore === 'none') {
+        setTakeAssessment(true);
+      } else if (fetchedData && fetchedData.length >= 1 && fetchedData[0].assessmentScore !== undefined) {
+        setTakeAssessment(true);
       }
     
     }
@@ -179,7 +187,7 @@ export const AssessmentPage = (props) => {
     }, 0);
     
 
-    const previousSavedData = await axios.get(`http://localhost:3001/DashForPersonalAndGroup/get-latest-assessment/${materialId}`);
+    const previousSavedData = await axios.get(`http://localhost:3001/DashForPersonalAndGroup/get-latest-assessment-group/${materialId}/${groupId}`);
     const fetchedData = previousSavedData.data;
     
 
@@ -412,7 +420,7 @@ export const AssessmentPage = (props) => {
 
     let predictionVal = overAllPerformance.toFixed(2);
     
-    const previousSavedData = await axios.get(`http://localhost:3001/DashForPersonalAndGroup/get-latest-assessment/${materialId}`);
+    const previousSavedData = await axios.get(`http://localhost:3001/DashForPersonalAndGroup/get-latest-assessment-group/${materialId}/${groupId}`);
     const fetchedData = previousSavedData.data;    
     
     let lastExamStr = 'Pre-Assessment';
@@ -665,40 +673,51 @@ export const AssessmentPage = (props) => {
 
                   <div className=' flex items-center justify-center gap-5'>
 
-                    {(generatedAnalysis === '' && !showScoreForPreAssessment) ? (
-                      <button
-                        className='border-thin-800 px-5 py-3 rounded-[5px] w-1/4'
-                        onClick={() => {
-                          setShowSubmittedAnswerModal(true);
-                          setIsRunning(false)
+                    {takeAssessment && (
+                      (generatedAnalysis === '' && !showScoreForPreAssessment ) ? (
+                        <button
+                          className='border-thin-800 px-5 py-3 rounded-[5px] w-1/4'
+                          onClick={() => {
+                            setShowSubmittedAnswerModal(true);
+                            setIsRunning(false)
 
-                          socket.emit('updated_show_submitted_answer_modal', {room: assessementRoom, showSubmittedAnswerModal: true});
+                            socket.emit('updated_show_submitted_answer_modal', {room: assessementRoom, showSubmittedAnswerModal: true});
 
-                        }}
-                      >
-                        Analyze the Data
-                      </button>
-                    ): (
-                      <button
-                        className='border-thin-800 px-5 py-3 rounded-[5px] w-1/4'
-                        onClick={() => {
-                          setShowAnalysis(true)
-                          setShowAssessment(false);
-                          setShowSubmittedAnswerModal(false);
-                          setIsRunning(false)
-                        }}
-                      >
-                        View Analysis
-                      </button>
+                          }}
+                        >
+                          Analyze the Data
+                        </button>
+                      ): (
+                        <button
+                          className='border-thin-800 px-5 py-3 rounded-[5px] w-1/4'
+                          onClick={() => {
+                            setShowAnalysis(true)
+                            setShowAssessment(false);
+                            setShowSubmittedAnswerModal(false);
+                            setIsRunning(false)
+                          }}
+                        >
+                          View Analysis
+                        </button>
+                      )
                     )}
 
-                    <Link to={`/main/personal/study-area/personal-review/${materialId}`} className='border-thin-800 px-5 py-3 rounded-[5px] w-1/4 text-center'>
-                      <button>Back to Study Area</button>
-                    </Link>
 
-                    <Link to={`/main/personal/dashboard/category-list/topic-list/topic-page/${categoryID}/${materialId}`} className='mbg-800 mcolor-100 px-5 py-3 rounded-[5px] w-1/4 text-center'>
-                      <button>View Analytics</button>
-                    </Link>  
+                    {groupId !== undefined ? (
+                      <button className='border-thin-800 px-5 py-3 rounded-[5px] w-1/4 text-center' onClick={() => {
+                        window.location.reload()
+                      }}>Back to Study Area</button>
+                    ) : (
+                      <Link to={`/main/personal/study-area/personal-review/${materialId}`} className='border-thin-800 px-5 py-3 rounded-[5px] w-1/4 text-center'>
+                      <button>Back to Study Area</button>
+                    </Link>      
+                    )}
+
+                    {takeAssessment && (
+                      <Link to={`/main/personal/dashboard/category-list/topic-list/topic-page/${categoryID}/${materialId}`} className='mbg-800 mcolor-100 px-5 py-3 rounded-[5px] w-1/4 text-center'>
+                        <button>View Analytics</button>
+                      </Link>  
+                    )}
                   </div>
                 </div>
 
@@ -770,7 +789,7 @@ export const AssessmentPage = (props) => {
                 <ul className='grid-result gap-4 mcolor-800'>
                   {item.quizType === 'MCQA' && (
                     shuffledChoicesAssessment[index].map((choice, choiceIndex) => (
-                      userListAssessment && userListAssessment.length > 0 && userListAssessment[0] && userListAssessment[0].userId === userId) ? (
+                      userListAssessment && userListAssessment.length > 0 && userListAssessment[0] && userListAssessment[0]?.userId === userId) ? (
 
                         <div
                         key={choiceIndex}
@@ -814,7 +833,7 @@ export const AssessmentPage = (props) => {
 
                 {item.quizType === 'ToF' && (
                   <div className='grid-result gap-4 mcolor-800'>
-                    {(userListAssessment && userListAssessment.length > 0 && userListAssessment[0] && userListAssessment[0].userId === userId) ? (
+                    {(userListAssessment && userListAssessment.length > 0 && userListAssessment[0] && userListAssessment[0]?.userId === userId) ? (
                     <div
                       key={1}
                       className={`flex items-center justify-center px-5 py-3 text-center choice rounded-[5px] 
@@ -848,7 +867,7 @@ export const AssessmentPage = (props) => {
                     </div>
                     )}
                   
-                  {(userListAssessment && userListAssessment.length > 0 && userListAssessment[0] && userListAssessment[0].userId === userId) ? (
+                  {(userListAssessment && userListAssessment.length > 0 && userListAssessment[0] && userListAssessment[0]?.userId === userId) ? (
                     <div
                       key={2}
                       className={`flex items-center justify-center px-5 py-3 text-center choice rounded-[5px] 
@@ -906,7 +925,7 @@ export const AssessmentPage = (props) => {
                       value={selectedAssessmentAnswer[index] || ''}
                       placeholder='Answer here...'
                       onChange={(event) => handleRadioChange(event.target.value, index)}
-                      disabled={userListAssessment && userListAssessment.length > 0 && userListAssessment[0] && userListAssessment[0].userId !== userId} 
+                      disabled={userListAssessment && userListAssessment.length > 0 && userListAssessment[0] && userListAssessment[0]?.userId !== userId} 
                     />
 
 
@@ -927,8 +946,8 @@ export const AssessmentPage = (props) => {
             ))}
 
 
-            {(showAnalysis === false && isAssessmentDone === false) && (
-              <div className='flex justify-center pt-8 mb-5'>
+            {(showAnalysis === false && isAssessmentDone === false && userListAssessment[0]?.userId === userId) && (
+              <div className='flex justify-center pt-3 mb-10'>
                 <button
                   className={`w-1/2 py-2 px-5 rounded-[5px] text-lg ${isSubmittedButtonClicked === true && idOfWhoSubmitted !== userId && usernameOfWhoSubmitted !== username ? 'disabled-button mbg-300 mcolor-800' : 'mbg-800 mcolor-100 '}`}
                   onClick={() => {
@@ -946,12 +965,25 @@ export const AssessmentPage = (props) => {
 
                       
                   }}
-                  disabled={isSubmittedButtonClicked === true && idOfWhoSubmitted !== userId && usernameOfWhoSubmitted !== username}
+                  disabled={isSubmittedButtonClicked === true && idOfWhoSubmitted !== userId && usernameOfWhoSubmitted !== username && idOfWhoSubmitted === userId}
                   style={{ cursor: isSubmittedButtonClicked === true && idOfWhoSubmitted !== userId && usernameOfWhoSubmitted !== username ? 'not-allowed' : 'pointer' }}
                 >
                   {isSubmittedButtonClicked === true ? 
-                    (idOfWhoSubmitted === userId ? 'Confirm Submission' : `${usernameOfWhoSubmitted} clicks the submit button`) : 
-                    'Submit Answer'
+                    (idOfWhoSubmitted === userId ? 'Confirm Submission' : `${usernameOfWhoSubmitted} clicks the submit button`) : 'Submit Answer'
+                  }
+                </button>
+              </div>
+            )}
+
+            {(showAnalysis === false && isAssessmentDone === false && userListAssessment[0]?.userId !== userId) && (
+              <div className='flex justify-center pt-3 mb-10'>
+                <button
+                  className={`${isSubmittedButtonClicked && `w-1/2 py-2 px-5 rounded-[5px] text-lg ${isSubmittedButtonClicked === true && idOfWhoSubmitted !== userId && usernameOfWhoSubmitted !== username ? 'disabled-button mbg-300 mcolor-800' : 'mbg-800 mcolor-100 '}`}`}
+                 
+                  disabled={'not-allowed'}
+                >
+                  {isSubmittedButtonClicked === true ? 
+                    (idOfWhoSubmitted === userId ? 'Confirm Submission' : `${usernameOfWhoSubmitted} clicks the submit button`) : ''
                   }
                 </button>
               </div>

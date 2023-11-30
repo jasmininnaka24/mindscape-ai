@@ -552,14 +552,16 @@ export const GroupReviewerPage = () => {
   const failedItem = () => {
     setTimeout(() => {
 
-      setSubmittedAnswer("");
       setLostPoints(true);
+      setSubmittedAnswer("");
       setDisabledSubmitButton(true)
       setDisabledSubmitButton(true)
       responseStateUpdate(extractedQA[questionIndex].id, "Wrong")
       
 
       socket.emit("updated_lost_points", { room, lostPoints: true });
+      socket.emit("update_is_running_review", { room, isRunningReview: false });
+
     }, 100);
 
 
@@ -567,10 +569,12 @@ export const GroupReviewerPage = () => {
     setTimeout(() => {
       const updatedUserList = userList.map((userData, index) => {
         if (index !== userTurn) {
-          userData.points += 1;
+          userData.points += 5;
         } else {
-          if (userData.points !== 0) {
-            userData.points -= 1;
+          if (userData.points <= 0) {
+            userData.points = 0;
+          } else {
+            userData.points = Math.max(0, userData.points - 3);
           }
         }
         return userData;
@@ -578,11 +582,11 @@ export const GroupReviewerPage = () => {
   
       socket.emit("updated_userlist", { room, userList: updatedUserList });
       setUserList(updatedUserList);
-      setLostPoints(false);
       setDisabledSubmitButton(false)
       socket.emit("updated_lost_points", { room, lostPoints: false });
       nextUser();
       setDisabledSubmitButton(false)
+      setLostPoints(false);
 
 
 
@@ -599,12 +603,12 @@ export const GroupReviewerPage = () => {
       setTimeout(() => {
         setGainedPoints(true);
         setDisabledSubmitButton(true)
-        setIsRunningReview(false)
         setDisabledSubmitButton(true)
         responseStateUpdate(extractedQA[questionIndex].id, "Correct")
 
         socket.emit("updated_gained_points", { room, gainedPoints: true });
         socket.emit("update_is_running_review", { room, isRunningReview: false });
+
         
       }, 100);
       
@@ -613,16 +617,15 @@ export const GroupReviewerPage = () => {
         socket.emit("updated_gained_points", { room, gainedPoints: false });
         setSubmittedAnswer("")
         setRemainingHints(3)
-        userList[userTurn].points += 1;
+        userList[userTurn].points += 5;
         socket.emit("updated_userlist", {room, userList});
         setUserList(userList)
-        setDisabledSubmitButton(false)
-        setIsRunningReview(true)
+        // setIsRunningReview(true)
         socket.emit("update_is_running_review", { room, isRunningReview: true });
         nextUser()
         setDisabledSubmitButton(false)
 
-
+  
       }, 2500);
 
     } else {
@@ -940,7 +943,7 @@ export const GroupReviewerPage = () => {
                                       {extractedQA && extractedQA.length > 0 && extractedQA[questionIndex] && (
                                         <div>
               
-                                          {lostPoints === true && (
+                                          {(failCount === 2 || failCount === 1 || failCount === 0) && lostPoints === true && (
                                             <div className='text-red text-lg text-center mb-3'>{selectedChoice === '' ? 'No answer.' : (extractedQA[questionIndex].quizType !== 'MCQA' && userList[userTurn]?.points > 0) ? 'Wrong. You lost 1 point' : 'Wrong answer.'}</div>
                                           )}
 
@@ -1119,7 +1122,7 @@ export const GroupReviewerPage = () => {
 
                                           </div>
 
-                                          {lostPoints === true && (
+                                          {(failCount === 2 || failCount === 1 || failCount === 0) && lostPoints === true && (
                                             <div className='text-emerald-500 text-lg text-center mb-1'>
                                               You have gained 1 point as a result of {userList[userTurn]?.username}'s incorrect answer.
                                             </div>

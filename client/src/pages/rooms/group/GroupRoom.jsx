@@ -128,7 +128,7 @@ export const GroupRoom = () => {
 
                 {expandedGroupId === id && (
 
-                  <div className='absolute right-0 bottom-0 px-7 mb-[-114px] mbg-700 mcolor-100 rounded pt-3 pb-4 opacity-80'>
+                  <div className='absolute right-0 bottom-0 px-7 mb-[-114px] mbg-700 mcolor-100 rounded pt-3 pb-4 opacity-80' style={{ zIndex: '100' }}>
                     <Link to={`/main/group/study-area/${id}`}>
                       <p className='pt-1'>Study Area</p>
                     </Link>

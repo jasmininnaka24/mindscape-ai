@@ -3,7 +3,7 @@ import React from 'react';
 import { DateTime } from 'luxon';  // Import Luxon DateTime for date manipulation
 
 export const AddingTask = (props) => {
-  const { task, dueDate, room, listOfTasks, setListOfTasks, setTask, setDueDate, unhideModal } = props;
+  const { task, dueDate, room, listOfTasks, setListOfTasks, setTask, setDueDate, unhideModal, UserId, groupId } = props;
 
   // Adding task to the database
   const addTask = async (event) => {
@@ -21,7 +21,7 @@ export const AddingTask = (props) => {
       dueDate: dueDate,
       completedTask: "Uncompleted",
       room: room,
-      UserId: 2,
+      [room === 'Personal' ? 'UserId' : 'StudyGroupId']: room === 'Personal' ? UserId : groupId,
     };
 
     try {

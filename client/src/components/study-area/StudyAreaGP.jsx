@@ -481,7 +481,7 @@ export const StudyAreaGP = (props) => {
               <div className="groupName flex flex-col">
 
                 <div className='relative'>
-                  <input type="text" placeholder='Group name...' className='border-medium-800-scale px-5 py-2 w-full rounded-[5px] outline-none border-none' onChange={(event) => {setCurrentModalVal(event.target.value)}} value={currentModalVal === '' ? '' : currentModalVal} />
+                  <input type="text" placeholder='Category...' className='border-medium-800-scale px-5 py-2 w-full rounded-[5px] outline-none border-none' onChange={(event) => {setCurrentModalVal(event.target.value)}} value={currentModalVal === '' ? '' : currentModalVal} />
                   <button onClick={addToModalList} className='absolute right-5 top-1 text-3xl'>+</button>
                 </div>
 

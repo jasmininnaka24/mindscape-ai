@@ -6,9 +6,9 @@ export const CompletedTask = (props) => {
 
   const { taskId, listOfTasks, setListOfTasks, setTask, setDueDate, setTaskID } = props;
 
-  const taskCompleted = (taskId) => {
+  const taskCompleted = async (taskId) => {
       
-    axios.put(`http://localhost:3001/tasks/completed/${taskId}`).then((response) => {
+    await axios.put(`http://localhost:3001/tasks/completed/${taskId}`).then((response) => {
       const updatedTask = response.data;
 
       const updatedList = listOfTasks.map(task => {

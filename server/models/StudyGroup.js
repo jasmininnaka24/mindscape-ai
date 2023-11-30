@@ -35,6 +35,9 @@ module.exports = (sequelize, DataTypes) => {
     StudyGroup.hasMany(models.DashForPersonalAndGroup, {
       onDelete: 'cascade',
     })
+    StudyGroup.hasMany(models.Tasks, {
+      onDelete: 'cascade',
+    })
   }
 
   return StudyGroup;

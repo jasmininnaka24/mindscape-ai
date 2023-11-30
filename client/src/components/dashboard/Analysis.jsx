@@ -112,83 +112,83 @@ export const Analysis = () => {
 
 
 
-          <div>
-            <div className='mt-24'>
-              <p className='mb-5 font-bold text-2xl text-center'>ANALYSIS</p>
-              <p className='text-center text-xl mb-10'>{generatedAnalysis}</p>
-            </div>
+        <div>
+          <div className='mt-24'>
+            <p className='mb-5 font-bold text-2xl text-center'>ANALYSIS</p>
+            <p className='text-center text-xl mb-10'>{generatedAnalysis}</p>
+          </div>
 
 
-          {(completionTime >= Math.floor(overAllItems/2) || assessmentImp < studyProfeciencyTarget || assessmentScorePerf < studyProfeciencyTarget) && (
-            <div className='mt-20'>
-              <p className='mb-5 font-bold text-2xl text-center'>Recommendations</p>
+        {(completionTime >= Math.floor(overAllItems/2) || assessmentImp < studyProfeciencyTarget || assessmentScorePerf < studyProfeciencyTarget) && (
+          <div className='mt-20'>
+            <p className='mb-5 font-bold text-2xl text-center'>Recommendations</p>
 
-              {completionTime >= Math.floor(overAllItems/2) && (
-                <p className='text-center text-xl mb-4'>
-                  <CheckIcon className='mr-2' />
-                  Challenge yourself to finish the assessment under{' '}
-                  <span className='font-bold'>
-                    {`${Math.floor(overAllItems / 120) > 0 ? (Math.floor(overAllItems / 120) === 1 ? '1 hour' : Math.floor(overAllItems / 120) + ' hours') + ' ' : ''}${Math.floor((overAllItems % 120) / 2) > 0 ? (Math.floor((overAllItems % 120) / 2) === 1 ? '1 min' : Math.floor((overAllItems % 120) / 2) + ' mins') + ' ' : ''}${((overAllItems % 2) * 30) > 0 ? ((overAllItems % 2) * 30) + ' second' + (((overAllItems % 2) * 30) !== 1 ? 's' : '') : ''}`}
-                  </span> 
-                  {' '}
-                  to increase the confidence level until it gets to 100%.
-                </p>
-              )}
-
-
-              {assessmentImp < studyProfeciencyTarget && (
-                <p className='text-center text-xl mb-4'>
-                  <CheckIcon className='mr-2' />
-                  You may consider revisiting the lesson/quiz practice to enhance your understanding, which will lead to an increase in your <span className='font-bold'>Assessment Improvement</span> when you retake the quiz.
-                </p>
-              )}
-
-
-              {assessmentScorePerf < studyProfeciencyTarget && (
-                <p className='text-center text-xl mb-4'>
-                  <CheckIcon className='mr-2' />
-                  You can aim for a quiz score of 90% or higher, which will significantly enhance your overall <span className='font-bold'>Assessment Performance</span> reaching the 90% benchmark.
-                </p>
-              )}
-
-            </div>
-          )}
-        </div>
-
-
-
-
-
-
-
-        <div className='mt-32 flex items-center justify-center gap-5'>
-          {/* <button className='border-thin-800 px-5 py-3 rounded-[5px] w-1/4' onClick={() => {
-            setShowAssessment(true)
-            setShowAnalysis(false)
-            setIsRunning(false)
-          }}>Review Answers</button> */}
-
-          {groupId !== undefined ? (
-
-            <Link to={`/main/group/study-area/group-review/${groupId}/${materialID}`} className='border-thin-800 px-5 py-3 rounded-[5px] w-1/4 text-center'>
-            <button>Go to Study Area</button>
-            </Link>      
-            ) : (
-            <Link to={`/main/personal/study-area/personal-review/${materialID}`} className='border-thin-800 px-5 py-3 rounded-[5px] w-1/4 text-center'>
-            <button>Go to Study Area</button>
-            </Link>      
+            {completionTime >= Math.floor(overAllItems/2) && (
+              <p className='text-center text-xl mb-4'>
+                <CheckIcon className='mr-2' />
+                Challenge yourself to finish the assessment under{' '}
+                <span className='font-bold'>
+                  {`${Math.floor(overAllItems / 120) > 0 ? (Math.floor(overAllItems / 120) === 1 ? '1 hour' : Math.floor(overAllItems / 120) + ' hours') + ' ' : ''}${Math.floor((overAllItems % 120) / 2) > 0 ? (Math.floor((overAllItems % 120) / 2) === 1 ? '1 min' : Math.floor((overAllItems % 120) / 2) + ' mins') + ' ' : ''}${((overAllItems % 2) * 30) > 0 ? ((overAllItems % 2) * 30) + ' second' + (((overAllItems % 2) * 30) !== 1 ? 's' : '') : ''}`}
+                </span> 
+                {' '}
+                to increase the confidence level until it gets to 100%.
+              </p>
             )}
 
-            {groupId !== undefined ? (
-            <Link to={`/main/group/dashboard/category-list/topic-list/topic-page/${groupId}/${categoryID}/${materialID}`} className='mbg-800 mcolor-100 px-5 py-3 rounded-[5px] w-1/4 text-center'>
-              <button>View Analytics</button>
-            </Link>      
-            ) : (
-            <Link to={`/main/personal/dashboard/category-list/topic-list/topic-page/${categoryID}/${materialID}`} className='mbg-800 mcolor-100 px-5 py-3 rounded-[5px] w-1/4 text-center'>
-              <button>View Analytics</button>
-            </Link>      
-          )}     
-        </div>
+
+            {assessmentImp < studyProfeciencyTarget && (
+              <p className='text-center text-xl mb-4'>
+                <CheckIcon className='mr-2' />
+                You may consider revisiting the lesson/quiz practice to enhance your understanding, which will lead to an increase in your <span className='font-bold'>Assessment Improvement</span> when you retake the quiz.
+              </p>
+            )}
+
+
+            {assessmentScorePerf < studyProfeciencyTarget && (
+              <p className='text-center text-xl mb-4'>
+                <CheckIcon className='mr-2' />
+                You can aim for a quiz score of 90% or higher, which will significantly enhance your overall <span className='font-bold'>Assessment Performance</span> reaching the 90% benchmark.
+              </p>
+            )}
+
+          </div>
+        )}
+      </div>
+
+
+
+
+
+
+
+      <div className='mt-32 flex items-center justify-center gap-5'>
+        {/* <button className='border-thin-800 px-5 py-3 rounded-[5px] w-1/4' onClick={() => {
+          setShowAssessment(true)
+          setShowAnalysis(false)
+          setIsRunning(false)
+        }}>Review Answers</button> */}
+
+        {groupId !== undefined ? (
+
+          <Link to={`/main/group/study-area/group-review/${groupId}/${materialID}`} className='border-thin-800 px-5 py-3 rounded-[5px] w-1/4 text-center'>
+          <button>Go to Study Area</button>
+          </Link>      
+          ) : (
+          <Link to={`/main/personal/study-area/personal-review/${materialID}`} className='border-thin-800 px-5 py-3 rounded-[5px] w-1/4 text-center'>
+          <button>Go to Study Area</button>
+          </Link>      
+          )}
+
+          {groupId !== undefined ? (
+          <Link to={`/main/group/dashboard/category-list/topic-list/topic-page/${groupId}/${categoryID}/${materialID}`} className='mbg-800 mcolor-100 px-5 py-3 rounded-[5px] w-1/4 text-center'>
+            <button>View Analytics</button>
+          </Link>      
+          ) : (
+          <Link to={`/main/personal/dashboard/category-list/topic-list/topic-page/${categoryID}/${materialID}`} className='mbg-800 mcolor-100 px-5 py-3 rounded-[5px] w-1/4 text-center'>
+            <button>View Analytics</button>
+          </Link>      
+        )}     
+      </div>
 
       </div>
     </div>

@@ -32,10 +32,11 @@ router.get('/:categoryFor/:StudyGroupId', async (req, res) => {
   res.json(extractedCategories);
 })
 
-router.get('/Personal/:UserId', async (req, res) => {
+router.get('/personal/:categoryFor/:UserId', async (req, res) => {
   const { UserId } = req.params;
   const extractedCategories = await StudyMaterialsCategories.findAll({
     where: {
+      categoryFor: 'Personal',
       UserId: UserId, 
     },
   });
@@ -46,12 +47,24 @@ router.get('/Personal/:UserId', async (req, res) => {
 
 
 
+router.get('/get-all-study-material/:UserId', async (req, res) => {
+  const { UserId } = req.params;
+  const extractedCategories = await StudyMaterialsCategories.findAll({
+    where: {
+      categoryFor: 'Personal',
+      UserId, 
+    },
+  });
+  res.json(extractedCategories);
+})
+
+
 router.get('/personal-study-material/:categoryFor/:UserId', async (req, res) => {
   const { categoryFor, UserId } = req.params;
   const extractedCategories = await StudyMaterialsCategories.findAll({
     where: {
       categoryFor: categoryFor,
-      UserId, 
+      UserId: UserId, 
     },
   });
   res.json(extractedCategories);

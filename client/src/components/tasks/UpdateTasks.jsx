@@ -12,8 +12,6 @@ export const UpdateTasks = (props) => {
       task: task,
       dueDate: dueDate,
       completedTask: "Uncompleted",
-      room: room,
-      UserId: 2
     }
 
     await axios.put(`http://localhost:3001/tasks/${taskID}`, data).then((response) => {

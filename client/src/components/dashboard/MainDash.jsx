@@ -2,7 +2,12 @@ import axios from 'axios'
 import React, { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { useUser } from '../../UserContext'
-
+import { DateTime, Interval } from 'luxon';
+import PushPinIcon from '@mui/icons-material/PushPin';
+import WatchLaterIcon from '@mui/icons-material/WatchLater';
+import PendingActionsIcon from '@mui/icons-material/PendingActions';
+import EditIcon from '@mui/icons-material/Edit';
+import DoneIcon from '@mui/icons-material/Done';
 
 export const MainDash = () => {
 
@@ -14,6 +19,7 @@ export const MainDash = () => {
   const [needsPracticeLength, setNeedsPracticeLength] = useState(0)
   const [itemsCount, setItemsCount] = useState(0);
   const [groupStudyPerformance, setGroupStudyPerformance] = useState(0);
+  const [listOfTasks, setListOfTasks] = useState([]);
 
 
 
@@ -29,37 +35,56 @@ export const MainDash = () => {
     async function fetchLatestMaterialStudied() {
       try {  
 
-        let response = '';
+        let renderLink = ''
 
-        if (groupId !== undefined) {
-          response = await axios.get(`http://localhost:3001/studyMaterial/latestMaterialStudied/group/${groupId}`)
+        if (groupId === undefined) {
+          renderLink = `http://localhost:3001/tasks/personal/${UserId}`;
         } else {
-          response = await axios.get(`http://localhost:3001/studyMaterial/latestMaterialStudied/personal/${UserId}`)
+          renderLink = `http://localhost:3001/tasks/group/${groupId}`;
         }
+  
+        const tasksResponse = await axios.get(renderLink);
+        setListOfTasks(tasksResponse.data);
 
-        const latestMaterialStudied = response.data;
+  
+
         
-        const materialId = latestMaterialStudied[0].id;
-
-        console.log(materialId);
 
         let materialCategories = '';
         let materialTitleResponse = '';
         let materialCategoryResponse = '';
 
         if (groupId === '' || groupId === null || groupId === undefined) {
-          materialCategories = await axios.get(`http://localhost:3001/studyMaterialCategory/personal-study-material/Personal/${UserId}`)
 
-          materialTitleResponse = await axios.get(`http://localhost:3001/studyMaterial/latestMaterialStudied/personal/${UserId}`)
-          
-          materialCategoryResponse = await axios.get(`http://localhost:3001/studyMaterialCategory/get-categoryy/${materialTitleResponse.data[0].StudyMaterialsCategoryId}`)
+          try {
+
+            materialCategories = await axios.get(`http://localhost:3001/studyMaterialCategory/personal-study-material/Personal/${UserId}`)
+  
+            materialTitleResponse = await axios.get(`http://localhost:3001/studyMaterial/latestMaterialStudied/personal/${UserId}`)
+  
+  
+            let materialCategoryId = materialTitleResponse.data[0].StudyMaterialsCategoryId;
+            console.log(materialCategoryId);
+            
+            materialCategoryResponse = await axios.get(`http://localhost:3001/studyMaterialCategory/get-categoryy/${materialCategoryId}`)
+          } catch (error) {
+            console.log(error);
+          }
           
         } else {
-          materialCategories = await axios.get(`http://localhost:3001/studyMaterialCategory/Group/${groupId}`)
 
-          materialTitleResponse = await axios.get(`http://localhost:3001/studyMaterial/latestMaterialStudied/group/${groupId}`)
-          
-          materialCategoryResponse = await axios.get(`http://localhost:3001/studyMaterialCategory/get-categoryy/${materialTitleResponse.data.StudyMaterialsCategoryId}`)
+          try {
+            materialCategories = await axios.get(`http://localhost:3001/studyMaterialCategory/Group/${groupId}`)
+  
+            materialTitleResponse = await axios.get(`http://localhost:3001/studyMaterial/latestMaterialStudied/group/${groupId}`)
+
+            let materialCategoryId = materialTitleResponse.data.StudyMaterialsCategoryId;
+            console.log(materialCategoryId);
+            
+            materialCategoryResponse = await axios.get(`http://localhost:3001/studyMaterialCategory/get-categoryy/${materialCategoryId}`)
+          } catch (error) {
+            console.log(error);
+          }
         }
         
 
@@ -81,6 +106,21 @@ export const MainDash = () => {
           setGroupStudyPerformance(materialTitleResponse.data[0].studyPerformance);
 
         }
+
+
+        
+        let response = '';
+
+        if (groupId !== undefined) {
+          response = await axios.get(`http://localhost:3001/studyMaterial/latestMaterialStudied/group/${groupId}`);
+        } else {
+          response = await axios.get(`http://localhost:3001/studyMaterial/latestMaterialStudied/personal/${UserId}`);
+        }
+
+        const latestMaterialStudied = response.data;
+        
+        
+        const materialId = latestMaterialStudied[0].id;
 
         const materialResponse = await axios.get(`http://localhost:3001/quesAns/study-material-mcq/${materialId}`);
         const fetchedQA = materialResponse.data;
@@ -106,7 +146,101 @@ export const MainDash = () => {
   return (
     <div className='flex items-center justify-between gap-5 my-8'>
       <div className='w-full rounded-[5px]'>
-        <div className='w-full border-medium-800 min-h-[37vh] rounded-[5px] p-5'></div>
+        <div className='w-full border-medium-800 min-h-[37vh] rounded-[5px] relative'>
+          <div className='max-h-[36vh] w-full p-5' style={{ overflowY: 'auto' }}>
+            <p className='text-2xl font-normal'>List of Tasks</p>
+
+            {listOfTasks
+              .filter(task => task.completedTask === 'Uncompleted') 
+              .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)) 
+              .map((task, key) => {
+                const currentDateTime = DateTime.now();
+                const dueDateTime = DateTime.fromISO(task.dueDate);
+                const timeDifference = Interval.fromDateTimes(currentDateTime, dueDateTime);
+
+                // Calculate the time difference in days, hours, and minutes
+                const { days, hours, minutes } = timeDifference.toDuration(['days', 'hours', 'minutes']).toObject();
+
+                // Round off hours and minutes
+                const roundedHours = Math.round(hours);
+                const roundedMinutes = Math.round(minutes);
+
+                // Check if the task is overdue
+                const isOverdue = timeDifference.isPast;
+
+                // Create an array to store the time parts to include
+                const timeParts = [];
+
+                // Conditionally include "days" if days > 0
+                if (days > 0) {
+                  timeParts.push(`${days} day${days > 1 ? 's' : ''}`);
+                }
+
+                // Conditionally include "hours" if roundedHours > 0
+                if (roundedHours > 0) {
+                  timeParts.push(`${roundedHours} hour${roundedHours > 1 ? 's' : ''}`);
+                }
+
+                // Conditionally include "minutes" if roundedMinutes > 0
+                if (roundedMinutes > 0) {
+                  timeParts.push(`${roundedMinutes} minute${roundedMinutes > 1 ? 's' : ''}`);
+                }
+
+                // Format the time difference based on included time parts and overdue status
+                let formattedTimeDifference = '';
+
+                if (isOverdue) {
+                  formattedTimeDifference = 'On time';
+                } else if (timeParts.length === 0) {
+                  // Handle case when all time components are zero
+                  formattedTimeDifference = `Overdue`;
+                } else {
+                  // Handle case when the task is not overdue
+                  formattedTimeDifference = `${timeParts.join(' ')} from now`;
+                }
+
+                const dueDate = new Date(task.dueDate);
+
+                // Format the date as "Month Day, Year"
+                const formattedDueDate = dueDate.toLocaleDateString('en-US', {
+                  year: 'numeric',
+                  month: 'long',
+                  day: 'numeric',
+                });
+
+                const formattedTime = dueDate.toLocaleTimeString('en-US', {
+                  hour: '2-digit',
+                  minute: '2-digit',
+                });
+
+
+                const abbreviatedMonth = formattedDueDate.slice(0, 3);
+                const formattedDueDateAbbreviated = `${abbreviatedMonth} ${dueDate.getDate()}, ${dueDate.getFullYear()}`;
+
+      
+                return (
+                  <div key={key} className='flex items-start justify-between w-full mbg-200 px-4 py-3 border-thin-800 rounded my-3'>
+                    <div className='w-3/4'  style={{ whiteSpace: 'pre-wrap' }}>
+                      <div><PushPinIcon className='text-red-dark' /> {task.task}</div>
+                      <div className='mt-3'><WatchLaterIcon sx={{ fontSize: '22px' }} /> {formattedDueDateAbbreviated}, {formattedTime}</div>
+                      <div className={`mt-2`}><PendingActionsIcon/> <span className={`${formattedTimeDifference === 'Overdue' ? 'text-red-dark' : ''}`}>{formattedTimeDifference}</span></div>
+                    </div>
+                  <br />
+                </div>
+                )
+              })}
+          </div>
+
+          <div className='absolute bottom-0 right-0 w-full mbg-200'>
+            <div className='flex justify-end py-2 px-4'>
+              <Link to={`/main/${groupId === undefined ? 'personal' : 'group'}/tasks/${groupId === undefined ? '' : groupId}`}>
+                <button className='px-4 py-1 mbg-800 mcolor-100 rounded'>
+                  View all Tasks
+                </button>
+              </Link>
+            </div>
+          </div>
+        </div>
 
         <div className='w-full border-medium-800 min-h-[37vh] rounded-[5px] py- 5 px-10 mt-10 relative'>
 
@@ -155,7 +289,12 @@ export const MainDash = () => {
 
       </div>
       <div className='w-full border-medium-800 rounded-[5px] p-5 min-h-[80vh] relative'>
-        <p className='font-medium text-2xl mcolor-800'>Academic Categories</p>
+
+        <div className='flex items-center justify-between'>
+          <p className='font-medium text-2xl mcolor-800'>Own Material Records</p>
+          <button className='mbg-700 px-4 py-2 mcolor-100 rounded'>Switch to Bookmarked Records</button>
+        </div>
+
         <br />
         <table className='w-full'>
           <thead className='mbg-300'>

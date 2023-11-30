@@ -4,6 +4,9 @@ import axios from 'axios';
 import io from 'socket.io-client';
 import { useUser } from '../../UserContext';
 import { Link, useNavigate } from 'react-router-dom';
+import PushPinIcon from '@mui/icons-material/PushPin';
+
+
 
 const socket = io.connect("http://localhost:3001");
 
@@ -32,6 +35,8 @@ export const PreJoinPage = (props) => {
   const [notesReviewer, setNotesReviewer] = useState([]);
   const [lessonContext, setLessonContext] = useState("");
   const [takeAssessment, setTakeAssessment] = useState(false);
+  const [showModal, setShowModal] = useState("");
+
 
   // deleting material
   const [recentlyDeletedMaterial, setRecentlyDeletedMaterial] = useState('');
@@ -47,14 +52,17 @@ export const PreJoinPage = (props) => {
         await axios.get(`http://localhost:3001/quesRev/study-material-rev/${materialId}`).then((response) => {
           setNotesReviewer(response.data)
         })
+
     
-        await axios.get(`http://localhost:3001/studyMaterial/study-material/Group/${groupId}/${UserId}/${materialId}`).then((response) => {
-          setLessonContext(response.data[0].body);
-          setMaterialTitle(response.data[0].title);
-          console.log();
+        await axios.get(`http://localhost:3001/studyMaterial/get-material/${materialId}`).then((response) => {
+          setLessonContext(response.data.body);
+          setMaterialTitle(response.data.title);
         })
         
-        const previousSavedData = await axios.get(`http://localhost:3001/DashForPersonalAndGroup/get-latest-assessment/${materialId}`);
+        const previousSavedData = await axios.get(`http://localhost:3001/DashForPersonalAndGroup/get-latest-assessment-group/${materialId}/${groupId}`);
+
+
+        console.log(previousSavedData.data);
         const fetchedData = previousSavedData.data;
     
         if (fetchedData && fetchedData.length >= 1 && fetchedData[0].assessmentScore !== undefined && fetchedData[0].assessmentScore === 'none') {
@@ -76,7 +84,11 @@ export const PreJoinPage = (props) => {
 
   const startStudySession = async () => {
 
-    joinRoom();
+    if (takeAssessment) {
+      joinRoom();
+    } else {
+      setShowModal(true)
+    }
 
   }
 
@@ -329,6 +341,31 @@ export const PreJoinPage = (props) => {
             {showLessonContext && (
               <div className='px-10 py-8 mcolor-900'>
                 {lessonContext}
+              </div>
+            )}
+
+
+            {showModal && (
+              <div style={{ zIndex: 1000 }} className={`absolute flex flex-col items-center justify-center modal-bg w-full h-full`}>
+                <div className='flex justify-center'>
+                  <div className='mbg-100 min-h-[45vh] w-[30vw] w-1/3 z-10 relative p-10 rounded-[5px]'>
+
+                  <button className='absolute right-4 top-3 text-xl' onClick={() => {
+                    setShowModal(false);
+                  }}>
+                    ✖
+                  </button>
+                  
+                  <div className='h-full flex justify-center items-center'>
+                    <div>
+                      <p className='mcolor-900 text-2xl font-medium text-center'>Reminder</p>
+                      <p className='text-center text-lg font-medium mcolor-800 mt-8'><PushPinIcon className='text-red-dark' />You need to take the pre-assessment page first.</p>     
+                      <p className='text-center text-lg font-medium mcolor-800 mt-5'><PushPinIcon className='text-red-dark' />Once you start the study session, you won't be able to update the study material anymore.</p>     
+                    </div>
+                  </div>
+
+                  </div>
+                </div>
               </div>
             )}
 

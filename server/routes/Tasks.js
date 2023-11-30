@@ -2,8 +2,23 @@ const express = require('express');
 const router = express.Router();
 const { Tasks } = require('../models')
 
-router.get('/', async (req, res) => {
-  const listofTasks = await Tasks.findAll();
+router.get('/personal/:userId', async (req, res) => {
+  const { userId } = req.params;
+  const listofTasks = await Tasks.findAll({
+    where: {
+      UserId: userId
+    }
+  });
+  res.json(listofTasks);  
+})
+
+router.get('/group/:groupId', async (req, res) => {
+  const { groupId } = req.params;
+  const listofTasks = await Tasks.findAll({
+    where: {
+      StudyGroupId: groupId
+    }
+  });
   res.json(listofTasks);  
 })
 
@@ -15,14 +30,13 @@ router.post('/', async (req, res) => {
 
 router.put('/:id', async (req, res) => {
   const taskId = req.params.id;
-  const { task, dueDate, completedTask, room } = req.body;
+  const { task, dueDate, completedTask } = req.body;
 
   const existingTask = await Tasks.findByPk(taskId);
 
   existingTask.task = task;
   existingTask.dueDate = dueDate;
   existingTask.completedTask = completedTask;
-  existingTask.room = room;
 
   await existingTask.save();
   res.json(existingTask);

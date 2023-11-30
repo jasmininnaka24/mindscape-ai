@@ -4,6 +4,7 @@ import { Navigate, useNavigate, useParams } from 'react-router-dom';
 import axios from 'axios';
 import { Link } from 'react-router-dom';
 import { useUser } from '../../../../UserContext';
+import PushPinIcon from '@mui/icons-material/PushPin';
 
 
 export const PersonalReviewerPage = () => {
@@ -20,6 +21,8 @@ export const PersonalReviewerPage = () => {
   const [lessonContext, setLessonContext] = useState("");
   const [takeAssessment, setTakeAssessment] = useState(false);
   const [materialTitle, setMaterialTitle] = useState('');
+  const [showModal, setShowModal] = useState("");
+
 
   // deleting material
   const [recentlyDeletedMaterial, setRecentlyDeletedMaterial] = useState('');
@@ -69,9 +72,14 @@ export const PersonalReviewerPage = () => {
 
   const startStudySession = async () => {
 
-    await axios.put(`http://localhost:3001/studyMaterial/update-data/${materialId}`, {isStarted: 'true'});
+    if (takeAssessment) {
+      await axios.put(`http://localhost:3001/studyMaterial/update-data/${materialId}`, {isStarted: 'true'});
+  
+      navigate(`/main/personal/study-area/personal-review-start/${materialId}`);
+    } else {
+      setShowModal(true)
+    }
 
-    navigate(`/main/personal/study-area/personal-review-start/${materialId}`);
 
   }
 
@@ -128,7 +136,7 @@ export const PersonalReviewerPage = () => {
                 <button className='px-6 py-2 rounded-[5px] text-lg mbg-200 mcolor-800 border-thin-800 font-normal' onClick={startStudySession}>Start Study Session</button>
               </div>
               <Link to={`/main/personal/study-area/personal-assessment/${materialId}`}>
-                <button className='px-6 py-2 rounded-[5px] text-lg mbg-800 mcolor-100 font-normal'>Take {takeAssessment === true ? 'Assessment' : 'Pre-Assessment'}</button>
+                <button className='px-6 py-2 rounded-[5px] text-lg mbg-800 mcolor-100 font-normal'>Take {takeAssessment ? 'Assessment' : 'Pre-Assessment'}</button>
               </Link>
             </div>
           </div>
@@ -163,6 +171,33 @@ export const PersonalReviewerPage = () => {
             {showLessonContext === true && (
               <div className='px-10 py-8 mcolor-900'>
                 {lessonContext}
+              </div>
+            )}
+
+
+            {/* modal */}
+
+            {showModal && (
+              <div style={{ zIndex: 1000 }} className={`absolute flex flex-col items-center justify-center modal-bg w-full h-full`}>
+                <div className='flex justify-center'>
+                  <div className='mbg-100 min-h-[45vh] w-[30vw] w-1/3 z-10 relative p-10 rounded-[5px]'>
+
+                  <button className='absolute right-4 top-3 text-xl' onClick={() => {
+                    setShowModal(false);
+                  }}>
+                    ✖
+                  </button>
+                  
+                  <div className='h-full flex justify-center items-center'>
+                    <div>
+                      <p className='mcolor-900 text-2xl font-medium text-center'>Reminder</p>
+                      <p className='text-center text-lg font-medium mcolor-800 mt-8'><PushPinIcon className='text-red-dark' />You need to take the pre-assessment page first.</p>     
+                      <p className='text-center text-lg font-medium mcolor-800 mt-5'><PushPinIcon className='text-red-dark' />Once you start the study session, you won't be able to update the study material anymore.</p>     
+                    </div>
+                  </div>
+
+                  </div>
+                </div>
               </div>
             )}
 

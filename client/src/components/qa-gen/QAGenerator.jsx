@@ -370,7 +370,7 @@ export const QAGenerator = (props) => {
           <div data-aos='fade' className="border-hard-800 gen-box flex justify-between items-center rounded">
             <div className='box1 border-box w-1/2'>
               <div className='flex justify-center items-center dropzone'>
-                <DropZoneComponent numInp={numInp} setNumInp={setNumInp} setPDFDetails={setPDFDetails} pdfDetails={pdfDetails} />
+                <DropZoneComponent numInp={numInp} setNumInp={setNumInp} setPDFDetails={setPDFDetails} pdfDetails={pdfDetails}  />
               </div>
             </div>
             <div className='box2 border-box w-1/2'>
