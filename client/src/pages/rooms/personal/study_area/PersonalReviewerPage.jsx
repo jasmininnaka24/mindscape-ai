@@ -47,7 +47,7 @@ export const PersonalReviewerPage = () => {
       })
 
       try {
-        const previousSavedData = await axios.get(`http://localhost:3001/DashForPersonalAndGroup/get-latest-assessment/${materialId}`);
+        const previousSavedData = await axios.get(`http://localhost:3001/DashForPersonalAndGroup/get-latest-assessment-personal/${materialId}/${UserId}`);
         const fetchedData = previousSavedData.data;
 
     

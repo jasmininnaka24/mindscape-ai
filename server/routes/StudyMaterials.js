@@ -117,6 +117,7 @@ router.get('/shared-materials/:StudyMaterialsCategoryId', async(req, res) => {
 
 
 
+
 router.put('/update-data/:id', async (req, res) => {
   const materialId = req.params.id;
   const { isStarted } = req.body;
@@ -271,8 +272,8 @@ router.get('/latestMaterialStudied/personal/:UserId', async (req, res) => {
   try {
     const latestMaterial = await StudyMaterials.findAll({
       where: {
-        UserId: UserId,
         materialFor: 'Personal',
+        UserId: UserId,
         isStarted: 'true'
       },
       order: [['updatedAt', 'DESC']]
@@ -286,7 +287,7 @@ router.get('/latestMaterialStudied/personal/:UserId', async (req, res) => {
 });
 
 router.get('/latestMaterialStudied/group/:StudyGroupId', async (req, res) => {
-  const { UserId, StudyGroupId } = req.params;
+  const { StudyGroupId } = req.params;
 
   try {
     const latestMaterial = await StudyMaterials.findAll({
@@ -306,10 +307,24 @@ router.get('/latestMaterialStudied/group/:StudyGroupId', async (req, res) => {
 });
 
 
-router.get('/all-study-material/:StudyMaterialsCategoryId', async(req, res) => {
-  const { StudyMaterialsCategoryId} = req.params;
+router.get('/all-study-material-personal/:UserId/:StudyMaterialsCategoryId', async(req, res) => {
+  const { UserId, StudyMaterialsCategoryId } = req.params;
   const studyMaterials = await StudyMaterials.findAll({
     where: { 
+      UserId: UserId,
+      StudyGroupId: null,
+      StudyMaterialsCategoryId: StudyMaterialsCategoryId
+    },
+  });
+
+  res.json(studyMaterials);
+});
+
+router.get('/all-study-material-group/:StudyGroupId/:StudyMaterialsCategoryId', async(req, res) => {
+  const { StudyGroupId, StudyMaterialsCategoryId } = req.params;
+  const studyMaterials = await StudyMaterials.findAll({
+    where: { 
+      StudyGroupId: StudyGroupId,
       StudyMaterialsCategoryId: StudyMaterialsCategoryId,
     },
   });

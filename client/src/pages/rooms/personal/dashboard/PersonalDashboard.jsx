@@ -9,7 +9,7 @@ export const PersonalDashboard = () => {
       <div>
         <Navbar linkBack={`/main`} linkBackName={`Main`} currentPageName={'Dashboard'} username={'Jennie Kim'}/>
 
-        <MainDash />
+        <MainDash categoryFor={'Personal'} />
       </div>
     </div>
   )

@@ -52,7 +52,7 @@ router.get('/get-all-study-material/:UserId', async (req, res) => {
   const extractedCategories = await StudyMaterialsCategories.findAll({
     where: {
       categoryFor: 'Personal',
-      UserId, 
+      UserId: UserId, 
     },
   });
   res.json(extractedCategories);

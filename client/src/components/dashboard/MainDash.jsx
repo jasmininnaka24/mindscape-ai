@@ -1,6 +1,6 @@
 import axios from 'axios'
 import React, { useEffect, useState } from 'react'
-import { Link, useParams } from 'react-router-dom'
+import { Link, useNavigate, useParams } from 'react-router-dom'
 import { useUser } from '../../UserContext'
 import { DateTime, Interval } from 'luxon';
 import PushPinIcon from '@mui/icons-material/PushPin';
@@ -9,7 +9,8 @@ import PendingActionsIcon from '@mui/icons-material/PendingActions';
 import EditIcon from '@mui/icons-material/Edit';
 import DoneIcon from '@mui/icons-material/Done';
 
-export const MainDash = () => {
+
+export const MainDash = ({categoryFor}) => {
 
   const [materialTitle, setMaterialTitle] = useState('')
   const [materialCategory, setMaterialCategory] = useState('')
@@ -20,11 +21,17 @@ export const MainDash = () => {
   const [itemsCount, setItemsCount] = useState(0);
   const [groupStudyPerformance, setGroupStudyPerformance] = useState(0);
   const [listOfTasks, setListOfTasks] = useState([]);
+  const [tag, setTag] = useState('Own Record')
+  const [ownRecordStudyMaterials, setOwnRecordStudyMaterials] = useState([]);
+  const [bookmarkedStudyMaterials, setBookmarkedStudyMaterials] = useState([]);
 
+  const [bookmarkedMaterialsIds, setBookmarkedMaterialsIds] = useState([]);
+  const [performanceStatusArr, setPerformanceStatusArr] = useState([])
 
 
   const { groupId } = useParams()
   const { user } = useUser()
+  const navigate = useNavigate()
 
   const UserId = user?.id;
 
@@ -50,23 +57,186 @@ export const MainDash = () => {
 
         
 
-        let materialCategories = '';
-        let materialTitleResponse = '';
-        let materialCategoryResponse = '';
+
+
+
+        let studyMaterialResponse = []
+        let ownRecordMaterials = [];
+        let bookmarkedMaterials = [];
+        let fetchedStudyMaterialsCategory = [];
+
+        try {
+
+          if (groupId === undefined) {
+            studyMaterialResponse = await axios.get(`http://localhost:3001/studyMaterial/study-material-category/Personal/${UserId}`);
+
+          } else {
+            studyMaterialResponse = await axios.get(`http://localhost:3001/studyMaterial/study-material-group-category/Group/${groupId}`);
+          }
+
+          const allStudyMaterials = studyMaterialResponse.data;
+
+
+
+          if (allStudyMaterials.length > 0) {
+            ownRecordMaterials = allStudyMaterials.filter(material => (material.tag === 'Own Record' || material.tag === 'Shared'));
+            bookmarkedMaterials = allStudyMaterials.filter(material => material.tag === 'Bookmarked');
+          } else {
+            console.error('Error: Data is not an array', allStudyMaterials);
+          }
+
+
+
+        } catch (error) {
+          console.error('Error fetching latest material studied:', error);
+        }
+
+
+
+
+
+        if (tag === 'Own Record') {
+        
+          if (ownRecordMaterials.length > 0) {
+            fetchedStudyMaterialsCategory = await Promise.all(
+              ownRecordMaterials.map(async (material, index) => {
+                const materialCategoryResponse = await axios.get(`http://localhost:3001/studyMaterialCategory/get-categoryy/${material.StudyMaterialsCategoryId}`);
+                return materialCategoryResponse.data; // Return the data from each promise
+              })
+            );
+
+
+            let allRecordsOfCategories = fetchedStudyMaterialsCategory
+            setOwnRecordStudyMaterials(allRecordsOfCategories)
+
+            fetchedStudyMaterialsCategory = fetchedStudyMaterialsCategory.filter(
+              (category, index, self) =>
+                index === self.findIndex(t => t.id === category.id)
+            );
+
+
+            // Step 1: Create an object to store category values and corresponding material studyPerformances
+            const categoryPerformanceMap = {};
+
+            ownRecordMaterials.forEach(material => {
+                const categoryId = material.StudyMaterialsCategoryId;
+                const studyPerformance = material.studyPerformance;
+
+                if (!categoryPerformanceMap[categoryId]) {
+                    categoryPerformanceMap[categoryId] = [];
+                }
+
+                categoryPerformanceMap[categoryId].push(studyPerformance);
+            });
+
+            // Step 2: Create the desired output format (flat array)
+            const flatResult = Object.keys(categoryPerformanceMap).map(categoryId => {
+                const studyPerformances = categoryPerformanceMap[categoryId];
+                const averagePerformance = studyPerformances.reduce((sum, val) => sum + val, 0) / studyPerformances.length;
+
+                return parseFloat(averagePerformance.toFixed(2));
+            });
+            
+            setPerformanceStatusArr(flatResult);
+
+          }
+
+
+
+        } else {
+
+          if (bookmarkedMaterials.length > 0) {
+            fetchedStudyMaterialsCategory = await Promise.all(
+              bookmarkedMaterials.map(async (material, index) => {
+                const materialCategoryResponse = await axios.get(`http://localhost:3001/studyMaterialCategory/get-categoryy/${material.StudyMaterialsCategoryId}`);
+
+                return materialCategoryResponse.data; 
+              })
+            );
+
+            let allRecordsOfCategories = fetchedStudyMaterialsCategory
+            setBookmarkedStudyMaterials(allRecordsOfCategories)
+
+            fetchedStudyMaterialsCategory = fetchedStudyMaterialsCategory.filter(
+              (category, index, self) =>
+                index === self.findIndex(t => t.category === category.category)
+            );
+            
+                        
+            // Step 1: Create an object to store category values and corresponding studyPerformances
+            const categoryPerformanceMap = {};
+
+            allRecordsOfCategories.forEach(category => {
+                const categoryId = category.id;
+                const categoryValue = category.category;
+
+                if (!categoryPerformanceMap[categoryValue]) {
+                    categoryPerformanceMap[categoryValue] = [];
+                }
+
+                categoryPerformanceMap[categoryValue].push(categoryId);
+            });
+
+            // Step 2: Create the desired output format
+            const result = Object.keys(categoryPerformanceMap).map(category => {
+                const categoryIds = categoryPerformanceMap[category];
+                const studyPerformances = categoryIds.map(categoryId => {
+                    const material = bookmarkedMaterials.find(mat => mat.StudyMaterialsCategoryId === categoryId);
+                    return material ? material.studyPerformance : 0;
+                });
+
+                // Calculate average studyPerformance for each category
+                const averagePerformance = studyPerformances.reduce((sum, val) => sum + val, 0) / studyPerformances.length;
+
+                return averagePerformance;
+            });
+
+            setPerformanceStatusArr(result);
+
+            
+          }
+          
+
+        }
+
+        setMaterialCategories(fetchedStudyMaterialsCategory)
+
+        
+        
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        let materialCategoriesOwnRecord = '';
+        let materialResponseOwnRecord = '';
+        let materialCategoryResponseOwnRecord = '';
+        let materialIdResponse = 0
+
+
+
 
         if (groupId === '' || groupId === null || groupId === undefined) {
 
           try {
-
-            materialCategories = await axios.get(`http://localhost:3001/studyMaterialCategory/personal-study-material/Personal/${UserId}`)
-  
-            materialTitleResponse = await axios.get(`http://localhost:3001/studyMaterial/latestMaterialStudied/personal/${UserId}`)
-  
-  
-            let materialCategoryId = materialTitleResponse.data[0].StudyMaterialsCategoryId;
-            console.log(materialCategoryId);
             
-            materialCategoryResponse = await axios.get(`http://localhost:3001/studyMaterialCategory/get-categoryy/${materialCategoryId}`)
+            materialResponseOwnRecord = await axios.get(`http://localhost:3001/studyMaterial/latestMaterialStudied/personal/${UserId}`)
+            
+
+            materialIdResponse = materialResponseOwnRecord.data[0].StudyMaterialsCategoryId;
+            
+            materialCategoryResponseOwnRecord = await axios.get(`http://localhost:3001/studyMaterialCategory/get-categoryy/${materialIdResponse}`)
           } catch (error) {
             console.log(error);
           }
@@ -74,55 +244,33 @@ export const MainDash = () => {
         } else {
 
           try {
-            materialCategories = await axios.get(`http://localhost:3001/studyMaterialCategory/Group/${groupId}`)
   
-            materialTitleResponse = await axios.get(`http://localhost:3001/studyMaterial/latestMaterialStudied/group/${groupId}`)
+            materialResponseOwnRecord = await axios.get(`http://localhost:3001/studyMaterial/latestMaterialStudied/group/${groupId}`)
 
-            let materialCategoryId = materialTitleResponse.data.StudyMaterialsCategoryId;
-            console.log(materialCategoryId);
+            materialIdResponse = materialResponseOwnRecord.data[0].StudyMaterialsCategoryId;
             
-            materialCategoryResponse = await axios.get(`http://localhost:3001/studyMaterialCategory/get-categoryy/${materialCategoryId}`)
+            materialCategoryResponseOwnRecord = await axios.get(`http://localhost:3001/studyMaterialCategory/get-categoryy/${materialIdResponse}`)
+
+
           } catch (error) {
             console.log(error);
           }
         }
-        
-
-
-        console.log(materialCategories.data);
-        
-        const materialCategoriesResponse = materialCategories.data;
-        
-        setMaterialCategories(materialCategoriesResponse)
-        if (groupId !== undefined) {
           
-          setMaterialTitle(materialTitleResponse.data[0].title)       
-          setMaterialCategory(materialCategories.data[0].category)
-          setGroupStudyPerformance(materialTitleResponse.data[0].studyPerformance);
-        } else {
-          
-          setMaterialTitle(materialTitleResponse.data.title)       
-          setMaterialCategory(materialCategoryResponse.data.category)
-          setGroupStudyPerformance(materialTitleResponse.data[0].studyPerformance);
-
-        }
-
-
         
-        let response = '';
 
-        if (groupId !== undefined) {
-          response = await axios.get(`http://localhost:3001/studyMaterial/latestMaterialStudied/group/${groupId}`);
-        } else {
-          response = await axios.get(`http://localhost:3001/studyMaterial/latestMaterialStudied/personal/${UserId}`);
-        }
 
-        const latestMaterialStudied = response.data;
+        console.log();
+     
+
+        setMaterialTitle(materialResponseOwnRecord.data[0].title)    
+        setMaterialCategory(materialCategoryResponseOwnRecord.data.category)
+        setGroupStudyPerformance(materialResponseOwnRecord.data[0].studyPerformance);
+    
         
-        
-        const materialId = latestMaterialStudied[0].id;
+             
 
-        const materialResponse = await axios.get(`http://localhost:3001/quesAns/study-material-mcq/${materialId}`);
+        const materialResponse = await axios.get(`http://localhost:3001/quesAns/study-material-mcq/${materialResponseOwnRecord.data[0].id}`);
         const fetchedQA = materialResponse.data;
 
         setItemsCount(fetchedQA.length)
@@ -130,6 +278,10 @@ export const MainDash = () => {
         setUnattemptedLength(fetchedQA.filter(familiar => familiar.response_state === 'Unattempted').length);
         setFamiliarLength(fetchedQA.filter(familiar => familiar.response_state === 'Correct').length);
         setNeedsPracticeLength(fetchedQA.filter(familiar => familiar.response_state === 'Wrong').length);
+
+
+
+        
         
       } catch (error) {
         console.error('Error fetching latest material studied:', error);
@@ -140,7 +292,7 @@ export const MainDash = () => {
   
 
       
-  }, [UserId, groupId])
+  }, [UserId, groupId, tag])
 
 
   return (
@@ -245,7 +397,6 @@ export const MainDash = () => {
         <div className='w-full border-medium-800 min-h-[37vh] rounded-[5px] py- 5 px-10 mt-10 relative'>
 
           <div className='flex items-center justify-between'>
-
             <div>
               <p className='text-lg font-medium mcolor-800 mt-8 mb-1'>Recently Studying</p>
               <p className='font-bold text-xl my-5 mcolor-800'>
@@ -291,36 +442,57 @@ export const MainDash = () => {
       <div className='w-full border-medium-800 rounded-[5px] p-5 min-h-[80vh] relative'>
 
         <div className='flex items-center justify-between'>
-          <p className='font-medium text-2xl mcolor-800'>Own Material Records</p>
-          <button className='mbg-700 px-4 py-2 mcolor-100 rounded'>Switch to Bookmarked Records</button>
+          <p className='font-medium text-2xl mcolor-800'>{tag === 'Own Record' ? 'Own Material' : 'Bookmarked'} Records</p>
+          <button className='mbg-700 px-4 py-2 mcolor-100 rounded' onClick={() =>{
+            setTag(tag === 'Own Record' ? 'Bookmarked' : 'Own Record')
+          }}>Switch to {tag === 'Own Record' ? 'Bookmarked' : 'Own Record'} Records</button>
         </div>
 
         <br />
         <table className='w-full'>
           <thead className='mbg-300'>
             <tr>
-              <td className='w-1/2 text-center text-xl py-3 font-medium'>Categories</td>
+              <td className='w-1/4 text-center text-xl py-3 font-medium'>Categories</td>
               <td className='w-1/2 text-center text-xl py-3 font-medium'>Performance Status</td>
+              <td className='w-1/2 text-center text-xl py-3 font-medium'>In Percentage</td>
             </tr>
           </thead>
           <tbody>
-            {materialCategories.map((item, index) => {
-              return <tr className='border-bottom-thin-gray' key={index}>
+
+          
+          {materialCategories && materialCategories.length > 0 ? (
+            materialCategories.slice().sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt)).map((item, index) => (
+              <tr className='border-bottom-thin-gray' key={index}>
                 <td className='text-center py-3 text-lg mcolor-800'>{item.category}</td>
-                <td className='text-center py-3 text-lg mcolor-800'>{item.studyPerformance >= 90 ? 'Passing' : 'Requires Improvement'}</td>
+                <td className='text-center py-3 text-lg mcolor-800'>{performanceStatusArr[index] >= 90 ? 'Passing' : 'Requires Improvement'}</td>
+                <td className='text-center py-3 text-lg mcolor-800'>{performanceStatusArr[index]}%</td>
               </tr>
-            })}
+            ))
+          ) : (
+            <tr>
+              <td colSpan="2" className='text-center py-3 text-lg mcolor-800'>No data available</td>
+            </tr>
+          )}
+
           </tbody>
         </table>
 
         {groupId !== undefined ? (
-          <Link to={`/main/group/dashboard/category-list/${groupId}`}>
-          <button className='absolute bottom-5 right-5 mbg-800 mcolor-100 px-5 py-2 rounded-[5px]'>View All Subjects</button>
-        </Link>
+          <button className='absolute bottom-5 right-5 mbg-800 mcolor-100 px-5 py-2 rounded-[5px]' onClick={() => {
+            navigate(`/main/group/dashboard/category-list/${groupId}`, {
+            state: {
+              tag: tag
+            }
+          })
+          }}>View All Subjects</button>
         ) : (
-          <Link to={'/main/personal/dashboard/category-list'}>
-          <button className='absolute bottom-5 right-5 mbg-800 mcolor-100 px-5 py-2 rounded-[5px]'>View All Subjects</button>
-          </Link>
+            <button className='absolute bottom-5 right-5 mbg-800 mcolor-100 px-5 py-2 rounded-[5px]' onClick={() => {
+              navigate('/main/personal/dashboard/category-list', {
+                state: {
+                  tag: tag
+                }
+              })
+            }}>View All Subjects</button>
         )}
       </div>
     </div>

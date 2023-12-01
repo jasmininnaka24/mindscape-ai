@@ -65,7 +65,7 @@ export const PersonalAssessment = () => {
       const fetchedQA = materialResponse.data;
 
 
-      const previousSavedData = await axios.get(`http://localhost:3001/DashForPersonalAndGroup/get-latest-assessment/${materialId}`);
+      const previousSavedData = await axios.get(`http://localhost:3001/DashForPersonalAndGroup/get-latest-assessment-personal/${materialId}/${UserId}`);
       const fetchedData = previousSavedData.data;
 
       if (fetchedData && Array.isArray(fetchedData) && fetchedData.length > 0) {
@@ -137,7 +137,7 @@ export const PersonalAssessment = () => {
 
       
       try {
-        const previousSavedData = await axios.get(`http://localhost:3001/DashForPersonalAndGroup/get-latest-assessment/${materialId}`);
+        const previousSavedData = await axios.get(`http://localhost:3001/DashForPersonalAndGroup/get-latest-assessment-personal/${materialId}/${UserId}`);
         const fetchedData = previousSavedData.data;
 
     
@@ -164,7 +164,7 @@ export const PersonalAssessment = () => {
 
 
 
-  }, [extractedQA.length, isAssessmentDone, materialId])
+  }, [UserId, extractedQA.length, isAssessmentDone, materialId])
 
 
 
@@ -186,23 +186,23 @@ export const PersonalAssessment = () => {
   };
 
 
-  const updateStudyPerformance = async (overallperf) => {
-    const updatedStudyPerformance = await axios.put(`http://localhost:3001/studyMaterial/update-study-performance/${materialId}`, {studyPerformance: (overallperf).toFixed(2)});
+  // const updateStudyPerformance = async (overallperf) => {
+  //   const updatedStudyPerformance = await axios.put(`http://localhost:3001/studyMaterial/update-study-performance/${materialId}`, {studyPerformance: (overallperf).toFixed(2)});
 
 
-    const categoryId = updatedStudyPerformance.data.StudyMaterialsCategoryId;
-    setCategoryID(categoryId)
+  //   const categoryId = updatedStudyPerformance.data.StudyMaterialsCategoryId;
+  //   setCategoryID(categoryId)
 
-    const extractedStudyMaterials = await axios.get(`http://localhost:3001/studyMaterial/all-study-material/${categoryId}`);
+  //   const extractedStudyMaterials = await axios.get(`http://localhost:3001/studyMaterial/all-study-material/${categoryId}`);
     
-    const extractedStudyMaterialsResponse = extractedStudyMaterials.data;
-    const materialsLength = extractedStudyMaterialsResponse.length;
+  //   const extractedStudyMaterialsResponse = extractedStudyMaterials.data;
+  //   const materialsLength = extractedStudyMaterialsResponse.length;
     
-    let calcStudyPerfVal = extractedStudyMaterialsResponse.reduce((sum, item) => sum + item.studyPerformance, 0);
-    let overAllCalcVal = (calcStudyPerfVal / materialsLength).toFixed(2);
+  //   let calcStudyPerfVal = extractedStudyMaterialsResponse.reduce((sum, item) => sum + item.studyPerformance, 0);
+  //   let overAllCalcVal = (calcStudyPerfVal / materialsLength).toFixed(2);
     
-    await axios.put(`http://localhost:3001/studyMaterialCategory/update-study-performance/${categoryId}`, {studyPerformance: overAllCalcVal});
-  }
+  //   await axios.put(`http://localhost:3001/studyMaterialCategory/update-study-performance/${categoryId}`, {studyPerformance: overAllCalcVal});
+  // }
 
 
 
@@ -221,7 +221,7 @@ export const PersonalAssessment = () => {
     }, 0);
     
 
-    const previousSavedData = await axios.get(`http://localhost:3001/DashForPersonalAndGroup/get-latest-assessment/${materialId}`);
+    const previousSavedData = await axios.get(`http://localhost:3001/DashForPersonalAndGroup/get-latest-assessment-personal/${materialId}/${UserId}`);
     const fetchedData = previousSavedData.data;
     
 
@@ -320,7 +320,7 @@ export const PersonalAssessment = () => {
 
         let overallperf = ((parseFloat(newlyFetchedDashboardDataValues.assessmentImp) + parseFloat(newlyFetchedDashboardDataValues.assessmentScorePerf) + parseFloat(newlyFetchedDashboardDataValues.confidenceLevel)) / 3);
 
-        updateStudyPerformance(overallperf)
+        // updateStudyPerformance(overallperf)
       } 
       
       
@@ -379,7 +379,7 @@ export const PersonalAssessment = () => {
 
         let overallperf = ((parseFloat(newlyFetchedDashboardDataValues.assessmentImp) + parseFloat(newlyFetchedDashboardDataValues.assessmentScorePerf) + parseFloat(newlyFetchedDashboardDataValues.confidenceLevel)) / 3);
 
-        updateStudyPerformance(overallperf)
+        // updateStudyPerformance(overallperf)
 
 
 
@@ -436,7 +436,7 @@ export const PersonalAssessment = () => {
 
     let predictionVal = overAllPerformance.toFixed(2);
     
-    const previousSavedData = await axios.get(`http://localhost:3001/DashForPersonalAndGroup/get-latest-assessment/${materialId}`);
+    const previousSavedData = await axios.get(`http://localhost:3001/DashForPersonalAndGroup/get-latest-assessment-personal/${materialId}/${UserId}`);
     const fetchedData = previousSavedData.data;    
     
     let lastExamStr = 'Pre-Assessment';

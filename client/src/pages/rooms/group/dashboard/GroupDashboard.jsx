@@ -9,7 +9,7 @@ export const GroupDashboard = () => {
 
       <Navbar linkBack={`/main/group/`} linkBackName={`Groups`} currentPageName={'Dashboard'} username={'Jennie Kim'}/>
 
-      <MainDash />
+      <MainDash categoryFor={'Group'} />
       </div>
     </div>
   )
