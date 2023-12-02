@@ -8,7 +8,6 @@ import { SavedGeneratedData } from './SavedGeneratedData';
 import axios from 'axios';
 
 import { useUser } from '../../UserContext';
-import { useLocation } from 'react-router-dom';
 
 
 export const PDFDetails = createContext();
@@ -16,13 +15,11 @@ export const GeneratedQAResult = createContext();
 
 export const QAGenerator = (props) => {
 
-  const location = useLocation();
-  const { categoryFor } = location.state;
 
   const { materialFor, groupNameId } = props;  
 
   const [pdfDetails, setPDFDetails] = useState("");
-  const [numInp, setNumInp] = useState(0);
+  const [numInp, setNumInp] = useState(null);
   const [generatedQA, setGeneratedQA] = useState({});
   const [inputValues, setInputValues] = useState([]);
   const [addedQuestionStr, setAddedQuestionStr] = useState("");
@@ -54,16 +51,16 @@ export const QAGenerator = (props) => {
 
     let studyMaterialCategoryLink = '';
 
-    if (categoryFor === 'Personal') {
-      studyMaterialCategoryLink = `http://localhost:3001/studyMaterialCategory/personal-study-material/${categoryFor}/${UserId}`;
+    if (materialFor === 'Personal') {
+      studyMaterialCategoryLink = `http://localhost:3001/studyMaterialCategory/personal-study-material/${materialFor}/${UserId}`;
 
       
       const sharedStudyMaterialResponse = await axios.get(studyMaterialCategoryLink);
       console.log(sharedStudyMaterialResponse.data);
 
 
-    } else if (categoryFor === 'Group') {
-      studyMaterialCategoryLink = `http://localhost:3001/studyMaterialCategory/${categoryFor}/${groupNameId}`;
+    } else if (materialFor === 'Group') {
+      studyMaterialCategoryLink = `http://localhost:3001/studyMaterialCategory/${materialFor}/${groupNameId}`;
 
       const sharedStudyMaterialResponse = await axios.get(studyMaterialCategoryLink);
       console.log(sharedStudyMaterialResponse.data);
@@ -136,7 +133,7 @@ export const QAGenerator = (props) => {
     }
     fetchData()
 
-  }, [generatedQA]);
+  }, [generatedQA, pdfDetails]);
 
 
   const revNoteQuestionChange = (event, index) => {
@@ -375,12 +372,18 @@ export const QAGenerator = (props) => {
             </div>
             <div className='box2 border-box w-1/2'>
               <div className='h-full border-none'>
-                <textarea onChange={(event) => {
-                   setPDFDetails(event.target.value)
-                   console.log(event.target.value); 
-                }} value={pdfDetails ? `${pdfDetails}` : ''} className='w-full h-full p-5 bg-transparent border-thin-800' style={{ resize: 'none', outline: 'none' }}>
-                  {pdfDetails}
-                </textarea>
+              <textarea
+                onChange={(event) => {
+                  setPDFDetails(event.target.value);
+                  console.log(event.target.value);
+                }}
+                value={pdfDetails || ''} 
+                className='w-full h-full p-5 bg-transparent border-thin-800'
+                style={{ resize: 'none', outline: 'none' }}
+              >
+                {pdfDetails}
+              </textarea>
+
               </div>
             </div>
           </div>
@@ -388,7 +391,7 @@ export const QAGenerator = (props) => {
 
 
         <div id='generated-data' className='mcolor-900 generated-box flex justify-center mt-10 py-12'>
-        <ol className="poppins pl-6 generatedResult">
+        <ol className="poppins pl-6 w-full">
           {generatedQA.question_answer_pairs && generatedQA.question_answer_pairs.length > 0 ? (
             <>
               <div>
@@ -758,26 +761,32 @@ export const QAGenerator = (props) => {
                           <button onClick={() => deleteRevQues(index)} className='bg-red mcolor-100 px-5 py-1 rounded-[5px]'>Delete</button>
                         </div>
 
-                        <div className='flex items-center'>
-                        <textarea
-                          className='py-5 px-2 outline-none addAChoice wrong-bg brd-btn rounded-[5px] text-center overflow-auto resize-none'
-                            value={pair && pair.question ? `${pair.question}` : ''}
-                            onChange={(event) => revNoteQuestionChange(event, index)}
-                            cols={50} 
-                            rows={Math.ceil((pair && pair.answer ? pair.answer.length : 0) / 50)}
 
+                        <ul className="grid-result gap-2">
+                          <div className='flex items-center'>
+                            <textarea
+                              className='py-5 px-2 outline-none addAChoice w-full h-full wrong-bg brd-btn rounded-[5px] text-center overflow-auto resize-none'
+                              value={pair && pair.question ? `${pair.question}` : ''}
+                              onChange={(event) => revNoteQuestionChange(event, index)}
+                              cols={50} 
+                              rows={Math.ceil((pair && pair.answer ? pair.answer.length : 0) / 50)}      
                             />
-                        </div>
+                          </div>
 
-                        <div className='ml-2 inline'>
-                          <textarea
-                            className='font-medium py-5 px-2 outline-none addAChoice brd-btn rounded-[5px] text-center overflow-auto resize-none correct-bg opacity-75'
-                            value={pair && pair.answer ? `${pair.answer}` : ''}
-                            onChange={(event) => revNoteAnswerChange(event, index)}
-                            cols={50}
-                            rows={Math.ceil((pair && pair.answer ? pair.answer.length : 0) / 50)}
-                          />
-                        </div>
+                          <div className=''>
+                            <textarea
+                              className='font-medium py-5 px-2 w-full h-full outline-none addAChoice brd-btn rounded-[5px] text-center overflow-auto resize-none correct-bg opacity-75'
+                              value={pair && pair.answer ? `${pair.answer}` : ''}
+                              onChange={(event) => revNoteAnswerChange(event, index)}
+                              cols={50} 
+                              rows={Math.ceil((pair && pair.answer ? pair.answer.length : 0) / 50)}
+                              
+                              />
+                          </div>
+                        </ul>
+
+    
+        
                       </li>
                     ))}
 
@@ -794,18 +803,151 @@ export const QAGenerator = (props) => {
 
                 {showTrueOrFalseSentences && (
                   <div className='min-h-[90vh]'>
-                    <div className='flex items-center mb-10'>
-                      <input
-                        type="text"
-                        className='w-full mb-5 brd-btn border-bottom-thin w-full bg-transparent border-transparent text-center py-3'
-                        placeholder='Sentence...'
-                        onChange={(event) => {
-                          setAddedTrueSentence(event.target.value);
-                        }}
-                        value={addedTrueSentence}
-                      />
-                      <button className='mcolor-100 mbg-800 px-10 py-1 ml-4 rounded-[5px]' onClick={addSentenceToTheList}>Add</button>
-                    </div>
+
+                      {activeBtnMCQAs === true && 
+                        <div>
+                          <button onClick={() => {
+                            setActiveBtnMCQAs(activeBtnMCQAs === false ? true : false)
+                          }} className='mcolor-900 border-hard-800 px-5 py-1 rounded-[5px]'>Add Item</button>
+                        </div>
+                      }
+
+                      
+                      {activeBtnMCQAs === false && 
+                        <div>
+                          <div className='my-2'>
+                            <div className='flex justify-end text-4xl'>
+                              <button onClick={() => {
+                                setActiveBtnMCQAs(activeBtnMCQAs === false ? true : false)
+
+                                setAddedQuestionStr("");
+                                setAddedAnswerStr("");
+                                setAddedChoice("");
+                                setAddedChoices([]);
+
+                              }} className='dark-text'>×</button>
+                            </div>
+                            {/* Input for the question */}
+                            <input
+                              type="text"
+                              className='mb-5 brd-btn border-bottom-thin addAChoice w-full bg-transparent border-transparent text-center py-3'
+                              placeholder='Statement here...'
+                              onChange={(event) => {
+                                setAddedQuestionStr(event.target.value);
+                              }}
+                              value={addedQuestionStr}
+                            />
+                            <ul>
+
+                              {/* Choices */}
+
+                              {addedChoices.map((item, index) => {
+                                return (
+                                <li className="relative wrong-bg rounded-[5px] text-center my-2 flex">
+                                  <input
+                                    type="text"
+                                    className='w-full py-4 bg-transparent border-transparent text-center'
+                                    value={item}
+                                    onChange={(event) => {
+                                      const val = event.target.value;
+                                      setAddedChoices((prevChoices) => {
+                                        const updatedChoices = [...prevChoices];
+                                        updatedChoices[index] = val;
+                                        return updatedChoices;
+                                      });
+                                    }}
+                                  />
+                                  <div className='absolute right-5 top-3 mbg-100 px-2 rounded-[20px]'>
+                                    <button
+                                      className='mcolor-900 deleteChoiceBtn relative text-3xl'
+                                      onClick={() => handleDeleteChoice(index, item)}
+                                      >
+                                      ×
+                                    </button>
+                                  </div>
+                                </li>
+                                )
+                              })}
+
+                              {/* Add a choice */}
+                              <div className='my-2 relative '>
+                                <input
+                                  type="text"
+                                  className='brd-btn border-bottom-thin addAChoice w-full py-4 bg-transparent border-transparent text-center rounded-[5px]'
+                                  placeholder='Add a choice'
+                                  onChange={(event) => {
+                                    setAddedChoice(event.target.value);
+                                  }}
+                                  value={addedChoice}
+                                  required
+                                />
+
+                                <div className='absolute right-5 top-3 mbg-100 px-2 rounded-[20px]'>
+                                  <button
+                                    className='deleteChoiceBtn relative text-3xl'
+                                    onClick={() => {
+                                      if(addedChoice !== ""){
+                                        setAddedChoices([...addedChoices, addedChoice])
+                                        setAddedChoice("");
+                                      } else {
+                                        alert("Cannot add an empty field.")
+                                      }
+                                    }}
+                                  >
+                                    +
+                                  </button>
+                                </div>
+                              </div>
+                            </ul>
+                          </div>
+
+                          <div className='flex justify-end mt-5'>
+                            
+                            <button className='mbg-800 mcolor-100 py-2 px-16 rounded-[5px] '
+                            onClick={() => {
+                              let updatedChoices = addedChoices.filter((item) => item.trim() !== ""); // Trim addedChoices to remove any whitespace
+
+                                if (addedQuestionStr.trim() !== "" && updatedChoices.length > 1) {
+
+                                  generatedQA.true_or_false_sentences.unshift({ sentence: addedQuestionStr, answer: addedAnswerStr, distractors: updatedChoices })
+
+
+                                  
+                                  setAddedQuestionStr("");
+                                  setAddedAnswerStr("");
+                                  setAddedChoice("");
+                                  setAddedChoices([]);
+
+                                  
+                                  fetchData()
+
+                                } else {
+
+
+                                  addedChoices.map((item) => item.trim() === "" && alert("Fill out the empty fields."))
+
+                                  if (updatedChoices.length <= 1 ) {
+                                    alert("Please provide at least two choices to proceed.");
+                                  }
+                                  
+                                  if (addedQuestionStr.trim() === "") {
+                                    alert("Fill out the empty fields.");
+                                  }
+
+                                }
+
+
+
+              
+                            }}
+                            >
+                              Add
+                            </button>
+                          </div>
+                        </div>
+                      }
+
+
                     <table className='w-full'>
                       <thead>
                         <tr className='text-lg'>

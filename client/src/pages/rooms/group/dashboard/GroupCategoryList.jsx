@@ -12,7 +12,7 @@ export const GroupCategoryList = () => {
       <div>
         <Navbar linkBack={`/main/group/dashboard/${groupId}`} linkBackName={`Dashboard`} currentPageName={'Categories'} username={'Jennie Kim'}/>
 
-        <CategoryList />
+        <CategoryList categoryFor={'Group'} />
       </div>
     </div> 
   )

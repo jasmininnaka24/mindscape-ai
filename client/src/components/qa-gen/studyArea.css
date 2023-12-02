@@ -5,9 +5,7 @@
   width: 100%;
 }
 .pdf-form {
-  max-width: 400px;
   margin: 0 auto;
-  padding: 20px;
   border-radius: 5px;
 }
 
@@ -81,9 +79,7 @@ input[type="number"] {
   /* border: #6f7b7e solid 2px; */
   border-radius: 5px;
 }
-.generatedResult{
-  width: 80%;
-}
+
 
 /* correct and wrong options design */
 .wrong-bg{

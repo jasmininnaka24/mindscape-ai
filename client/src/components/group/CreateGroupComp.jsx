@@ -8,7 +8,7 @@ export const CreateGroupComp = (props) => {
   const { user } = useUser();
 
 
-  const { setSavedGroupNotif, savedGroupNotif, groupList, setGroupList, fetchGroupListData } = props;
+  const { setSavedGroupNotif, fetchGroupListData } = props;
 
   const [hidden, setHidden] = useState("hidden");
   const [createGroup, setCreateGroup] = useState("hidden");
@@ -19,6 +19,9 @@ export const CreateGroupComp = (props) => {
   const [listedData, setListedData] = useState([]);
   const [searchTermApp, setSearchTermApp] = useState('');
   const [groupNameInp, setGroupNameInp] = useState('');
+  const [enteredCodeRoom, setEnteredCodeRoom] = useState('')
+  const [errorMessage, setErrorMessage] = useState();
+  const [successfullyJoinedMessage, setSuccessfullyJoinedMessage] = useState();
 
   
   const UserId = user?.id;
@@ -39,10 +42,10 @@ export const CreateGroupComp = (props) => {
   }
 
 
-  const removeSelectedUser = (itemId) => {
+  const removeSelectedUser = async (itemId) => {
   const updatedChosenData = chosenData.filter((id) => id !== itemId);  
   setChosenData(updatedChosenData);
-  axios.get(`http://localhost:3001/users/get-user/${itemId}`).then((response) => {
+  await axios.get(`http://localhost:3001/users/get-user/${itemId}`).then((response) => {
     setData([...data, response.data])
   })
   }
@@ -79,8 +82,8 @@ export const CreateGroupComp = (props) => {
       let responseData = response.data;
   
       // Create an array to store all the Axios requests
-      const axiosRequests = responseData.map((item) =>
-        axios.get(`http://localhost:3001/users/get-user/${item.FollowingId}`)
+      const axiosRequests = responseData.map(async (item) =>
+        await axios.get(`http://localhost:3001/users/get-user/${item.FollowingId}`)
       );
 
       Promise.all(axiosRequests)
@@ -150,16 +153,62 @@ export const CreateGroupComp = (props) => {
   };
   
   
-  // console.log(searchTermApp);
-  // console.log(data);
-  // console.log(chosenData);
+  const JoinGroup = async () => {
+
+    if (enteredCodeRoom === '') {
+      setErrorMessage('The field is empty.')
+    } else {
+      
+      const groupData = await axios.get(`http://localhost:3001/studyGroup/find-room-id/${enteredCodeRoom}`);
+  
+      if (groupData.data !== null) {
+        const groupDataId = groupData.data.id;
+        const groupDataUserId = groupData.data.UserId;
+      
+        if (groupDataUserId === UserId) {
+          setErrorMessage('You are already in this group.');
+        } else {
+          const userIdPost = await axios.get(`http://localhost:3001/studyGroupMembers/find-userId/${groupDataId}/${UserId}`);
+      
+          if (userIdPost.data !== null && userIdPost.data.UserId === UserId) {
+            setErrorMessage('You are already in this group.');
+          } else {
+            let data = {
+              role: 'Member',
+              StudyGroupId: groupDataId,
+              UserId: UserId
+            }
+      
+            await axios.post(`http://localhost:3001/studyGroupMembers/add-member`, data);
+      
+            setTimeout(() => {
+              setSuccessfullyJoinedMessage('Successfully joined!')
+            }, 100);
+      
+            setTimeout(() => {
+              setSuccessfullyJoinedMessage('')
+              setEnteredCodeRoom('')
+            }, 1500);
+            
+            fetchGroupListData()
+          }
+        }
+      } else {
+        setErrorMessage('No room found.');
+      }
+
+    }
+
+    
+
+  }
 
 
 
   useEffect(() => {
     // Call the fetchFollowerData function
     fetchFollowerData();
-  }, [fetchFollowerData]);
+  }, []);
     
   return (
     <div className='w-1/2 flex justify-between items-center gap-5'>
@@ -177,7 +226,7 @@ export const CreateGroupComp = (props) => {
 
       <div className={`${hidden} absolute top-0 left-0 modal-bg w-full h-full`}>
         <div className='flex items-center justify-center h-full'>
-          <div className='mbg-100 min-h-[45vh] w-1/3 z-10 relative p-10 rounded-[5px]'>
+          <div className='mbg-100 min-h-[45vh] w-1/3 z-10 relative p-10 rounded-[5px] flex items-center justify-center'>
 
             <button className='absolute right-4 top-3 text-xl' onClick={() => {
               setHidden("hidden")
@@ -187,15 +236,15 @@ export const CreateGroupComp = (props) => {
               ✖
             </button>
 
-            <div className={createGroup}>
-              <p className='text-center text-2xl font-medium mcolor-800 my-5'>Create a group</p>
+            <div className={`${createGroup} w-full`}>
+              <p className='text-center text-2xl font-medium mcolor-800 mb-5'>Create a group</p>
               <div className="groupName flex flex-col">
 
                 <input type="text" placeholder='Group name...'
                 value={groupNameInp}
                  onChange={((e) => {setGroupNameInp(e.target.value)})} className='border-medium-800-scale px-5 py-2 w-full rounded-[5px]' />
 
-                <br /><br />
+                <br />
                 <p className='mb-3'>Add group members:</p>
                 <div className='relative'>
                   <SearchFunctionality data={data} onSearch={handleSearch} setSearchTermApp={setSearchTermApp} setSelectedDataId={setSelectedDataId} searchTermApp={searchTermApp} searchAssetFor={'search-username-for-group-creation'} />
@@ -222,15 +271,24 @@ export const CreateGroupComp = (props) => {
                     </div>
                   }
                 </div>
-                <button onClick={createGroupBtn} className='mt-6 mbg-800 mcolor-100 py-2 rounded-[5px]'>Create</button>
+                <button onClick={createGroupBtn} className='mbg-800 mcolor-100 py-2 rounded-[5px]'>Create</button>
               </div>
             </div>
 
-            <div className={joinGroup}>
+            <div className={`${joinGroup} w-full`}>
               <p className='text-center text-2xl font-medium mcolor-800 my-5'>Join a group</p>
               <div>
-                <input type="text" className='border-medium-800-scale px-5 py-3 w-full rounded-[5px]' placeholder='Enter the code...' />
-                <button className='text-xl w-full mcolor-100 mbg-800 my-3 rounded-[5px] py-2'>Join</button>
+                <input type="text" className='border-medium-800-scale px-5 py-3 mb-2 w-full rounded-[5px]' placeholder='Enter the code...' value={enteredCodeRoom || ''} onChange={(event) => {
+                  setEnteredCodeRoom(event.target.value)
+                  setErrorMessage('')
+                  }} />
+                {errorMessage !== '' && (
+                  <p className='text-red text-center mb-4'>{errorMessage}</p>
+                )}
+                {successfullyJoinedMessage !== '' && (
+                  <p className='text-emerald-500 text-center mb-4'>{successfullyJoinedMessage}</p>
+                )}
+                <button className='text-xl w-full mcolor-100 mbg-800 my-3 rounded-[5px] py-2' onClick={JoinGroup}>Join</button>
               </div>
             </div>
           </div>

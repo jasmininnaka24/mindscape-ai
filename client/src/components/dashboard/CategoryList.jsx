@@ -1,15 +1,12 @@
 import axios from 'axios'
 import React, { useEffect, useState } from 'react'
-import { Link, useNavigate, useParams } from 'react-router-dom'
+import { useNavigate, useParams } from 'react-router-dom'
 import RemoveRedEyeIcon from '@mui/icons-material/RemoveRedEye';
 import { useUser } from '../../UserContext';
 import { useLocation } from 'react-router-dom';
-import { PieChart } from '../charts/PieChart';
-import Category from '@mui/icons-material/Category';
-import { Navbar } from '../navbar/logged_navbar/navbar';
 
 
-export const CategoryList = () => {
+export const CategoryList = ({categoryFor}) => {
 
   const { groupId } = useParams()
   const { user } = useUser();
@@ -19,7 +16,6 @@ export const CategoryList = () => {
 
   const [materialCategories, setMaterialCategories] = useState([])
   const [materialsTopicsLength, setMaterialsTopicsLength] = useState([])
-  const [categoryFor, setCategoryFor] = useState('Personal')
   const [bookmarkedStudyMaterials, setBookmarkedStudyMaterials] = useState([]);
   const [ownRecordStudyMaterials, setOwnRecordStudyMaterials] = useState([]);
 
@@ -75,7 +71,6 @@ export const CategoryList = () => {
 
 
 
-        let studyPerf = 0;
         if (tag === 'Own Record') {
         
 
@@ -83,7 +78,6 @@ export const CategoryList = () => {
             fetchedStudyMaterialsCategory = await Promise.all(
               ownRecordMaterials.map(async (material, index) => {
                 const materialCategoryResponse = await axios.get(`http://localhost:3001/studyMaterialCategory/get-categoryy/${material.StudyMaterialsCategoryId}`);
-                studyPerf += material.studyPerformance
                 return materialCategoryResponse.data; // Return the data from each promise
               })
             );
@@ -189,7 +183,6 @@ export const CategoryList = () => {
         }
 
         setMaterialCategories(fetchedStudyMaterialsCategory)
-        setPerformanceStatus(studyPerf)
 
         
         
@@ -209,94 +202,6 @@ export const CategoryList = () => {
   }, [UserId, groupId, tag])
 
 
-
-
-
-
-
-
-
-
-
-  async function fetchStudyMaterialsTopicList(filter,user) {
-    try {
-
-      let extractedStudyMaterials = [];
-      let uniqueIds = new Set();
-
-      if (groupId === undefined) {
-        // Use Promise.all to wait for all promises to resolve
-        await Promise.all(filter.map(async (material, index) => {
-          try {
-            let materialResponse = await axios.get(`http://localhost:3001/studyMaterial/all-study-material-personal/${UserId}/${material.id}`);
-            // Check if the ID is already in the set
-            if (!uniqueIds.has(material.id)) {
-              extractedStudyMaterials.push(materialResponse.data);
-              uniqueIds.add(material.id); // Add the ID to the set
-            }
-          } catch (error) {
-            console.error(`Error fetching study material: ${error.message}`);
-          }
-        }));
-      } else {
-
-        // Use Promise.all to wait for all promises to resolve
-        await Promise.all(filter.map(async (material, index) => {
-          let materialResponse = await axios.get(`http://localhost:3001/studyMaterial/all-study-material-group/${groupId}/${material.id}`);
-          extractedStudyMaterials.push(materialResponse.data);
-        }));
-
-      }
-
-      
-      setStudyMaterials(extractedStudyMaterials.flat());
-      
-      let extractedStudyMaterialsResponse = extractedStudyMaterials.flat();
-
-      let materialsData = await Promise.all(extractedStudyMaterialsResponse.map(async (material) => {
-        try {
-          let extractedData = [];
-      
-          if (groupId === undefined) {
-            extractedData = await axios.get(`http://localhost:3001/DashForPersonalAndGroup/get-latest-assessment-personal/${material.id}/${UserId}`);
-          } else if (categoryFor === 'Group') {
-            extractedData = await axios.get(`http://localhost:3001/DashForPersonalAndGroup/get-latest-assessment-group/${material.id}/${groupId}`);
-          }
-      
-          return extractedData.data;
-        } catch (error) {
-          console.error('Error fetching study materials:', error);
-          return null; // Handle the error accordingly
-        }
-      }));
-      
-
-      // const materialsData = await Promise.all(promises);
-      const filteredMaterialsData = materialsData.filter(data => data !== null);
-
-      let preparedCount = 0;
-      let unpreparedCount = 0;
-  
-      extractedStudyMaterialsResponse.forEach(item => {
-
-        if (item.studyPerformance >= 90.00) {
-          preparedCount += 1;
-        } else {
-          unpreparedCount += 1;
-        }
-      });
-  
-      setPreparedLength(preparedCount);
-      setUnpreparedLength(unpreparedCount);
-      setMaterialsTopicsData(filteredMaterialsData);
-
-
-    } catch (error) {
-      console.error('Error fetching latest material studied:', error);
-    }
-
-  }
-  
     
 
   
@@ -312,13 +217,10 @@ export const CategoryList = () => {
   return (
     <div className='poppins mcolor-900 container py-10'>
       <div>
-        <Navbar linkBack={`/main/personal/dashboard`} linkBackName={`Dashboard`} currentPageName={'Categories'} username={'Jennie Kim'}/>
-        
-        <Navbar linkBack={`/main/personal/dashboard/category-list`} linkBackName={`Categories`} currentPageName={'Topics'} username={'Jennie Kim'}/>
+       
 
         <div className='my-8 border-medium-800 min-h-[40vh] rounded-[5px]'>
 
-          {showCategories ? (
             <table className='w-full rounded-[5px]'>
               <thead className='mbg-300'>
                 <tr>
@@ -330,7 +232,14 @@ export const CategoryList = () => {
                 </tr>
               </thead>
               <tbody>
-              {materialCategories.slice().sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt)).map((item, index) => {
+                {materialCategories.slice().sort((a, b) => {
+                  if (tag === 'Own Record') {
+                    return new Date(a.createdAt) - new Date(b.createdAt);
+                  } else {
+                    // No sorting if the tag is not 'Own Record'
+                    return 0;
+                  }
+                }).map((item, index) => {
                   return <tr className='border-bottom-thin-gray rounded-[5px]' key={index}>
                     <td className='text-center py-3 text-lg mcolor-800'>{item.category}</td>
                     <td className='text-center py-3 text-lg mcolor-800 w-1/4'>{performanceStatusArr[index]}%</td>
@@ -364,13 +273,31 @@ export const CategoryList = () => {
                         
                         setShowCategories(false)
                         setFilteredBookmarks(filteredBookmarks)
+                        setFilteredOwnRecord(filteredOwnRecord)
+                        let performanceStatusGet = performanceStatusArr[index]
 
                         let filter = (tag === 'Own Record' || tag === 'Shared') ? filteredOwnRecord : filteredBookmarks;
-                        let user = categoryFor === 'Personal' ? UserId : groupId
-                        fetchStudyMaterialsTopicList(filter,user);
+                        let user = categoryFor.toLowerCase()
 
                         
-                      }}>
+                        let linkBack = ''
+                        if (categoryFor === 'Personal') {
+                          linkBack = `/main/${user}/dashboard/category-list/topic-list/${item.id}`
+                        } else {
+                          linkBack = `/main/${user}/dashboard/category-list/topic-list/${groupId}/${item.id}`
+                        }
+                        
+                        navigate(linkBack, {
+                            state: {
+                              filter: filter,
+                              performanceStatus: performanceStatusGet,
+                              tag: tag
+                            }
+                          })
+                        }
+
+                        
+                      }>
                         <RemoveRedEyeIcon />
                       </button>   
 
@@ -379,119 +306,7 @@ export const CategoryList = () => {
                 })}
               </tbody>
             </table>
-          ) : (
-            <div>
-              <div className='mb-12 w-full flex items-center justify-center'>
-                <div className='w-1/3 min-h-[40vh] mt-10'>
-                  <PieChart dataGathered={[unpreparedLength, preparedLength]} />
-                </div>
-                <div className='w-1/2 mt-10'>
-                  <p className='text-2xl mt-3'>Performance Status: <span className='font-bold'>{performanceStatus >= 90 ? 'Passing' : 'Requires Improvement'}</span></p>
-                  <p className='text-2xl mt-3'>Performance in percentile: <span className='font-bold'>{performanceStatus}%</span></p>
-                  <p className='text-2xl mt-3'>Target Performance: <span className='font-bold'>90%</span></p>
-                </div>
-              </div>
-              <div className='border-medium-800 rounded-[5px] overflow-x-auto overflow-container' style={{ height: '100%' }}>
-                <table className='p-5 w-full rounded-[5px] text-center'>
-                  <thead className='mbg-300'>
-                    <tr>
-                      <td className='text-center text-xl py-3 font-medium px-8'>Topic</td>
-                      <td className='text-center text-xl py-3 font-medium px-8'>Overall <br />Performance</td>
-                      <td className='text-center text-xl py-3 font-medium px-8'>Latest Assessment <br />% Score</td>
-                      <td className='text-center text-xl py-3 font-medium px-8'>Confidence Level</td>
-                      <td className='text-center text-xl py-3 font-medium px-8'>Improvement</td>
-                      <td className='text-center text-xl py-3 font-medium px-8'>Status</td>
-                      <td className='text-center text-xl py-3 font-medium px-8'>Records</td>
-                    </tr>
-                  </thead>
-                  <tbody>
-
-                  {studyMaterials.length > 0 && (
-                    studyMaterials.map((item, index) => {
-                      const materialsTopic = materialsTopicsData[index] && materialsTopicsData[index][0];
-
-                      if (!materialsTopic) {
-                        return (
-                          <tr key={index}>
-                            <td className='py-3 text-lg mcolor-800'>{item.title}</td>
-                            <td className='text-center py-3 text-lg mcolor-800'>No record</td>
-                            <td className='text-center py-3 text-lg mcolor-800'>No record</td>
-                            <td className='text-center py-3 text-lg mcolor-800'>No record</td>
-                            <td className='text-center py-3 text-lg mcolor-800'>No record</td>
-                            <td className='text-center py-3 text-lg mcolor-800'>No record</td>
-                            <td className='text-center py-3 text-lg mcolor-800'>No record</td>
-
-                          </tr>
-                        );
-                      }
-
-                      const assessmentScorePerf = materialsTopic.assessmentScorePerf || 'none';
-                      const confidenceLevel = materialsTopic.confidenceLevel || 'none';
-                      const assessmentImp = materialsTopic.assessmentImp || 'none';
-
-                      // Check if assessmentImp is 'none', if true, skip rendering the row
-                      if (assessmentImp === 'none') {
-                        return (
-                          <tr key={index}>
-                            <td className='py-3 text-lg mcolor-800'>{item.title}</td>
-                            <td className='text-center py-3 text-lg mcolor-800'>No record</td>
-                            <td className='text-center py-3 text-lg mcolor-800'>No record</td>
-                            <td className='text-center py-3 text-lg mcolor-800'>No record</td>
-                            <td className='text-center py-3 text-lg mcolor-800'>No record</td>
-                            <td className='text-center py-3 text-lg mcolor-800'>No record</td>
-                            <td className='text-center py-3 text-lg mcolor-800'>No record</td>
-
-                          </tr>
-                        );
-                      }
-                      return (
-                        <tr className='border-bottom-thin-gray rounded-[5px]' key={index}>
-                          <td className='text-center py-3 text-lg mcolor-800'>{item.title}</td>
-                          <td className='text-center py-3 text-lg mcolor-800'>{item.studyPerformance}%</td>
-                          <td className='text-center py-3 text-lg mcolor-800'>{assessmentImp === 'none' ? 0 : assessmentScorePerf}%</td>
-                          <td className='text-center py-3 text-lg mcolor-800'>{assessmentImp === 'none' ? 0 : confidenceLevel}%</td>
-                          <td className='text-center py-3 text-lg mcolor-800'>{assessmentImp === 'none' ? 0 : assessmentImp}%</td>
-                          <td className='text-center py-3 text-lg mcolor-800'>{item.studyPerformance >= 90 ? 'Prepared' : 'Unprepared'}</td>
-                          <td className='text-center py-3 text-lg mcolor-800'>
-                            {(assessmentImp !== 'none' ) ? (
-                              groupId !== undefined ? (
-                                <button onClick={() => {
-                                  navigate(`/main/group/dashboard/category-list/topic-list/topic-page/${groupId}/${categoryID}/${item.id}`)
-                                }}>
-                                  <RemoveRedEyeIcon />
-                                </button>
-                                
-                              ) : (
-                                <button onClick={() => {
-        
-                                  navigate(`/main/personal/dashboard/category-list/topic-list/topic-page/${categoryID}/${item.id}`)
-                                }}>
-                                  <RemoveRedEyeIcon />
-                                </button>
-                              )
-                            ) : (
-                              <div>No Record</div>
-                            )
-                            }
-                          </td>
-                        </tr>
-                      );
-                    })
-                  )}
-                  
-
-
-
-
-
-
-    
-
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          )}
+          
         </div>  
     </div>
   </div>  

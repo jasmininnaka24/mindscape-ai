@@ -10,9 +10,8 @@ export const PersonalTopicPage = () => {
   return (
     <div className='poppins mcolor-900 container py-10'>
       <div>
-        <Navbar linkBack={`/main/personal/dashboard/category-list/topic-list/${categoryID}`} linkBackName={`Topics`} currentPageName={'Topic'} username={'Jennie Kim'}/>
 
-        <TopicPage />
+        <TopicPage categoryFor={'Personal'} />
       </div>
     </div>  
   )

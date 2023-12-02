@@ -14,24 +14,27 @@ export const DropZoneComponent = (props) => {
   const [loading, setLoading] = useState(false);
   const [progress, setProgress] = useState(0);
   const [isRegenerate, setIsRegenerate] = useState(false)
+  const [showLoading, setShowLoading] = useState(false);
 
-  const url = 'http://127.0.0.1:8000/qa-generation';
+
+  const url = 'https://e719-35-230-87-39.ngrok.io/qa-generation';
 
   const [data, setData] = useState({
     text: PDFDetails,
-    num_questions_inp: '',
+    num_questions_inp: null,
   });
 
   async function handleInputChange(event) {
     const { id, value } = event.target;
     setData((prevData) => ({ ...prevData, [id]: value }));
-    setNumInp(parseInt(event.target.value, 10));
+    if (event.target.value !== null) {
+      setNumInp(parseInt(event.target.value, 10));
+    }
   }
 
   const handleFileChange = async (file) => {
     if (file) {
       await extractPdfText(file);  // Wait for the text extraction to complete
-      resetState();
     }
   };
 
@@ -59,73 +62,77 @@ export const DropZoneComponent = (props) => {
     return allContent;
   }
 
-  const Loader = ({ loading, progress }) => {
-    return (
-      <div className={`loader ${loading ? 'active' : ''}`}>
-        <div className="mt-4 text-center text-lg font-medium progress-bar">
-          {progress}%
-        </div>
-      </div>
-    );
-  };
 
   const intervalRef = useRef(null);
   const handleGenerateClick = async (event) => {
     event.preventDefault();
 
-    const animationDurationInSeconds = numInp * 2 + 5;
-    setLoading(true);
+    if (numInp === 0) {
+      alert('Maximum items of to be generated cannot be 0.');
+    } else {
+      const animationDurationInSeconds = numInp * 2 + 5;
+      setLoading(true);
+      setShowLoading(true);
 
-    clearInterval(intervalRef.current);
-    setProgress(0);
+      clearInterval(intervalRef.current);
+      setProgress(0);
 
-    intervalRef.current = setInterval(() => {
-      setProgress((prevProgress) => {
-        const newProgress = prevProgress + (100 / animationDurationInSeconds);
+      intervalRef.current = setInterval(() => {
+        setProgress((prevProgress) => {
+          const newProgress = prevProgress + (100 / animationDurationInSeconds);
 
-        if (newProgress <= 100) {
-          return parseFloat(newProgress.toFixed(2));
-        } else {
-          setLoading(false);
-          clearInterval(intervalRef.current);
-          return 100;
-        }
-      });
-    }, 1300);
+          if (newProgress <= 100) {
+            return parseFloat(newProgress.toFixed(2));
+          } else {
+            clearInterval(intervalRef.current);
+            return 100;
+          }
+        });
+      }, 1300);
 
-    try {
-      const isRegenerate = progress === 100;
-      const response = await Axios.post(url, {
-        text: isRegenerate ? data.text : pdfDetails,
-        num_questions_inp: isRegenerate ? data.num_questions_inp : numInp,
-      });
+      try {
+        const isRegenerate = progress === 100;
+        const response = await Axios.post(url, {
+          text: isRegenerate ? data.text : pdfDetails,
+          num_questions_inp: isRegenerate ? data.num_questions_inp : numInp,
+        });
 
-      setGeneratedQA(response.data);
-      setIsRegenerate(true)
-    } catch (error) {
-      console.error(error);
+        setGeneratedQA(response.data);
+        setIsRegenerate(true);
+        setShowLoading(false);
+        setLoading(false);
+      } catch (error) {
+        console.error(error);
+      }
     }
   };
 
+
   const resetState = () => {
-    setPDFDetails('');
-    setData({
-      text: '',
-      num_questions_inp: '',
-    });
-    setNumInp(0);
-    setLoading(false);
-    setGeneratedQA({});
-    setProgress(0);
+    window.location.reload()
   };
+  
+  
+  useEffect(() => {
+    // Cleanup function to clear the interval when the component unmounts
+    return () => {
+      clearInterval(intervalRef.current);
+    };
+  }, []);
+
+
 
   useEffect(() => {
 
-  }, [pdfDetails])
+    if (pdfDetails === '') {
+      setPDFDetails('');
+    }
+
+  }, [pdfDetails, setPDFDetails])
 
   return (
-    <div>
-      <form className="pdf-form">
+    <div className='w-full '>
+      <form className="pdf-form px-16">
         <div className="form-group">
           <div
             id="drop-area"
@@ -157,50 +164,91 @@ export const DropZoneComponent = (props) => {
         </div>
 
         <div className="form-group">
+          <p className='mb-1 mt-10'>Maximum number of times to generate:</p>
           <input
             required
             type="number"
             onChange={handleInputChange}
             id="num_questions_inp"
             value={numInp}
-            placeholder="Maximum number of items"
-            name="num_questions_inp"
+            placeholder="Optional"
             className="maxnum bg-transparent"
             min="1"
-            max="500"
+            max="150"
           />
         </div>
+        
         {(!isRegenerate) ? (
           <button
-            className="generate-btn"
-            disabled={loading || !data.num_questions_inp || !data.text}
+            className="generate-btn mt-2"
+            disabled={loading || !data.text}
             style={{
-              backgroundColor: loading ? 'gray' : '#4D5F6E',
+              background: loading
+                ? `linear-gradient(90deg, gray ${progress}%, gray ${progress}%)`
+                : '#4D5F6E',
               color: 'white',
               padding: '10px 20px',
               borderRadius: '5px',
-              cursor: loading ? 'not-allowed' : '',
+              cursor: showLoading ? 'not-allowed' : '',
+              width: '100%', // Set the width to 100% to fill the container
+              transition: 'background 0.3s', // Add a transition for a smoother effect
+              opacity: loading || progress <= 100 ? 1 : 0, // Add opacity for fade-in effect
+              position: 'relative',
             }}
             onClick={(event) => handleGenerateClick(event)}
           >
-            {loading ? 'Generating...' : 'Generate'}
+            {showLoading ? (
+              <div className="flex items-center justify-center">
+                <span style={{ marginRight: '1rem' }}>Generating</span>
+                <div className="dots">
+                  <span className="dot"></span>
+                  <span className="dot"></span>
+                  <span className="dot"></span>
+                </div>
+              </div>
+            ) : (
+              <div className="flex items-center justify-center">
+                <span style={{ marginRight: '1rem' }}>Generate</span>
+              </div>
+            )}
           </button>
+
+
         ) : (
           <div className='flex items-center justify-center gap-3'>
-            <button
-              className="generate-btn"
-              disabled={loading || !data.num_questions_inp || !data.text}
-              style={{
-                backgroundColor: loading ? 'gray' : '#4D5F6E',
-                color: 'white',
-                padding: '10px 20px',
-                borderRadius: '5px',
-                cursor: loading ? 'not-allowed' : '',
-              }}
-              onClick={(event) => handleGenerateClick(event)}
-            >
-              {loading ? 'Regenerating...' : 'Regenerate'}
-            </button>
+          <button
+            className="generate-btn"
+            disabled={loading || !data.text}
+            style={{
+              background: loading
+                ? `linear-gradient(90deg, gray ${progress}%, gray ${progress}%)`
+                : '#4D5F6E',
+              color: 'white',
+              padding: '10px 20px',
+              borderRadius: '5px',
+              cursor: showLoading ? 'not-allowed' : '',
+              width: '100%', // Set the width to 100% to fill the container
+              transition: 'background 0.3s', // Add a transition for a smoother effect
+              opacity: loading || progress <= 100 ? 1 : 0, // Add opacity for fade-in effect
+              position: 'relative',
+            }}
+            onClick={(event) => handleGenerateClick(event)}
+          >
+            {showLoading ? (
+              <div className="flex items-center justify-center">
+                <span style={{ marginRight: '1rem' }}>Regenerating</span>
+                <div className="dots">
+                  <span className="dot"></span>
+                  <span className="dot"></span>
+                  <span className="dot"></span>
+                </div>
+              </div>
+            ) : (
+              <div className="flex items-center justify-center">
+                <span style={{ marginRight: '1rem' }}>Regenerate</span>
+              </div>
+            )}
+          </button>
             <button
               className="generate-btn"
               disabled={loading || !data.num_questions_inp || !data.text}
@@ -220,7 +268,6 @@ export const DropZoneComponent = (props) => {
         )}
 
 
-        {loading && data.text && data.num_questions_inp && <Loader loading={loading} progress={progress} />}
       </form>
     </div>
   );

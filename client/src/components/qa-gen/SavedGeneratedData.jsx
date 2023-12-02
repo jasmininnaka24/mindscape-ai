@@ -89,7 +89,7 @@ export const SavedGeneratedData = (props) => {
     const studyMaterialsData = {
       title: studyMaterialTitle,
       body: pdfDetails,
-      numInp: numInp,
+      numInp: numInp === null ? 'No max value' : numInp,
       materialFor: materialFor,
       code: generateRandomString(),
       StudyGroupId: materialFor === 'Group' ? groupNameId : null,

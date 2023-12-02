@@ -86,12 +86,14 @@ export const GroupRoom = () => {
         {/* Room */}
         <div className='py-4'>
           
-          <CreateGroupComp groupList={setGroupList} setSavedGroupNotif={setSavedGroupNotif} fetchGroupListData={fetchGroupListData} />
+          <div className='flex items-center justify-center'>
+            <CreateGroupComp setSavedGroupNotif={setSavedGroupNotif} fetchGroupListData={fetchGroupListData} />
+          </div>
 
           <div className='mt-6'>
             <p className='text-xl mcolor-900 font-medium'>Rooms:</p>
           </div>
-
+            
           <div className='mt-5 grid grid-cols-3 gap-5'>
 
             {groupList && groupList.length > 0 && groupList.slice().sort((a, b) => b.id - a.id).map(({ id, groupName}) => (

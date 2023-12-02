@@ -461,7 +461,14 @@ export const MainDash = ({categoryFor}) => {
 
           
           {materialCategories && materialCategories.length > 0 ? (
-            materialCategories.slice().sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt)).map((item, index) => (
+            materialCategories.slice().sort((a, b) => {
+              if (tag === 'Own Record') {
+                return new Date(a.createdAt) - new Date(b.createdAt);
+              } else {
+                // No sorting if the tag is not 'Own Record'
+                return 0;
+              }
+            }).map((item, index) => (
               <tr className='border-bottom-thin-gray' key={index}>
                 <td className='text-center py-3 text-lg mcolor-800'>{item.category}</td>
                 <td className='text-center py-3 text-lg mcolor-800'>{performanceStatusArr[index] >= 90 ? 'Passing' : 'Requires Improvement'}</td>

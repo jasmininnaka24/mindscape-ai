@@ -9,6 +9,22 @@ router.post('/add-member', async (req, res) => {
   res.json(savedGroupMemberDetails);
 })
 
+
+
+router.get('/find-userId/:groupId/:UserId', async (req, res) => {
+  const { groupId, UserId } = req.params;
+  const listOfGroup = await StudyGroupMembers.findOne({
+    where: {
+      UserId: UserId,
+      StudyGroupId: groupId
+    }
+  });
+  res.json(listOfGroup);
+})
+
+
+
+
 // creating a member to the group
 router.get('/get-members/:groupNameId', async (req, res) => {
   const { groupNameId } = req.params; // Access groupNameId from URL params

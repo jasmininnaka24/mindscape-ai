@@ -5,6 +5,9 @@ import RemoveRedEyeIcon from '@mui/icons-material/RemoveRedEye';
 import { PieChart } from '../charts/PieChart';
 import Category from '@mui/icons-material/Category';
 import { useUser } from '../../UserContext';
+import { useLocation } from 'react-router-dom';
+
+
 
 export const TopicList = ({categoryFor}) => {
 
@@ -13,167 +16,268 @@ export const TopicList = ({categoryFor}) => {
   const [preparedLength, setPreparedLength] = useState(0)
   const [unpreparedLength, setUnpreparedLength] = useState(0)
   const [extractedCategory, setExtractedCategory] = useState([])
+  const location = useLocation();
 
   const { groupId, categoryID } = useParams()
   const { user } = useUser()
+  const { filter, performanceStatus, tag } = location.state;
 
   const navigate = useNavigate()
 
   const UserId = user?.id;
+  const username = user?.username;
   
   useEffect(() => {
-    async function fetchLatestMaterialStudied() {
+
+    async function fetchStudyMaterialsTopicList(filter) {
       try {
-        const extractedCategoryResponse = await axios.get(`http://localhost:3001/studyMaterialCategory/get-categoryy/${categoryID}`);
-        const extractedCategoryData = extractedCategoryResponse.data;
-        setExtractedCategory(extractedCategoryData)
-
-        const extractedStudyMaterials = await axios.get(`http://localhost:3001/studyMaterial/all-study-material/${categoryID}`);
-        const extractedStudyMaterialsResponse = extractedStudyMaterials.data;
-        setStudyMaterials(extractedStudyMaterialsResponse);
-
-
-
-        const fetchMaterialsLength = async () => {
-          const promises = extractedStudyMaterialsResponse.map(async (material) => {
+  
+        let extractedStudyMaterials = [];
+        let uniqueIds = new Set();
+  
+        if (groupId === undefined) {
+          // Use Promise.all to wait for all promises to resolve
+          await Promise.all(filter.map(async (material, index) => {
             try {
-
-              let extractedData = []
-
-              if (categoryFor === 'Personal') {
-                extractedData = await axios.get(`http://localhost:3001/DashForPersonalAndGroup/get-latest-assessment-personal/${material.id}/${UserId}`);
-              } else if (categoryFor === 'Group') {
-
-                extractedData = await axios.get(`http://localhost:3001/DashForPersonalAndGroup/get-latest-assessment-group/${material.id}/${groupId}`);
-
+              let materialResponse = await axios.get(`http://localhost:3001/studyMaterial/all-study-material-personal/${UserId}/${material.id}`);
+              // Check if the ID is already in the set
+              if (!uniqueIds.has(material.id)) {
+                extractedStudyMaterials.push(materialResponse.data);
+                uniqueIds.add(material.id); // Add the ID to the set
               }
-
-              return extractedData.data;
             } catch (error) {
-              console.error('Error fetching study materials:', error);
-              return null; // Handle the error accordingly
+              console.error(`Error fetching study material: ${error.message}`);
             }
-          });
-    
-          const materialsData = await Promise.all(promises);
-          const filteredMaterialsData = materialsData.filter(data => data !== null);
-
-          let preparedCount = 0;
-          let unpreparedCount = 0;
-      
-          extractedStudyMaterialsResponse.forEach(item => {
-
-            if (item.studyPerformance >= 90.00) {
-              preparedCount += 1;
-            } else {
-              unpreparedCount += 1;
+          }));
+        } else {
+  
+          // Use Promise.all to wait for all promises to resolve
+          await Promise.all(filter.map(async (material, index) => {
+            let materialResponse = await axios.get(`http://localhost:3001/studyMaterial/all-study-material-group/${groupId}/${material.id}`);
+            extractedStudyMaterials.push(materialResponse.data);
+          }));
+  
+        }
+  
+        
+        setStudyMaterials(extractedStudyMaterials.flat());
+        
+        let extractedStudyMaterialsResponse = extractedStudyMaterials.flat();
+  
+        let materialsData = await Promise.all(extractedStudyMaterialsResponse.map(async (material) => {
+          try {
+            let extractedData = [];
+        
+            if (groupId === undefined) {
+              extractedData = await axios.get(`http://localhost:3001/DashForPersonalAndGroup/get-latest-assessment-personal/${material.id}/${UserId}`);
+            } else if (categoryFor === 'Group') {
+              extractedData = await axios.get(`http://localhost:3001/DashForPersonalAndGroup/get-latest-assessment-group/${material.id}/${groupId}`);
             }
-          });
-      
-          setPreparedLength(preparedCount);
-          setUnpreparedLength(unpreparedCount);
-          setMaterialsTopicsData(filteredMaterialsData);
-        };
+        
+            return extractedData.data;
+          } catch (error) {
+            console.error('Error fetching study materials:', error);
+            return null; // Handle the error accordingly
+          }
+        }));
+        
+  
+        // const materialsData = await Promise.all(promises);
+        const filteredMaterialsData = materialsData.filter(data => data !== null);
+  
+        let preparedCount = 0;
+        let unpreparedCount = 0;
     
-        fetchMaterialsLength();
-          
-
-
-        
-
-        
+        extractedStudyMaterialsResponse.forEach(item => {
+  
+          if (item.studyPerformance >= 90.00) {
+            preparedCount += 1;
+          } else {
+            unpreparedCount += 1;
+          }
+        });
+    
+        setPreparedLength(preparedCount);
+        setUnpreparedLength(unpreparedCount);
+        setMaterialsTopicsData(filteredMaterialsData);
+  
+  
       } catch (error) {
         console.error('Error fetching latest material studied:', error);
       }
+  
     }
+
+
+    fetchStudyMaterialsTopicList(filter)
     
-    fetchLatestMaterialStudied();
     
-
-    
-  }, [categoryID])
+  }, [UserId, categoryFor, categoryID, filter, groupId])
 
 
 
-  const noRecord = () => {
-
-  }
 
   return (
-    <div className='my-8'>
+    <div>
+
+
+      {/* navbar */}
+      <div className='mcolor-900 flex justify-between items-center'>
+        <div className='flex justify-between items-start'>
+          <div className='flex gap-3 items-center text-2xl'>
+            <button onClick={() => {
+
+              let linkBack = ''
+              if (categoryFor === 'Personal') {
+                linkBack = `/main/personal/dashboard/category-list`
+              } else {
+                linkBack = `/main/group/dashboard/category-list/${groupId}`
+              }
+
+              navigate(linkBack, {
+                state: {
+                  tag: tag
+                }
+              })
+              
+            }}>
+              Categories
+            </button>
+            <i class="fa-solid fa-chevron-right"></i>
+            <p className='font-bold'>Topic List</p>
+          </div>
+        </div>
+
+        <div className='flex items-center text-xl gap-3'>
+          <i class="fa-regular fa-bell"></i>
+          <i class="fa-regular fa-user"></i>
+          <button className='text-xl'>{username} <i class="fa-solid fa-chevron-down ml-1"></i></button>
+        </div>
+      </div>
+
+
+
       <div className='mb-12 w-full flex items-center justify-center'>
         <div className='w-1/3 min-h-[40vh] mt-10'>
           <PieChart dataGathered={[unpreparedLength, preparedLength]} />
         </div>
         <div className='w-1/2 mt-10'>
-          <p className='text-2xl mt-3'>Performance Status: <span className='font-bold'>{extractedCategory.studyPerformance >= 90 ? 'Passing' : 'Requires Improvement'}</span></p>
-          <p className='text-2xl mt-3'>Performance in percentile: <span className='font-bold'>{extractedCategory.studyPerformance}%</span></p>
+          <p className='text-2xl mt-3'>Performance Status: <span className='font-bold'>{performanceStatus >= 90 ? 'Passing' : 'Requires Improvement'}</span></p>
+          <p className='text-2xl mt-3'>Performance in percentile: <span className='font-bold'>{performanceStatus}%</span></p>
           <p className='text-2xl mt-3'>Target Performance: <span className='font-bold'>90%</span></p>
         </div>
       </div>
-      <div className='border-medium-800 rounded-[5px] overflow-x-auto overflow-container'>
+      <div className='border-medium-800 rounded-[5px] overflow-x-auto overflow-container' style={{ height: '100%' }}>
         <table className='p-5 w-full rounded-[5px] text-center'>
           <thead className='mbg-300'>
             <tr>
-              <td className='text-center text-xl py-3 font-medium px-10'>Topic</td>
-              <td className='text-center text-xl py-3 font-medium px-10'>Overall <br />Performance</td>
-              <td className='text-center text-xl py-3 font-medium px-10'>Latest Assessment <br />% Score</td>
-              <td className='text-center text-xl py-3 font-medium px-10'>Confidence Level</td>
-              <td className='text-center text-xl py-3 font-medium px-10'>Improvement</td>
-              <td className='text-center text-xl py-3 font-medium px-10'>Status</td>
-              <td className='text-center text-xl py-3 font-medium px-10'>Records</td>
+              <td className='text-center text-xl py-3 font-medium px-8'>Topic</td>
+              <td className='text-center text-xl py-3 font-medium px-8'>Overall <br />Performance</td>
+              <td className='text-center text-xl py-3 font-medium px-8'>Latest Assessment <br />% Score</td>
+              <td className='text-center text-xl py-3 font-medium px-8'>Confidence Level</td>
+              <td className='text-center text-xl py-3 font-medium px-8'>Improvement</td>
+              <td className='text-center text-xl py-3 font-medium px-8'>Status</td>
+              <td className='text-center text-xl py-3 font-medium px-8'>Records</td>
             </tr>
           </thead>
           <tbody>
-            
-          {studyMaterials.map((item, index) => {
-            const assessmentScorePerf = materialsTopicsData[index]?.[0]?.assessmentScorePerf || '0';
-            const confidenceLevel = materialsTopicsData[index]?.[0]?.confidenceLevel || '0';
-            const assessmentImp = materialsTopicsData[index]?.[0]?.assessmentImp || '0';
 
-            console.log(assessmentImp);
+          {studyMaterials.length > 0 && (
+            studyMaterials.map((item, index) => {
+              const materialsTopic = materialsTopicsData[index] && materialsTopicsData[index][0];
 
-            // Check if assessmentImp is 'none', if true, skip rendering the row
-            if (assessmentImp.toLowerCase() === 'none') {
-              return null;
-            }
+              if (!materialsTopic) {
+                return (
+                  <tr key={index}>
+                    <td className='py-3 text-lg mcolor-800'>{item.title}</td>
+                    <td className='text-center py-3 text-lg mcolor-800'>No record</td>
+                    <td className='text-center py-3 text-lg mcolor-800'>No record</td>
+                    <td className='text-center py-3 text-lg mcolor-800'>No record</td>
+                    <td className='text-center py-3 text-lg mcolor-800'>No record</td>
+                    <td className='text-center py-3 text-lg mcolor-800'>No record</td>
+                    <td className='text-center py-3 text-lg mcolor-800'>No record</td>
 
-            return (
-              <tr className='border-bottom-thin-gray rounded-[5px]' key={index}>
-                <td className='text-center py-3 text-lg mcolor-800'>{item.title}</td>
-                <td className='text-center py-3 text-lg mcolor-800'>{item.studyPerformance}%</td>
-                <td className='text-center py-3 text-lg mcolor-800'>{assessmentScorePerf}%</td>
-                <td className='text-center py-3 text-lg mcolor-800'>{confidenceLevel}%</td>
-                <td className='text-center py-3 text-lg mcolor-800'>{assessmentImp}%</td>
-                <td className='text-center py-3 text-lg mcolor-800'>{item.studyPerformance >= 90 ? 'Prepared' : 'Unprepared'}</td>
-                <td className='text-center py-3 text-lg mcolor-800'>
-                  {groupId !== undefined ? (
+                  </tr>
+                );
+              }
 
-                    <button onClick={() => {
+              const assessmentScorePerf = materialsTopic.assessmentScorePerf || 'none';
+              const confidenceLevel = materialsTopic.confidenceLevel || 'none';
+              const assessmentImp = materialsTopic.assessmentImp || 'none';
 
-                      navigate(`/main/group/dashboard/category-list/topic-list/topic-page/${groupId}/${categoryID}/${item.id}`)
-                    }}>
-                      <RemoveRedEyeIcon />
-                    </button>
-                    
-                  ) : (
+              // Check if assessmentImp is 'none', if true, skip rendering the row
+              if (assessmentImp === 'none') {
+                return (
+                  <tr key={index}>
+                    <td className='py-3 text-lg mcolor-800'>{item.title}</td>
+                    <td className='text-center py-3 text-lg mcolor-800'>No record</td>
+                    <td className='text-center py-3 text-lg mcolor-800'>No record</td>
+                    <td className='text-center py-3 text-lg mcolor-800'>No record</td>
+                    <td className='text-center py-3 text-lg mcolor-800'>No record</td>
+                    <td className='text-center py-3 text-lg mcolor-800'>No record</td>
+                    <td className='text-center py-3 text-lg mcolor-800'>No record</td>
 
-                    
-                    <button onClick={() => {
+                  </tr>
+                );
+              }
+              return (
+                <tr className='border-bottom-thin-gray rounded-[5px]' key={index}>
+                  <td className='text-center py-3 text-lg mcolor-800'>{item.title}</td>
+                  <td className='text-center py-3 text-lg mcolor-800'>{item.studyPerformance}%</td>
+                  <td className='text-center py-3 text-lg mcolor-800'>{assessmentImp === 'none' ? 0 : assessmentScorePerf}%</td>
+                  <td className='text-center py-3 text-lg mcolor-800'>{assessmentImp === 'none' ? 0 : confidenceLevel}%</td>
+                  <td className='text-center py-3 text-lg mcolor-800'>{assessmentImp === 'none' ? 0 : assessmentImp}%</td>
+                  <td className='text-center py-3 text-lg mcolor-800'>{item.studyPerformance >= 90 ? 'Prepared' : 'Unprepared'}</td>
+                  <td className='text-center py-3 text-lg mcolor-800'>
+                    {(assessmentImp !== 'none' ) ? (
+                      groupId !== undefined ? (
+                        <button onClick={() => {
+                          navigate(`/main/group/dashboard/category-list/topic-list/topic-page/${groupId}/${categoryID}/${item.id}`, {
+                            state: {
+                              filter: filter,
+                              performanceStatus: performanceStatus,
+                              tag: tag
+                            }
+                          })
+                        }}>
+                          <RemoveRedEyeIcon />
+                        </button>
+                        
+                      ) : (
+                        <button onClick={() => {
 
-                      navigate(`/main/personal/dashboard/category-list/topic-list/topic-page/${categoryID}/${item.id}`)
-                    }}>
-                      <RemoveRedEyeIcon />
-                    </button>
-                  )}
-                </td>
-              </tr>
-            );
-          })}
+                          navigate(`/main/personal/dashboard/category-list/topic-list/topic-page/${categoryID}/${item.id}`, {
+                            state: {
+                              filter: filter,
+                              performanceStatus: performanceStatus,
+                              tag: tag
+                            }
+                          })
+                        }}>
+                          <RemoveRedEyeIcon />
+                        </button>
+                      )
+                    ) : (
+                      <div>No Record</div>
+                    )
+                    }
+                  </td>
+                </tr>
+              );
+            })
+          )}
+          
+
+
+
+
+
+
+
 
           </tbody>
         </table>
       </div>
-    </div>  
+    </div>
   )
 }
