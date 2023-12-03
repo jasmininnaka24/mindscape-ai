@@ -9,9 +9,9 @@ router.post('/follow', async (req, res) => {
 })
 
 router.get('/get-follower-list/:id', async (req, res) => {
-  const followerId = req.params.id;
+  const id = req.params.id;
   const extractedFollowingList = await Followers.findAll({
-    where: { FollowerId: followerId }
+    where: { FollowerId: id }
   });
 
   res.json(extractedFollowingList);

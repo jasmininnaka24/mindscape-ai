@@ -50,6 +50,7 @@ export const GroupReviewerPage = () => {
   const [doneCheckingScores, setDoneCheckingScores] = useState(false)
   const [messageReview, setMessageReview] = useState("");
   const [messageListReview, setMessageListReview] = useState([])
+  const [hideModalReview, setHideModalReview] = useState('hidden')
 
   // const [inCall, setInCall] = useState(false);
   
@@ -109,6 +110,7 @@ export const GroupReviewerPage = () => {
   const [assessmentUsersChoices, setAssessmentUsersChoices] = useState([]);
   const [message, setMessage] = useState("");
   const [messageList, setMessageList] = useState([])
+  const [isStartAssessmentButtonStarted, setIsStartAssessmentButtonStarted] = useState(false)
 
 
 
@@ -584,6 +586,7 @@ export const GroupReviewerPage = () => {
       setUserList(updatedUserList);
       setDisabledSubmitButton(false)
       socket.emit("updated_lost_points", { room, lostPoints: false });
+      socket.emit("update_is_running_review", { room, isRunningReview: true });
       nextUser();
       setDisabledSubmitButton(false)
       setLostPoints(false);
@@ -751,6 +754,21 @@ export const GroupReviewerPage = () => {
     setMessageReview('')
   }
 
+
+  const leaveReviewerPageRoom = () => {
+    const userIndex = userList.findIndex(user => user.userId === userId);
+    const userSocketId = userList[userIndex].socketId;
+
+    console.log(userSocketId);
+
+    // Emit socket event indicating user is leaving
+    socket.emit('leave-reviewer-page-room', { room, socketId: userSocketId });
+    setShowPreJoin(true)
+    setIsJoined(false)
+    setShowAssessmentPage(false)
+  };
+
+
   return (
     <div className=''>
         {sessionExpired ? (
@@ -763,533 +781,567 @@ export const GroupReviewerPage = () => {
               <div>
 
                 {showPreJoin && (
-                  <PreJoinPage joinRoom={joinRoom} materialId={materialId} groupId={groupId} setShowPreJoin={setShowPreJoin} setShowAssessmentPage={setShowAssessmentPage} room={room} assessementRoom={assessementRoom} username={username} userId={userId} userListAssessment={userListAssessment} setUserListAssessment={setUserListAssessment} selectedAssessmentAnswer={selectedAssessmentAnswer} setSelectedAssessmentAnswer={setSelectedAssessmentAnswer} isRunning={isRunning} setIsRunning={setIsRunning} seconds={seconds} setSeconds={setSeconds} itemCount={itemCount} setQA={setQA} extractedQA={extractedQA} shuffledChoices={shuffledChoices} setShuffledChoices={setShuffledChoices} isSubmittedButtonClicked={isSubmittedButtonClicked} setIsSubmittedButtonClicked={setIsSubmittedButtonClicked} idOfWhoSubmitted={idOfWhoSubmitted} setIdOfWhoSubmitted={setIdOfWhoSubmitted} usernameOfWhoSubmitted={usernameOfWhoSubmitted} setUsernameOfWhoSubmitted={setUsernameOfWhoSubmitted} score={score} setScore={setScore} isSubmitted={isSubmitted} setIsSubmitted={setIsSubmitted} isAssessmentDone={isAssessmentDone} setIsAssessmentDone={setIsAssessmentDone} showSubmittedAnswerModal={showSubmittedAnswerModal} setShowSubmittedAnswerModal={setShowSubmittedAnswerModal} showTexts={showTexts} setShowTexts={setShowTexts} showAnalysis={showAnalysis} setShowAnalysis={setShowAnalysis} showAssessment={showAssessment} setShowAssessment={setShowAssessment} overAllItems={overAllItems} setOverAllItems={setOverAllItems} preAssessmentScore={preAssessmentScore} setPreAssessmentScore={setPreAssessmentScore} assessmentScore={assessmentScore} setAssessmentScore={setAssessmentScore} assessmentImp={assessmentImp} setAssessmentImp={setAssessmentImp} assessmentScorePerf={assessmentScorePerf} setAssessmentScorePerf={setAssessmentScorePerf} completionTime={completionTime} setCompletionTime={setCompletionTime} confidenceLevel={confidenceLevel} setConfidenceLevel={setConfidenceLevel} overAllPerformance={overAllPerformance} setOverAllPerformance={setOverAllPerformance} assessmentCountMoreThanOne={assessmentCountMoreThanOne} setAssessmentCountMoreThanOne={setAssessmentCountMoreThanOne} generatedAnalysis={generatedAnalysis} setGeneratedAnalysis={setGeneratedAnalysis} extractedQAAssessment={extractedQAAssessment} setQAAssessment={setQAAssessment} shuffledChoicesAssessment={shuffledChoicesAssessment} setShuffledChoicesAssessment={setShuffledChoicesAssessment} assessmentUsersChoices={assessmentUsersChoices} setAssessmentUsersChoices={setAssessmentUsersChoices} message={message} setMessage={setMessage} messageList={messageList} setMessageList={setMessageList} />
+                  <PreJoinPage joinRoom={joinRoom} materialId={materialId} groupId={groupId} setShowPreJoin={setShowPreJoin} setShowAssessmentPage={setShowAssessmentPage} room={room} assessementRoom={assessementRoom} username={username} userId={userId} userListAssessment={userListAssessment} setUserListAssessment={setUserListAssessment} selectedAssessmentAnswer={selectedAssessmentAnswer} setSelectedAssessmentAnswer={setSelectedAssessmentAnswer} isRunning={isRunning} setIsRunning={setIsRunning} seconds={seconds} setSeconds={setSeconds} itemCount={itemCount} setQA={setQA} extractedQA={extractedQA} shuffledChoices={shuffledChoices} setShuffledChoices={setShuffledChoices} isSubmittedButtonClicked={isSubmittedButtonClicked} setIsSubmittedButtonClicked={setIsSubmittedButtonClicked} idOfWhoSubmitted={idOfWhoSubmitted} setIdOfWhoSubmitted={setIdOfWhoSubmitted} usernameOfWhoSubmitted={usernameOfWhoSubmitted} setUsernameOfWhoSubmitted={setUsernameOfWhoSubmitted} score={score} setScore={setScore} isSubmitted={isSubmitted} setIsSubmitted={setIsSubmitted} isAssessmentDone={isAssessmentDone} setIsAssessmentDone={setIsAssessmentDone} showSubmittedAnswerModal={showSubmittedAnswerModal} setShowSubmittedAnswerModal={setShowSubmittedAnswerModal} showTexts={showTexts} setShowTexts={setShowTexts} showAnalysis={showAnalysis} setShowAnalysis={setShowAnalysis} showAssessment={showAssessment} setShowAssessment={setShowAssessment} overAllItems={overAllItems} setOverAllItems={setOverAllItems} preAssessmentScore={preAssessmentScore} setPreAssessmentScore={setPreAssessmentScore} assessmentScore={assessmentScore} setAssessmentScore={setAssessmentScore} assessmentImp={assessmentImp} setAssessmentImp={setAssessmentImp} assessmentScorePerf={assessmentScorePerf} setAssessmentScorePerf={setAssessmentScorePerf} completionTime={completionTime} setCompletionTime={setCompletionTime} confidenceLevel={confidenceLevel} setConfidenceLevel={setConfidenceLevel} overAllPerformance={overAllPerformance} setOverAllPerformance={setOverAllPerformance} assessmentCountMoreThanOne={assessmentCountMoreThanOne} setAssessmentCountMoreThanOne={setAssessmentCountMoreThanOne} generatedAnalysis={generatedAnalysis} setGeneratedAnalysis={setGeneratedAnalysis} extractedQAAssessment={extractedQAAssessment} setQAAssessment={setQAAssessment} shuffledChoicesAssessment={shuffledChoicesAssessment} setShuffledChoicesAssessment={setShuffledChoicesAssessment} assessmentUsersChoices={assessmentUsersChoices} setAssessmentUsersChoices={setAssessmentUsersChoices} message={message} setMessage={setMessage} messageList={messageList} setMessageList={setMessageList} isStartAssessmentButtonStarted={isStartAssessmentButtonStarted} setIsStartAssessmentButtonStarted={setIsStartAssessmentButtonStarted} />
                 )}
  
                 {showAssessmentPage && (
-                  <AssessmentPage groupId={groupId} materialId={materialId} setShowAssessmentPage={setShowAssessmentPage} userListAssessment={userListAssessment} setUserListAssessment={setUserListAssessment} room={room} assessementRoom={assessementRoom} username={username} userId={userId} selectedAssessmentAnswer={selectedAssessmentAnswer} setSelectedAssessmentAnswer={setSelectedAssessmentAnswer} isRunning={isRunning} setIsRunning={setIsRunning} seconds={seconds} setSeconds={setSeconds} setQA={setQA} extractedQA={extractedQA} shuffledChoices={shuffledChoices} setShuffledChoices={setShuffledChoices} isSubmittedButtonClicked={isSubmittedButtonClicked} setIsSubmittedButtonClicked={setIsSubmittedButtonClicked} idOfWhoSubmitted={idOfWhoSubmitted} setIdOfWhoSubmitted={setIdOfWhoSubmitted} usernameOfWhoSubmitted={usernameOfWhoSubmitted} setUsernameOfWhoSubmitted={setUsernameOfWhoSubmitted} score={score} setScore={setScore} isSubmitted={isSubmitted} setIsSubmitted={setIsSubmitted} isAssessmentDone={isAssessmentDone} setIsAssessmentDone={setIsAssessmentDone} showSubmittedAnswerModal={showSubmittedAnswerModal} setShowSubmittedAnswerModal={setShowSubmittedAnswerModal} showTexts={showTexts} setShowTexts={setShowTexts} showAnalysis={showAnalysis} setShowAnalysis={setShowAnalysis} showAssessment={showAssessment} setShowAssessment={setShowAssessment} overAllItems={overAllItems} setOverAllItems={setOverAllItems} preAssessmentScore={preAssessmentScore} setPreAssessmentScore={setPreAssessmentScore} assessmentScore={assessmentScore} setAssessmentScore={setAssessmentScore} assessmentImp={assessmentImp} setAssessmentImp={setAssessmentImp} assessmentScorePerf={assessmentScorePerf} setAssessmentScorePerf={setAssessmentScorePerf} completionTime={completionTime} setCompletionTime={setCompletionTime} confidenceLevel={confidenceLevel} setConfidenceLevel={setConfidenceLevel} overAllPerformance={overAllPerformance} setOverAllPerformance={setOverAllPerformance} assessmentCountMoreThanOne={assessmentCountMoreThanOne} setAssessmentCountMoreThanOne={setAssessmentCountMoreThanOne} generatedAnalysis={generatedAnalysis} setGeneratedAnalysis={setGeneratedAnalysis} extractedQAAssessment={extractedQAAssessment} setQAAssessment={setQAAssessment} shuffledChoicesAssessment={shuffledChoicesAssessment} setShuffledChoicesAssessment={setShuffledChoicesAssessment} assessmentUsersChoices={assessmentUsersChoices} setAssessmentUsersChoices={setAssessmentUsersChoices} message={message} setMessage={setMessage} messageList={messageList} setMessageList={setMessageList} />
+                  <AssessmentPage groupId={groupId} materialId={materialId} setShowAssessmentPage={setShowAssessmentPage} userListAssessment={userListAssessment} setUserListAssessment={setUserListAssessment} room={room} assessementRoom={assessementRoom} username={username} userId={userId} selectedAssessmentAnswer={selectedAssessmentAnswer} setSelectedAssessmentAnswer={setSelectedAssessmentAnswer} isRunning={isRunning} setIsRunning={setIsRunning} seconds={seconds} setSeconds={setSeconds} setQA={setQA} extractedQA={extractedQA} shuffledChoices={shuffledChoices} setShuffledChoices={setShuffledChoices} isSubmittedButtonClicked={isSubmittedButtonClicked} setIsSubmittedButtonClicked={setIsSubmittedButtonClicked} idOfWhoSubmitted={idOfWhoSubmitted} setIdOfWhoSubmitted={setIdOfWhoSubmitted} usernameOfWhoSubmitted={usernameOfWhoSubmitted} setUsernameOfWhoSubmitted={setUsernameOfWhoSubmitted} score={score} setScore={setScore} isSubmitted={isSubmitted} setIsSubmitted={setIsSubmitted} isAssessmentDone={isAssessmentDone} setIsAssessmentDone={setIsAssessmentDone} showSubmittedAnswerModal={showSubmittedAnswerModal} setShowSubmittedAnswerModal={setShowSubmittedAnswerModal} showTexts={showTexts} setShowTexts={setShowTexts} showAnalysis={showAnalysis} setShowAnalysis={setShowAnalysis} showAssessment={showAssessment} setShowAssessment={setShowAssessment} overAllItems={overAllItems} setOverAllItems={setOverAllItems} preAssessmentScore={preAssessmentScore} setPreAssessmentScore={setPreAssessmentScore} assessmentScore={assessmentScore} setAssessmentScore={setAssessmentScore} assessmentImp={assessmentImp} setAssessmentImp={setAssessmentImp} assessmentScorePerf={assessmentScorePerf} setAssessmentScorePerf={setAssessmentScorePerf} completionTime={completionTime} setCompletionTime={setCompletionTime} confidenceLevel={confidenceLevel} setConfidenceLevel={setConfidenceLevel} overAllPerformance={overAllPerformance} setOverAllPerformance={setOverAllPerformance} assessmentCountMoreThanOne={assessmentCountMoreThanOne} setAssessmentCountMoreThanOne={setAssessmentCountMoreThanOne} generatedAnalysis={generatedAnalysis} setGeneratedAnalysis={setGeneratedAnalysis} extractedQAAssessment={extractedQAAssessment} setQAAssessment={setQAAssessment} shuffledChoicesAssessment={shuffledChoicesAssessment} setShuffledChoicesAssessment={setShuffledChoicesAssessment} assessmentUsersChoices={assessmentUsersChoices} setAssessmentUsersChoices={setAssessmentUsersChoices} message={message} setMessage={setMessage} messageList={messageList} setMessageList={setMessageList} isStartAssessmentButtonStarted={isStartAssessmentButtonStarted} setIsStartAssessmentButtonStarted={setIsStartAssessmentButtonStarted} setShowPreJoin={setShowPreJoin} setIsJoined={setIsJoined}  />
                 )}
+
                 
               </div>
 
               {isJoined && (
-                <div className='poppins w-full flex flex-col items-center min-h-[100vh]'>
+                <div className='poppins w-full flex flex-col items-center min-h-[100vh] mcolor-900'>
                   <div className='w-full'>
                     <div className='flex justify-between'>
-                        <div className='w-1/2 relative fixed min-h-[100vh] mbg-100 shadows rounded'>
-                          <div className='fixed'>
-                            <p className='pt-4 px-5 '>Connected users:</p>
-                            <ul className='py-2 px-5 rounded-[5px] flex items-center gap-5'>
-                              {userList.map(user => (
-                                <li key={user.userId}>
-                                  <p><i className="fa-solid fa-circle text-green-500 mr-1"></i> {user.username.charAt(0).toUpperCase() + user.username.slice(1)}</p>
-                                </li>
-                              ))}
-                            </ul>
-                          </div>
-                          <br /><br />
-                          <br />
-                          <div className='flex justify-center'>
-                            <div className='h-[65vh] border-thin-800 mx-5 mt-6 rounded fixed w-1/3'>
 
-                              <div className="chat-window">
-                                <div className="chat-header">
-                                  <p>Live Chat</p>
-                                </div>
-                                <div className="chat-body">
-                                  <ScrollToBottom className="message-container">
-                                    {messageListReview.map((messageContent) => {
-                                      return (
-                                        <div
-                                          className="message"
-                                          id={username === messageContent.author ? "you" : "other"}
-                                        >
-                                          <div>
-                                            <div className="message-content">
-                                              <p>{messageContent.message}</p>
-                                            </div>
-                                            <div className="message-meta">
-                                              <p id="time">{messageContent.time}</p>
-                                              <p id="author" className='capitalize'>{messageContent.author}</p>
-                                            </div>
-                                          </div>
-                                        </div>
-                                      );
-                                    })}
-                                  </ScrollToBottom>
-                                </div>
-                                <div className="chat-footer">
-                                  <input
-                                    type="text"
-                                    placeholder="Hey..."
-                                    value={messageReview}
-                                    onChange={(event) => {
-                                      setMessageReview(event.target.value);
-                                    }}
-                                    onKeyPress={(event) => {
-                                      event.key === "Enter" && sendMessageReview();
-                                    }}
-                                  />
-                                  <button onClick={sendMessageReview}>&#9658;</button>
+
+                    {/* chat functionality goes here */}
+                    <div className='w-1/2 relative fixed mbg-100 shadows rounded min-h-[100vh]'>
+                      <div className='flex justify-center'>
+                        <div className='h-[65vh] mx-5 rounded fixed w-1/3'>
+                          <div>
+                            <div className='flex items-center justify-between w-full pb-4 pt-5'>
+                              <button className='mbg-200 px-2 py-2 rounded border-thin-800' onClick={() => setHideModalReview('')}>
+                                Users 
+                                <span className='ml-1 bg-red mcolor-100 px-2 rounded-full'>
+                                  {userList.length >= 1000 ? `${(userList.length / 1000).toFixed(0)}k` : userList.length}
+                                </span>
+                              </button>
+                              {isStartStudyButtonStarted && (
+                                <button className='bg-red mcolor-100 px-4 py-2 rounded' onClick={leaveReviewerPageRoom}>Leave Room</button>
+                              )}
+                            </div>
+
+
+                            <div className={`${hideModalReview} absolute top-0 left-0 modal-bg w-full h-full`}>
+                              <div className='flex items-center justify-center h-full'>
+                                <div className='mbg-100 max-h-[60vh] w-1/3 z-10 relative p-10 rounded-[5px] flex items-center justify-center' style={{ overflowY: 'auto' }}>
+
+                                  <button className='absolute right-4 top-3 text-xl' onClick={() => setHideModalReview('hidden')}>
+                                    ✖
+                                  </button>
+
+                                  <div className={`w-full`}>
+                                    <p className='text-center text-2xl font-medium mcolor-800 mb-5'>Connected Users:</p>
+
+                                    <ul className='grid grid-results col-6 gap-5'>
+                                      {userList.map((user,index) => (
+                                        <li key={user?.userId} className='shadows flex items-center justify-center py-4 rounded'>
+                                          <p><i className="fa-solid fa-circle text-green-500 mr-1"></i> {user?.username.charAt(0).toUpperCase() + user?.username.slice(1)} - {userList[index]?.points}</p>
+                                        </li>
+                                      ))}
+                                    </ul>
+                                  </div>
                                 </div>
                               </div>
-                  
                             </div>
                           </div>
+                          
+                          {/* chat functionality */}
+                          <div className="chat-window">
+                            <div className="chat-header">
+                              <p className='px-5'>Live Chat</p>
+                            </div>
+                            <div className="chat-body">
+                              <ScrollToBottom className="message-container">
+                                {messageListReview.map((messageContent) => {
+                                  return (
+                                    <div
+                                      className="message"
+                                      id={username === messageContent.author ? "you" : "other"}
+                                    >
+                                      <div>
+                                        <div className="message-content">
+                                          <p>{messageContent.message}</p>
+                                        </div>
+                                        <div className="message-meta">
+                                          <p id="time">{messageContent.time}</p>
+                                          <p id="author" className='capitalize'>{messageContent.author}</p>
+                                        </div>
+                                      </div>
+                                    </div>
+                                  );
+                                })}
+                              </ScrollToBottom>
+                            </div>
+                            <div className="chat-footer">
+                              <input
+                                type="text"
+                                placeholder="Hey..."
+                                value={messageReview}
+                                onChange={(event) => {
+                                  setMessageReview(event.target.value);
+                                }}
+                                onKeyPress={(event) => {
+                                  event.key === "Enter" && sendMessageReview();
+                                }}
+                              />
+                              <button onClick={sendMessageReview}>&#9658;</button>
+                            </div>
+                          </div>
+              
+                        </div>
                       </div>
+
+            
+                    </div>
 
                       
    
+                    {/* userlist */}
+                    {userList.length > 0 && (
+                      <div className={'w-3/4 mx-10 min-h-[100vh] mt-5 mb-16'}>
+                        {(userList.length > 1 && isStartStudyButtonStarted) ? 
+                          (
 
-                      {userList.length > 0 && (
-                        <div className={'w-3/4 mx-10 min-h-[100vh] mt-5 mb-16'}>
-                          {(userList.length > 1 && isStartStudyButtonStarted) ? 
-                            (
-
+                            <div>
                               <div>
-                                <div>
-                                  {(userList.length > 0 && userList[userTurn]?.userId === userId) ? (
-                                    <div>
-                                      <p className={`mbg-200 mcolor-800 px-5 py-3 rounded-[5px] text-center text-xl ${(userList.length > 0 && userList[userTurn]?.userId === userId) ? 'font-bold' : 'font-bold'}`}>{userList[userTurn]?.userId !== userId ? `${userList[userTurn]?.username.charAt(0).toUpperCase() + userList[userTurn]?.username.slice(1)}'s turn`: 'YOUR TURN'}</p>
+                                {(userList.length > 0 && userList[userTurn]?.userId === userId) ? (
+                                  <div>
+                                    <p className={`mbg-200 mcolor-800 px-5 py-3 rounded-[5px] text-center text-xl ${(userList.length > 0 && userList[userTurn]?.userId === userId) ? 'font-bold' : 'font-bold'}`}>{userList[userTurn]?.userId !== userId ? `${userList[userTurn]?.username.charAt(0).toUpperCase() + userList[userTurn]?.username.slice(1)}'s turn`: 'YOUR TURN'}</p>
 
 
-      
-                                      {(isRunningReview === true) && (
-                                        <div className='timer-container px-10 py-3'>
-                                          <div className='rounded-[5px]' style={{ height: "5px", backgroundColor: "#B3C5D4" }}>
-                                            <div
-                                              className='rounded-[5px]'
-                                              style={{
-                                                width: `${(secondsReview / (20)) * 100}%`,
-                                                height: "100%",
-                                                backgroundColor: secondsReview <= 10 ? "#af4242" : "#667F93", 
-                                              }}
-                                              />
-                                          </div>
-
-                                          <h1 className='mcolor-900 text-sm pt-1'>
-                                            Remaining time:{' '}
-                                            {secondsReview} seconds
-                                          </h1>
+    
+                                    {(isRunningReview === true) && (
+                                      <div className='timer-container px-10 py-3'>
+                                        <div className='rounded-[5px]' style={{ height: "5px", backgroundColor: "#B3C5D4" }}>
+                                          <div
+                                            className='rounded-[5px]'
+                                            style={{
+                                              width: `${(secondsReview / (20)) * 100}%`,
+                                              height: "100%",
+                                              backgroundColor: secondsReview <= 10 ? "#af4242" : "#667F93", 
+                                            }}
+                                            />
                                         </div>
-                                      )}
 
-                                      {extractedQA && extractedQA.length > 0 ? (
-                                        <div>
+                                        <h1 className='mcolor-900 text-sm pt-1'>
+                                          Remaining time:{' '}
+                                          {secondsReview} seconds
+                                        </h1>
+                                      </div>
+                                    )}
 
-                                          {/* question */}
-                                          <div className='flex items-center justify-between gap-4 relative mt-4 pb-8 text-center text-xl font-medium text-xl mcolor-900'>
-                                            <div className={`relative w-full mbg-300 mcolor-900 min-h-[50vh] w-full rounded-[5px] pt-14 mcolor-800`}>
-                                              <p className='mcolor-800 text-lg mt-2 font-medium absolute top-3 left-5'>Type: {
-                                                (extractedQA[questionIndex].quizType === 'ToF' && 'True or False') ||
-                                                (extractedQA[questionIndex].quizType === 'FITB' && 'Fill In The Blanks') ||
-                                                (extractedQA[questionIndex].quizType === 'Identification' && 'Identification') ||
-                                                (extractedQA[questionIndex].quizType === 'MCQA' && 'MCQA')
-                                              }</p>
+                                    {extractedQA && extractedQA.length > 0 ? (
+                                      <div>
 
-                                              { (extractedQA[questionIndex].quizType === 'Identification' || extractedQA[questionIndex].quizType === 'FITB') && (
-                                                <div>
-                                                  <p className='mcolor-800 text-lg mt-2 font-medium absolute top-10 left-5'>Remaining Hints: {remainingHints}</p>
-                                                  <button className='mcolor-800 mbg-200 border-thin-800 rounded-[5px] px-2 py-1 text-lg mt-2 font-medium absolute bottom-5 left-5' onClick={giveHint}>Use hint</button>
-                                                </div>
-                                              )}
+                                        {/* question */}
+                                        <div className='flex items-center justify-between gap-4 relative mt-4 pb-8 text-center text-xl font-medium text-xl mcolor-900'>
+                                          <div className={`relative w-full mbg-300 mcolor-900 min-h-[50vh] w-full rounded-[5px] pt-14 mcolor-800`}>
+                                            <p className='mcolor-800 text-lg mt-2 font-medium absolute top-3 left-5'>Type: {
+                                              (extractedQA[questionIndex].quizType === 'ToF' && 'True or False') ||
+                                              (extractedQA[questionIndex].quizType === 'FITB' && 'Fill In The Blanks') ||
+                                              (extractedQA[questionIndex].quizType === 'Identification' && 'Identification') ||
+                                              (extractedQA[questionIndex].quizType === 'MCQA' && 'MCQA')
+                                            }</p>
 
-                                              {/* questions */}
-                                              {extractedQA[questionIndex].quizType === 'ToF' ? (
-
-                                                <p className='p-10'>{extractedQA[questionIndex].question}</p>
-                                                
-                                              ) : (
-                                                <p className='p-10'>{extractedQA[questionIndex].question}</p>
-                                              )}
-
-                                              <div className='flex justify-center'>
-                                                <div
-                                                  className={`dragHere w-1/2 h-[12vh] rounded-[5px] absolute bottom-14 flex justify-center items-center px-10 mbg-100 ${borderMedium}`}
-                                                  onDrop={handleDrop}
-                                                  onDragOver={handleDragOver}
-                                                >
-
-
-                                                    {/* answer */}
-                                                    <div className='text-center'>
-                                                      {(extractedQA[questionIndex].quizType === 'MCQA' || extractedQA[questionIndex].quizType === 'ToF') && (
-                                                        <p className={`py-7 ${selectedChoice === '' ? 'mcolor-400' : 'mcolor-900'}`}>{selectedChoice === '' ? 'Your answer goes here' : selectedChoice}</p>
-
-                                                      )}
-
-
-                                                      { (extractedQA[questionIndex].quizType === 'Identification' || extractedQA[questionIndex].quizType === 'FITB') && (
-                                                        <input type="text" onChange={handleRadioChange} placeholder='Type here...' className='w-full h-full text-center py-5 my-2' value={selectedChoice || ''} style={{ height: '100%' }} />
-                                                      )}
-
-                                                    </div>
-                                                </div>
+                                            { (extractedQA[questionIndex].quizType === 'Identification' || extractedQA[questionIndex].quizType === 'FITB') && (
+                                              <div>
+                                                <p className='mcolor-800 text-lg mt-2 font-medium absolute top-10 left-5'>Remaining Hints: {remainingHints}</p>
+                                                <button className='mcolor-800 mbg-200 border-thin-800 rounded-[5px] px-2 py-1 text-lg mt-2 font-medium absolute bottom-5 left-5' onClick={giveHint}>Use hint</button>
                                               </div>
-                                            </div>
+                                            )}
 
+                                            {/* questions */}
+                                            {extractedQA[questionIndex].quizType === 'ToF' ? (
 
-
-
-                                          </div>
-
-                                        </div>
-                                        ) : (
-                                          <p className='text-center my-5 text-xl mcolor-500'>Nothing to show</p>
-                                        )
-                                      }
-
-
-                                      {extractedQA && extractedQA.length > 0 && extractedQA[questionIndex] && (
-                                        <div>
-              
-                                          {(failCount === 2 || failCount === 1 || failCount === 0) && lostPoints === true && (
-                                            <div className='text-red text-lg text-center mb-3'>{selectedChoice === '' ? 'No answer.' : (extractedQA[questionIndex].quizType !== 'MCQA' && userList[userTurn]?.points > 0) ? 'Wrong. You lost 1 point' : 'Wrong answer.'}</div>
-                                          )}
-
-                                          {gainedPoints === true && (
-                                            <div className='text-emerald-500 text-lg text-center mb-1'>Correct! You earned 1 point</div>
-                                          )}
-
-                                          {(failCount < 2 && (extractedQA[questionIndex].quizType === 'Identification' || extractedQA[questionIndex].quizType === 'FITB')) && lostPoints === false && gainedPoints === false && (
-                                            <p className='pb-5 pt-2 text-center font-normal text-lg mcolor-800'>{userList[userTurn]?.userId !== userId ? `${userList[userTurn]?.username.charAt(0).toUpperCase() + userList[userTurn]?.username.slice(1)}`: 'You'} submitted a wrong answer. {failCount} chance left
-                                            </p>
-                                          )}
-
-
-                                          {(selectedChoice !== "" && (extractedQA[questionIndex].quizType === 'MCQA' || extractedQA[questionIndex].quizType === 'ToF')) && 
-                                            <div>
-
-                                              {/* {failCount === 0 && (
-                                                <p className='pb-4 font-normal text-lg text-red text-center'>Failed to answer</p>
-                                              )} */}
+                                              <p className='p-10'>{extractedQA[questionIndex].question}</p>
                                               
-                                              {failCount < 2 && extractedQA[questionIndex].quizType !== 'ToF' && lostPoints === false && gainedPoints === false && (
-                                                <p className='pb-5 pt-4 text-center font-normal text-lg mcolor-800'>{userList[userTurn]?.userId !== userId ? `${userList[userTurn]?.username.charAt(0).toUpperCase() + userList[userTurn]?.username.slice(1)}`: 'You'} selected <span className='font-bold'>{selectedChoice}</span> - {failCount} chance left
-                                                </p>
-                                              )}
-                                              
-                                    
+                                            ) : (
+                                              <p className='p-10'>{extractedQA[questionIndex].question}</p>
+                                            )}
 
-                                            </div>
-                                          }
+                                            <div className='flex justify-center'>
+                                              <div
+                                                className={`dragHere w-1/2 h-[12vh] rounded-[5px] absolute bottom-14 flex justify-center items-center px-10 mbg-100 ${borderMedium}`}
+                                                onDrop={handleDrop}
+                                                onDragOver={handleDragOver}
+                                              >
 
-                                          {extractedQA[questionIndex].quizType === 'MCQA' && (
-                                            <form className='grid-result gap-4'>
-                                              {shuffledChoices && shuffledChoices[questionIndex].map((choice, index) => {
-                                                return (
-                                                  <div
-                                                    key={index}
-                                                    className='flex justify-center mbg-200 px-5 py-3 text-xl text-center mcolor-800 choice border-thin-800 rounded-[5px]'
-                                                  >
-                                                    <input
-                                                      type="radio"
-                                                      name="option"
-                                                      value={choice}
-                                                      id={`choice${index}`} 
-                                                      className='custom-radio mt-1 cursor-pointer'
-                                                      onChange={handleRadioChange}
-                                                      checked={selectedChoice === choice} 
-                                                    />
-                                                    <label htmlFor={`choice${index}`} className='ml-1 cursor-pointer'>{choice}</label>
+
+                                                  {/* answer */}
+                                                  <div className='text-center'>
+                                                    {(extractedQA[questionIndex].quizType === 'MCQA' || extractedQA[questionIndex].quizType === 'ToF') && (
+                                                      <p className={`py-7 ${selectedChoice === '' ? 'mcolor-400' : 'mcolor-900'}`}>{selectedChoice === '' ? 'Your answer goes here' : selectedChoice}</p>
+
+                                                    )}
+
+
+                                                    { (extractedQA[questionIndex].quizType === 'Identification' || extractedQA[questionIndex].quizType === 'FITB') && (
+                                                      <input type="text" onChange={handleRadioChange} placeholder='Type here...' className='w-full h-full text-center py-5 my-2' value={selectedChoice || ''} style={{ height: '100%' }} />
+                                                    )}
+
                                                   </div>
-                                                );
-                                              })}
-                                            </form>
-                                          )}
-
-                                          {extractedQA[questionIndex].quizType === 'ToF' && (
-                                            <form className='grid-result gap-4'>
-                                              <div
-                                                key={1}
-                                                className='flex justify-center mbg-200 px-5 py-3 text-xl text-center mcolor-800 choice border-thin-800 rounded-[5px]'
-                                              >
-                                                <input
-                                                  type="radio"
-                                                  name="option"
-                                                  value={'True'}
-                                                  id={`choice${1}`} 
-                                                  className='custom-radio mt-1 cursor-pointer'
-                                                  onChange={handleRadioChange}
-                                                  checked={selectedChoice === 'True'} 
-                                                />
-                                                <label htmlFor={`choice${1}`} className='ml-1 cursor-pointer'>{'True'}</label>
                                               </div>
-                                              <div
-                                                key={2}
-                                                className='flex justify-center mbg-200 px-5 py-3 text-xl text-center mcolor-800 choice border-thin-800 rounded-[5px]'
-                                              >
-                                                <input
-                                                  type="radio"
-                                                  name="option"
-                                                  value={'False'}
-                                                  id={`choice${2}`} 
-                                                  className='custom-radio mt-1 cursor-pointer'
-                                                  onChange={handleRadioChange}
-                                                  checked={selectedChoice === 'False'} 
-                                                />
-                                                <label htmlFor={`choice${2}`} className='ml-1 cursor-pointer'>{'False'}</label>
-                                              </div>
-                                            </form>
-                                          )}
-
-                                          {disableSubmitButton === false && (
-                                            <div className='flex justify-center mt-8'>
-                                              <button className='w-1/2 py-2 px-5 mbg-700 rounded-[5px] mcolor-100 text-lg' onClick={submitAnswer}>Submit Answer</button>
                                             </div>
-                                          )}
-                                        </div>
-                                      )}
-
-                                    </div>
-                                  ) : (
-                                    <div>
-                                      <p className={`mbg-200 mcolor-800 px-5 py-3 rounded-[5px] text-center text-xl ${(userList.length > 0 && userList[userTurn]?.userId === userId) ? 'font-bold' : 'font-bold'}`}>{userList[userTurn]?.userId !== userId ? `${userList[userTurn]?.username.charAt(0).toUpperCase() + userList[userTurn]?.username.slice(1)}'s turn`: 'YOUR TURN'}</p>
-
-
-                                      {(isRunningReview === true) && (
-                                        <div className='timer-container px-10 py-3'>
-                                          <div className='rounded-[5px]' style={{ height: "15px", backgroundColor: "#B3C5D4" }}>
-                                            <div
-                                              className='rounded-[5px]'
-                                              style={{
-                                                width: `${(secondsReview / (20)) * 100}%`,
-                                                height: "100%",
-                                                backgroundColor: secondsReview <= 10 ? "#af4242" : "#667F93", 
-                                              }}
-                                              />
                                           </div>
 
-                                          <h1 className='mcolor-900 text-lg pt-3'>
-                                            Remaining time:{' '}
-                                            {secondsReview} seconds
-                                          </h1>
+
+
+
                                         </div>
-                                      )}
-                                  
-                                      {extractedQA && extractedQA.length > 0 ? (
-                                        <div>
 
-                                          {/* question */}
-                                          <div className='flex items-center justify-between gap-4 relative mt-4 pb-8 text-center text-xl font-medium text-xl mcolor-900'>
-                                            <div className={`relative w-full mbg-300 mcolor-900 min-h-[50vh] w-full rounded-[5px] pt-14 mcolor-800`}>
-                                              <p className='mcolor-800 text-lg mt-2 font-medium absolute top-3 left-5'>Type: {
-                                                (extractedQA[questionIndex].quizType === 'ToF' && 'True or False') ||
-                                                (extractedQA[questionIndex].quizType === 'FITB' && 'Fill In The Blanks') ||
-                                                (extractedQA[questionIndex].quizType === 'Identification' && 'Identification') ||
-                                                (extractedQA[questionIndex].quizType === 'MCQA' && 'MCQA')
-                                              }</p>
+                                      </div>
+                                      ) : (
+                                        <p className='text-center my-5 text-xl mcolor-500'>Nothing to show</p>
+                                      )
+                                    }
 
 
+                                    {extractedQA && extractedQA.length > 0 && extractedQA[questionIndex] && (
+                                      <div>
+            
+                                        {(failCount === 2 || failCount === 1 || failCount === 0) && lostPoints === true && (
+                                          <div className='text-red text-lg text-center mb-3'>{selectedChoice === '' ? 'No answer.' : (extractedQA[questionIndex].quizType !== 'MCQA' && userList[userTurn]?.points > 0) ? 'Wrong. You lost 1 point' : 'Wrong answer.'}</div>
+                                        )}
 
-                                              {/* questions */}
-                                              {extractedQA[questionIndex].quizType === 'ToF' ? (
+                                        {gainedPoints === true && (
+                                          <div className='text-emerald-500 text-lg text-center mb-1'>Correct! You earned 1 point</div>
+                                        )}
 
-                                                <p className='p-10'>{extractedQA[questionIndex].question}</p>
-                                                
-                                              ) : (
-                                                <p className='p-10'>{extractedQA[questionIndex].question}</p>
-                                              )}
-
-                                              <div className='flex justify-center'>
-                                                <div
-                                                  className={`dragHere w-1/2 h-[12vh] rounded-[5px] absolute bottom-14 flex justify-center items-center px-10 mbg-100 ${borderMedium}`}
-                                                  onDrop={handleDrop}
-                                                  onDragOver={handleDragOver}
-                                                >
-
-
-                                                    {/* answer */}
-                                                    <div className='text-center'>
-                                                      {(extractedQA[questionIndex].quizType === 'MCQA' || extractedQA[questionIndex].quizType === 'ToF') && (
-                                                        <p className={`py-7 ${selectedChoice === '' ? 'mcolor-400' : 'mcolor-900'}`}>{selectedChoice === '' ? `${userList[userTurn]?.userId !== userId ? `${userList[userTurn]?.username.charAt(0).toUpperCase() + userList[userTurn]?.username.slice(1)}'s answer goes here`: 'your answer goes here'}` : selectedChoice}</p>
-
-                                                      )}
+                                        {(failCount < 2 && (extractedQA[questionIndex].quizType === 'Identification' || extractedQA[questionIndex].quizType === 'FITB')) && lostPoints === false && gainedPoints === false && (
+                                          <p className='pb-5 pt-2 text-center font-normal text-lg mcolor-800'>{userList[userTurn]?.userId !== userId ? `${userList[userTurn]?.username.charAt(0).toUpperCase() + userList[userTurn]?.username.slice(1)}`: 'You'} submitted a wrong answer. {failCount} chance left
+                                          </p>
+                                        )}
 
 
-                                                      {(extractedQA[questionIndex].quizType === 'Identification' || extractedQA[questionIndex].quizType === 'FITB') && (
-                                                        <input type="text" placeholder={`${selectedChoice === '' ? `${userList[userTurn]?.userId !== userId ? `${userList[userTurn]?.username.charAt(0).toUpperCase() + userList[userTurn]?.username.slice(1)}'s answer goes here`: 'your answer goes here'}` : selectedChoice}`} className='w-full h-full text-center py-5 my-2' readOnly value={selectedChoice || ''} onChange={(event) => {
-                                                          setSelectedChoice(event.target.value)
-                                                        }} style={{ height: '100%' }} />
-                                                      )}
+                                        {(selectedChoice !== "" && (extractedQA[questionIndex].quizType === 'MCQA' || extractedQA[questionIndex].quizType === 'ToF')) && 
+                                          <div>
 
-                                                    </div>
-                                                </div>
-                                              </div>
-                                            </div>
-
-
-
-                                          </div>
-
-                                          {(failCount === 2 || failCount === 1 || failCount === 0) && lostPoints === true && (
-                                            <div className='text-emerald-500 text-lg text-center mb-1'>
-                                              You have gained 1 point as a result of {userList[userTurn]?.username}'s incorrect answer.
-                                            </div>
-                                          )}
-
-                                          {gainedPoints === true && (
-                                            <div className='text-emerald-500 text-lg text-center mb-1'>{userList[userTurn]?.username} earned 1 point</div>
-                                          )}
-
-                                          {(selectedChoice !== "" && (extractedQA[questionIndex].quizType === 'MCQA' || extractedQA[questionIndex].quizType === 'ToF')) && 
-                                            <div>
-        
-                                              {failCount < 2 && extractedQA[questionIndex].quizType === 'MCQA' && lostPoints === false && gainedPoints === false && (
-                                                <p className='pb-5 pt-4 text-center font-normal text-lg mcolor-800'>{userList[userTurn]?.userId !== userId ? `${userList[userTurn]?.username.charAt(0).toUpperCase() + userList[userTurn]?.username.slice(1)}`: 'You'} selected <span className='font-bold'>{selectedChoice}</span> - {failCount} chance left
-                                                </p>
-                                              )}
+                                            {/* {failCount === 0 && (
+                                              <p className='pb-4 font-normal text-lg text-red text-center'>Failed to answer</p>
+                                            )} */}
                                             
-                                            </div>
-                                          }
+                                            {failCount < 2 && extractedQA[questionIndex].quizType !== 'ToF' && lostPoints === false && gainedPoints === false && (
+                                              <p className='pb-5 pt-4 text-center font-normal text-lg mcolor-800'>{userList[userTurn]?.userId !== userId ? `${userList[userTurn]?.username.charAt(0).toUpperCase() + userList[userTurn]?.username.slice(1)}`: 'You'} selected <span className='font-bold'>{selectedChoice}</span> - {failCount} chance left
+                                              </p>
+                                            )}
+                                            
+                                  
 
-                                          {(failCount <= 2 && selectedChoice !== '' && (extractedQA[questionIndex].quizType === 'Identification' || extractedQA[questionIndex].quizType === 'FITB')) && lostPoints === false && gainedPoints === false &&  (
-                                            <p className={`pb-5 pt-4 text-center font-normal text-lg ${selectedChoice === extractedQA[questionIndex].answer ? 'text-emerald-500' : 'text-red'}`}>{userList[userTurn]?.userId !== userId ? `${userList[userTurn]?.username.charAt(0).toUpperCase() + userList[userTurn]?.username.slice(1)} is`: 'You are'} typing a {selectedChoice === extractedQA[questionIndex].answer ? 'correct' : 'wrong'} answer...
-                                            </p>
-                                          )}
+                                          </div>
+                                        }
 
-                                          {(failCount < 2 && (extractedQA[questionIndex].quizType === 'Identification' || extractedQA[questionIndex].quizType === 'FITB')) && lostPoints === false && gainedPoints === false && (
-                                            <p className='pb-5 pt-2 text-center font-normal text-lg mcolor-800'>{userList[userTurn]?.userId !== userId ? `${userList[userTurn]?.username.charAt(0).toUpperCase() + userList[userTurn]?.username.slice(1)}`: 'You'} submitted a wrong answer. {failCount} chance left
-                                            </p>
-                                          )}
-                                              
-
-                                          {extractedQA[questionIndex].quizType === 'MCQA' && (
-                                            <ul className='grid-result gap-4'>
-                                              {shuffledChoices && shuffledChoices[questionIndex].map((choice, index) => {
-                                                return (
-                                                  <li
-                                                    className={`${choice === selectedChoice ? choice === extractedQA[questionIndex].answer ? 'mbg-700 mcolor-100' : 'bg-red mcolor-100' : "mbg-200 mcolor-800"} px-5 py-3 text-xl text-center choice border-thin-800 rounded-[5px]`}
-                                                    key={index}
-                                                  >
-                                                    {choice}
-                                                  </li>
-                                                )
-                                              })}
-                                            </ul>
-                                          )}
-
-                                          {extractedQA[questionIndex].quizType === 'ToF' && (
-                                            <ul className='grid-result gap-4'>
-                                              <li
-                                                className={`${'True' === selectedChoice ? 'True' === extractedQA[questionIndex].answer ? 'mbg-700 mcolor-100' : 'bg-red mcolor-100' : "mbg-200 mcolor-800"} px-5 py-3 text-xl text-center choice border-thin-800 rounded-[5px]`}
-                                                key={1}
-                                              >
-                                                {'True'}
-                                              </li>
-                                              <li
-                                                className={`${'False' === selectedChoice ? 'False' === extractedQA[questionIndex].answer ? 'mbg-700 mcolor-100' : 'bg-red mcolor-100' : "mbg-200 mcolor-800"} px-5 py-3 text-xl text-center choice border-thin-800 rounded-[5px]`}
-                                                key={1}
-                                              >
-                                                {'False'}
-                                              </li>
-                                            </ul>
-                                          )}
-
-
-
-                                        </div>
-                                        ) : (
-                                          <p className='text-center my-5 text-xl mcolor-500'>Nothing to show</p>
-                                        )
-                                      }
-
-                                    </div>
-                                  )}
-                                </div>
-
-                                {/* modal */}
-                                {itemsLength === itemsDone && (
-                                  <div className={`absolute top-0 modal-bg left-0 w-full h-full`}>
-                                    <div className='flex items-center justify-center h-full'>
-                                      <div className='relative mbg-100 min-h-[75vh] w-1/2 z-10 relative p-10 rounded-[5px]'>
-
-                                        <p className='text-lg mcolor-900 font-medium mb-5'>Leaderboard</p>  
-
-                                        <div className='flex items-center justify-between mb-5 gap-5'>
-                                          <button onClick={resetAndStudy} className='w-1/2 py-2 rounded mcolor-900 mbg-200 border-thin-800'>Reset Points & Study Again</button>
-                                          <button onClick={studyAgain} className='w-1/2 py-2 rounded mcolor-100 mbg-700'>Study Again</button>
-                                        </div>
-
-                                        <div className='flex items-center justify-between px-3 mb-3 mcolor-800'>
-                                          <span>Users</span>
-                                          <span className='mr-4'>Scores</span>
-                                        </div>
-                                        <ul>
-                                          {[...userList]
-                                            .sort((a, b) => b.points - a.points)
-                                            .map((user, index) => {
-                                              let medalClass = ''; 
-
-                                              if (user.points === userScores[0]) {
-                                                medalClass = 'gold-medal'
-                                              } else if (user.points === userScores[1]) {
-                                                medalClass = 'silver-medal'
-                                              } else if (user.points === userScores[2]) {
-                                                medalClass = 'bronze-medal'
-                                              }
-
-                                      
+                                        {extractedQA[questionIndex].quizType === 'MCQA' && (
+                                          <form className='grid-result gap-4'>
+                                            {shuffledChoices && shuffledChoices[questionIndex].map((choice, index) => {
                                               return (
-                                                <li key={user.userId} className='mb-4'>
-                                                  <p className={`mbg-200 shadows p-3 flex justify-between items-center font-medium rounded mcolor-800`}>
-                                                    <span>
-                                                      <WorkspacePremiumIcon fontSize="large" className={`mr-3 ${user.points !== 0 ? medalClass : ''}`} />
-                                                      <span className='text-xl pt-3'>
-                                                        {user.username.charAt(0).toUpperCase() + user.username.slice(1)}:{" "}
-                                                      </span>
-                                                    </span>
-                                                    <span className='mr-4'>
-                                                      {user.points} {user.points > 1 ? 'points' : 'point'}
-                                                    </span>
-                                                  </p>
-                                                </li>
+                                                <div
+                                                  key={index}
+                                                  className='flex justify-center mbg-200 px-5 py-3 text-xl text-center mcolor-800 choice border-thin-800 rounded-[5px]'
+                                                >
+                                                  <input
+                                                    type="radio"
+                                                    name="option"
+                                                    value={choice}
+                                                    id={`choice${index}`} 
+                                                    className='custom-radio mt-1 cursor-pointer'
+                                                    onChange={handleRadioChange}
+                                                    checked={selectedChoice === choice} 
+                                                  />
+                                                  <label htmlFor={`choice${index}`} className='ml-1 cursor-pointer'>{choice}</label>
+                                                </div>
                                               );
                                             })}
-                                        </ul>
+                                          </form>
+                                        )}
 
+                                        {extractedQA[questionIndex].quizType === 'ToF' && (
+                                          <form className='grid-result gap-4'>
+                                            <div
+                                              key={1}
+                                              className='flex justify-center mbg-200 px-5 py-3 text-xl text-center mcolor-800 choice border-thin-800 rounded-[5px]'
+                                            >
+                                              <input
+                                                type="radio"
+                                                name="option"
+                                                value={'True'}
+                                                id={`choice${1}`} 
+                                                className='custom-radio mt-1 cursor-pointer'
+                                                onChange={handleRadioChange}
+                                                checked={selectedChoice === 'True'} 
+                                              />
+                                              <label htmlFor={`choice${1}`} className='ml-1 cursor-pointer'>{'True'}</label>
+                                            </div>
+                                            <div
+                                              key={2}
+                                              className='flex justify-center mbg-200 px-5 py-3 text-xl text-center mcolor-800 choice border-thin-800 rounded-[5px]'
+                                            >
+                                              <input
+                                                type="radio"
+                                                name="option"
+                                                value={'False'}
+                                                id={`choice${2}`} 
+                                                className='custom-radio mt-1 cursor-pointer'
+                                                onChange={handleRadioChange}
+                                                checked={selectedChoice === 'False'} 
+                                              />
+                                              <label htmlFor={`choice${2}`} className='ml-1 cursor-pointer'>{'False'}</label>
+                                            </div>
+                                          </form>
+                                        )}
 
-
-
-                                      
+                                        {disableSubmitButton === false && (
+                                          <div className='flex justify-center mt-8'>
+                                            <button className='w-1/2 py-2 px-5 mbg-700 rounded-[5px] mcolor-100 text-lg' onClick={submitAnswer}>Submit Answer</button>
+                                          </div>
+                                        )}
                                       </div>
-                                    </div>
+                                    )}
+
+                                  </div>
+                                ) : (
+                                  <div>
+                                    <p className={`mbg-200 mcolor-800 px-5 py-3 rounded-[5px] text-center text-xl ${(userList.length > 0 && userList[userTurn]?.userId === userId) ? 'font-bold' : 'font-bold'}`}>{userList[userTurn]?.userId !== userId ? `${userList[userTurn]?.username.charAt(0).toUpperCase() + userList[userTurn]?.username.slice(1)}'s turn`: 'YOUR TURN'}</p>
+
+
+                                    {(isRunningReview === true) && (
+                                      <div className='timer-container px-10 py-3'>
+                                        <div className='rounded-[5px]' style={{ height: "15px", backgroundColor: "#B3C5D4" }}>
+                                          <div
+                                            className='rounded-[5px]'
+                                            style={{
+                                              width: `${(secondsReview / (20)) * 100}%`,
+                                              height: "100%",
+                                              backgroundColor: secondsReview <= 10 ? "#af4242" : "#667F93", 
+                                            }}
+                                            />
+                                        </div>
+
+                                        <h1 className='mcolor-900 text-lg pt-3'>
+                                          Remaining time:{' '}
+                                          {secondsReview} seconds
+                                        </h1>
+                                      </div>
+                                    )}
+                                
+                                    {extractedQA && extractedQA.length > 0 ? (
+                                      <div>
+
+                                        {/* question */}
+                                        <div className='flex items-center justify-between gap-4 relative mt-4 pb-8 text-center text-xl font-medium text-xl mcolor-900'>
+                                          <div className={`relative w-full mbg-300 mcolor-900 min-h-[50vh] w-full rounded-[5px] pt-14 mcolor-800`}>
+                                            <p className='mcolor-800 text-lg mt-2 font-medium absolute top-3 left-5'>Type: {
+                                              (extractedQA[questionIndex].quizType === 'ToF' && 'True or False') ||
+                                              (extractedQA[questionIndex].quizType === 'FITB' && 'Fill In The Blanks') ||
+                                              (extractedQA[questionIndex].quizType === 'Identification' && 'Identification') ||
+                                              (extractedQA[questionIndex].quizType === 'MCQA' && 'MCQA')
+                                            }</p>
+
+
+
+                                            {/* questions */}
+                                            {extractedQA[questionIndex].quizType === 'ToF' ? (
+
+                                              <p className='p-10'>{extractedQA[questionIndex].question}</p>
+                                              
+                                            ) : (
+                                              <p className='p-10'>{extractedQA[questionIndex].question}</p>
+                                            )}
+
+                                            <div className='flex justify-center'>
+                                              <div
+                                                className={`dragHere w-1/2 h-[12vh] rounded-[5px] absolute bottom-14 flex justify-center items-center px-10 mbg-100 ${borderMedium}`}
+                                                onDrop={handleDrop}
+                                                onDragOver={handleDragOver}
+                                              >
+
+
+                                                  {/* answer */}
+                                                  <div className='text-center'>
+                                                    {(extractedQA[questionIndex].quizType === 'MCQA' || extractedQA[questionIndex].quizType === 'ToF') && (
+                                                      <p className={`py-7 ${selectedChoice === '' ? 'mcolor-400' : 'mcolor-900'}`}>{selectedChoice === '' ? `${userList[userTurn]?.userId !== userId ? `${userList[userTurn]?.username.charAt(0).toUpperCase() + userList[userTurn]?.username.slice(1)}'s answer goes here`: 'your answer goes here'}` : selectedChoice}</p>
+
+                                                    )}
+
+
+                                                    {(extractedQA[questionIndex].quizType === 'Identification' || extractedQA[questionIndex].quizType === 'FITB') && (
+                                                      <input type="text" placeholder={`${selectedChoice === '' ? `${userList[userTurn]?.userId !== userId ? `${userList[userTurn]?.username.charAt(0).toUpperCase() + userList[userTurn]?.username.slice(1)}'s answer goes here`: 'your answer goes here'}` : selectedChoice}`} className='w-full h-full text-center py-5 my-2' readOnly value={selectedChoice || ''} onChange={(event) => {
+                                                        setSelectedChoice(event.target.value)
+                                                      }} style={{ height: '100%' }} />
+                                                    )}
+
+                                                  </div>
+                                              </div>
+                                            </div>
+                                          </div>
+
+
+
+                                        </div>
+
+                                        {(failCount === 2 || failCount === 1 || failCount === 0) && lostPoints === true && (
+                                          <div className='text-emerald-500 text-lg text-center mb-1'>
+                                            You have gained 1 point as a result of {userList[userTurn]?.username}'s incorrect answer.
+                                          </div>
+                                        )}
+
+                                        {gainedPoints === true && (
+                                          <div className='text-emerald-500 text-lg text-center mb-1'>{userList[userTurn]?.username} earned 1 point</div>
+                                        )}
+
+                                        {(selectedChoice !== "" && (extractedQA[questionIndex].quizType === 'MCQA' || extractedQA[questionIndex].quizType === 'ToF')) && 
+                                          <div>
+      
+                                            {failCount < 2 && extractedQA[questionIndex].quizType === 'MCQA' && lostPoints === false && gainedPoints === false && (
+                                              <p className='pb-5 pt-4 text-center font-normal text-lg mcolor-800'>{userList[userTurn]?.userId !== userId ? `${userList[userTurn]?.username.charAt(0).toUpperCase() + userList[userTurn]?.username.slice(1)}`: 'You'} selected <span className='font-bold'>{selectedChoice}</span> - {failCount} chance left
+                                              </p>
+                                            )}
+                                          
+                                          </div>
+                                        }
+
+                                        {(failCount <= 2 && selectedChoice !== '' && (extractedQA[questionIndex].quizType === 'Identification' || extractedQA[questionIndex].quizType === 'FITB')) && lostPoints === false && gainedPoints === false &&  (
+                                          <p className={`pb-5 pt-4 text-center font-normal text-lg ${selectedChoice === extractedQA[questionIndex].answer ? 'text-emerald-500' : 'text-red'}`}>{userList[userTurn]?.userId !== userId ? `${userList[userTurn]?.username.charAt(0).toUpperCase() + userList[userTurn]?.username.slice(1)} is`: 'You are'} typing a {selectedChoice === extractedQA[questionIndex].answer ? 'correct' : 'wrong'} answer...
+                                          </p>
+                                        )}
+
+                                        {(failCount < 2 && (extractedQA[questionIndex].quizType === 'Identification' || extractedQA[questionIndex].quizType === 'FITB')) && lostPoints === false && gainedPoints === false && (
+                                          <p className='pb-5 pt-2 text-center font-normal text-lg mcolor-800'>{userList[userTurn]?.userId !== userId ? `${userList[userTurn]?.username.charAt(0).toUpperCase() + userList[userTurn]?.username.slice(1)}`: 'You'} submitted a wrong answer. {failCount} chance left
+                                          </p>
+                                        )}
+                                            
+
+                                        {extractedQA[questionIndex].quizType === 'MCQA' && (
+                                          <ul className='grid-result gap-4'>
+                                            {shuffledChoices && shuffledChoices[questionIndex].map((choice, index) => {
+                                              return (
+                                                <li
+                                                  className={`${choice === selectedChoice ? choice === extractedQA[questionIndex].answer ? 'mbg-700 mcolor-100' : 'bg-red mcolor-100' : "mbg-200 mcolor-800"} px-5 py-3 text-xl text-center choice border-thin-800 rounded-[5px]`}
+                                                  key={index}
+                                                >
+                                                  {choice}
+                                                </li>
+                                              )
+                                            })}
+                                          </ul>
+                                        )}
+
+                                        {extractedQA[questionIndex].quizType === 'ToF' && (
+                                          <ul className='grid-result gap-4'>
+                                            <li
+                                              className={`${'True' === selectedChoice ? 'True' === extractedQA[questionIndex].answer ? 'mbg-700 mcolor-100' : 'bg-red mcolor-100' : "mbg-200 mcolor-800"} px-5 py-3 text-xl text-center choice border-thin-800 rounded-[5px]`}
+                                              key={1}
+                                            >
+                                              {'True'}
+                                            </li>
+                                            <li
+                                              className={`${'False' === selectedChoice ? 'False' === extractedQA[questionIndex].answer ? 'mbg-700 mcolor-100' : 'bg-red mcolor-100' : "mbg-200 mcolor-800"} px-5 py-3 text-xl text-center choice border-thin-800 rounded-[5px]`}
+                                              key={1}
+                                            >
+                                              {'False'}
+                                            </li>
+                                          </ul>
+                                        )}
+
+
+
+                                      </div>
+                                      ) : (
+                                        <p className='text-center my-5 text-xl mcolor-500'>Nothing to show</p>
+                                      )
+                                    }
+
                                   </div>
                                 )}
                               </div>
 
+                              {/* modal */}
+                              {itemsLength === itemsDone && (
+                                <div className={`absolute top-0 modal-bg left-0 w-full h-full`}>
+                                  <div className='flex items-center justify-center h-full'>
+                                    <div className='relative mbg-100 min-h-[75vh] w-1/2 z-10 relative p-10 rounded-[5px]'>
 
-                              
+                                      <p className='text-lg mcolor-900 font-medium mb-5'>Leaderboard</p>  
+
+                                      <div className='flex items-center justify-between mb-5 gap-5'>
+                                        <button onClick={resetAndStudy} className='w-1/2 py-2 rounded mcolor-900 mbg-200 border-thin-800'>Reset Points & Study Again</button>
+                                        <button onClick={studyAgain} className='w-1/2 py-2 rounded mcolor-100 mbg-700'>Study Again</button>
+                                      </div>
+
+                                      <div className='flex items-center justify-between px-3 mb-3 mcolor-800'>
+                                        <span>Users</span>
+                                        <span className='mr-4'>Scores</span>
+                                      </div>
+                                      <ul>
+                                        {[...userList]
+                                          .sort((a, b) => b.points - a.points)
+                                          .map((user, index) => {
+                                            let medalClass = ''; 
+
+                                            if (user.points === userScores[0]) {
+                                              medalClass = 'gold-medal'
+                                            } else if (user.points === userScores[1]) {
+                                              medalClass = 'silver-medal'
+                                            } else if (user.points === userScores[2]) {
+                                              medalClass = 'bronze-medal'
+                                            }
+
+                                    
+                                            return (
+                                              <li key={user.userId} className='mb-4'>
+                                                <p className={`mbg-200 shadows p-3 flex justify-between items-center font-medium rounded mcolor-800`}>
+                                                  <span>
+                                                    <WorkspacePremiumIcon fontSize="large" className={`mr-3 ${user.points !== 0 ? medalClass : ''}`} />
+                                                    <span className='text-xl pt-3'>
+                                                      {user.username.charAt(0).toUpperCase() + user.username.slice(1)}:{" "}
+                                                    </span>
+                                                  </span>
+                                                  <span className='mr-4'>
+                                                    {user.points} {user.points > 1 ? 'points' : 'point'}
+                                                  </span>
+                                                </p>
+                                              </li>
+                                            );
+                                          })}
+                                      </ul>
 
 
-                            ) : (
-                              <div className='flex items-center justify-center w-full min-h-[90vh]'>
-                                <div className='py-14 px-14 shadows'>
-                                  <p className='text-xl text-center mcolor-800 py-3 my-1'>Waiting for other users to join...</p>
 
-                                  {/* {inCall ? <VideoCall setInCall={setInCall} /> : ''} */}
 
-                                  <ul className='pt-3 pb-8'>
-                                    {userList.map(user => (
-                                      <li key={user.userId} className='text-xl text-center mcolor-900'>
-                                        <p><i className="fa-solid fa-user mr-1 text-emerald-500"></i> {user.username.charAt(0).toUpperCase() + user.username.slice(1)}</p>
-                                      </li>
-                                    ))}
-                                  </ul>
-                                  
-
-                                  {userList && userList.length > 1 && (
-                                    <div className='flex justify-center'>
-                                      <button className='mbg-700 mcolor-100 px-4 py-2 rounded' onClick={startStudySessionBtn}>Start Study Session</button>
+                                    
                                     </div>
-                                  )}
+                                  </div>
                                 </div>
-                              </div>
-                            )
-                          }
+                              )}
+                            </div>
 
-                        </div>
-                      )}
+
+                            
+
+
+                          ) : (
+
+                            <div className='w-full mt-8'>
+                            <div className='flex items-center justify-between'>
+                              <p className='text-xl text-center mcolor-800 py-3'>Waiting for other users to join...</p>
+                              <div className='flex justify-center'>
+                              {userList && userList.length > 1 && userList[0] && userList[0].userId === userId && (
+                                <button className='mbg-700 mcolor-100 px-4 py-2 rounded' onClick={startStudySessionBtn}>Start Assessment</button>
+                                )}
+                                {!isStartStudyButtonStarted && (
+                                  <button className='bg-red mcolor-100 px-4 py-2 rounded ml-3' onClick={leaveReviewerPageRoom}>Leave Room</button>
+                                )}
+                              </div>
+                            </div>
+                            <div className='my-5'>
+                              <ul className='grid grid-cols-3 gap-5'>
+                                {userList && userList.map(user => (
+                                  <li key={user?.userId} className={`text-xl text-center ${user?.userId === userList[0]?.userId ? 'mbg-700 mcolor-100' : 'mcolor-900 '} shadows p-5 rounded`}>
+                                    <i className={`fa-solid fa-user ${user?.userId === userList[0]?.userId ? 'mbg-700 mcolor-100' : 'mcolor-700'}`} style={{ fontSize: '35px' }}></i> 
+                                    <p>{user?.username.charAt(0).toUpperCase() + user?.username.slice(1)}</p>
+                                  </li>
+                                ))}
+                              </ul>
+                            </div>
+                          </div>
+                          )
+                        }
+
+                      </div>
+                    )}
 
 
 

@@ -7,7 +7,7 @@ import CategoryIcon from '@mui/icons-material/Category';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 import DeleteIcon from '@mui/icons-material/Delete';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
-
+import { SearchFunctionality } from '../search/SearchFunctionality';
 
 import { useUser } from '../../UserContext';
 
@@ -48,6 +48,8 @@ export const StudyAreaGP = (props) => {
   const [groupMemberModal, setGroupMemberModal] = useState("hidden")
   const [code, setCode] = useState("");
   const [groupName, setGroupName] = useState("");
+  const [userHost, setUserHost] = useState("");
+  const [userHostId, setUserHostId] = useState("");
   const [isCodeCopied, setIsCodeCopied] = useState("");
   const [isGroupNameChanged, setIsGroupNameChanged] = useState("");
   const [prevGroupName, setPrevGroupName] = useState("");
@@ -60,7 +62,12 @@ export const StudyAreaGP = (props) => {
   const [isBookmarkExpanded, setIsBookmarkExpanded] = useState(true);
   const [expandedCategories, setExpandedCategories] = useState({}); 
   const [expandedSharedCategories, setExpandedSharedCategories] = useState({}); 
-
+  const [data, setData] = useState([]);
+  const [listedData, setListedData] = useState([]);
+  const [searchTermApp, setSearchTermApp] = useState('');
+  const [selectedDataId, setSelectedDataId] = useState('');
+  const [chosenData, setChosenData] = useState([]);
+  const [filteredData, setFilteredData] = useState([]);
 
 
 
@@ -156,10 +163,10 @@ export const StudyAreaGP = (props) => {
             const response = await axios.put(`http://localhost:3001/studyGroup/update-group/${groupId}`, {
               groupName: groupName,
             });
-    
-            // console.log(groupName);
             setGroupName(response.data.groupName); 
             setPrevGroupName(response.data.groupName);
+            
+
   
             setTimeout(() => {
               setIsGroupNameChanged(`Group name is changed to ${response.data.groupName}`);
@@ -201,7 +208,73 @@ export const StudyAreaGP = (props) => {
     }).catch(error => {
       console.error(error);
     });
+
+    fetchGroupMemberList()
   };
+
+
+
+  const fetchFollowerData = async () => {
+    try {
+      const followers = await axios.get(`http://localhost:3001/followers/get-follower-list/${UserId}`);
+      let followersData = followers.data;
+  
+      // Create an array to store all the Axios requests
+      const axiosRequests = followersData.map(async (item) =>
+        await axios.get(`http://localhost:3001/users/get-user/${item.FollowingId}`)
+      );
+
+
+
+      Promise.all(axiosRequests)
+        .then((responses) => {
+          const names = responses.map((response) => response.data);
+          const uniqueNames = Array.from(new Set(names));
+          setData(uniqueNames);
+          setListedData(uniqueNames);
+        })
+        .catch((error) => {
+          console.error('Error fetching user data:', error);
+        });
+
+    } catch (error) {
+      console.error('Error fetching follower list:', error);
+    }
+  };
+
+
+
+  const fetchGroupMemberList = async () => {
+    const userResponse = await axios.get(`http://localhost:3001/studyGroupMembers/get-members/${groupNameId}`);
+    setGroupMemberIndex(userResponse.data);
+
+    const userListResponse = userResponse.data;
+    const allUserResponses = [];
+
+    for (const user of userListResponse) {
+      try {
+        const userDetails = await axios.get(`http://localhost:3001/users/get-user/${user.UserId}`);
+        allUserResponses.push(userDetails.data);
+
+        if (allUserResponses.length === userListResponse.length) {
+          setUserList(allUserResponses);
+          setTempUserList(allUserResponses);
+        }
+      } catch (error) {
+        console.error("Error fetching user data:", error);
+      }
+    }
+  }
+
+
+
+
+  const handleSearch = (searchTerm) => {
+    setSearchTermApp(searchTerm); 
+  };
+
+
+
 
   // console.log(groupMemberIndex);
   useEffect(() => {
@@ -234,26 +307,17 @@ export const StudyAreaGP = (props) => {
           setCode(groupResponse.data.code);
           setGroupName(groupResponse.data.groupName);
           setPrevGroupName(groupResponse.data.groupName);
+
+          console.log(groupResponse.data.UserId);
+
+          const userHostResponse = await axios.get(`http://localhost:3001/users/get-user/${groupResponse.data.UserId}`);
+
+          setUserHost(userHostResponse.data.username)
+          setUserHostId(userHostResponse.data.id)
   
-          const userResponse = await axios.get(`http://localhost:3001/studyGroupMembers/get-members/${groupNameId}`);
-          setGroupMemberIndex(userResponse.data);
-  
-          const userListResponse = userResponse.data;
-          const allUserResponses = [];
-  
-          for (const user of userListResponse) {
-            try {
-              const userDetails = await axios.get(`http://localhost:3001/users/get-user/${user.UserId}`);
-              allUserResponses.push(userDetails.data);
-  
-              if (allUserResponses.length === userListResponse.length) {
-                setUserList(allUserResponses);
-                setTempUserList(allUserResponses);
-              }
-            } catch (error) {
-              console.error("Error fetching user data:", error);
-            }
-          }
+          fetchGroupMemberList()
+          fetchFollowerData()
+
         } catch (error) {
           console.error("Error fetching group data:", error);
         }
@@ -456,17 +520,43 @@ export const StudyAreaGP = (props) => {
   }
 
 
+  const addToChosenData = async () => {
 
-  console.log(sharedMaterialsCategoriesEach);
+    console.log(groupMemberIndex);
+    console.log(selectedDataId);
+    
+    const isUserInGroup = groupMemberIndex.some(member => member.UserId === selectedDataId);
+    
+    if (selectedDataId !== '') {
+      if (isUserInGroup || isUserInGroup === selectedDataId) {
+        // User is in the group, handle accordingly
+        alert('This user is already in this group.')
+      } else {
+
+        const groupMemberData = {
+          role: 'Member',
+          StudyGroupId: groupNameId,
+          UserId: selectedDataId,
+        };
+
+        await axios.post('http://localhost:3001/studyGroupMembers/add-member', groupMemberData);
+        setSearchTermApp('')
+        fetchGroupMemberList()
+      } 
+    } else {
+      alert(`No ${searchTermApp} username found`);
+    }
+    
+  }
 
 
   return (
     <div className="relative poppins mcolor-900 flex justify-start items-start">
       
       {/* modal */}
-        <div style={{ zIndex: 1000 }} className={`${hidden} absolute py-24 top-0 left-0 bottom-0 modal-bg w-full h-full`}>
+        <div style={{ zIndex: 1000 }} className={`${hidden} absolute flex items-center justify-center modal-bg w-full h-full`}>
           <div className='flex justify-center'>
-            <div className='mbg-100 min-h-[45vh] w-1/3 z-10 relative p-10 rounded-[5px]'>
+            <div className='mbg-100 max-h-[60vh] w-[40vw] w-1/3 z-10 relative p-10 rounded-[5px]' style={{ overflowY: 'auto' }}>
 
             <button className='absolute right-4 top-3 text-xl' onClick={() => {
               setHidden("hidden");
@@ -529,6 +619,7 @@ export const StudyAreaGP = (props) => {
                   <p className='text-center mcolor-700 mt-2'>{isCodeCopied}</p>
                 )}
 
+
                 <br />
                 <p className='mb-2 text-lg mcolor-900'>Group Name:</p>
                 <div className='flex items-center'>
@@ -539,7 +630,29 @@ export const StudyAreaGP = (props) => {
                   <p className='text-center mcolor-700 my-3'>{isGroupNameChanged}</p>
                   )}
 
+
                 <br />
+                <p className='mb-2 text-lg mcolor-900'>Group Host:</p>
+                <div className='flex justify-between my-2'>
+                  <span>
+                    <i className="fa-regular fa-user mr-3"></i>@{userHost}
+                  </span>
+                </div>
+
+                  <br />
+
+
+
+                  {/* add group member */}
+                  <p className='mb-1'>Add a group member: </p>
+                  <div className='relative'>
+                    <SearchFunctionality data={data} onSearch={handleSearch} setSearchTermApp={setSearchTermApp} setSelectedDataId={setSelectedDataId} filteredData={filteredData} setFilteredData={setFilteredData} searchTermApp={searchTermApp} searchAssetFor={'search-username-for-group-creation'} />
+                    <button className='absolute right-5 top-1 text-3xl' onClick={addToChosenData}>+</button>
+                  </div>
+
+
+
+                  <br />
                   <p className='mcolor-900 my-3'>Group Members:</p>
                   <ul className='mt-5'>
                   {Array.isArray(groupMemberIndex) &&

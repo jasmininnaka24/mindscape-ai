@@ -7,6 +7,8 @@ export const SearchFunctionality = ({ data, onSearch, setSearchTermApp, setSelec
   const [selectedItemIndex, setSelectedItemIndex] = useState(-1);
   const [inputField, setInputField] = useState('');
 
+
+
     // Define the field name based on the searchAssetFor prop
     let fieldName;
     switch (searchAssetFor) {

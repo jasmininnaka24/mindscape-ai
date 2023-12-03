@@ -300,7 +300,7 @@ export const MainDash = ({categoryFor}) => {
       <div className='w-full rounded-[5px]'>
         <div className='w-full border-medium-800 min-h-[37vh] rounded-[5px] relative'>
           <div className='max-h-[36vh] w-full p-5' style={{ overflowY: 'auto' }}>
-            <p className='text-2xl font-normal'>List of Tasks</p>
+            <p className='text-2xl font-normal'>{listOfTasks.length > 0 ? 'List of Tasks' : 'No Assigned Task'}</p>
 
             {listOfTasks
               .filter(task => task.completedTask === 'Uncompleted') 
@@ -382,16 +382,18 @@ export const MainDash = ({categoryFor}) => {
                 )
               })}
           </div>
-
-          <div className='absolute bottom-0 right-0 w-full mbg-200'>
-            <div className='flex justify-end py-2 px-4'>
-              <Link to={`/main/${groupId === undefined ? 'personal' : 'group'}/tasks/${groupId === undefined ? '' : groupId}`}>
-                <button className='px-4 py-1 mbg-800 mcolor-100 rounded'>
-                  View all Tasks
-                </button>
-              </Link>
+          
+          {listOfTasks.length > 0 && (
+            <div className='absolute bottom-0 right-0 w-full mbg-200'>
+              <div className='flex justify-end py-2 px-4'>
+                <Link to={`/main/${groupId === undefined ? 'personal' : 'group'}/tasks/${groupId === undefined ? '' : groupId}`}>
+                  <button className='px-4 py-1 mbg-800 mcolor-100 rounded'>
+                    View All Tasks
+                  </button>
+                </Link>
+              </div>
             </div>
-          </div>
+          )}
         </div>
 
         <div className='w-full border-medium-800 min-h-[37vh] rounded-[5px] py- 5 px-10 mt-10 relative'>
@@ -400,7 +402,7 @@ export const MainDash = ({categoryFor}) => {
             <div>
               <p className='text-lg font-medium mcolor-800 mt-8 mb-1'>Recently Studying</p>
               <p className='font-bold text-xl my-5 mcolor-800'>
-                {materialCategory === null || materialTitle === null || materialCategory === undefined || materialTitle === undefined
+                {!materialCategory
                   ? 'No material has been studied'
                   : `${materialCategory} - ${materialTitle}`}
               </p>
@@ -431,7 +433,10 @@ export const MainDash = ({categoryFor}) => {
                 </p>
                 <p className='mt-1 mcolor-400'>Study Performance</p>
               </div>
-              <button className='absolute bottom-5 right-5 mbg-800 mcolor-100 px-5 py-2 rounded-[5px]'>View Reviewer</button>
+
+              {materialCategories.length > 0 && materialCategory && (
+                <button className='absolute bottom-5 right-5 mbg-800 mcolor-100 px-5 py-2 rounded-[5px]'>View Reviewer</button>
+              )}
             </div>
           </div>
 
@@ -477,14 +482,14 @@ export const MainDash = ({categoryFor}) => {
             ))
           ) : (
             <tr>
-              <td colSpan="2" className='text-center py-3 text-lg mcolor-800'>No data available</td>
+              <td colSpan="3" className='text-center py-3 text-lg mcolor-800'>No data available</td>
             </tr>
           )}
 
           </tbody>
         </table>
 
-        {groupId !== undefined ? (
+        {materialCategories.length > 0 && (groupId !== undefined ? (
           <button className='absolute bottom-5 right-5 mbg-800 mcolor-100 px-5 py-2 rounded-[5px]' onClick={() => {
             navigate(`/main/group/dashboard/category-list/${groupId}`, {
             state: {
@@ -500,7 +505,7 @@ export const MainDash = ({categoryFor}) => {
                 }
               })
             }}>View All Subjects</button>
-        )}
+        ))}
       </div>
     </div>
   )

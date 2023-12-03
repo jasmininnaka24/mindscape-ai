@@ -17,7 +17,7 @@ export const DropZoneComponent = (props) => {
   const [showLoading, setShowLoading] = useState(false);
 
 
-  const url = 'https://e719-35-230-87-39.ngrok.io/qa-generation';
+  const url = 'http://127.0.0.1:8000/qa-generation';
 
   const [data, setData] = useState({
     text: PDFDetails,
@@ -232,7 +232,10 @@ export const DropZoneComponent = (props) => {
               opacity: loading || progress <= 100 ? 1 : 0, // Add opacity for fade-in effect
               position: 'relative',
             }}
-            onClick={(event) => handleGenerateClick(event)}
+            onClick={(event) => {
+              setGeneratedQA({})
+              handleGenerateClick(event)
+            }}
           >
             {showLoading ? (
               <div className="flex items-center justify-center">

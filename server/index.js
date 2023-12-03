@@ -71,6 +71,7 @@ let shuffledChoicesAssessmentData = {}
 let extractedQAAssessmentList = {}
 let assessmentUsersChoicesList = {}
 let messageListData = {}
+let isAssessmentButtonStartedList = {}
 
 
 
@@ -82,9 +83,202 @@ let discussionJoinedRoomsList = {};
 
 
 
+const handleUserDisconnectReviewer = (room, socketId) => {
+  const makePointsZero = () => {
+    if (rooms[room].length === 1 && rooms[room][0]) {
+      rooms[room][0].points = 0;
+      let updateUserList = rooms[room];
+      io.to(room).emit('userList', updateUserList);
+    }
+  }
 
+  const userIndex = rooms[room].findIndex((user) => user.socketId === socketId);
+
+  if (userIndex !== -1) {
+    const isUserAtIndexZero = userIndex === 0;
+
+    rooms[room].splice(userIndex, 1);
+    io.to(room).emit('userList', rooms[room]);
+
+    if (rooms[room].length === 0) {
+      reviewUserTurnSer[room] = 0; // Reset userTurnSer to 0 for the new userTurn
+      io.to(room).emit('received_next_user', reviewUserTurnSer[room]);
+
+    } else if (isUserAtIndexZero && reviewUserTurnSer[room] === 0) {
+      // If the user at index 0 disconnects and userTurn is 0, keep userTurn as 0
+      reviewUserTurnSer[room] = 0;
+    } else if (isUserAtIndexZero || userIndex < reviewUserTurnSer[room]) {
+      // Set userTurnSer to the previous user if the user at index 0 disconnects or before the current turn user
+      reviewUserTurnSer[room] = (reviewUserTurnSer[room] - 1 + rooms[room].length) % rooms[room].length;
+    }
+
+    // Check if the user being disconnected is the current turn user
+    if (userIndex === reviewUserTurnSer[room]) {
+      if (rooms[room].length <= 1) {
+        selectedChoiceValCurr[room] = "";
+        makePointsZero();
+      } else {
+        reviewUserTurnSer[room] = reviewUserTurnSer[room] % rooms[room].length;
+      }
+    } else {
+      if (isUserAtIndexZero || userIndex < reviewUserTurnSer[room]) {
+        // Do nothing, no need to subtract if the user at index 0 disconnects or before the current turn user
+      } else {
+        if (rooms[room].length <= 1) {
+          selectedChoiceValCurr[room] = "";
+          makePointsZero();
+        }
+      }
+    }
+
+
+    if (rooms[room].length === 1) {
+      isStartStudyButtonStartedList[room] = false
+      io.to(room).emit('study_session_started', isStartStudyButtonStartedList[room]);
+    }
+
+    io.to(room).emit('received_next_user', reviewUserTurnSer[room]);
+    io.to(room).emit('userList', rooms[room]);
+
+
+
+    // Remove the room if there are no users in it
+    if (rooms[room].length === 0) {
+      delete rooms[room];
+      selectedChoiceValCurr[room] = ""
+      reviewUserTurnSer[room] = 0
+      currentFailCountVal[room] = 0
+      reviewShuffledChoices[room] = []
+      reviewUserTurnSer[room] = 0
+      reviewSelectedChoiceValCurr[room] = ""
+      reviewFailCount[room] = 2
+      reviewNextQA[room] = 0
+      reviewQuestionIndex[room] = 0
+      reviewLostPoints[room] = false
+      reviewGainedPoints[room] = false
+      isRunningListReview[room] = false;
+      setSecondsReview[room] = 0;
+      reviewExtractedQA[room] = [];
+      isStartStudyButtonStartedList[room] = false;
+      itemsDoneList[room] = 0;
+      messageListReview[room] = []
+    }
+  }
+}
+
+
+const handleUserDisconnectAssessment = (assessmentRoom, socketId) => {
+  const userIndex = assessmentRoomList[assessmentRoom].findIndex(user => user.socketId === socketId);
+  if (userIndex !== -1) {
+    assessmentRoomList[assessmentRoom].splice(userIndex, 1);
+
+    if (assessmentRoomList[assessmentRoom].length === 1) {
+      isAssessmentButtonStartedList[assessmentRoom] = false
+      io.to(assessmentRoom).emit('assessment_started', isAssessmentButtonStartedList[assessmentRoom]);
+
+
+      isAssessmentButtonStartedList[assessmentRoom] = false
+      isRunningList[assessmentRoom] = false;
+      ioSelectedAssessmentAnswers[assessmentRoom] = []
+      idOfWhoSubmittedPerson[assessmentRoom] = ''
+      usernameOfWhoSubmittedPerson[assessmentRoom] = ''
+      assessmentScores[assessmentRoom] = 0
+      isAssessmentDoneList[assessmentRoom] = false
+      showSubmittedAnswerModalList[assessmentRoom] = false
+      showTextsList[assessmentRoom] = false
+      showAnalysisList[assessmentRoom] = false
+      showAssessmentList[assessmentRoom] = true
+      overAllItemsList[assessmentRoom] = 0
+      preAssessmentScoreList[assessmentRoom] = 0
+      assessmentScoreLatestList[assessmentRoom] = 0
+      assessmentImpList[assessmentRoom] = 0
+      assessmentScorePerfList[assessmentRoom] = 0
+      completionTimeList[assessmentRoom] = 0
+      confidenceLevelList[assessmentRoom] = 0
+      overAllPerformanceList[assessmentRoom] = 0
+      assessmentCountMoreThanOneList[assessmentRoom] = false
+      generatedAnalysisList[assessmentRoom] = ''
+      messageListData[assessmentRoom] = []
+      isAssessmentButtonStartedList[assessmentRoom] = false;
+      
+      io.to(assessmentRoom).emit('assessment_started', isAssessmentButtonStartedList[assessmentRoom]);
+      io.to(assessmentRoom).emit('is_running', isRunningList[assessmentRoom]);
+      io.to(assessmentRoom).emit('selected_assessment_answers', ioSelectedAssessmentAnswers[assessmentRoom]);
+      io.to(assessmentRoom).emit('id_of_who_submitted', idOfWhoSubmittedPerson[assessmentRoom]);
+      io.to(assessmentRoom).emit('username_of_who_submitted', usernameOfWhoSubmittedPerson[assessmentRoom]);
+      io.to(assessmentRoom).emit('assessment_score', assessmentScores[assessmentRoom]);
+      io.to(assessmentRoom).emit('isSubmitted_assess', isSubmittedAssess[assessmentRoom]);
+      io.to(assessmentRoom).emit('isAssessment_done', isAssessmentDoneList[assessmentRoom]);
+
+      io.to(assessmentRoom).emit('show_submitted_answer_modal', showSubmittedAnswerModalList[assessmentRoom]);
+      io.to(assessmentRoom).emit('show_texts', showTextsList[assessmentRoom]);
+      io.to(assessmentRoom).emit('show_analysis', showAnalysisList[assessmentRoom]);
+      io.to(assessmentRoom).emit('show_assessment', showAssessmentList[assessmentRoom]);
+  
+      io.to(assessmentRoom).emit('over_all_items', overAllItemsList[assessmentRoom]);
+      io.to(assessmentRoom).emit('pre_assessment_score', preAssessmentScoreList[assessmentRoom]);
+      io.to(assessmentRoom).emit('assessment_score_latest', assessmentScoreLatestList[assessmentRoom]);
+      io.to(assessmentRoom).emit('assessment_imp', assessmentImpList[assessmentRoom]);
+      io.to(assessmentRoom).emit('assessment_score_perf', assessmentScorePerfList[assessmentRoom]);
+      io.to(assessmentRoom).emit('completion_time', completionTimeList[assessmentRoom]);
+      io.to(assessmentRoom).emit('confidence_level', confidenceLevelList[assessmentRoom]);
+      io.to(assessmentRoom).emit('over_all_performance', overAllPerformanceList[assessmentRoom]);
+      io.to(assessmentRoom).emit('assessment_count_more_than_one', assessmentCountMoreThanOneList[assessmentRoom]);
+      io.to(assessmentRoom).emit('generated_analysis', generatedAnalysisList[assessmentRoom]);
+      io.to(assessmentRoom).emit('assessment_started', isAssessmentButtonStartedList[assessmentRoom]);
+      
+    }
+
+
+    // Remove the assessmentRoom if there are no users in it
+    if (assessmentRoomList[assessmentRoom].length === 0) {
+      delete assessmentRoomList[assessmentRoom];
+      ioSelectedAssessmentAnswers[assessmentRoom] = [];
+      isRunningList[assessmentRoom] = false;
+      setSeconds[assessmentRoom] = 0;
+      isSubmittedButtonClicked[assessmentRoom] = false;
+      idOfWhoSubmittedPerson[assessmentRoom] = ''
+      usernameOfWhoSubmittedPerson[assessmentRoom] = ''
+      assessmentScores[assessmentRoom] = 0
+      isSubmittedAssess[assessmentRoom] = false
+      isAssessmentDoneList[assessmentRoom] = false
+      showSubmittedAnswerModalList[assessmentRoom] = false
+      showTextsList[assessmentRoom] = false
+      showAnalysisList[assessmentRoom] = false
+      showAssessmentList[assessmentRoom] = true
+      overAllItemsList[assessmentRoom] = 0
+      preAssessmentScoreList[assessmentRoom] = 0
+      assessmentScoreLatestList[assessmentRoom] = 0
+      assessmentImpList[assessmentRoom] = 0
+      assessmentScorePerfList[assessmentRoom] = 0
+      completionTimeList[assessmentRoom] = 0
+      confidenceLevelList[assessmentRoom] = 0
+      overAllPerformanceList[assessmentRoom] = 0
+      assessmentCountMoreThanOneList[assessmentRoom] = false
+      generatedAnalysisList[assessmentRoom] = ''
+      shuffledChoicesAssessmentData[assessmentRoom] = []
+      extractedQAAssessmentList[assessmentRoom] = []
+      assessmentUsersChoicesList[assessmentRoom] = []
+      messageListData[assessmentRoom] = []
+      isAssessmentButtonStartedList[assessmentRoom] = false;
+
+    }
+    io.to(assessmentRoom).emit('assessment_user_list', assessmentRoomList[assessmentRoom]);
+
+  }
+}
 
 io.on('connection', (socket) => {
+
+
+  socket.on('leave-reviewer-page-room', ({ room, socketId }) => {
+    // Find the index of the user in the room
+    handleUserDisconnectReviewer(room, socketId)
+  });
+  
+
+
+
   socket.on('join_room', (data) => {
     const { room, username, userId, points, questionIndex, shuffledChoices, userList, failCount, lostPoints, gainedPoints, isRunningReview, timeDurationValReview, extractedQA, isStudyStarted, itemsDone } = data;
     socket.join(room);
@@ -133,6 +327,7 @@ io.on('connection', (socket) => {
     if (!isStartStudyButtonStartedList[room]) {
       isStartStudyButtonStartedList[room] = false;
     }
+
 
     if (!itemsDoneList[room]) {
       itemsDoneList[room] = 0;
@@ -389,7 +584,14 @@ io.on('connection', (socket) => {
 
 
 
-// assessment sockets
+  // assessment sockets
+
+  socket.on('leave-assessment-page-room', ({ assessementRoom, socketId }) => {
+    // Find the index of the user in the room
+    handleUserDisconnectAssessment(assessementRoom, socketId)
+  });
+
+
   socket.on('join_assessment_room', (data) => {
     const {
       room,
@@ -420,7 +622,8 @@ io.on('connection', (socket) => {
       shuffledChoicesAssess,
       extractedQAAssessment,
       assessmentUsersChoices,
-      messageList
+      messageList,
+      isStudyStarted
     } = data;
     socket.join(room);
 
@@ -546,6 +749,9 @@ io.on('connection', (socket) => {
       messageListData[room] = [];
     }
 
+    if (!isAssessmentButtonStartedList[room]) {
+      isAssessmentButtonStartedList[room] = false;
+    }
 
 
 
@@ -647,6 +853,10 @@ io.on('connection', (socket) => {
     if (assessmentUsersChoicesList[room].length === 0) {
       assessmentUsersChoicesList[room] = assessmentUsersChoices;
     }
+
+    if (isAssessmentButtonStartedList[room] === false) {
+      isAssessmentButtonStartedList[room] = isStudyStarted;
+    }
     
     if (messageListData[room].length === 0) {
       messageListData[room] = [];
@@ -696,6 +906,7 @@ io.on('connection', (socket) => {
     io.to(room).emit('shuffled_choices_assessment', shuffledChoicesAssessmentData[room]);
     io.to(room).emit('extracted_QA_assessment', extractedQAAssessmentList[room]);
     io.to(room).emit('assessment_users_choices', assessmentUsersChoicesList[room]);
+    io.to(room).emit('assessment_started', isAssessmentButtonStartedList[room]);
 
     if (messageListData.length !== 0) {
       io.to(room).emit('message_list', messageListData[room]);
@@ -707,7 +918,10 @@ io.on('connection', (socket) => {
 
 
 
-
+  socket.on('updated_assessment_started', ({ isStarted, assessementRoom }) => {
+    isAssessmentButtonStartedList[assessementRoom] = isStarted;
+    io.to(assessementRoom).emit('assessment_started', isAssessmentButtonStartedList[assessementRoom]);
+  });
 
 
   socket.on("sent_messages", (data) => {
@@ -1046,129 +1260,13 @@ io.on('connection', (socket) => {
   socket.on('disconnect', () => {
     // Find the user index in the room
     Object.keys(rooms).forEach((room) => {
-      const makePointsZero = () => {
-        if (rooms[room].length === 1 && rooms[room][0]) {
-          rooms[room][0].points = 0;
-          let updateUserList = rooms[room];
-          io.to(room).emit('userList', updateUserList);
-        }
-      }
-  
-      const userIndex = rooms[room].findIndex((user) => user.socketId === socket.id);
-  
-      if (userIndex !== -1) {
-        const isUserAtIndexZero = userIndex === 0;
-  
-        rooms[room].splice(userIndex, 1);
-        io.to(room).emit('userList', rooms[room]);
-  
-        if (rooms[room].length === 0) {
-          reviewUserTurnSer[room] = 0; // Reset userTurnSer to 0 for the new userTurn
-          io.to(room).emit('received_next_user', reviewUserTurnSer[room]);
-
-        } else if (isUserAtIndexZero && reviewUserTurnSer[room] === 0) {
-          // If the user at index 0 disconnects and userTurn is 0, keep userTurn as 0
-          reviewUserTurnSer[room] = 0;
-        } else if (isUserAtIndexZero || userIndex < reviewUserTurnSer[room]) {
-          // Set userTurnSer to the previous user if the user at index 0 disconnects or before the current turn user
-          reviewUserTurnSer[room] = (reviewUserTurnSer[room] - 1 + rooms[room].length) % rooms[room].length;
-        }
-  
-        // Check if the user being disconnected is the current turn user
-        if (userIndex === reviewUserTurnSer[room]) {
-          if (rooms[room].length <= 1) {
-            selectedChoiceValCurr[room] = "";
-            makePointsZero();
-          } else {
-            reviewUserTurnSer[room] = reviewUserTurnSer[room] % rooms[room].length;
-          }
-        } else {
-          if (isUserAtIndexZero || userIndex < reviewUserTurnSer[room]) {
-            // Do nothing, no need to subtract if the user at index 0 disconnects or before the current turn user
-          } else {
-            if (rooms[room].length <= 1) {
-              selectedChoiceValCurr[room] = "";
-              makePointsZero();
-            }
-          }
-        }
-
-
-        if (rooms[room].length === 1) {
-          isStartStudyButtonStartedList[room] = false
-          io.to(room).emit('study_session_started', isStartStudyButtonStartedList[room]);
-        }
-  
-        io.to(room).emit('received_next_user', reviewUserTurnSer[room]);
-        io.to(room).emit('userList', rooms[room]);
-  
-
-  
-        // Remove the room if there are no users in it
-        if (rooms[room].length === 0) {
-          delete rooms[room];
-          selectedChoiceValCurr[room] = ""
-          reviewUserTurnSer[room] = 0
-          currentFailCountVal[room] = 0
-          reviewShuffledChoices[room] = []
-          reviewUserTurnSer[room] = 0
-          reviewSelectedChoiceValCurr[room] = ""
-          reviewFailCount[room] = 2
-          reviewNextQA[room] = 0
-          reviewQuestionIndex[room] = 0
-          reviewLostPoints[room] = false
-          reviewGainedPoints[room] = false
-          isRunningListReview[room] = false;
-          setSecondsReview[room] = 0;
-          reviewExtractedQA[room] = [];
-          isStartStudyButtonStartedList[room] = false;
-          itemsDoneList[room] = 0;
-          messageListReview[room] = []
-        }
-      }
+      handleUserDisconnectReviewer(room, socket.id)
     });
   
   
     // Find and remove the user from all assessment rooms
     Object.keys(assessmentRoomList).forEach((assessmentRoom) => {
-      const userIndex = assessmentRoomList[assessmentRoom].findIndex(user => user.socketId === socket.id);
-      if (userIndex !== -1) {
-        assessmentRoomList[assessmentRoom].splice(userIndex, 1);
-        // Remove the assessmentRoom if there are no users in it
-        if (assessmentRoomList[assessmentRoom].length === 0) {
-          delete assessmentRoomList[assessmentRoom];
-          ioSelectedAssessmentAnswers[assessmentRoom] = [];
-          isRunningList[assessmentRoom] = false;
-          setSeconds[assessmentRoom] = 0;
-          isSubmittedButtonClicked[assessmentRoom] = false;
-          idOfWhoSubmittedPerson[assessmentRoom] = ''
-          usernameOfWhoSubmittedPerson[assessmentRoom] = ''
-          assessmentScores[assessmentRoom] = 0
-          isSubmittedAssess[assessmentRoom] = false
-          isAssessmentDoneList[assessmentRoom] = false
-          showSubmittedAnswerModalList[assessmentRoom] = false
-          showTextsList[assessmentRoom] = false
-          showAnalysisList[assessmentRoom] = false
-          showAssessmentList[assessmentRoom] = true
-          overAllItemsList[assessmentRoom] = 0
-          preAssessmentScoreList[assessmentRoom] = 0
-          assessmentScoreLatestList[assessmentRoom] = 0
-          assessmentImpList[assessmentRoom] = 0
-          assessmentScorePerfList[assessmentRoom] = 0
-          completionTimeList[assessmentRoom] = 0
-          confidenceLevelList[assessmentRoom] = 0
-          overAllPerformanceList[assessmentRoom] = 0
-          assessmentCountMoreThanOneList[assessmentRoom] = false
-          generatedAnalysisList[assessmentRoom] = ''
-          shuffledChoicesAssessmentData[assessmentRoom] = []
-          extractedQAAssessmentList[assessmentRoom] = []
-          assessmentUsersChoicesList[assessmentRoom] = []
-          messageListData[assessmentRoom] = []
-
-        }
-        io.to(assessmentRoom).emit('assessment_user_list', assessmentRoomList[assessmentRoom]);
-
-      }
+      handleUserDisconnectAssessment(assessmentRoom, socket.id)
     });
 
       

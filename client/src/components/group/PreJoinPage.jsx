@@ -17,7 +17,7 @@ export const PreJoinPage = (props) => {
   const { user } = useUser();
   const navigate = useNavigate()
 
-  const { joinRoom, materialId, groupId, setShowPreJoin, setShowAssessmentPage, userId, assessementRoom, setUserListAssessment, selectedAssessmentAnswer, setSelectedAssessmentAnswer,  isRunning, setIsRunning, setSeconds, itemCount, setQA, extractedQA, shuffledChoices, setShuffledChoices, isSubmittedButtonClicked, setIsSubmittedButtonClicked, idOfWhoSubmitted, setIdOfWhoSubmitted, usernameOfWhoSubmitted, setUsernameOfWhoSubmitted, score, setScore, isSubmitted, setIsSubmitted, isAssessmentDone, setIsAssessmentDone, showSubmittedAnswerModal, setShowSubmittedAnswerModal, showTexts, setShowTexts, showAnalysis, setShowAnalysis, showAssessment, setShowAssessment, overAllItems, setOverAllItems, preAssessmentScore, setPreAssessmentScore, assessmentScore, setAssessmentScore, assessmentImp, setAssessmentImp, assessmentScorePerf, setAssessmentScorePerf, completionTime, setCompletionTime, confidenceLevel, setConfidenceLevel, overAllPerformance, setOverAllPerformance, assessmentCountMoreThanOne, setAssessmentCountMoreThanOne, generatedAnalysis, setGeneratedAnalysis, shuffledChoicesAssessment, setShuffledChoicesAssessment, extractedQAAssessment, setQAAssessment, assessmentUsersChoices, setAssessmentUsersChoices, message, setMessage, messageList, setMessageList } = props;
+  const { joinRoom, materialId, groupId, setShowPreJoin, setShowAssessmentPage, userId, assessementRoom, setUserListAssessment, selectedAssessmentAnswer, setSelectedAssessmentAnswer,  isRunning, setIsRunning, setSeconds, itemCount, setQA, extractedQA, shuffledChoices, setShuffledChoices, isSubmittedButtonClicked, setIsSubmittedButtonClicked, idOfWhoSubmitted, setIdOfWhoSubmitted, usernameOfWhoSubmitted, setUsernameOfWhoSubmitted, score, setScore, isSubmitted, setIsSubmitted, isAssessmentDone, setIsAssessmentDone, showSubmittedAnswerModal, setShowSubmittedAnswerModal, showTexts, setShowTexts, showAnalysis, setShowAnalysis, showAssessment, setShowAssessment, overAllItems, setOverAllItems, preAssessmentScore, setPreAssessmentScore, assessmentScore, setAssessmentScore, assessmentImp, setAssessmentImp, assessmentScorePerf, setAssessmentScorePerf, completionTime, setCompletionTime, confidenceLevel, setConfidenceLevel, overAllPerformance, setOverAllPerformance, assessmentCountMoreThanOne, setAssessmentCountMoreThanOne, generatedAnalysis, setGeneratedAnalysis, shuffledChoicesAssessment, setShuffledChoicesAssessment, extractedQAAssessment, setQAAssessment, assessmentUsersChoices, setAssessmentUsersChoices, message, setMessage, messageList, setMessageList, isStartAssessmentButtonStarted, setIsStartAssessmentButtonStarted } = props;
 
 
 
@@ -36,6 +36,8 @@ export const PreJoinPage = (props) => {
   const [lessonContext, setLessonContext] = useState("");
   const [takeAssessment, setTakeAssessment] = useState(false);
   const [showModal, setShowModal] = useState("");
+  const [userUploaderId, setUserUploaderId] = useState(0);
+  const [showModifyModal, setShowModifyModal] = useState(false)
 
 
   // deleting material
@@ -57,6 +59,7 @@ export const PreJoinPage = (props) => {
         await axios.get(`http://localhost:3001/studyMaterial/get-material/${materialId}`).then((response) => {
           setLessonContext(response.data.body);
           setMaterialTitle(response.data.title);
+          setUserUploaderId(response.data.UserId)
         })
         
         const previousSavedData = await axios.get(`http://localhost:3001/DashForPersonalAndGroup/get-latest-assessment-group/${materialId}/${groupId}`);
@@ -108,7 +111,7 @@ export const PreJoinPage = (props) => {
       assessmentScore: score,
       isSubmittedChar: isSubmitted,
       isAssessmentDone: isAssessmentDone,
-      isRunning: true,
+      isRunning: false,
       showSubmittedAnswerModal: showSubmittedAnswerModal,
       showTexts: showTexts,
       showAnalysis: showAnalysis,
@@ -126,7 +129,8 @@ export const PreJoinPage = (props) => {
       shuffledChoicesAssess: shuffledChoicesAssessment,
       extractedQAAssessment: extractedQAAssessment,
       assessmentUsersChoices: assessmentUsersChoices,
-      messageList: messageList
+      messageList: messageList,
+      isStudyStarted: isStartAssessmentButtonStarted
     };  
 
   
@@ -239,11 +243,15 @@ export const PreJoinPage = (props) => {
     socket.on('assessment_users_choices', (data) => {
       setAssessmentUsersChoices(data);
     });
-
+    
     socket.on("message_list", (message) => {
       if (message.length !== 0) {
         setMessageList(message)
       }
+    });
+    
+    socket.on('assessment_started', (data) => {
+      setIsStartAssessmentButtonStarted(data);
     });
 
   };
@@ -288,9 +296,14 @@ export const PreJoinPage = (props) => {
               <button className='px-6 py-2 rounded-[5px] text-lg mbg-200 mcolor-800 border-thin-800 font-normal' onClick={() => deleteStudyMaterial(materialId, materialTitle)}>Delete Material</button>
 
               {!takeAssessment && (
-                <Link to={`/main/group/study-area/update-material/${groupId}/${materialId}`}>
-                  <button className='px-6 py-2 rounded-[5px] text-lg mbg-200 mcolor-800 border-thin-800 font-normal'>Modify Material</button>
-                </Link>
+                <button className='px-6 py-2 rounded-[5px] text-lg mbg-200 mcolor-800 border-thin-800 font-normal' onClick={() => {
+                  if (userUploaderId === UserId) {
+                    navigate(`/main/group/study-area/update-material/${groupId}/${materialId}`)
+                  } else {
+                    setShowModal(true)
+                    setShowModifyModal(true)
+                  }
+                }}>Modify Material</button>
               )}
             </div>
 
@@ -357,11 +370,18 @@ export const PreJoinPage = (props) => {
                   </button>
                   
                   <div className='h-full flex justify-center items-center'>
-                    <div>
-                      <p className='mcolor-900 text-2xl font-medium text-center'>Reminder</p>
-                      <p className='text-center text-lg font-medium mcolor-800 mt-8'><PushPinIcon className='text-red-dark' />You need to take the pre-assessment page first.</p>     
-                      <p className='text-center text-lg font-medium mcolor-800 mt-5'><PushPinIcon className='text-red-dark' />Once you start the study session, you won't be able to update the study material anymore.</p>     
-                    </div>
+                    {showModifyModal ? (
+                      <div>
+                        <p className='mcolor-900 text-2xl font-medium text-center'>Reminder</p>
+                        <p className='text-center text-lg font-medium mcolor-800 mt-5'><PushPinIcon className='text-red-dark' />Modifications are only allowed by the individual who uploaded this material.</p>     
+                      </div>
+                      ) : (
+                      <div>
+                        <p className='mcolor-900 text-2xl font-medium text-center'>Reminder</p>
+                        <p className='text-center text-lg font-medium mcolor-800 mt-8'><PushPinIcon className='text-red-dark' />You need to take the pre-assessment page first.</p>     
+                        <p className='text-center text-lg font-medium mcolor-800 mt-5'><PushPinIcon className='text-red-dark' />Once you start the study session, you won't be able to update the study material anymore.</p>     
+                      </div>
+                      )}
                   </div>
 
                   </div>
