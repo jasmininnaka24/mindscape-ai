@@ -466,22 +466,22 @@ input:focus{
 /* true or false bg-colors */
 
 .red-bg {
-  background: #FFCCCC;
+  background: #fee9e9;
 }
 .orange-bg {
-  background: #FFDAB9;
+  background: #fae8d9;
 }
 .yellow-bg {
-  background: #FFF2CC;
+  background: #fbf2d7;
 }
 .green-bg {
   background: #DFF0D8;
 }
 .blue-bg {
-  background: #C4D4E9;
+  background: #e4ebf6;
 }
 .purple-bg {
-  background: #E6E6FA;
+  background: #efeffb;
 }
 .gray-bg {
   background: #DCDCDC;

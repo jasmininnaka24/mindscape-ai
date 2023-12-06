@@ -120,7 +120,7 @@ router.get('/shared-materials/:StudyMaterialsCategoryId', async(req, res) => {
 
 router.put('/update-data/:id', async (req, res) => {
   const materialId = req.params.id;
-  const { isStarted } = req.body;
+  const { isStarted, codeDashTrackingNum } = req.body;
 
   try {
     const StudyMaterialsData = await StudyMaterials.findByPk(materialId);
@@ -129,6 +129,7 @@ router.put('/update-data/:id', async (req, res) => {
       return res.status(404).json({ error: 'Dashboard data not found' });
     }
 
+    StudyMaterialsData.codeDashTrackingNum = codeDashTrackingNum;
     StudyMaterialsData.isStarted = isStarted;
 
     await StudyMaterialsData.save();

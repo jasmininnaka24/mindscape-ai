@@ -68,12 +68,39 @@ export const PersonalReviewerPage = () => {
 
 
 
-
+  function generateRandomString() {
+    const letters = 'aBcDeFgHiJkLmNoPqRsTuVwXyZ';
+    const numbers = '0123456789';
+  
+    let randomString = '';
+  
+    // Generate 3 random letters
+    for (let i = 0; i < 3; i++) {
+      const randomLetter = letters.charAt(Math.floor(Math.random() * letters.length));
+      randomString += randomLetter;
+    }
+    
+    // Generate 4 random numbers
+    for (let i = 0; i < 3; i++) {
+      const randomNumber = numbers.charAt(Math.floor(Math.random() * numbers.length));
+      randomString += randomNumber;
+    }
+    
+    // Generate 5 random letters
+    for (let i = 0; i < 3; i++) {
+      const randomLetter = letters.charAt(Math.floor(Math.random() * letters.length));
+      randomString += randomLetter;
+    }
+    return randomString;
+  }
 
   const startStudySession = async () => {
 
     if (takeAssessment) {
-      await axios.put(`http://localhost:3001/studyMaterial/update-data/${materialId}`, {isStarted: 'true'});
+      await axios.put(`http://localhost:3001/studyMaterial/update-data/${materialId}`, {
+        isStarted: 'true',
+        codeDashTrackingNum: generateRandomString(),
+      });
   
       navigate(`/main/personal/study-area/personal-review-start/${materialId}`);
     } else {

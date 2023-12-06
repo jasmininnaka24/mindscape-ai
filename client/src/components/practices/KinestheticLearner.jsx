@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import FavoriteIcon from '@mui/icons-material/Favorite';
 import catsImage1 from '../../assets/castImage1.png';
 import catsImage2 from '../../assets/catsImage2.png';
@@ -7,7 +7,163 @@ import catsImage3 from '../../assets/catsImage3.png';
 
 export const KinestheticLearner = (props) => {
 
-  const { extractedQA, questionIndex, remainingHints, giveHint, kinesthethicAnswers, borderMedium, handleDropKinesthetic, handleDragOver, removeValueOfIndex, selectedChoice, typeOfLearner, handleDragStart, handleDragEnd, lastDraggedCharacter, enabledSubmitBtn, submitAnswer, chanceLeft } = props;
+  const { extractedQA, questionIndex, remainingHints, giveHint, kinesthethicAnswers, borderMedium, handleDragOver, removeValueOfIndex, selectedChoice, typeOfLearner, handleDragStart, handleDragEnd, lastDraggedCharacter, enabledSubmitBtn, submitAnswer, chanceLeft, setLastDraggedCharacter, setKinesthethicAnswers, setSelectedChoice, kinestheticAnswer, handleDrop } = props;
+
+
+  const [shuffledCharacters, setShuffledCharacters] = useState([]);
+  const [draggedCharacters, setDraggedCharacters] = useState([]);
+  const [originalOrder, setOriginalOrder] = useState([]);
+  const [isShuffled, setIsShuffled] = useState(false);
+  const [shuffledCharactersWithId, setShuffledCharactersWithId] = useState([]);
+
+
+  // Function to perform Fisher-Yates shuffle
+  const shuffleArray = (array, originalOrder) => {
+    const nonSpaceCharacters = array.filter((char) => char !== ' ');
+  
+    // Shuffle the characters until the shuffled order is different from the original order
+    let shuffledArray;
+    do {
+      for (let i = nonSpaceCharacters.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [nonSpaceCharacters[i], nonSpaceCharacters[j]] = [nonSpaceCharacters[j], nonSpaceCharacters[i]];
+      }
+  
+      shuffledArray = array.map((char) => (char === ' ' ? char : nonSpaceCharacters.shift()));
+    } while (JSON.stringify(shuffledArray) === JSON.stringify(originalOrder));
+  
+    return shuffledArray;
+  };
+
+
+
+
+  
+
+  useEffect(() => {
+    // Ensure that extractedQA and extractedQA[questionIndex] are defined
+    if (extractedQA && extractedQA[questionIndex]) {
+      // Shuffle the characters once on component mount
+      const initialShuffledCharacters = Array.from(extractedQA[questionIndex].answer).filter((char) => char !== ' ');
+      setOriginalOrder(initialShuffledCharacters.slice()); // Save the original order
+
+      // Use shuffleArray to create shuffledCharactersWithId
+      const shuffledArray = shuffleArray(initialShuffledCharacters, initialShuffledCharacters);
+      const shuffledCharactersWithId = shuffledArray.map((char, index) => ({
+        id: `${char}-${index}`, // Use a unique identifier for each character
+        char,
+      }));
+      setShuffledCharactersWithId(shuffledCharactersWithId);
+
+      // Initialize draggedCharacters array for the current question
+      setDraggedCharacters([]);
+    }
+  }, [extractedQA, questionIndex]);
+
+
+
+
+  const handleDropKinesthetic = (e, index) => {
+    e.preventDefault();
+  
+    // Check if the target index already has a value
+    if (kinesthethicAnswers[index] !== ' ') {
+      console.log('Target index already has a value. Drop ignored.');
+      return;
+    }
+  
+    const droppedChoiceText = e.dataTransfer.getData('text/plain');
+  
+    if (extractedQA[questionIndex].quizType !== 'ToF') {
+      const draggedAnswers = [...kinesthethicAnswers];
+      draggedAnswers[index] = droppedChoiceText;
+      setKinesthethicAnswers(draggedAnswers);
+      setSelectedChoice(draggedAnswers.join('').toLowerCase());
+    } else {
+      setSelectedChoice(droppedChoiceText);
+    }
+    setLastDraggedCharacter(droppedChoiceText);
+  
+    // Remove the dropped character from shuffledCharactersWithId, including identical characters
+    setShuffledCharactersWithId((prevChars) => {
+      const removedIndex = prevChars.findIndex((char) => char.char === droppedChoiceText);
+  
+      if (removedIndex !== -1) {
+        // Remove the dropped character by index
+        return [...prevChars.slice(0, removedIndex), ...prevChars.slice(removedIndex + 1)];
+      }
+  
+      return prevChars;
+    });
+  
+    // Remove the dropped character from shuffledCharacters if it was originally part of the shuffled characters
+    setShuffledCharacters((prevChars) =>
+      prevChars.filter((char) => char !== droppedChoiceText)
+    );
+  };
+  
+  
+  
+
+  function handleDragStartKinesthetic(e, char) {
+    // Set the lastDraggedCharacter state
+    setLastDraggedCharacter(char);
+    e.dataTransfer.setData("text/plain", char);
+
+  }
+  
+  function handleDragEndKinesthetic() {
+    // Handle any cleanup or additional logic after dragging ends
+    setShuffledCharacters((prevShuffledCharacters) => {
+      const indexToRemove = shuffledCharacters.findIndex(
+        (char) => lastDraggedCharacter === char
+      );
+      if (indexToRemove !== -1) {
+        // Remove the dragged character by index
+        return [
+          ...prevShuffledCharacters.slice(0, indexToRemove),
+          ...prevShuffledCharacters.slice(indexToRemove + 1),
+        ];
+      }
+      return prevShuffledCharacters;
+    });
+  }
+
+
+  const removeValueOfIndexKinesthetic = (index) => {
+    if (extractedQA[questionIndex].quizType !== 'ToF') {
+      const draggedAnswers = [...kinesthethicAnswers];
+      const removedCharacter = draggedAnswers[index];
+  
+      // Check if there is a value to remove
+      if (removedCharacter !== ' ') {
+        // Find the original index of the removed character
+        const originalIndex = originalOrder.indexOf(removedCharacter);
+  
+        // Create a copy of shuffledCharactersWithId to avoid mutating the state directly
+        const newShuffledCharactersWithId = [...shuffledCharactersWithId];
+  
+        // Insert the removed character back to its original position
+        newShuffledCharactersWithId.splice(originalIndex, 0, {
+          id: `${removedCharacter}-${originalIndex}`,
+          char: removedCharacter,
+        });
+  
+        // Update the state with the new order
+        setShuffledCharactersWithId(newShuffledCharactersWithId);
+      }
+  
+      // Reset the answer at the dragged index
+      draggedAnswers[index] = ' ';
+      setKinesthethicAnswers(draggedAnswers);
+    } else {
+      setSelectedChoice('');
+    }
+    setLastDraggedCharacter('');
+  };
+  
+  
+
 
   return (
     <div>
@@ -15,7 +171,7 @@ export const KinestheticLearner = (props) => {
         <div className='flex items-center'>
 
           {/* question */}
-          <div className='w-1/2 mt-5'>
+          <div className='w-full'>
             <div className='relative mt-4 pb-5 text-center text-xl font-medium text-xl mcolor-900'>
               <p className='mbg-300 mcolor-900 w-full rounded-[5px] p-5 mcolor-800'>{extractedQA[questionIndex].question}</p>
             </div>
@@ -23,241 +179,84 @@ export const KinestheticLearner = (props) => {
             <div>
 
               {/* remaining hints and hint button */}
-              {extractedQA[questionIndex].quizType !== 'ToF' && (
-                <div className='flex items-center justify-start'>
-                  <p className='mcolor-800 text-lg mt-2 font-medium'>Remaining Hints: {remainingHints}</p>
-                  <button className='mcolor-800 mbg-200 border-thin-800 rounded-[5px] px-2 py-1 text-lg mt-2 font-medium ml-5' onClick={giveHint}>Use hint</button>
-                </div>
-              )}
+              <div>
+                {(extractedQA[questionIndex].quizType !== 'ToF') && (
+                  <div className='w-full flex items-center'>
+                    <button className='mcolor-800 mbg-200 border-thin-800 rounded-[5px] px-2 py-1 text-lg mt-2' onClick={giveHint}>Use hint <span className='bg-red mcolor-100 px-2 ml-1 rounded-full text-sm'>{remainingHints}</span></button>
+                    <p className='text-lg ml-4 font-bold mcolor-900'>{kinestheticAnswer.toUpperCase()}</p>
+                  </div>
+                )}
+              </div>
 
               <div className='flex items-center w-full mt-4'>
-                <p className='mr-4 text-lg mcolor-900'>Answer: </p>
-                {
-                  extractedQA[questionIndex].quizType !== 'ToF' ? (
-                    Array.from({ length: extractedQA[questionIndex].answer.length }).map((_, index) => (
+              {
+                extractedQA[questionIndex].quizType !== 'ToF' ? (
+                  Array.from({ length: extractedQA[questionIndex].answer.length }).map((_, index) => {
+                    const answer = kinesthethicAnswers && kinesthethicAnswers[index];
+
+                    return (
                       <span
-                      key={index}
-                      className={`w-full text-center mx-1 rounded-[5px] ${
-                        extractedQA[questionIndex].answer[index] !== ' ' ? (kinesthethicAnswers[index] === ' '? `py-5 mbg-200 mcolor-900 ${borderMedium}` : `py-2 mbg-700 mcolor-100 cursor-pointer ${borderMedium}`) : ''
-                      }`}
-            
-                      onDrop={(e) => handleDropKinesthetic(e, index)} 
-                      onDragOver={handleDragOver}
-                      onClick={() => removeValueOfIndex(index)}
-                    >
-                        {kinesthethicAnswers[index]}
+                        key={index}
+                        className={`w-full text-center mx-1 rounded cursor-pointer ${
+                          extractedQA[questionIndex].answer[index] !== ' '
+                            ? answer === ' '
+                              ? `py-5 mbg-200 mcolor-900 ${borderMedium}`
+                              : `py-2 mbg-700 mcolor-100 ${borderMedium} not-allowed`
+                            : ''
+                        }`}
+                        onDrop={(e) => handleDropKinesthetic(e, index)}
+                        onDragOver={handleDragOver}
+                        onClick={() => removeValueOfIndexKinesthetic(index)}
+                        draggable={answer === ' '} // Set draggable attribute conditionally
+                      >
+                        {answer && answer.toUpperCase()}
                       </span>
-                    ))
-                  ) : (
-                    <div className="w-full text-center mx-1 rounded-[5px] cursor-pointer mbg-200 mcolor-900 min-h-[50px] flex items-center justify-center border-medium-800"
-                      onDrop={(e) => handleDropKinesthetic(e)} 
-                      onDragOver={handleDragOver}
-                      onClick={() => removeValueOfIndex()}
-                    >
-                      {selectedChoice}
-                    </div>
-                  )
-                }
+                    );
+                  })
+                ) : (
+                  <div
+                    className={`w-full text-center mx-1 rounded-[5px] cursor-pointer mbg-200 min-h-[50px] flex items-center justify-center border-medium-800 ${
+                      selectedChoice === '' ? 'mcolor-500' : 'mcolor-900'
+                    }`}
+                    onDrop={(e) => handleDrop(e)}
+                    onDragOver={handleDragOver}
+                    onClick={() => removeValueOfIndex()}
+                    draggable={selectedChoice === ''} // Set draggable attribute conditionally
+                  >
+                    {selectedChoice || 'Drag here'}
+                  </div>
+                )
+              }
+
+
+
 
               </div>
 
             </div>
             
 
-            {(typeOfLearner === 'kinesthetic' && extractedQA[questionIndex].quizType !== 'ToF') ? (
-              <div class="keyboard w-full mt-5">
-                <div class="row">
-                  <div 
-                  draggable="true" 
-                  onDragStart={(e) => handleDragStart(e, '1')}  
-                  onDragEnd={handleDragEnd}
-                  className={`key border-thin-800 rounded-[3px] m-1 px-3 py-3 ${lastDraggedCharacter === '1' ? 'mbg-700 mcolor-100' : 'mbg-200 mcolor-900'}`}>1</div>
-                  <div 
-                  draggable="true" 
-                  onDragStart={(e) => handleDragStart(e, '2')}  
-                  onDragEnd={handleDragEnd}
-                  className={`key border-thin-800 rounded-[3px] m-1 px-3 py-3 ${lastDraggedCharacter === '2' ? 'mbg-700 mcolor-100' : 'mbg-200 mcolor-900'}`}>2</div>
-                  <div 
-                  draggable="true" 
-                  onDragStart={(e) => handleDragStart(e, '3')}  
-                  onDragEnd={handleDragEnd}
-                  className={`key border-thin-800 rounded-[3px] m-1 px-3 py-3 ${lastDraggedCharacter === '3' ? 'mbg-700 mcolor-100' : 'mbg-200 mcolor-900'}`}>3</div>
-                  <div 
-                  draggable="true" 
-                  onDragStart={(e) => handleDragStart(e, '4')}  
-                  onDragEnd={handleDragEnd}
-                  className={`key border-thin-800 rounded-[3px] m-1 px-3 py-3 ${lastDraggedCharacter === '4' ? 'mbg-700 mcolor-100' : 'mbg-200 mcolor-900'}`}>4</div>
-                  <div 
-                  draggable="true" 
-                  onDragStart={(e) => handleDragStart(e, '5')}  
-                  onDragEnd={handleDragEnd}
-                  className={`key border-thin-800 rounded-[3px] m-1 px-3 py-3 ${lastDraggedCharacter === '5' ? 'mbg-700 mcolor-100' : 'mbg-200 mcolor-900'}`}>5</div>
-                  <div 
-                  draggable="true" 
-                  onDragStart={(e) => handleDragStart(e, '6')}  
-                  onDragEnd={handleDragEnd}
-                  className={`key border-thin-800 rounded-[3px] m-1 px-3 py-3 ${lastDraggedCharacter === '6' ? 'mbg-700 mcolor-100' : 'mbg-200 mcolor-900'}`}>6</div>
-                  <div 
-                  draggable="true" 
-                  onDragStart={(e) => handleDragStart(e, '7')}  
-                  onDragEnd={handleDragEnd}
-                  className={`key border-thin-800 rounded-[3px] m-1 px-3 py-3 ${lastDraggedCharacter === '7' ? 'mbg-700 mcolor-100' : 'mbg-200 mcolor-900'}`}>7</div>
-                  <div 
-                  draggable="true" 
-                  onDragStart={(e) => handleDragStart(e, '8')}  
-                  onDragEnd={handleDragEnd}
-                  className={`key border-thin-800 rounded-[3px] m-1 px-3 py-3 ${lastDraggedCharacter === '8' ? 'mbg-700 mcolor-100' : 'mbg-200 mcolor-900'}`}>8</div>
-                  <div 
-                  draggable="true" 
-                  onDragStart={(e) => handleDragStart(e, '9')}  
-                  onDragEnd={handleDragEnd}
-                  className={`key border-thin-800 rounded-[3px] m-1 px-3 py-3 ${lastDraggedCharacter === '9' ? 'mbg-700 mcolor-100' : 'mbg-200 mcolor-900'}`}>9</div>
-                  <div 
-                  draggable="true" 
-                  onDragStart={(e) => handleDragStart(e, '0')}  
-                  onDragEnd={handleDragEnd}
-                  className={`key border-thin-800 rounded-[3px] m-1 px-3 py-3 ${lastDraggedCharacter === '0' ? 'mbg-700 mcolor-100' : 'mbg-200 mcolor-900'}`}>0</div>
-                </div>
-                <div class="row">
-                  <div 
-                  draggable="true" 
-                  onDragStart={(e) => handleDragStart(e, 'Q')}  
-                  onDragEnd={handleDragEnd}
-                  className={`key border-thin-800 rounded-[3px] m-1 px-3 py-3 ${lastDraggedCharacter === 'Q' ? 'mbg-700 mcolor-100' : 'mbg-200 mcolor-900'}`}>Q</div>
-                  <div 
-                  draggable="true" 
-                  onDragStart={(e) => handleDragStart(e, 'W')}  
-                  onDragEnd={handleDragEnd}
-                  className={`key border-thin-800 rounded-[3px] m-1 px-3 py-3 ${lastDraggedCharacter === 'W' ? 'mbg-700 mcolor-100' : 'mbg-200 mcolor-900'}`}>W</div>
-                  <div 
-                  draggable="true" 
-                  onDragStart={(e) => handleDragStart(e, 'E')}  
-                  onDragEnd={handleDragEnd}
-                  className={`key border-thin-800 rounded-[3px] m-1 px-3 py-3 ${lastDraggedCharacter === 'E' ? 'mbg-700 mcolor-100' : 'mbg-200 mcolor-900'}`}>E</div>
-                  <div 
-                  draggable="true" 
-                  onDragStart={(e) => handleDragStart(e, 'R')}  
-                  onDragEnd={handleDragEnd}
-                  className={`key border-thin-800 rounded-[3px] m-1 px-3 py-3 ${lastDraggedCharacter === 'R' ? 'mbg-700 mcolor-100' : 'mbg-200 mcolor-900'}`}>R</div>
-                  <div 
-                  draggable="true" 
-                  onDragStart={(e) => handleDragStart(e, 'T')}  
-                  onDragEnd={handleDragEnd}
-                  className={`key border-thin-800 rounded-[3px] m-1 px-3 py-3 ${lastDraggedCharacter === 'T' ? 'mbg-700 mcolor-100' : 'mbg-200 mcolor-900'}`}>T</div>
-                  <div 
-                  draggable="true" 
-                  onDragStart={(e) => handleDragStart(e, 'Y')}  
-                  onDragEnd={handleDragEnd}
-                  className={`key border-thin-800 rounded-[3px] m-1 px-3 py-3 ${lastDraggedCharacter === 'Y' ? 'mbg-700 mcolor-100' : 'mbg-200 mcolor-900'}`}>Y</div>
-                  <div 
-                  draggable="true" 
-                  onDragStart={(e) => handleDragStart(e, 'U')}  
-                  onDragEnd={handleDragEnd}
-                  className={`key border-thin-800 rounded-[3px] m-1 px-3 py-3 ${lastDraggedCharacter === 'U' ? 'mbg-700 mcolor-100' : 'mbg-200 mcolor-900'}`}>U</div>
-                  <div 
-                  draggable="true" 
-                  onDragStart={(e) => handleDragStart(e, 'I')}  
-                  onDragEnd={handleDragEnd}
-                  className={`key border-thin-800 rounded-[3px] m-1 px-3 py-3 ${lastDraggedCharacter === 'I' ? 'mbg-700 mcolor-100' : 'mbg-200 mcolor-900'}`}>I</div>
-                  <div 
-                  draggable="true" 
-                  onDragStart={(e) => handleDragStart(e, 'O')}  
-                  onDragEnd={handleDragEnd}
-                  className={`key border-thin-800 rounded-[3px] m-1 px-3 py-3 ${lastDraggedCharacter === 'O' ? 'mbg-700 mcolor-100' : 'mbg-200 mcolor-900'}`}>O</div>
-                  <div 
-                  draggable="true" 
-                  onDragStart={(e) => handleDragStart(e, 'P')}  
-                  onDragEnd={handleDragEnd}
-                  className={`key border-thin-800 rounded-[3px] m-1 px-3 py-3 ${lastDraggedCharacter === 'P' ? 'mbg-700 mcolor-100' : 'mbg-200 mcolor-900'}`}>P</div>
-                </div>
-                <div class="row flex items-center justify-center">
-                  <div 
-                  draggable="true" 
-                  onDragStart={(e) => handleDragStart(e, 'A')}  
-                  onDragEnd={handleDragEnd}
-                  className={`key border-thin-800 rounded-[3px] m-1 px-3 py-3 ${lastDraggedCharacter === 'A' ? 'mbg-700 mcolor-100' : 'mbg-200 mcolor-900'}`}>A</div>
-                  <div 
-                  draggable="true" 
-                  onDragStart={(e) => handleDragStart(e, 'S')}  
-                  onDragEnd={handleDragEnd}
-                  className={`key border-thin-800 rounded-[3px] m-1 px-3 py-3 ${lastDraggedCharacter === 'S' ? 'mbg-700 mcolor-100' : 'mbg-200 mcolor-900'}`}>S</div>
-                  <div 
-                  draggable="true" 
-                  onDragStart={(e) => handleDragStart(e, 'D')}  
-                  onDragEnd={handleDragEnd}
-                  className={`key border-thin-800 rounded-[3px] m-1 px-3 py-3 ${lastDraggedCharacter === 'D' ? 'mbg-700 mcolor-100' : 'mbg-200 mcolor-900'}`}>D</div>
-                  <div 
-                  draggable="true" 
-                  onDragStart={(e) => handleDragStart(e, 'F')}  
-                  onDragEnd={handleDragEnd}
-                  className={`key border-thin-800 rounded-[3px] m-1 px-3 py-3 ${lastDraggedCharacter === 'F' ? 'mbg-700 mcolor-100' : 'mbg-200 mcolor-900'}`}>F</div>
-                  <div 
-                  draggable="true" 
-                  onDragStart={(e) => handleDragStart(e, 'G')}  
-                  onDragEnd={handleDragEnd}
-                  className={`key border-thin-800 rounded-[3px] m-1 px-3 py-3 ${lastDraggedCharacter === 'G' ? 'mbg-700 mcolor-100' : 'mbg-200 mcolor-900'}`}>G</div>
-                  <div 
-                  draggable="true" 
-                  onDragStart={(e) => handleDragStart(e, 'H')}  
-                  onDragEnd={handleDragEnd}
-                  className={`key border-thin-800 rounded-[3px] m-1 px-3 py-3 ${lastDraggedCharacter === 'H' ? 'mbg-700 mcolor-100' : 'mbg-200 mcolor-900'}`}>H</div>
-                  <div 
-                  draggable="true" 
-                  onDragStart={(e) => handleDragStart(e, 'J')}  
-                  onDragEnd={handleDragEnd}
-                  className={`key border-thin-800 rounded-[3px] m-1 px-3 py-3 ${lastDraggedCharacter === 'J' ? 'mbg-700 mcolor-100' : 'mbg-200 mcolor-900'}`}>J</div>
-                  <div 
-                  draggable="true" 
-                  onDragStart={(e) => handleDragStart(e, 'K')}  
-                  onDragEnd={handleDragEnd}
-                  className={`key border-thin-800 rounded-[3px] m-1 px-3 py-3 ${lastDraggedCharacter === 'K' ? 'mbg-700 mcolor-100' : 'mbg-200 mcolor-900'}`}>K</div>
-                  <div 
-                  draggable="true" 
-                  onDragStart={(e) => handleDragStart(e, 'L')}  
-                  onDragEnd={handleDragEnd}
-                  className={`key border-thin-800 rounded-[3px] m-1 px-3 py-3 ${lastDraggedCharacter === 'L' ? 'mbg-700 mcolor-100' : 'mbg-200 mcolor-900'}`}>L</div>
-                </div>
-                <div class="row flex items-center justify-center">
-                  <div 
-                  draggable="true" 
-                  onDragStart={(e) => handleDragStart(e, 'Z')}  
-                  onDragEnd={handleDragEnd}
-                  className={`key border-thin-800 rounded-[3px] m-1 px-3 py-3 ${lastDraggedCharacter === 'Z' ? 'mbg-700 mcolor-100' : 'mbg-200 mcolor-900'}`}>Z</div>
-                  <div 
-                  draggable="true" 
-                  onDragStart={(e) => handleDragStart(e, 'X')}  
-                  onDragEnd={handleDragEnd}
-                  className={`key border-thin-800 rounded-[3px] m-1 px-3 py-3 ${lastDraggedCharacter === 'X' ? 'mbg-700 mcolor-100' : 'mbg-200 mcolor-900'}`}>X</div>
-                  <div 
-                  draggable="true" 
-                  onDragStart={(e) => handleDragStart(e, 'C')}  
-                  onDragEnd={handleDragEnd}
-                  className={`key border-thin-800 rounded-[3px] m-1 px-3 py-3 ${lastDraggedCharacter === 'C' ? 'mbg-700 mcolor-100' : 'mbg-200 mcolor-900'}`}>C</div>
-                  <div 
-                  draggable="true" 
-                  onDragStart={(e) => handleDragStart(e, 'V')}  
-                  onDragEnd={handleDragEnd}
-                  className={`key border-thin-800 rounded-[3px] m-1 px-3 py-3 ${lastDraggedCharacter === 'V' ? 'mbg-700 mcolor-100' : 'mbg-200 mcolor-900'}`}>V</div>
-                  <div 
-                  draggable="true" 
-                  onDragStart={(e) => handleDragStart(e, 'B')}  
-                  onDragEnd={handleDragEnd}
-                  className={`key border-thin-800 rounded-[3px] m-1 px-3 py-3 ${lastDraggedCharacter === 'B' ? 'mbg-700 mcolor-100' : 'mbg-200 mcolor-900'}`}>B</div>
-                  <div 
-                  draggable="true" 
-                  onDragStart={(e) => handleDragStart(e, 'N')}  
-                  onDragEnd={handleDragEnd}
-                  className={`key border-thin-800 rounded-[3px] m-1 px-3 py-3 ${lastDraggedCharacter === 'N' ? 'mbg-700 mcolor-100' : 'mbg-200 mcolor-900'}`}>N</div>
-                  <div 
-                  draggable="true" 
-                  onDragStart={(e) => handleDragStart(e, 'M')}  
-                  onDragEnd={handleDragEnd}
-                  className={`key border-thin-800 rounded-[3px] m-1 px-3 py-3 ${lastDraggedCharacter === 'M' ? 'mbg-700 mcolor-100' : 'mbg-200 mcolor-900'}`}>M</div>
-                  <div 
-                  draggable="true" 
-                  onDragStart={(e) => handleDragStart(e, '-')}  
-                  onDragEnd={handleDragEnd}
-                  className={`key border-thin-800 rounded-[3px] m-1 px-3 py-3 ${lastDraggedCharacter === '-' ? 'mbg-700 mcolor-100' : 'mbg-200 mcolor-900'}`}>-</div>
+            {(typeOfLearner === 'Kinesthetic' && extractedQA[questionIndex].quizType !== 'ToF') ? (
+              <div class="w-full mt-5 flex items-center justify-center mbg-300 min-h-[10vh] px-4 rounded">
+                <div class="flex flex-wrap justify-center"> 
+                {shuffledCharactersWithId.map((item) => {
+                  const isDragged = lastDraggedCharacter === item.char;
+
+                  return (
+                    <div
+                      key={item.id}
+                      draggable={'True'}
+                      onDragStart={(e) => handleDragStartKinesthetic(e, item.char)}
+                      onDragEnd={handleDragEndKinesthetic}
+                      className={`key cursor-pointer border-thin-800 text-center rounded-[3px] m-1 px-8 py-3 mbg-200 mcolor-900'
+                      }`}
+                    >
+                      {item.char.toUpperCase()}
+                    </div>
+                  );
+                })}
+
+
                 </div>
               </div>
             ) : (
@@ -266,12 +265,12 @@ export const KinestheticLearner = (props) => {
                   draggable="true" 
                   onDragStart={(e) => handleDragStart(e, 'True')}  
                   onDragEnd={handleDragEnd}
-                  className={`w-full text-center border-thin-800 rounded-[3px] m-1 px-3 py-3 ${lastDraggedCharacter === 'True' ? 'mbg-700 mcolor-100' : 'mbg-200 mcolor-900'}`}>True</div>
+                  className={`w-full text-center border-thin-800 rounded cursor-pointer m-1 px-3 py-3 ${lastDraggedCharacter === 'True' ? 'mbg-700 mcolor-100' : 'mbg-200 mcolor-900'}`}>True</div>
                 <div 
                 draggable="true" 
                 onDragStart={(e) => handleDragStart(e, 'False')}  
                 onDragEnd={handleDragEnd}
-                className={`w-full text-center border-thin-800 rounded-[3px] m-1 px-3 py-3 ${lastDraggedCharacter === 'False' ? 'mbg-700 mcolor-100' : 'mbg-200 mcolor-900'}`}>False</div>
+                className={`w-full text-center border-thin-800 rounded cursor-pointer m-1 px-3 py-3 ${lastDraggedCharacter === 'False' ? 'mbg-700 mcolor-100' : 'mbg-200 mcolor-900'}`}>False</div>
               </div>
             )}
 
@@ -283,7 +282,7 @@ export const KinestheticLearner = (props) => {
           </div>
 
 
-          <div className='w-1/2 mt-5'>
+          <div className='full mt-5'>
               {typeOfLearner === 'kinesthetic' ? (
               chanceLeft === 3 ? (
                 <div className='w-full mcolor-800 flex justify-end pb-5'>
@@ -306,7 +305,7 @@ export const KinestheticLearner = (props) => {
               ) : null
             ) : null}
 
-            <div className='flex justify-end'>
+            {/* <div className='flex justify-end'>
               {chanceLeft === 3 && (
                 <img className='float-animation' src={catsImage1} style={{width: '80%'}} alt="" />
               )}
@@ -322,7 +321,7 @@ export const KinestheticLearner = (props) => {
               {chanceLeft === 0 && (
                 <img className='shake-game-animation1' src={catsImage3} style={{width: '80%'}} alt="" />
               )}
-            </div>
+            </div> */}
 
           </div>
 

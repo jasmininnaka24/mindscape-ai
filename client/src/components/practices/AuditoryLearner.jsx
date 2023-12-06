@@ -18,9 +18,12 @@ export const AuditoryLearner = (props) => {
           {extractedQA[questionIndex].quizType === 'Identification' || extractedQA[questionIndex].quizType === 'FITB' ? (
 
             <div className={'flex justify-between items-center'}>
-              <div className='flex items-center'>
-                <p className='mcolor-800 text-lg mt-2 font-medium'>Remaining Hints: {remainingHints}</p>
-                <button className='mcolor-800 mbg-200 border-thin-800 rounded-[5px] px-2 py-1 text-lg mt-2 font-medium ml-5' onClick={giveHint}>Use hint</button>
+              <div>
+                {(extractedQA[questionIndex].quizType === 'Identification' || extractedQA[questionIndex].quizType === 'FITB') && (
+                  <div className='flex items-center justify-between w-full'>
+                    <button className='mcolor-800 mbg-200 border-thin-800 rounded-[5px] px-2 py-1 text-lg mt-2' onClick={giveHint}>Use hint <span className='bg-red mcolor-100 px-2 ml-1 rounded-full text-sm'>{remainingHints}</span></button>
+                  </div>
+                )}
               </div>
               <div className='relative mt-4 pb-8 text-center text-xl font-medium text-xl mcolor-900'>
                 <button className='mx-3 absolute right-7 top-4' onClick={stateQuestion}><CampaignIcon /></button>
@@ -32,7 +35,7 @@ export const AuditoryLearner = (props) => {
           ) : (
 
             <div>
-              <div className='relative mt-4 pb-8 text-center text-xl font-medium text-xl mcolor-900'>
+              <div className='relative pb-8 text-center text-xl font-medium text-xl mcolor-900'>
                 <button className='mx-3 absolute right-7 top-4' onClick={stateQuestion}><CampaignIcon /></button>
                 <button className={`ml-3 absolute right-2 top-4 ${hideQuestion !== 'hidden' ? 'hidden' : ''}`} onClick={hideQuestionBtn}><VisibilityIcon /></button>
                 <button className={`ml-3 absolute right-2 top-4 ${unhideQuestion !== 'hidden' ? 'hidden' : ''}`} onClick={unhideQuestionBtn}><VisibilityOffIcon /></button>
@@ -43,7 +46,7 @@ export const AuditoryLearner = (props) => {
 
 
           <div className='relative mt-4 pb-8 text-center text-xl font-medium text-xl mcolor-900'>
-            <p className='mbg-300 mcolor-900 w-full rounded-[5px] py-4 mcolor-800'>{hideQuestion !== 'hidden' ? extractedQA[questionIndex].question : `Question...`}</p>
+            <p className='mbg-300 mcolor-900 w-full rounded-[5px] py-4 mcolor-800 px-5'>{hideQuestion !== 'hidden' ? extractedQA[questionIndex].question : `Question...`}</p>
           </div>
 
 
@@ -79,11 +82,11 @@ export const AuditoryLearner = (props) => {
           {/* choices */}
 
           {extractedQA[questionIndex].quizType === 'MCQA' && (
-            <form className='grid-result gap-4 mcolor-800'>
+            <form className='grid grid-cols-1 gap-4 mcolor-800'>
             {shuffledChoices.map((choice, index) => (
               <div
                 key={index}
-                className={`flex items-center justify-center px-5 py-3 text-center choice border-thin-800 rounded-[5px]  
+                className={`flex items-center justify-between px-5 py-2 text-center choice border-thin-800 rounded-[5px]  
 
                 ${answerSubmitted === true && choice.choice === extractedQA[questionIndex].answer ? 'mbg-700 mcolor-100 ' : 'mbg-200 '}
 
@@ -93,25 +96,29 @@ export const AuditoryLearner = (props) => {
                 
                 `}
                 >
-                <input
-                  type="radio"
-                  name="option"
-                  value={choice.choice}
-                  id={`choice${index}`} 
-                  className={`custom-radio cursor-pointer`}
-                  onChange={handleRadioChange}
-                  checked={selectedChoice === choice.choice} 
-                />
+
+                <div className='flex items-center'>
+                  <input
+                    type="radio"
+                    name="option"
+                    value={choice.choice}
+                    id={`choice${index}`} 
+                    className={`custom-radio cursor-pointer`}
+                    onChange={handleRadioChange}
+                    checked={selectedChoice === choice.choice} 
+                  />
+                  <label htmlFor={`choice${index}`} className={`mr-5 pt-1 cursor-pointer text-xl`}>
+                    {unhiddenChoice.includes(choice.choice) ? choice.choice : `Choice ${index + 1}`}
+                  </label>
+                </div>
+
+
                 <div className=''>
                   <div className={`flex items-center`}>
-                    <label htmlFor={`choice${index}`} className={`mr-5 pt-1 cursor-pointer text-xl ${unhiddenChoice.includes(choice.choice) ? '' : 'hidden'}`}>
-                      {choice.choice}
-                    </label>
-
+                    <label htmlFor={`choice${index}`} className='ml-2 cursor-pointer text-5xl' onClick={() => {choiceSpeak(choice.choice)}}><CampaignIcon /></label>
                     <label htmlFor={`choice${index}`} className='ml-1 cursor-pointer text-5xl' onClick={() => hideChoiceBtn(choice.choice)}>
                       {unhiddenChoice.includes(choice.choice) ? <VisibilityOffIcon /> : <VisibilityIcon />}
                     </label>
-                    <label htmlFor={`choice${index}`} className='ml-2 cursor-pointer text-5xl' onClick={() => {choiceSpeak(choice.choice)}}><CampaignIcon /></label>
                   </div>
 
                 </div>
@@ -123,10 +130,10 @@ export const AuditoryLearner = (props) => {
 
           {/* true or false choices */}
           {extractedQA[questionIndex].quizType === 'ToF' && (
-            <div className='flex justify-between items-center gap-4 mcolor-800'>
+            <div className='grid grid-cols-1 gap-4 gap-4 mcolor-800'>
               <div
                 key={1}
-                className={`w-full flex items-center justify-center px-5 py-3 text-center choice border-thin-800 rounded-[5px]  
+                className={`w-full flex items-center justify-between px-5 py-3 text-center choice border-thin-800 rounded-[5px]  
 
                 ${answerSubmitted === true && 'True' === extractedQA[questionIndex].answer ? 'mbg-700 mcolor-100 ' : 'mbg-200 '}
 
@@ -136,20 +143,26 @@ export const AuditoryLearner = (props) => {
                 
                 `}
                 >
-                <input
-                  type="radio"
-                  name="option"
-                  value={'True'}
-                  id={`choice${1}`} 
-                  className={`custom-radio cursor-pointer`}
-                  onChange={handleRadioChange}
-                  checked={selectedChoice === 'True'} 
-                />
+
+                  {/* true */}
+
+                <div className='flex items-center'>
+                  <input
+                    type="radio"
+                    name="option"
+                    value={'True'}
+                    id={`choice${1}`} 
+                    className={`custom-radio cursor-pointer`}
+                    onChange={handleRadioChange}
+                    checked={selectedChoice === 'True'} 
+                  />
+                  <label htmlFor={`choice${1}`} className={`mr-5 pt-1 cursor-pointer text-xl`}>
+                    {unhiddenChoice.includes('True') ? 'True' : `Choice 1`}
+                  </label>
+                </div>
+
                 <div className=''>
                   <div className={`flex items-center`}>
-                    <label htmlFor={`choice${1}`} className={`mr-5 pt-1 cursor-pointer text-xl ${unhiddenChoice.includes('True') ? '' : 'hidden'}`}>
-                      {'True'}
-                    </label>
 
                     <label htmlFor={`choice${1}`} className='ml-1 cursor-pointer text-5xl' onClick={() => hideChoiceBtn('True')}>
                       {unhiddenChoice.includes('True') ? <VisibilityOffIcon /> : <VisibilityIcon />}
@@ -159,9 +172,12 @@ export const AuditoryLearner = (props) => {
 
                 </div>
               </div>
+
+
+              {/* false */}
               <div
                 key={2}
-                className={`w-full flex items-center justify-center px-5 py-3 text-center choice border-thin-800 rounded-[5px]  
+                className={`w-full flex items-center justify-between px-5 py-3 text-center choice border-thin-800 rounded-[5px] 
 
                 ${answerSubmitted === true && 'False' === extractedQA[questionIndex].answer ? 'mbg-700 mcolor-100 ' : 'mbg-200 '}
 
@@ -171,21 +187,24 @@ export const AuditoryLearner = (props) => {
                 
                 `}
                 >
-                <input
-                  type="radio"
-                  name="option"
-                  value={'False'}
-                  id={`choice${2}`} 
-                  className={`custom-radio cursor-pointer`}
-                  onChange={handleRadioChange}
-                  checked={selectedChoice === 'False'} 
-                />
+
+                <div className='flex items-center'>
+                  <input
+                    type="radio"
+                    name="option"
+                    value={'False'}
+                    id={`choice${2}`} 
+                    className={`custom-radio cursor-pointer`}
+                    onChange={handleRadioChange}
+                    checked={selectedChoice === 'False'} 
+                  />
+                  <label htmlFor={`choice${2}`} className={`mr-5 pt-1 cursor-pointer text-xl`}>
+                    {unhiddenChoice.includes('False') ? 'False' : `Choice 2`}
+                  </label>
+                </div>
+
                 <div className=''>
                   <div className={`flex items-center`}>
-                    <label htmlFor={`choice${2}`} className={`mr-5 pt-1 cursor-pointer text-xl ${unhiddenChoice.includes('False') ? '' : 'hidden'}`}>
-                      {'False'}
-                    </label>
-
                     <label htmlFor={`choice${2}`} className='ml-1 cursor-pointer text-5xl' onClick={() => hideChoiceBtn('False')}>
                       {unhiddenChoice.includes('False') ? <VisibilityOffIcon /> : <VisibilityIcon />}
                     </label>

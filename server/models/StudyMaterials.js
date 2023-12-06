@@ -40,6 +40,11 @@ module.exports = (sequelize, DataTypes) => {
       allowNull: false,
       defaultValue: 0,
     },
+    codeDashTrackingNum: {
+      type: DataTypes.STRING,
+      allowNull: false,
+      defaultValue: 'Tracking Num',
+    },
   });
 
   StudyMaterials.associate = (models) => {

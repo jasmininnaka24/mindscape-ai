@@ -224,7 +224,7 @@ export const SavedGeneratedData = (props) => {
 
 
 
-      let backgroundColors = ['red', 'orange', 'yellow', 'green', 'blue', 'purple', 'gray']
+      let backgroundColors = ['red', 'orange', 'yellow', 'green', 'blue', 'purple']
       let randomIndex = ''
       let randomColor = ''
       
