@@ -91,6 +91,21 @@ router.get('/study-material-category/:materialFor/:UserId', async(req, res) => {
 });
 
 
+router.get('/shared-materials-by-userid/:UserId', async(req, res) => {
+
+  const { UserId } = req.params;
+
+  const latestMaterial = await StudyMaterials.findAll({
+    where: { 
+      tag: 'Shared',
+      UserId: UserId
+    },
+    order: [['id', 'DESC']]
+  });
+
+  res.json(latestMaterial);
+});
+
 router.get('/shared-materials', async(req, res) => {
   const latestMaterial = await StudyMaterials.findAll({
     where: { 

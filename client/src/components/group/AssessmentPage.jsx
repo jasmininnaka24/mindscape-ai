@@ -414,7 +414,7 @@ export const AssessmentPage = (props) => {
     socket.emit('updated_show_texts', {room: assessementRoom, showTexts: false});
 
     
-    const generateAnalysisUrl = 'https://a806-34-124-197-174.ngrok.io/generate_analysis';
+    const generateAnalysisUrl = 'https://46c4-34-67-190-148.ngrok.io/generate_analysis';
 
     
     let predictionText = overAllPerformance.toFixed(2) >= 90 ? 'ready' : 'not yet ready';

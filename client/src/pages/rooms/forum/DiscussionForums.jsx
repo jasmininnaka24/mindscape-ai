@@ -105,22 +105,22 @@ export const DiscussionForums = () => {
   useEffect(() => {
     if (!alreadyJoined) {
       if (user) {
-        joinDiscussionRoom()
+        joinDiscussionRoom();
       }
     }
   
-    socket.on('discussion_rooms_list', (roomsList) => {
+    // Update the event name to match the server
+    socket.on('discussion_room_list', (roomsList) => {
       setRoomList(roomsList);
       console.log(roomsList);
     });
   
-  
-    
     return () => {
-      socket.off('discussion_rooms_list');
+      // Update the event name to match the server
+      socket.off('discussion_room_list');
     };
-  
   }, [alreadyJoined, user]);
+  
   
   const createRoom = async () => {
     let data = {
@@ -138,9 +138,13 @@ export const DiscussionForums = () => {
     socket.on('discussion_rooms_list', (roomsListData) => {
       const index = roomsListData.findIndex(roomData => roomData.room === data.room);
       console.log('Index of the created room:', index);
+
+      setCurrentIndex(index)
+      setCurrentRoom(roomList[index]?.roomName)
     });
 
 
+    setShowCreateRoomModal(false)
   };
 
   const joinCreatedRoom = async (roomCode, users, index) => {
@@ -196,12 +200,14 @@ export const DiscussionForums = () => {
   };
 
   const filteredRooms = roomList
-    .filter((room) => !selectedCategory || room?.roomCategory.toLowerCase() === selectedCategory.toLowerCase())
-    .filter((room) =>
-      room?.roomName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      room?.roomCategory.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      room?.roomDescription.toLowerCase().includes(searchTerm.toLowerCase())
-    );
+  .filter((room) => 
+    (!selectedCategory || room?.roomCategory?.toLowerCase() === selectedCategory.toLowerCase()) &&
+    (
+      room?.roomName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      room?.roomCategory?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      room?.roomDescription?.toLowerCase().includes(searchTerm.toLowerCase())
+    )
+  );
 
   const uniqueCategories = [...new Set(roomList.map(room => capitalizeFirstLetter(room?.roomCategory)))];
 
@@ -212,6 +218,38 @@ export const DiscussionForums = () => {
   };
 
 
+  const leaveDiscussionForumRoom = async (room) => {
+    const roomIndex = roomList.findIndex(roomItem => roomItem.room === room);
+  
+    // If the room is not found or already removed, do nothing
+    if (roomIndex === -1) {
+      return;
+    }
+  
+    const userIndex = roomList[roomIndex].users.findIndex(user => user.userId === userId);
+    const socketId = roomList[roomIndex].users[userIndex].socketId;
+  
+    let updatedRoomList = [...roomList];
+  
+    // Use filter to create a new array without the user to be removed
+    const updatedUsers = updatedRoomList[roomIndex].users.filter(user => user.socketId !== socketId);
+  
+    // Update the users property of the room with the new array
+    updatedRoomList[roomIndex].users = updatedUsers;
+  
+    // Check if there are no users in the room, remove the room
+    if (updatedUsers.length === 0) {
+      updatedRoomList = updatedRoomList.filter(updatedRoom => updatedRoom.room !== room);
+    }
+  
+    setRoomList(updatedRoomList);
+    console.log(updatedRoomList);
+    socket.emit('leave-discussion-forum-room', { room: discussionForumRoom, roomList: updatedRoomList });
+
+  };
+  
+  
+  
 
 
   return (
@@ -547,34 +585,30 @@ export const DiscussionForums = () => {
   
                           <div className='flex justify-between mt-3'>
                               <p>Users: {room?.users ? room?.users.length : 0}</p>
+
+
+         
                               {
-                                (roomList && roomList.length < 1 && roomList[currentIndex]?.users?.some((userr) => userr.userId === user?.id)) && (
-                                  <button
-                                    className='mbg-700 mcolor-100 px-5 py-2 rounded'
-                                    onClick={() => {
-                                      setCurrentRoom(room?.room);
-                                      setCurrentMessageRoom(room?.roomName);
-                                      setCurrentIndex(index);
-                                    }}
-                                  >
-                                    View Chat Room
-                                  </button>
+                                (roomList && roomList[currentIndex]?.roomName !== room?.roomName) && (
+                                  <div>
+                                    <button
+                                      className='mbg-700 mcolor-100 px-5 py-2 rounded text-sm'
+                                      onClick={() => {
+                                        setCurrentRoom(room?.room);
+                                        setCurrentMessageRoom(room?.roomName);
+                                        setCurrentIndex(index);
+                                      }}
+                                    >
+                                      View Chat Room
+                                    </button>
+ 
+                                  </div>
                                 )
                               }
-                              {
-                                (currentRoom !== room?.room && roomList && roomList.length > 1) && (
-                                  <button
-                                    className='mbg-700 mcolor-100 px-5 py-2 rounded'
-                                    onClick={() => {
-                                      setCurrentRoom(room?.room);
-                                      setCurrentMessageRoom(room?.roomName);
-                                      setCurrentIndex(index);
-                                    }}
-                                  >
-                                    View Chat Room
-                                  </button>
-                                )
-                              }
+
+                              <button className='bg-red mcolor-100 px-5 text-sm py-2 rounded' onClick={() => leaveDiscussionForumRoom(room?.room)}>
+                                Leave Room
+                              </button>
 
                           </div>
                         </>
@@ -589,11 +623,11 @@ export const DiscussionForums = () => {
 
               <div className="chat-window">
                 <div className="chat-header flex items-center justify-between px-5">
-
-                  <p>{currentMessageRoom !== '' ? currentMessageRoom : (roomList[currentIndex]?.room !== undefined ? (roomList[currentIndex]?.roomName && roomList[currentIndex]?.users?.some((userr) => userr.userId === user?.id) ? roomList[currentIndex]?.roomName : 'Group Name') : 'Group Name')}</p>
-
-                  {(roomList && roomList.length > 0 && roomList[currentIndex]?.users?.some((userr) => userr.userId === user?.id)) && (
-                    <button className='mcolor-900 mbg-300 px-4 py-1 my-2 rounded' onClick={() => setShowActiveUsers(true)}>Active Users</button>
+                  {(roomList && roomList[currentIndex]?.users?.some((userr) => userr.userId === userId)) && (
+                    <div className='chat-header flex items-center justify-between px-5 w-full'>
+                      <p>{roomList[currentIndex]?.roomName}</p>
+                      <button className='mcolor-900 mbg-300 px-4 py-1 my-2 rounded' onClick={() => setShowActiveUsers(true)}>Active Users</button>
+                    </div>
                   )}
                 </div>
                 <div className="chat-body">

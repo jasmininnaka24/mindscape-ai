@@ -268,6 +268,11 @@ const handleUserDisconnectAssessment = (assessmentRoom, socketId) => {
   }
 }
 
+
+
+
+
+
 io.on('connection', (socket) => {
 
 
@@ -1150,13 +1155,13 @@ io.on('connection', (socket) => {
   
       // Emit the updated user list and current turn to all clients in the room
       io.to(room).emit('discussion_room_list', discussionRoomList[room]);
-
+      
     }
   }); 
 
-
-
-
+  
+  
+  
   socket.on('created_discussion_forum', (data) => {
     const {
       room,
@@ -1167,9 +1172,9 @@ io.on('connection', (socket) => {
       roomDescription,
       discussionForumRoom
     } = data;
-  
+    
     socket.join(room);
-  
+    
     if (!discussionCreatedRoomsList[discussionForumRoom]) {
       discussionCreatedRoomsList[discussionForumRoom] = [];
     }
@@ -1177,21 +1182,21 @@ io.on('connection', (socket) => {
     if (!discussionCreatedRoomsList[discussionForumRoom][room]) {
       discussionCreatedRoomsList[discussionForumRoom][room] = [];
     }
-
+    
     
     
     
     discussionCreatedRoomsList[discussionForumRoom].push({ socketId: socket.id, room, roomName, roomCategory, roomDescription, users: [{ socketId: socket.id, userId, username}], messages: [] });
     
-  
+    
     // Emit the updated user list and current turn to all clients in the room
     io.to(discussionForumRoom).emit('discussion_rooms_list', discussionCreatedRoomsList[discussionForumRoom]);
     // io.to(room).emit('discussion_user_list', discussionCreatedRoomsList[room]);
 
     
   }); 
-
-
+  
+  
   socket.on('join_created_room', (data) => {
     const {
       room,
@@ -1201,21 +1206,20 @@ io.on('connection', (socket) => {
       users,
       index
     } = data;
-  
+    
     socket.join(room);
-  
-  
+    
+    
     // Update the users array
     discussionCreatedRoomsList[discussionForumRoom][index].users.push({ socketId: socket.id, userId, username });
-  
+    
     // Emit the updated user list and current turn to all clients in the room
     io.to(discussionForumRoom).emit('discussion_rooms_list', discussionCreatedRoomsList[discussionForumRoom]);
     // io.to(room).emit('discussion_user_list', discussionCreatedRoomsList[room]);
-  
-    console.log(discussionCreatedRoomsList[discussionForumRoom][index]);
+    
   });
-
-
+  
+  
   socket.on('message_joined_created_room', (data) => {
     const {
       room,
@@ -1226,14 +1230,14 @@ io.on('connection', (socket) => {
       time,
       index
     } = data;
-  
+    
     socket.join(room);
-  
+    
     // Ensure the room and messages array are initialized
     if (!discussionCreatedRoomsList[discussionForumRoom][index].messages) {
       discussionCreatedRoomsList[discussionForumRoom][index].messages = [];
     }
-  
+    
     // Update the users array
     discussionCreatedRoomsList[discussionForumRoom][index].messages.push({
       socketId: socket.id,
@@ -1245,14 +1249,25 @@ io.on('connection', (socket) => {
   
     // Emit the updated user list and current turn to all clients in the room
     io.to(discussionForumRoom).emit('discussion_rooms_list', discussionCreatedRoomsList[discussionForumRoom]);
-  
-    console.log(discussionCreatedRoomsList[discussionForumRoom][index]);
+    
   });
   
-
-
-
-
+  
+  
+  
+  socket.on('leave-discussion-forum-room', ({ room, roomList }) => {
+    if (discussionCreatedRoomsList[room]) {
+      // Update the created room list
+      discussionCreatedRoomsList[room] = roomList;
+      
+      // Emit the updated list to all clients in the room
+      io.to(room).emit('discussion_rooms_list', discussionCreatedRoomsList[room]);
+      console.log(discussionCreatedRoomsList[room]);
+    } else {
+      console.log(`Room ${room} not found in discussionCreatedRoomsList.`);
+    }
+  });
+  
   
   
   
@@ -1295,39 +1310,38 @@ io.on('connection', (socket) => {
 
     // Find and remove the user from all assessment rooms
     Object.keys(discussionCreatedRoomsList).forEach((disRoom) => {
-      // Check if the discussion room exists and is an array
       if (Array.isArray(discussionCreatedRoomsList[disRoom])) {
         // Assuming roomName is the key for individual rooms
         Object.keys(discussionCreatedRoomsList[disRoom]).forEach((roomName) => {
           // Check if the room has a 'users' array
           if (discussionCreatedRoomsList[disRoom][roomName].users) {
             const userIndex = discussionCreatedRoomsList[disRoom][roomName].users.findIndex(user => user.socketId === socket.id);
-  
+    
             if (userIndex !== -1) {
               discussionCreatedRoomsList[disRoom][roomName].users.splice(userIndex, 1);
-  
+    
               if (discussionCreatedRoomsList[disRoom][roomName].users.length === 0) {
                 // Remove the room if there are no users in it
                 delete discussionCreatedRoomsList[disRoom][roomName];
-
+    
                   // Filter out rooms with no users dynamically
                   const roomsWithUsers = Object.keys(discussionCreatedRoomsList[disRoom])
                   .filter(roomName => discussionCreatedRoomsList[disRoom][roomName]?.users && discussionCreatedRoomsList[disRoom][roomName]?.users.length > 0);
           
                 // Update the room list
                 io.to(disRoom).emit('discussion_rooms_list', roomsWithUsers);
-
+    
               } else {
-
+    
                 // Emit the updated room list
                 io.to(disRoom).emit('discussion_rooms_list', discussionCreatedRoomsList[disRoom]);
               }
-  
+    
             }
-
+    
           }
         });
-  
+    
       }
     });
 

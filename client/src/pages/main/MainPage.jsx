@@ -23,7 +23,9 @@ export const MainPage = () => {
       <div className='container'>
         <div className='flex justify-between w-full mainpage-inside text-xl py-8'>
           <div className='flex gap-5'>
-            <div className='text-3xl'><i class="fa-solid fa-user"></i></div>
+            <Link to={'/main/profile'}>
+              <div className='text-3xl'><i class="fa-solid fa-user"></i></div>
+            </Link>
             <div className='text-3xl'><i class="fa-regular fa-bell"></i></div>
           </div>
           <div>

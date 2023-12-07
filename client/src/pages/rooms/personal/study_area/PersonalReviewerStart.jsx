@@ -533,7 +533,7 @@ export const PersonalReviewerStart = () => {
               setHidePomodoroModalBreak('hidden')
               setTimeForBreak(true)
               setTimeForPomodoro(true)
-              setSeconds(10);
+              setSeconds(300);
             }
           }
         });
@@ -936,16 +936,20 @@ export const PersonalReviewerStart = () => {
           {/* pomodoro time */}
           <div className='mt-10 px-5'>
             <div className='mcolor-900 text-lg'>Time Left: <span className='font-bold'>{timeForPomodoro ? formatTime(seconds) : '00:00'}</span></div>
+            
 
-            <button 
-              className='mbg-200 w-full py-2 rounded mt-2 font-medium'
-              onClick={() => {
-                if (isRunning) {
-                  setIsRunning(false)
-                } else {
-                  setIsRunning(true)
-                }
-              }}>{(timeForPomodoro) ? isRunning ? <>Pause <PauseIcon /></> : <>Resume <PlayArrowIcon /></> : ''}</button>
+            {timeForPomodoro && (
+              <button 
+                className='mbg-200 w-full py-2 rounded mt-2 font-medium'
+                onClick={() => {
+                  if (isRunning) {
+                    setIsRunning(false)
+                  } else {
+                    setIsRunning(true)
+                  }
+                }}>{isRunning ? <>Pause <PauseIcon /></> : <>Resume <PlayArrowIcon /></>}</button>
+            )}
+
           </div>
 
           <div className='mt-8 px-5'>

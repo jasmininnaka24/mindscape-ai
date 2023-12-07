@@ -434,7 +434,7 @@ export const MainDash = ({categoryFor}) => {
                 <p className='mt-1 mcolor-400'>Study Performance</p>
               </div>
 
-              {materialCategories.length > 0 && materialCategory && (
+              {materialCategory && (
                 <button className='absolute bottom-5 right-5 mbg-800 mcolor-100 px-5 py-2 rounded-[5px]'>View Reviewer</button>
               )}
             </div>

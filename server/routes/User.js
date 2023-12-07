@@ -36,10 +36,10 @@ router.post('/login', async (req, res) => {
       if (!match) {
         res.json({error: 'Wrong email and password combination.'});
       } else {
-        const assessToken = sign({username: user.username, id: user.id, typeOfLearner: user.typeOfLearner, studyProfTarget: user.studyProfTarget}, "mindscapeprojectkeysecret");
+        const assessToken = sign({username: user.username, email: user.email, id: user.id, typeOfLearner: user.typeOfLearner, studyProfTarget: user.studyProfTarget}, "mindscapeprojectkeysecret");
 
         
-        res.json({ accessToken: assessToken, user: {username: user.username, id: user.id, typeOfLearner: user.typeOfLearner, studyProfTarget: user.studyProfTarget} });
+        res.json({ accessToken: assessToken, user: {username: user.username, email: user.email, id: user.id, typeOfLearner: user.typeOfLearner, studyProfTarget: user.studyProfTarget} });
 
       }
     });

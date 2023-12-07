@@ -33,6 +33,7 @@ import { GroupAnalysisPage } from './pages/rooms/group/dashboard/GroupAnalysisPa
 import { UpdateGroupStudyMaterial } from './pages/rooms/group/study_area/UpdateGroupStudyMaterial';
 
 import { PersonalRoom } from './pages/rooms/personal/PersonalRoom';
+import { PersonalProfile } from './pages/rooms/personal/PersonalProfile';
 import { PersonalStudyArea } from './pages/rooms/personal/study_area/PersonalStudyArea';
 import { PersonalQAGenerator } from './pages/rooms/personal/study_area/PersonalQAGenerator'
 import { PersonalReviewerPage } from './pages/rooms/personal/study_area/PersonalReviewerPage';
@@ -107,6 +108,7 @@ function App() {
 
               {/* Personal Study Room Routes */}
               <Route path='/main/personal/' element={<PersonalRoom />} /> 
+              <Route path='/main/profile' element={<PersonalProfile />} /> 
               <Route path='/main/personal/tasks' element={<PersonalTask />} />
               <Route path='/main/personal/study-area' element={<PersonalStudyArea />} /> 
               <Route path='/main/personal/study-area/qa-gen' element={<PersonalQAGenerator />} /> 

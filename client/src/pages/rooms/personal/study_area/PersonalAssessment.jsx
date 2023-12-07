@@ -429,7 +429,7 @@ export const PersonalAssessment = () => {
 
     setShowTexts(false)
 
-    const generateAnalysisUrl = 'https://2d8a-34-73-141-21.ngrok.io/generate_analysis';
+    const generateAnalysisUrl = 'https://46c4-34-67-190-148.ngrok.io/generate_analysis';
 
     
     let predictionText = overAllPerformance.toFixed(2) >= 90 ? 'ready' : 'not yet ready';
