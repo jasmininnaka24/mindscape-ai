@@ -18,6 +18,9 @@ import { VAKResult } from './pages/register/VAKResult';
 
 // Main page imports
 import { MainPage } from './pages/main/MainPage';
+import { EmailVerification } from './pages/register/EmailVerification';
+import { ForgotPassword } from './pages/login/ForgotPassword';
+import { ResetPassword } from './pages/login/ResetPassword';
 
 // Group Study Rooms import
 import { GroupRoom } from './pages/rooms/group/GroupRoom';
@@ -79,12 +82,16 @@ function App() {
               <Route path='#howtouse' element={<HowToUse />} />
               <Route path='/login' element={<Login />} />
               <Route path='/register' element={<Register />} />
-              <Route path='/classification-questions' element={<ClassificationQuestions />} />
+              <Route path='/classification-questions/:id' element={<ClassificationQuestions />} />
               <Route path='/data-submission' element={<DataSubmission/>} />
               <Route path='/data-result' element={<VAKResult/>} />
 
               {/* Main Page Route */}
               <Route path='/main' element={<MainPage/>} />
+              <Route path='/users/:id/verify/:token' element={<EmailVerification/>} />
+              <Route path='/forgot-password' element={<ForgotPassword/>} />
+              <Route path='/reset-password/:id/:token' element={<ResetPassword/>} />
+
         
               {/* Room Routes */}
               {/* Group Study Room Routes */}

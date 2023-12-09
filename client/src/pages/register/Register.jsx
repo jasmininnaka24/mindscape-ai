@@ -11,28 +11,36 @@ export const Register = () => {
   const [usernameRegVal, setUsernameRegVal] = useState('')
   const [passwordRegVal, setPasswordRegVal] = useState('')
   const [emailRegVal, setEmailRegVal] = useState('')
+  const [msg, setMsg] = useState('')
+
 
   const navigate = useNavigate()
 
   const registerAccount = async (e) => {
     e.preventDefault();
-    
+  
     const data = {
       username: usernameRegVal,
       password: passwordRegVal,
       email: emailRegVal,
-      name: 'random',
-    }
+    };
 
-    const registeredAccountResponse = await axios.post('http://localhost:3001/users', data);
-    const userId = registeredAccountResponse.data.id;
-
+    try {
+      const registeredAccountResponse = await axios.post('http://localhost:3001/users', data);
+      const userId = registeredAccountResponse.data.id;
+  
+      // setMsg(registeredAccountResponse.msg);
     // /classification-questions
-    navigate('/classification-questions', {
-      state: {
-        registeredUserId: userId,
-      },
-    });
+    // navigate('/classification-questions', {
+    //   state: {
+    //     registeredUserId: userId,
+    //   },
+    // });
+
+    } catch (error) {
+      console.error('Registration error:', error);
+      setMsg('Error during registration. Please try again.');
+    }
   }
 
   return (
@@ -69,6 +77,8 @@ export const Register = () => {
               <label htmlFor="" className='font-medium'>Password<span className='text-red'>*</span></label>
               <input autoComplete='no' placeholder='Enter password...' type="password" className='bg-transparent border-bottom-thin py-1 px-5 rounded-[5px]' value={passwordRegVal !== '' ? passwordRegVal : ''} onChange={(event) => setPasswordRegVal(event.target.value)} />
             </div>
+
+              {msg}
               <button className='font-medium input-btn mbg-800 mcolor-100 py-2 rounded-[20px]' onClick={(e) => registerAccount(e)} >Sign Up</button>
           </div>
         </form>

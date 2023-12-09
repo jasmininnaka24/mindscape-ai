@@ -1,10 +1,13 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { LogReg } from '../../components/login_reg/LogReg';
 import GoogleImg from '../../assets/google.png';
 import axios from 'axios'
 import { useNavigate } from 'react-router-dom';
 import { useUser } from '../../UserContext';
+// import jwt_decode from 'jwt-decode';
+import jsonwebtoken from 'jsonwebtoken/browser';
 
+/* global google */
 
 export const Login = () => {
 
@@ -35,6 +38,32 @@ export const Login = () => {
     });
   }
 
+  const handleCallBackResponse = (response) => {
+    console.log("Encoded JWT ID token: " + response.credential);
+    // let userObject = jwt_decode(response.credential);
+    // console.log(userObject);
+    const decoded = jsonwebtoken.verify(response.credential, "mindscapeprojectkeysecret");
+
+    console.log("Decoded: " + decoded);
+
+  }
+
+  useEffect(() => {
+    // global google
+    google.accounts.id.initialize({
+      client_id: "1070149281728-h3ee0iqc1b50b0e7vhe7dpm86cm9ailb.apps.googleusercontent.com",
+      callback: handleCallBackResponse
+    });
+    
+    
+    google.accounts.id.renderButton(
+      document.getElementById("signInDiv"),
+      { theme: "outline", size: "large"}
+    );
+
+
+  }, [])
+
   return (
     <div className='logreg poppins flex justify-between mcolor-900' data-aos='fade'>
       <section id='logreg-content' className='flex flex-col justify-center'>
@@ -44,8 +73,11 @@ export const Login = () => {
         
         <div className='flex justify-center mt-4'>
           <button className='flex items-center border-thin-800 px-10 py-2 rounded-[30px] text-md'>
-            <img className='google-logo' src={GoogleImg} alt="google logo" />
-            <span className='pl-2 dark-color'>Log in with Google</span>
+            {/* <img className='google-logo' src={GoogleImg} alt="google logo" />
+            <span className='pl-2 dark-color'>Log in with Google</span> */}
+            <div id='signInDiv'>
+
+            </div>
           </button>
         </div>
         

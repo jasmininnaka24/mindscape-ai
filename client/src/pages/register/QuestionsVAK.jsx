@@ -1,14 +1,13 @@
 import React from 'react';
 import './qavak.css';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
 
 export const ClassificationQuestions = () => {
 
   const navigate = useNavigate();
   const location = useLocation();
 
-
-  const { registeredUserId } = location.state;
+  const { id } = useParams();
 
 
 
@@ -32,7 +31,7 @@ export const ClassificationQuestions = () => {
       navigate('/data-submission', {
         state: {
           selectedStr: data,
-          registeredUserId
+          id
         },
       });
 
