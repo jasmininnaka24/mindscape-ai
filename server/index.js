@@ -5,6 +5,7 @@ const cors = require('cors');
 const http = require('http');
 const { Server } = require('socket.io');
 const path = require('path');
+const multer = require('multer')
 
 
 app.use(cors());
@@ -19,6 +20,30 @@ const io = new Server(server, {
 });
 
 app.use(express.static(path.join(__dirname, 'client/build')));
+app.use('/images', express.static(path.join(__dirname, 'public/images')));
+
+
+
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, 'public/images');
+  }, 
+  filename: (req, file, cb) => {
+
+    cb(null, file.fieldname + "_" + Date.now() + '_' + file.originalname);
+  }
+});
+
+const upload = multer({
+  storage: storage
+});
+
+app.post('/upload', upload.single('image'), (req, res) => {
+  let data = req.file;
+  res.json(data)
+  console.log(req.file);
+});
+
 
 
 let rooms = {};

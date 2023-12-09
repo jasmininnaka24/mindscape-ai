@@ -1,23 +1,30 @@
 import React, { useEffect, useState } from 'react'
-import DefaultUserImg from '../../assets/user.png'
 import { useUser } from '../../UserContext'
 import PersonIcon from '@mui/icons-material/Person';
 import axios from 'axios';
 import { Link } from 'react-router-dom';
 import { useDropzone } from 'react-dropzone';
-
-
+import { fetchUserData } from '../../userAPI';
 
 export const ProfileComponent = ({userId}) => {
 
-  const { acceptedFiles, getRootProps, getInputProps } = useDropzone();
+
+  const handleImage = (e) => {
+    console.log(e.target.files);
+    setImage(e.target.files[0]);
+  };
 
 
-  const [enableEdit, setEnableEdit] = useState(false);
-  const [personalStudyMaterialsLength, setPersonalStudyMaterialsLength] = useState(0);
-  const [groupStudyJoinedLength, setGroupStudyJoinedLength] = useState(0);
-  const [contributedMaterials, setContributedMaterials] = useState([])
-  const [contributedMaterialsCategory, setContributedMaterialsCategory] = useState([]);
+  const { getRootProps, getInputProps, acceptedFiles } = useDropzone({
+    onDrop: (acceptedFiles) => {
+      console.log(acceptedFiles);
+      setImage(acceptedFiles[0]);
+    },
+  });
+
+
+
+  const [contributedMaterialsLength, setContributedMaterialsLength] = useState(0);
   const [showPresentStudyMaterials, setShowPresentStudyMaterials] = useState(false);
   const [isDone, setIsDone] = useState(false);
   const [showMainProfile, setShowMainProfile] = useState(true)
@@ -34,10 +41,6 @@ export const ProfileComponent = ({userId}) => {
   const [sharedMaterialsCategory, setSharedMaterialsCategory] = useState([]);
   const [filteredSharedCategories, setFilteredSharedCategories] = useState([]);
   const [groupList, setGroupList] = useState([]);
-  const [filteredStudyMaterialsByCategory, setFilteredStudyMaterialsByCategory] = useState([]);
-  const [searchedMaterials, setSearchedMaterials] = useState([]);
-
-
 
 
 
@@ -67,43 +70,68 @@ export const ProfileComponent = ({userId}) => {
   const [context, setContext] = useState('')
   const [showNotes, setShowNotes] = useState(false);
   const [showQuiz, setShowQuiz] = useState(false);
+  const [image, setImage] = useState('');
+
+
+  // user data
+  const [userData, setUserData] = useState({
+    username: '',
+    email: '',
+    studyProfTarget: 0,
+    typeOfLearner: '',
+    userImage: ''
+  })
+
+
 
   const { user } = useUser()
 
   const UserId = user?.id;
-  const username = user?.username;
-  const userEmail = user?.email;
-  const studyTarget = user?.studyProfTarget;
-  const typeOfLearner = user?.typeOfLearner;
 
+  const fetchUserDataFrontend = async () => {
+    try {
+      const userData = await fetchUserData(UserId);
+      console.log(userData);
 
-  // Number of personal study materials
-  // Number of Joined Groups
-  // Number of Contributed materials 
-
-
-  // Number of followers
-  // See the list of followers
-
-
-
-  // on the other side of the screen are the materials uploaded by the user
-  // on the ohter side are the rooms in the discussion forums that he's currently in
+      setUserData({
+        username: userData.username,
+        email: userData.email,
+        studyProfTarget: userData.studyProfTarget,
+        typeOfLearner: userData.typeOfLearner,
+        userImage: userData.userImage
+      });
 
 
 
+    } catch (error) {
+      console.error(error.message);
+    }
+  };
 
 
 
-  // study materials get those userId and Personal
+  const [updatedUsername, setUpdatedUsername] = useState('');
+  const [userEmailUpdate, setUserEmailUpdate] = useState('');
+  const [updatedStudyTarget, setUpdatedStudyTarget] = useState(90);
+  const [updatedTypeOfLearner, setUpdatedTypeOfLearner] = useState('');
+
+
+  // for image upload
 
 
   const fetchData = async () => {
+
+    const contributedMaterialsResponse = await axios.get(`http://localhost:3001/studyMaterial/shared-materials-by-userid/${UserId}`)
+
+    setContributedMaterialsLength(contributedMaterialsResponse.data.length)
+
+    console.log(contributedMaterialsResponse.data);
+
+
  
     // for fetching personal
-    const personalStudyMaterial = await axios.get(`http://localhost:3001/studyMaterial/study-material-category/Personal/${UserId}`)
-    const filteredPersonalStudyMaterials = personalStudyMaterial.data.filter(item => item.tag === 'Own Record');
-    setPersonalStudyMaterials(filteredPersonalStudyMaterials);
+    const personalStudyMaterial = await axios.get(`http://localhost:3001/studyMaterial/shared-materials-by-userid/${UserId}`)
+    setPersonalStudyMaterials(personalStudyMaterial.data);
 
 
     const fetchedPersonalStudyMaterial = personalStudyMaterial.data;
@@ -118,8 +146,8 @@ export const ProfileComponent = ({userId}) => {
     setPersonalStudyMaterialsCategory(fetchedPersonalStudyMaterialCategory);
     
     
-    const groupStudyMaterial = await axios.get(`http://localhost:3001/studyMaterial/study-material-category/Group/${UserId}`)
-    const filteredGroupStudyMaterials = groupStudyMaterial.data.filter(item => item.tag === 'Own Record');
+    const groupStudyMaterial = await axios.get(`http://localhost:3001/studyMaterial/shared-materials-by-userid/${UserId}`)
+    const filteredGroupStudyMaterials = groupStudyMaterial.data.filter(item => item.tag === 'Shared');
     setGroupStudyMaterials(filteredGroupStudyMaterials);
     console.log(filteredGroupStudyMaterials);
     
@@ -140,7 +168,7 @@ export const ProfileComponent = ({userId}) => {
       
       
       
-    const sharedStudyMaterial = await axios.get(`http://localhost:3001/studyMaterial/shared-materials`);
+    const sharedStudyMaterial = await axios.get(`http://localhost:3001/studyMaterial/shared-materials-by-userid/${UserId}`);
     const sharedStudyMaterialResponse = sharedStudyMaterial.data;  
     setSharedMaterials(sharedStudyMaterialResponse)
 
@@ -232,6 +260,7 @@ export const ProfileComponent = ({userId}) => {
   useEffect(() => {
     if (isDone) {
       fetchData();
+      fetchUserDataFrontend()
       setIsDone(false)
     }
   }, [isDone])
@@ -694,6 +723,67 @@ export const ProfileComponent = ({userId}) => {
   };
 
 
+  const updateUserInformation = async () => {
+
+    let data = {
+      username: userData.username,
+      typeOfLearner: userData.typeOfLearner,
+      studyProfTarget: userData.studyProfTarget
+    }
+
+    await axios.put(`http://localhost:3001/users/update-user/${UserId}`, data)
+
+    fetchUserDataFrontend()
+  }
+
+
+  const updateUserImage = async (e) => {
+    e.preventDefault();
+  
+  
+    if (image) {
+      // Generate frontend filename
+  
+      // Prepare FormData for image upload
+      const formData = new FormData();
+
+      const currentDate = new Date();
+      const year = currentDate.getFullYear();
+      const month = (currentDate.getMonth() + 1).toString().padStart(2, '0');
+      const date = currentDate.getDate().toString().padStart(2, '0');
+      const hours = currentDate.getHours().toString().padStart(2, '0');
+      const formattedString = `${year}${month}${date}${hours}`;
+
+
+      formData.append('image', (image)); 
+  
+
+  
+      try {
+
+        const response = await axios.post('http://localhost:3001/upload', formData);
+  
+        const serverGeneratedFilename = response.data.filename;
+        console.log(serverGeneratedFilename);
+
+        let data = {
+          userImage: serverGeneratedFilename,
+        };
+
+        await axios.put(`http://localhost:3001/users/update-user-image/${UserId}`, data);
+
+        fetchUserDataFrontend()
+        console.log(response);
+      } catch (error) {
+        console.error('Error:', error);
+      }
+    } else {
+      alert('No image selected!');
+    }
+  };
+  
+
+
 
 
 
@@ -735,19 +825,18 @@ export const ProfileComponent = ({userId}) => {
 
           {showMainProfile && (
             <div>
-
               <div className='shadows p-5 mbg-100 rounded my-5'>
 
-                <div className='flex items-center px-8 gap-8 '>
+                <div className='flex items-center px-8 gap-8 pt-5'>
                   <div style={{ width: '200px' }}>
-                    <img src={DefaultUserImg} style={{ width: '200px' }} alt="" />
+                  <img src={`http://localhost:3001/images/${userData.userImage}`} className='rounded-full' style={{ width: '200px', objectFit: 'cover', height: '200px' }} alt="" />
                   </div>
 
                   <div className=''>
-                    <p className='text-2xl mb-1 font-medium text-2xl mb-1 mcolor-800 mb-5'>{username}</p>
-                    <p className='opacity-80 text-md font-medium'>{typeOfLearner} Learner | 20 Followers</p>
+                    <p className='text-2xl mb-1 font-medium text-2xl mb-1 mcolor-800 mb-5'>{userData.username}</p>
+                    <p className='opacity-80 text-md font-medium'>{userData.typeOfLearner} Learner | 20 Followers</p>
                     <p className='opacity-75 text-md'>5 Group Study Rooms</p>
-                    <p className='opacity-75 text-md'>2 Study Materials Contributes</p>
+                    <p className='opacity-75 text-md'>{contributedMaterialsLength} Study Materials Contributes</p>
 
                     <button className='mbg-700 mcolor-100 px-10 mt-3 py-2 rounded' onClick={() => {
                       setShowMainProfile(false)
@@ -1045,22 +1134,25 @@ export const ProfileComponent = ({userId}) => {
           {showAccountSettings && (
             <div>
               <div className='shadows p-5 mbg-100 rounded my-5'>
-                <div className='flex items-center px-8 gap-8 pt-5'>
-                  <div {...getRootProps()} style={{ width: '200px', cursor: 'pointer' }}>
-                    <input {...getInputProps()} />
-                    {acceptedFiles.length === 0 ? (
-                      <img src={DefaultUserImg} className='rounded-full' style={{ width: '200px', objectFit: 'cover', height: '200px' }} alt="" />
-                    ) : (
+                <form className='flex items-center px-8 gap-8 pt-5'>
+                <div {...getRootProps()} style={{ width: '200px', cursor: 'pointer', border: '10px doubled #888' }}>
+                  <input {...getInputProps()} name='image' type='file' />
+                  {acceptedFiles.length === 0 ? (
+                    <img src={`http://localhost:3001/images/${userData.userImage}`} className='rounded-full' style={{ width: '200px', objectFit: 'cover', height: '200px' }} alt="" />
+                  ) : (
+                    <>
                       <img src={URL.createObjectURL(acceptedFiles[0])} className='rounded-full' style={{ width: '200px', objectFit: 'cover', height: '200px' }} alt="" />
-                    )}
-                  </div>
+                    </>
+                  )}
+                </div>
 
                   <div className=''>
                     <p className='text-2xl mb-1 font-medium mcolor-800 mb-1'>Upload a new photo</p>
                     <p className='text-sm opacity-70 mb-4'>Drag and drop an image to the photo or click to select one.</p>
-                    <button className='mbg-700 mcolor-100 px-10 mt-3 py-2 rounded'>Update</button>
+                    <button className='mbg-700 mcolor-100 px-10 py-2 rounded' onClick={(e) => updateUserImage(e)}>Update</button>
                   </div>
-                </div>  
+                </form>  
+
 
                 {/* Changing information */}
                 <br /><br />
@@ -1069,32 +1161,83 @@ export const ProfileComponent = ({userId}) => {
                 <ul className='grid grid-cols-2 gap-5 my-5'>
                   <li className='w-full'>
                     <p className='text-md'>Username</p>
-                    <input type="text" className='border-medium-800 w-full py-2 rounded px-5' value={username} />
+                    <input
+                      type="text"
+                      className='border-medium-800 w-full py-2 rounded px-5'
+                      value={userData.username || ''}
+                      onChange={(event) => setUserData({...userData, username: event.target.value})}
+                    />
+
+
                   </li>
                   <li className='w-full'>
                     <p className='text-md'>Email</p>
-                    <input type="text" disabled className='border-medium-800 w-full py-2 rounded mbg-300 px-5' value={userEmail} />
+                    <input type="text" disabled className='border-medium-800 w-full py-2 rounded mbg-300 px-5' value={userData.email} />
                   </li>
+                  
                   <li className='w-full'>
                     <p className='text-md'>Study Target</p>
-                    <select name="" id="" className='border-medium-800 w-full py-2 rounded px-5'>
-                      <option value="">100%</option>
-                      <option value="">95%</option>
-                      <option value="">90%</option>
-                      <option value="">85%</option>
-                      <option value="">80%</option>
-                      <option value="">75%</option>
+                    <select
+                      name=""
+                      id=""
+                      className='border-medium-800 w-full py-2 rounded px-5'
+                      value={userData.studyProfTarget || 0}
+                      onChange={(event) => setUserData({...userData, studyProfTarget: parseInt(event.target.value, 10) || 0})}
+                      >
+                      {/* Dynamic default option based on updatedStudyTarget */}
+                      {userData.studyProfTarget && (
+                        <option key={userData.studyProfTarget} value={userData.studyProfTarget}>
+                          {userData.studyProfTarget}%
+                        </option>
+                      )}
+
+                      {/* Other options */}
+                      {[100, 95, 90, 85, 80, 75].map((option) => (
+                        option !== userData.studyProfTarget && (
+                          <option key={option} value={option}>
+                            {option}%
+                          </option>
+                        )
+                      ))}
                     </select>
                   </li>
+
+
                   <li className='w-full'>
                     <p className='text-md'>Type of Learner</p>
-                    <select name="" id="" className='border-medium-800 w-full py-2 rounded px-5'>
-                      <option value="">{typeOfLearner}</option>
-                      <option value="">Auditory</option>
-                      <option value="">Kinesthetic</option>
+                    <select
+                      name=""
+                      id=""
+                      className='border-medium-800 w-full py-2 rounded px-5'
+                      value={userData.typeOfLearner || ''}
+                      onChange={(event) => setUserData({...userData, typeOfLearner: event.target.value})}
+                    >
+                      {/* Dynamic default option based on typeOfLearner */}
+                      {userData.typeOfLearner && (
+                        <option key={userData.typeOfLearner} value={userData.typeOfLearner}>
+                          {userData.typeOfLearner}
+                        </option>
+                      )}
+
+                      {/* Other options excluding the default value */}
+                      {['Auditory', 'Visual', 'Kinesthetic'].map((option) => (
+                        option !== userData.typeOfLearner && (
+                          <option key={option} value={option}>
+                            {option}
+                          </option>
+                        )
+                      ))}
                     </select>
                   </li>
+
+
+
+
                 </ul>
+
+                <div className='flex items-center justify-end w-full mt-10'>
+                  <button className='mbg-700 mcolor-100 py-2 px-5 rounded' onClick={updateUserInformation}>Update Information Details</button>
+                </div>
               </div>
             </div>
           )}

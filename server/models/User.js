@@ -12,10 +12,6 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.STRING,
       allowNull: false,
     },
-    name: {
-      type: DataTypes.STRING,
-      allowNull: false,
-    },
     typeOfLearner: {
       type: DataTypes.STRING,
       allowNull: false,
@@ -25,11 +21,24 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.INTEGER,
       allowNull: false,
       defaultValue: 0, 
-    }
+    },
+    userImage: {
+      type: DataTypes.STRING,
+      allowNull: true,
+      defaultValue: 'user.png', 
+    },
+    isVerified: {
+      type: DataTypes.BOOLEAN,
+      allowNull: true,
+      defaultValue: false, 
+    },
   });
 
   User.associate = (models) => {
     User.hasMany(models.Tasks, {
+      onDelete: 'cascade',
+    })
+    User.hasMany(models.Token, {
       onDelete: 'cascade',
     })
     User.hasMany(models.StudyMaterials, {
