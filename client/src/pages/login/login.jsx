@@ -4,12 +4,13 @@ import GoogleImg from '../../assets/google.png';
 import axios from 'axios'
 import { useNavigate } from 'react-router-dom';
 import { useUser } from '../../UserContext';
-// import jwt_decode from 'jwt-decode';
-import jsonwebtoken from 'jsonwebtoken/browser';
+import jwt_decode from 'jwt-decode';
 
 /* global google */
 
 export const Login = () => {
+
+  const [user, setUser] = useState({})
 
   const navigate = useNavigate();
   const { setUserInformation } = useUser();
@@ -40,18 +41,15 @@ export const Login = () => {
 
   const handleCallBackResponse = (response) => {
     console.log("Encoded JWT ID token: " + response.credential);
-    // let userObject = jwt_decode(response.credential);
-    // console.log(userObject);
-    const decoded = jsonwebtoken.verify(response.credential, "mindscapeprojectkeysecret");
-
-    console.log("Decoded: " + decoded);
-
+    let userObject = jwt_decode(response.credential);
+    console.log(userObject);
+    setUser(userObject)
   }
 
   useEffect(() => {
     // global google
     google.accounts.id.initialize({
-      client_id: "1070149281728-h3ee0iqc1b50b0e7vhe7dpm86cm9ailb.apps.googleusercontent.com",
+      client_id: "220847377508-mb7a1fbtuqn2ibg2s1ihj0lesl17vut0.apps.googleusercontent.com",
       callback: handleCallBackResponse
     });
     
@@ -61,7 +59,7 @@ export const Login = () => {
       { theme: "outline", size: "large"}
     );
 
-
+    google.accounts.id.prompt()
   }, [])
 
   return (
@@ -72,10 +70,8 @@ export const Login = () => {
         <h2 className='text-xl dark-color font-normal mt-10 text-center'>Log into your account</h2>
         
         <div className='flex justify-center mt-4'>
-          <button className='flex items-center border-thin-800 px-10 py-2 rounded-[30px] text-md'>
-            {/* <img className='google-logo' src={GoogleImg} alt="google logo" />
-            <span className='pl-2 dark-color'>Log in with Google</span> */}
-            <div id='signInDiv'>
+          <button >
+            <div id='signInDiv' className='flex items-center px-10 py-3 rounded-[30px] text-md'>
 
             </div>
           </button>
