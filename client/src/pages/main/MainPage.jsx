@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import './mainpage.css';
-import { Link } from 'react-router-dom';
+import { Link, Navigate, useNavigate } from 'react-router-dom';
 import personalStudyRoomImg from '../../assets/personal_study.jpg';
 import groupStudyRoomImg from '../../assets/group_study.jpg';
 import virtualLibraryRoomImg from '../../assets/library.jpg';
@@ -10,11 +10,18 @@ import { useUser } from '../../UserContext';
 export const MainPage = () => {
 
   const { user } = useUser();
+  const navigate = useNavigate();
 
   const [dropDownPersonalLinks, setdropDownPersonalLinks] = useState(false);
 
   const toggleExpansion = () => {
     setdropDownPersonalLinks(!dropDownPersonalLinks ? true : false);
+  };
+
+  const handleLogout = () => {
+    // Clear session storage
+    sessionStorage.clear();
+    navigate('/')
   };
 
   return (
@@ -32,9 +39,7 @@ export const MainPage = () => {
             <p className='font-normal text-3xl'>MindScape</p>
           </div>
           <div>
-            <Link to={'/'}>
-              <p className='text-2xl'>Logout <i class="fa-solid fa-right-from-bracket"></i></p>
-            </Link>
+            <button className='text-2xl' onClick={handleLogout}>Logout <i class="fa-solid fa-right-from-bracket"></i></button>
           </div>
         </div>
 

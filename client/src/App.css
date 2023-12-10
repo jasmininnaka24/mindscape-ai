@@ -477,7 +477,7 @@ input:focus{
   background: #fbf2d7;
 }
 .green-bg {
-  background: #DFF0D8;
+  background: #dcead6;
 }
 .blue-bg {
   background: #e4ebf6;
@@ -487,6 +487,16 @@ input:focus{
 }
 .gray-bg {
   background: #DCDCDC;
+}
+
+.dark-green {
+  background: #a0ed80;
+}
+.dark-red {
+  background: #f46f6f;
+}
+.dark-orange {
+  background: #f4a75b;
 }
 
 

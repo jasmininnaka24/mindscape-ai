@@ -89,7 +89,7 @@ function App() {
               {/* Main Page Route */}
               <Route path='/main' element={<MainPage/>} />
               <Route path='/users/:id/verify/:token' element={<EmailVerification/>} />
-              <Route path='/forgot-password' element={<ForgotPassword/>} />
+              <Route path='/verify-email' element={<ForgotPassword/>} />
               <Route path='/reset-password/:id/:token' element={<ResetPassword/>} />
 
         

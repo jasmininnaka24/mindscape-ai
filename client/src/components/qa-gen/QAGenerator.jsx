@@ -364,7 +364,7 @@ export const QAGenerator = (props) => {
     <PDFDetails.Provider value={{ setPDFDetails }}>
       <GeneratedQAResult.Provider value={{ setGeneratedQA, generatedQA }}>
         <div className='poppins mcolor-900'>
-          <div data-aos='fade' className="border-hard-800 gen-box flex justify-between items-center rounded">
+          <div className="border-hard-800 gen-box flex justify-between items-center rounded">
             <div className='box1 border-box w-1/2'>
               <div className='flex justify-center items-center dropzone'>
                 <DropZoneComponent numInp={numInp} setNumInp={setNumInp} setPDFDetails={setPDFDetails} pdfDetails={pdfDetails}  />
@@ -720,7 +720,7 @@ export const QAGenerator = (props) => {
                       }} className={`border-hard-800 mcolor-900 px-5 py-1 rounded-[5px] ${activeBtnRev === false ? 'hidden' : ''}`}>Add Item</button>
                     </div>
                     
-                    <div className='flex justify-end' data-aos="fade">
+                    <div className='flex justify-end'>
                       <button onClick={() => {
                         setActiveBtnRev(activeBtnRev === false ? true : false)
                       }} className={`text-4xl mcolor-900 px-5 py-1 rounded-[5px] ${activeBtnRev === true ? 'hidden' : ''}`}> × </button>

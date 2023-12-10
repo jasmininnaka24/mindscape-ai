@@ -5,6 +5,8 @@ import axios from 'axios';
 import { Link } from 'react-router-dom';
 import { useDropzone } from 'react-dropzone';
 import { fetchUserData } from '../../userAPI';
+import VisibilityIcon from '@mui/icons-material/Visibility';
+import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
 
 export const ProfileComponent = ({userId}) => {
 
@@ -30,6 +32,7 @@ export const ProfileComponent = ({userId}) => {
   const [showMainProfile, setShowMainProfile] = useState(true)
   const [showAccountSettings, setShowAccountSettings] = useState(false)
   const [showPasswordSecurity, setShowPasswordSecurity] = useState(false)
+  const [showAccountDeletion, setShowAccountDeletion] = useState(false)
 
 
   const [personalStudyMaterials, setPersonalStudyMaterials] = useState([]);
@@ -62,7 +65,9 @@ export const ProfileComponent = ({userId}) => {
 
 
   const [chooseGroupRoom, setChooseGroupRoom] = useState(false);
-
+  const [showAccountDeletionInputPass, setShowAccountDeletionInputPass] = useState(false)
+  const [msg, setMsg] = useState('');
+  const [error, setError] = useState(false);
 
 
   // tabs
@@ -72,6 +77,15 @@ export const ProfileComponent = ({userId}) => {
   const [showQuiz, setShowQuiz] = useState(false);
   const [image, setImage] = useState('');
 
+
+
+
+  const [showPassword, setShowPassword] = useState(false);
+  const [passwordVal, setPasswordVal] = useState('')
+
+  const togglePasswordVisibility = () => {
+    setShowPassword(!showPassword);
+  };
 
   // user data
   const [userData, setUserData] = useState({
@@ -108,12 +122,6 @@ export const ProfileComponent = ({userId}) => {
     }
   };
 
-
-
-  const [updatedUsername, setUpdatedUsername] = useState('');
-  const [userEmailUpdate, setUserEmailUpdate] = useState('');
-  const [updatedStudyTarget, setUpdatedStudyTarget] = useState(90);
-  const [updatedTypeOfLearner, setUpdatedTypeOfLearner] = useState('');
 
 
   // for image upload
@@ -731,7 +739,32 @@ export const ProfileComponent = ({userId}) => {
       studyProfTarget: userData.studyProfTarget
     }
 
-    await axios.put(`http://localhost:3001/users/update-user/${UserId}`, data)
+    await axios.put(`http://localhost:3001/users/update-user/${UserId}`, data).then((response) => {
+
+    if(response.data.error) {
+
+      setTimeout(() => {
+        setError(true)
+        setMsg(response.data.message)
+      }, 100);
+      
+      setTimeout(() => {
+        setError(false)
+        setMsg('')
+      }, 2500);
+
+
+    } else {
+      setTimeout(() => {
+        setError(false)
+        setMsg(response.data.message)
+      }, 100);
+      
+      setTimeout(() => {
+        setMsg('')
+      }, 2500);
+    }
+  })
 
     fetchUserDataFrontend()
   }
@@ -770,7 +803,29 @@ export const ProfileComponent = ({userId}) => {
           userImage: serverGeneratedFilename,
         };
 
-        await axios.put(`http://localhost:3001/users/update-user-image/${UserId}`, data);
+        await axios.put(`http://localhost:3001/users/update-user-image/${UserId}`, data).then((response) => {
+
+          if(response.data.error) {
+            setTimeout(() => {
+              setError(true)
+              setMsg(response.data.message)
+            }, 100);
+            
+            setTimeout(() => {
+              setError(false)
+              setMsg('')
+            }, 2500);      
+          } else {
+            setTimeout(() => {
+              setError(false)
+              setMsg(response.data.message)
+            }, 100);
+            
+            setTimeout(() => {
+              setMsg('')
+            }, 2500);
+          }
+        })
 
         fetchUserDataFrontend()
         console.log(response);
@@ -797,6 +852,7 @@ export const ProfileComponent = ({userId}) => {
           <div className={`${showMainProfile ? 'shadows' : 'border-thin-800'} p-5 mbg-100 rounded my-5 cursor-pointer`} onClick={() => {
             setShowPasswordSecurity(false)
             setShowAccountSettings(false)
+            setShowAccountDeletion(false)
             setShowMainProfile(true)
           }}>
             <p className='text-2xl mb-1text-2xl mb-1'>Main Profile</p>
@@ -805,6 +861,7 @@ export const ProfileComponent = ({userId}) => {
           <div className={`${showAccountSettings ? 'shadows' : 'border-thin-800'} p-5 mbg-100 rounded my-5 cursor-pointer`} onClick={() => {
             setShowMainProfile(false)
             setShowPasswordSecurity(false)
+            setShowAccountDeletion(false)
             setShowAccountSettings(true)
           }}>
             <p className='text-2xl mb-1'>Account Settings</p>
@@ -813,12 +870,24 @@ export const ProfileComponent = ({userId}) => {
           <div className={`${showPasswordSecurity ? 'shadows' : 'border-thin-800'} p-5 mbg-100 rounded my-5 cursor-pointer`} onClick={() => {
             setShowAccountSettings(false)
             setShowMainProfile(false)
+            setShowAccountDeletion(false)
             setShowPasswordSecurity(true)
           }}>
             <p className='text-2xl mb-1'>Password & Security</p>
             <p className='opacity-75 text-sm'>Ensure the safety of your account with advanced security settings.</p>
           </div>
+          <div className={`${showAccountDeletion ? 'shadows' : 'border-thin-800'} p-5 mbg-100 rounded my-5 cursor-pointer`} onClick={() => {
+            setShowAccountSettings(false)
+            setShowMainProfile(false)
+            setShowPasswordSecurity(false)
+            setShowAccountDeletion(true)
+          }}>
+            <p className='text-2xl mb-1'>Account Deletion</p>
+            <p className='opacity-75 text-sm'>To permanently delete your account, including all associated data, please proceed with caution.</p>
+
+          </div>
         </div>
+
 
 
         <div className='flex-1 p-5 my-8'>
@@ -1152,6 +1221,18 @@ export const ProfileComponent = ({userId}) => {
                     <button className='mbg-700 mcolor-100 px-10 py-2 rounded' onClick={(e) => updateUserImage(e)}>Update</button>
                   </div>
                 </form>  
+                
+                {!error && msg !== '' && (
+                  <div className='green-bg text-center mt-5 rounded py-3 w-full'>
+                    {msg}
+                  </div>
+                )}
+
+                {error && msg !== '' && (
+                  <div className='bg-red mcolor-100 text-center mt-5 rounded py-3 w-full'>
+                    {msg}
+                  </div>
+                )}
 
 
                 {/* Changing information */}
@@ -1238,6 +1319,84 @@ export const ProfileComponent = ({userId}) => {
                 <div className='flex items-center justify-end w-full mt-10'>
                   <button className='mbg-700 mcolor-100 py-2 px-5 rounded' onClick={updateUserInformation}>Update Information Details</button>
                 </div>
+              </div>
+            </div>
+          )}
+
+          {showPasswordSecurity && (
+            <div>
+              <div className='shadows p-5 mbg-100 rounded my-5'>
+
+                  <form className='px-8 gap-8 py-5'>
+                    <p className='text-2xl mcolor-800 font-medium mb-5'>Resetting Password</p>
+                    <p className='mcolor-800'>
+                      Begin the password reset process by entering your email address below. Our system will quickly initiate the necessary steps to secure your account. Once submitted, a confirmation email will be sent to the provided address, containing instructions on how to efficiently reset your password.
+                    </p>
+
+                    <div className='flex items-center justify-end mt-5'>
+                      <Link to={'/verify-email'} className=' py-2 px-5 mbg-700 mcolor-100 rounded'>
+                        Reset Password
+                      </Link>
+                    </div>
+                  </form>
+        
+              </div>
+            </div>
+          )}
+
+          {showAccountDeletion && (
+            <div>
+              <div className='shadows p-5 mbg-100 rounded my-5'>
+
+                <form className='px-8 gap-8 py-5'>
+                  <p className='text-2xl mcolor-800 font-medium mb-5'>Account Deletion</p>
+                  <p className='mcolor-800'>
+                    Keep in mind that this action is irreversible and will result in the removal of all your information from our system.
+                  </p>
+
+                  <div className='flex items-center justify-end mt-5'>
+                    <button
+                      className='mbg-700 mcolor-100 px-8 py-2 rounded'
+                      onClick={(e) => {
+                      e.preventDefault()
+                      setShowAccountDeletionInputPass(true)}
+                      }>
+                      Proceed
+                    </button>
+                  </div>
+                </form>
+
+                {showAccountDeletionInputPass && (
+                  <div className='w-full rounded flex items-center justify-center my-5'>
+                    <div className='w-1/2 border-thin-800 rounded p-5 mbg-200'>
+                      <p className='text-center font-medium text-xl mt-2'>Password Confirmation</p>
+
+                      <div className='flex relative mt-6'>
+                        <input
+                          autoComplete='no'
+                          placeholder='Enter password...'
+                          type={showPassword ? 'text' : 'password'}
+                          className='w-full border-thin-800 rounded px-5 py-2'
+                          value={passwordVal !== '' ? passwordVal : ''}
+                          onChange={(event) => setPasswordVal(event.target.value)}
+                        />
+                        <button
+                          type="button"
+                          className='ml-2 focus:outline-none absolute right-2 bottom-2 mcolor-800'
+                          onClick={togglePasswordVisibility}
+                        >
+                          {showPassword ? <VisibilityOffIcon /> : <VisibilityIcon />}
+                        </button>
+                      </div>
+
+
+                      <button className='w-full mbg-700 mcolor-100 rounded py-2 my-4'>
+                        Confirm
+                      </button>
+                    </div>
+                  </div>
+                )}
+                <br />
               </div>
             </div>
           )}

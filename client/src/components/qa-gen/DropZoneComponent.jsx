@@ -24,31 +24,44 @@ export const DropZoneComponent = (props) => {
     num_questions_inp: null,
   });
 
-  async function handleInputChange(event) {
+  const handleInputChange = (event) => {
     const { id, value } = event.target;
     setData((prevData) => ({ ...prevData, [id]: value }));
     if (event.target.value !== null) {
       setNumInp(parseInt(event.target.value, 10));
     }
-  }
+  };
 
   const handleFileChange = async (file) => {
     if (file) {
-      await extractPdfText(file);  // Wait for the text extraction to complete
+      try {
+        const pdfContent = await extractPdfText(file);
+        setData((prevData) => ({ ...prevData, text: pdfContent }));
+        setPDFDetails(pdfContent);
+      } catch (error) {
+        console.error('Error processing PDF file:', error);
+        // Handle the error, e.g., display an error message to the user
+      }
     }
   };
 
-  async function extractPdfText(file) {
-    const reader = new FileReader();
-    reader.onload = async function (e) {
-      const pdfContent = await getContent(e.target.result);
-      setData((prevData) => ({ ...prevData, text: pdfContent }));
-      setPDFDetails(pdfContent);
-    };
-    reader.readAsArrayBuffer(file);
-  }
+  const extractPdfText = async (file) => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = async function (e) {
+        try {
+          const pdfContent = await getContent(e.target.result);
+          resolve(pdfContent);
+        } catch (error) {
+          reject(error);
+        }
+      };
+      reader.onerror = (error) => reject(error);
+      reader.readAsArrayBuffer(file);
+    });
+  };
 
-  async function getContent(src) {
+  const getContent = async (src) => {
     const doc = await pdfjs.getDocument(src).promise;
     const totalNumPages = doc.numPages;
     let allContent = '';
@@ -60,8 +73,7 @@ export const DropZoneComponent = (props) => {
     }
 
     return allContent;
-  }
-
+  };
 
   const intervalRef = useRef(null);
   const handleGenerateClick = async (event) => {
@@ -133,35 +145,35 @@ export const DropZoneComponent = (props) => {
   return (
     <div className='w-full '>
       <form className="pdf-form px-16">
-        <div className="form-group">
-          <div
-            id="drop-area"
-            className="drop-area"
-            onDragOver={(event) => {
-              event.preventDefault();
-              event.stopPropagation();
-              event.currentTarget.classList.add('active');
-            }}
-            onDrop={(event) => {
-              event.preventDefault();
-              event.stopPropagation();
-              event.currentTarget.classList.remove('active');
-              const file = event.dataTransfer.files[0];
-              handleFileChange(file);
-            }}
-            onClick={() => document.getElementById('pdf_upload').click()}
-          >
-            <p>Drag and drop a PDF file here, or click to select one.</p>
-          </div>
-          <input
-            type="file"
-            accept=".pdf"
-            onChange={(e) => handleFileChange(e.target.files[0])}
-            id="pdf_upload"
-            style={{ display: 'none' }}
-            required
-          />
-        </div>
+      <div className="form-group">
+      <div
+        id="drop-area"
+        className="drop-area"
+        onDragOver={(event) => {
+          event.preventDefault();
+          event.stopPropagation();
+          event.currentTarget.classList.add('active');
+        }}
+        onDrop={(event) => {
+          event.preventDefault();
+          event.stopPropagation();
+          event.currentTarget.classList.remove('active');
+          const file = event.dataTransfer.files[0];
+          handleFileChange(file);
+        }}
+        onClick={() => document.getElementById('pdf_upload').click()}
+      >
+        <p>Drag and drop a PDF file here, or click to select one.</p>
+      </div>
+      <input
+        type="file"
+        accept=".pdf"
+        onChange={(e) => handleFileChange(e.target.files[0])}
+        id="pdf_upload"
+        style={{ display: 'none' }}
+        required
+      />
+    </div>
 
         <div className="form-group">
           <p className='mb-1 mt-10'>Maximum number of times to generate:</p>

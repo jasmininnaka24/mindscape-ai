@@ -1,50 +1,101 @@
+/* global google */
 import React, { useEffect, useState } from 'react';
 import { LogReg } from '../../components/login_reg/LogReg';
-import GoogleImg from '../../assets/google.png';
 import axios from 'axios'
 import { useNavigate } from 'react-router-dom';
 import { useUser } from '../../UserContext';
 import jwt_decode from 'jwt-decode';
+import { CustomModal } from '../../components/CustomModal';
+import { Link } from 'react-router-dom';
 
-/* global google */
 
 export const Login = () => {
-
-  const [user, setUser] = useState({})
-
+  
+  
   const navigate = useNavigate();
   const { setUserInformation } = useUser();
-
+  
+  const [modalIsOpen, setModalIsOpen] = useState(false);
 
   const [passwordLogVal, setPasswordLogVal] = useState('')
   const [emailLogVal, setEmailLogVal] = useState('')
+  const [msg, setMsg] = useState('');
+  const [error, setError] = useState(false);
+
+
+  const openModal = () => {
+    setModalIsOpen(true);
+  };
+
+  const closeModal = () => {
+    setModalIsOpen(false);
+  };
+
+
+
+
 
   const loginAccount = async (e) => {
 
-    e.preventDefault();
+    e.preventDefault(); 
 
     const data = {
-      password: passwordLogVal,
       email: emailLogVal,
-    }
-
+      password: passwordLogVal,
+    };
+    
+    console.log(data);
     await axios.post('http://localhost:3001/users/login', data).then((response) => {
       if (response.data.error) {
-        console.log('error');
+        setMsg(response.data.message);
+        setError(true)
       } else {
         sessionStorage.setItem("accessToken", response.data.accessToken);
         setUserInformation(response.data.user);
-        navigate('/main')
+
+        setTimeout(() => {
+          setError(false)
+          setMsg("Logging in...");
+        }, 100);
+
+        setTimeout(() => {
+          navigate('/main');
+        }, 2000);
       }
     });
-  }
+  };
+  
 
-  const handleCallBackResponse = (response) => {
+  const handleCallBackResponse = async (response) => {
     console.log("Encoded JWT ID token: " + response.credential);
     let userObject = jwt_decode(response.credential);
     console.log(userObject);
-    setUser(userObject)
-  }
+  
+    const data = {
+      email: userObject.email,
+    };
+  
+    await axios.post('http://localhost:3001/users/login', data).then((response) => {
+      if (response.data.error) {
+        setMsg(response.data.message);
+        setError(true)
+      } else {
+        sessionStorage.setItem("accessToken", response.data.accessToken);
+        setUserInformation(response.data.user);
+
+        setTimeout(() => {
+          setError(false)
+          setMsg("Logging in...");
+        }, 100);
+
+        setTimeout(() => {
+          navigate('/main');
+        }, 2000);
+      }
+    });
+    
+  };
+  
 
   useEffect(() => {
     // global google
@@ -59,46 +110,83 @@ export const Login = () => {
       { theme: "outline", size: "large"}
     );
 
-    google.accounts.id.prompt()
+    // google.accounts.id.prompt()
   }, [])
 
+
+
+  // const customStyles = {
+  //   content: {
+  //     width: '50%',
+  //     height: '50%', 
+  //     backgroundColor: 'white', 
+  //     textAlign: 'center'
+  //   },
+  //   overlay: {
+  //     backgroundColor: 'rgba(0, 0, 0, 0)', // Customize the background color of the overlay
+  //   },
+  // };
+  
+
   return (
-    <div className='logreg poppins flex justify-between mcolor-900' data-aos='fade'>
-      <section id='logreg-content' className='flex flex-col justify-center'>
-        <article className='text-4xl text-center mt-20 font-normal'><i class="fa-solid fa-spa"></i> MindScape</article>
-        
-        <h2 className='text-xl dark-color font-normal mt-10 text-center'>Log into your account</h2>
-        
-        <div className='flex justify-center mt-4'>
-          <button >
-            <div id='signInDiv' className='flex items-center px-10 py-3 rounded-[30px] text-md'>
+    <div className='poppins flex justify-between mcolor-900 w-full'>
 
-            </div>
-          </button>
-        </div>
-        
-        <div className='flex items-center gap-5 justify-center my-4'>
-          <div className='line'></div>
-          <p>or</p>
-          <div className='line'></div>
-        </div>
+      <section className='w-1/3 flex items-center justify-center'>
+        <div>
+          <article className='text-4xl text-center font-normal'><i class="fa-solid fa-spa"></i> MindScape</article>
+          
+          <h2 className='text-xl dark-color font-normal mt-10 text-center'>Log into your account</h2>
+          
+          <div className='flex justify-center mt-4'>
+            <button >
+              <div id='signInDiv' className='flex items-center px-10 py-3 rounded-[30px] text-md'>
 
-        <form className='logreg flex justify-center mb-5'>
-          <div className='mt-3'>
-            <div className='mb-3'>
-              <label htmlFor="" className='font-medium'>Email<span className='text-red'>*</span></label>
-              <input autoComplete='no' placeholder='Enter your email...' type="email" className='bg-transparent border-bottom-thin py-1 px-8 rounded-[5px]' value={emailLogVal !== '' ? emailLogVal : ''} onChange={(event) => setEmailLogVal(event.target.value)} />
-            </div>
-            <div className='mb-5 mt-8'>
-              <label htmlFor="" className='font-medium'>Password<span className='text-red'>*</span></label>
-              <input autoComplete='no' placeholder='Enter your password...' type="password" className='bg-transparent border-bottom-thin py-1 px-5 rounded-[5px]' value={passwordLogVal !== '' ? passwordLogVal : ''} onChange={(event) => setPasswordLogVal(event.target.value)} />
-            </div>
-              <button className='font-medium input-btn mbg-800 mcolor-100 py-2 rounded-[20px]' onClick={(e) => loginAccount(e)}>Sign In</button>
+              </div>
+            </button>
           </div>
-        </form>
+          
+          <div className='flex items-center gap-5 justify-center my-4'>
+            <div className='line'></div>
+            <p>or</p>
+            <div className='line'></div>
+          </div>
+
+          <div className='mb-5 w-full flex items-center justify-center'>
+            <div>
+
+              <div className='mb-3 w-full'>
+                <p htmlFor="" className='font-medium'>Email<span className='text-red'>*</span></p>
+                <input required autoComplete='no' placeholder='Enter your email...' type="email" className='bg-transparent w-full border-bottom-thin py-1 rounded-[5px]' value={emailLogVal !== '' ? emailLogVal : ''} onChange={(event) => setEmailLogVal(event.target.value)} />
+              </div>
+
+              <div className='mb-4 mt-8'>
+                <p className='font-medium'>Password<span className='text-red'>*</span></p>
+                <input required autoComplete='no' placeholder='Enter your password...' type="password" className='bg-transparent w-full border-bottom-thin py-1 rounded-[5px]' value={passwordLogVal !== '' ? passwordLogVal : ''} onChange={(event) => setPasswordLogVal(event.target.value)} />
+              </div>
+
+                
+              <div className='w-full mb-5 font-medium mcolor-700'>
+                <Link to={'/verify-email'}>Forgot Password</Link>
+              </div>
+
+              <p className={`text-center ${(msg !== '' && error) && 'text-red my-3'}`} style={{ whiteSpace: 'pre-wrap' }}>{(msg !== '' && error) && msg}</p>
+              
+              <button className={`font-medium input-btn py-2 rounded-[20px] ${(msg !== '' && !error) ? 'dark-green mcolor-900' : 'mbg-800 mcolor-100'}`} onClick={(e) => loginAccount(e)}>{(msg !== '' && !error) ? msg : 'Sign In'}</button>
+            </div>
+
+          </div>
+
+          <div className='w-full flex items-center justify-center px-14'>
+            Don't have an account? <span className='font-bold ml-1'><Link to={'/register'}>Sign Up</Link></span>
+          </div>
+
+        </div>
 
       </section>
-      <LogReg/>
+      
+      <div className='flex-1 mbg-300 h-[100vh]'>
+        {/* <LogReg/> */}
+      </div>
     </div>
   )
 }
