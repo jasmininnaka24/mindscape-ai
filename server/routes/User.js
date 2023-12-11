@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { User, Token } = require('../models');
+const { User, Token, StudyMaterials, StudyMaterialsCategories, DashForPersonalAndGroup } = require('../models');
 const sendEmail = require('../utils/sendEmail');
 const resetPassword = require('../utils/resetPassword');
 const crypto = require('crypto');
@@ -284,7 +284,7 @@ router.put('/update-user/:id', async (req, res) => {
     res.json({message: 'User details has been updated.', error: false});
     
   } catch (error) {
-    res.json({message: 'Failed to update user details.', error: true});
+    res.json({message: 'Failed updating user details.', error: true});
   }
 });
 
@@ -329,9 +329,11 @@ router.put('/update-user-image/:id', async (req, res) => {
     
   } catch (error) {
     console.error('Error updating user image:', error);
-    res.json({ message: 'Failed to update profile photo.', error: true });
+    res.json({ message: 'Failed updating profile photo.', error: true });
   }
 });
+
+
 router.post('/verify-email', async (req, res) => {
   const {email} = req.body;
 
@@ -435,10 +437,109 @@ router.post('/reset-password/:id/:token', async(req,res) => {
 
 router.delete('/:id', async (req, res) => {
   const userId = req.params.id;
-  const user = await User.findByPk(userId);
-  await user.destroy();
-  res.json(user);
-})
+  const { password } = req.body;
+
+  try {
+    const user = await User.findByPk(userId, {
+      where: {
+        password: password
+      },
+    });
+
+    if (!user) {
+      console.log(user);
+      return res.json({ message: "User not found", error: true });
+    }
+
+    if (password === '') {
+      return res.json({ message: "Cannot submit an empty field", error: true });
+    }
+
+    const match = await bcrypt.compare(password, user.dataValues.password);
+
+    if (!match) {
+      return res.json({ message: "Incorrect Password", error: true });
+    }
+
+
+
+    // deleting dashboard records
+    const studyMaterialCategories = await StudyMaterialsCategories.findAll({
+      where: { 
+        UserId: userId,
+        isShared: false,
+      },
+    });
+
+    // deleting dashboard records
+    const DashForPersonalAndGroupResponse = await DashForPersonalAndGroup.findAll({
+      where: { 
+        UserId: userId,
+        StudyGroupId: null,
+      },
+    });
+
+    // deleting study materials
+    const studyMaterial = await StudyMaterials.findAll({
+      where: { 
+        UserId: userId,
+        materialFor: 'Personal',
+        tag: 'Own Record' || 'Bookmarked',
+        StudyGroupId: null,
+      },
+    });
+    
+    console.log(studyMaterial.length);
+
+    
+    // // Delete each dashRecord individually
+    // for (const dashRecord of DashForPersonalAndGroupResponse) {
+    //   await dashRecord.destroy();
+    // }
+    
+    // // Delete each material individually
+    // for (const material of studyMaterial) {
+    //   await material.destroy();
+    // }
+
+    // // Delete each material individually
+    // for (const material of studyMaterialCategories) {
+    //   await material.destroy();
+    // }
+
+
+
+
+
+
+
+
+    // // Check if the new userImage is different from the existing one
+    // if (user.dataValues.userImage !== "user.png") {
+    //   // Define the absolute path to the existing image file
+    //   const existingImagePath = path.join(__dirname, '..', 'public/images', user.dataValues.userImage);
+
+    //   // Delete the existing image file if it exists
+    //   if (fs.existsSync(existingImagePath)) {
+    //     fs.unlinkSync(existingImagePath);
+    //     console.log('Existing image deleted:', existingImagePath);
+    //   }
+    // } else {
+    //   console.log('User image remains unchanged. Skipping unlinking.');
+    // }
+
+    // // Wait for user deletion to complete before sending the response
+    // await user.destroy();
+
+    // res.json({ message: "Your account has been permanently deleted.", error: false });
+    } catch (error) {
+      console.error('Error deleting account:', error);
+      res.json({ message: "Failed deleting your account.", error: true });
+    }
+});
+
+
+
 
 router.delete('/delete-token/:id', async (req, res) => {
   const tokenId = req.params.id;

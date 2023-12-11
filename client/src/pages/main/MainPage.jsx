@@ -1,11 +1,14 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import './mainpage.css';
 import { Link, Navigate, useNavigate } from 'react-router-dom';
 import personalStudyRoomImg from '../../assets/personal_study.jpg';
 import groupStudyRoomImg from '../../assets/group_study.jpg';
 import virtualLibraryRoomImg from '../../assets/library.jpg';
 import discussionFormusImg from '../../assets/discussion_forum.jpg';
+import LaunchIcon from '@mui/icons-material/Launch';
+import PersonOutlineIcon from '@mui/icons-material/PersonOutline';
 import { useUser } from '../../UserContext';
+import axios from 'axios';
 
 export const MainPage = () => {
 
@@ -13,6 +16,11 @@ export const MainPage = () => {
   const navigate = useNavigate();
 
   const [dropDownPersonalLinks, setdropDownPersonalLinks] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [data, setData] = useState([])
+  const [users, setUsers] = useState([]);
+  const [searchResults, setSearchResults] = useState([]);
+
 
   const toggleExpansion = () => {
     setdropDownPersonalLinks(!dropDownPersonalLinks ? true : false);
@@ -23,18 +31,73 @@ export const MainPage = () => {
     sessionStorage.clear();
     navigate('/')
   };
+  
+
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await axios.get('http://localhost:3001/users');
+        setUsers(response.data);
+
+
+      } catch (error) {
+        console.error('Error fetching users:', error);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+
+  const handleSearch = (event) => {
+    const term = event.target.value;
+    setSearchTerm(term);
+
+    // Filter users based on the search term
+    const filteredUsers = users.filter((user) =>
+      user.username.toLowerCase().includes(term.toLowerCase())
+    );
+
+    setSearchResults(filteredUsers);
+  };
 
   return (
     <div className='poppins mcolor-900 mbg-100 relative' >
       <div className='absolute main-home-page mbg-200'></div>
       <div className='container'>
-        <div className='flex justify-between w-full mainpage-inside text-xl py-8'>
-          <div className='flex gap-5'>
+        <div className='flex justify-between w-full mainpage-inside py-8'>
+          <div className='flex gap-5 relative'>
             <Link to={'/main/profile'}>
               <div className='text-3xl'><i class="fa-solid fa-user"></i></div>
             </Link>
-            <div className='text-3xl'><i class="fa-regular fa-bell"></i></div>
+
+
+            <div>
+              <input
+                type="text"
+                placeholder="Search for a user..."
+                className="border-thin-800 rounded py-1 px-5"
+                value={searchTerm}
+                onChange={handleSearch}
+              />
+            </div>
+
+
+            {searchTerm && (
+              <div className='absolute mbg-100 top-12 p-3 border-thin-800 w-full rounded max-h-[50vh]' style={{ overflowY: 'auto' }}>
+                <p className='font-medium mcolor-800 text-lg'>Search Results: </p>
+                {searchResults.map((user) => (
+                  <div key={user.id} className='my-4 flex items-center justify-between' style={{ borderBottom: '1px #999 solid' }}>
+                    <p><PersonOutlineIcon className='mr-1' />{user.username}</p>
+                    <Link to={`/main/profile/${user.id}`}><LaunchIcon fontSize='small'/></Link>
+                  </div>
+                ))}
+              </div>
+            )}
+
           </div>
+
           <div>
             <p className='font-normal text-3xl'>MindScape</p>
           </div>

@@ -481,7 +481,6 @@ export const UpdateQAGen = ({ groupId, categoryFor }) => {
         question: revQues,
         answer: revAns,
         StudyMaterialId: materialID,
-        UserId: UserId,
       }
 
       await axios.post('http://localhost:3001/quesRev', data);
@@ -512,7 +511,6 @@ export const UpdateQAGen = ({ groupId, categoryFor }) => {
         bgColor: randomColor,
         quizType: type === 'FITB' ? 'FITB' : 'Identification',
         StudyMaterialId: materialID,
-        UserId: UserId,
       };
 
       await axios.post('http://localhost:3001/quesAns', qaData);
@@ -769,7 +767,6 @@ export const UpdateQAGen = ({ groupId, categoryFor }) => {
                             bgColor: randomColor,
                             quizType: 'MCQA',
                             StudyMaterialId: materialID,
-                            UserId: UserId,
                           };
               
                           const qaResponse = await axios.post(
@@ -782,7 +779,6 @@ export const UpdateQAGen = ({ groupId, categoryFor }) => {
                               choice: updatedChoices[j],
                               QuesAnId: qaResponse.data.id,
                               StudyMaterialId: materialID,
-                              UserId: UserId,
                             };
                 
                             if (qacData.choice !== "") {
@@ -1109,7 +1105,6 @@ export const UpdateQAGen = ({ groupId, categoryFor }) => {
                             bgColor: randomColor,
                             quizType: 'ToF',
                             StudyMaterialId: materialID,
-                            UserId: UserId,
                           };
 
                           const qaResponse = await axios.post(
@@ -1122,7 +1117,6 @@ export const UpdateQAGen = ({ groupId, categoryFor }) => {
                               choice: updatedChoices[j],
                               QuesAnId: qaResponse.data.id,
                               StudyMaterialId: materialID,
-                              UserId: UserId,
                             };
                 
                             if (qacData.choice !== "") {
@@ -1278,7 +1272,6 @@ export const UpdateQAGen = ({ groupId, categoryFor }) => {
                           bgColor: randomColor,
                           quizType: 'FITB',
                           StudyMaterialId: materialID,
-                          UserId: UserId,
                         };
             
                         await axios.post('http://localhost:3001/quesAns', qaData);
@@ -1390,7 +1383,6 @@ export const UpdateQAGen = ({ groupId, categoryFor }) => {
                         bgColor: randomColor,
                         quizType: 'Identification',
                         StudyMaterialId: materialID,
-                        UserId: UserId,
                       };
           
                       await axios.post('http://localhost:3001/quesAns', qaData);

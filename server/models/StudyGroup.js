@@ -18,15 +18,13 @@ module.exports = (sequelize, DataTypes) => {
     StudyGroup.belongsTo(models.User, {
       foreignKey: {
         name: 'UserId',
-        allowNull: false,
-        onDelete: 'NO ACTION',
+        allowNull: true, // Allow null to remove the association
+        onDelete: 'SET NULL', // or 'SET DEFAULT'
       },
     });
+  
 
     StudyGroup.hasMany(models.StudyGroupMembers, {
-      onDelete: 'cascade',
-    })
-    StudyGroup.hasMany(models.StudyMaterialsCategories, {
       onDelete: 'cascade',
     })
     StudyGroup.hasMany(models.StudyMaterials, {

@@ -49,6 +49,14 @@ module.exports = (sequelize, DataTypes) => {
 
   StudyMaterials.associate = (models) => {
 
+    StudyMaterials.belongsTo(models.User, {
+      foreignKey: {
+        name: 'UserId',
+        allowNull: true, // Allow null to remove the association
+        onDelete: 'cascade', // or 'SET DEFAULT'
+      },
+    });
+
     StudyMaterials.hasMany(models.QuesAns, {
       onDelete: 'cascade',
     })
@@ -63,7 +71,7 @@ module.exports = (sequelize, DataTypes) => {
     })   
 
     StudyMaterials.beforeDestroy(async (instance, options) => {
-      if (instance.bookmarkedBy !== 0) {
+      if (instance.bookmarkedBy !== 0 || instance.materialFor === 'Group') {
         options.cascade = false;
       }
     });

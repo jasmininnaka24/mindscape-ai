@@ -68,7 +68,8 @@ export const StudyAreaGP = (props) => {
   const [selectedDataId, setSelectedDataId] = useState('');
   const [chosenData, setChosenData] = useState([]);
   const [filteredData, setFilteredData] = useState([]);
-
+  const [msg, setMsg] = useState('');
+  const [error, setError] = useState(false);
 
 
 
@@ -552,6 +553,77 @@ export const StudyAreaGP = (props) => {
   }
 
 
+  const deleteGroup = async (e) => {
+    e.preventDefault();
+
+    console.log(groupNameId);
+
+    await axios.delete(`http://localhost:3001/studyGroup/delete-group/${groupNameId}`).then((response) => {
+
+      if(response.data.error) {
+
+        setTimeout(() => {
+          setError(true)
+          setMsg(response.data.message)
+        }, 100);
+        
+        setTimeout(() => {
+          setError(false)
+          setMsg('')
+        }, 2500);
+
+
+      } else {
+        setTimeout(() => {
+          setError(false)
+          setMsg(response.data.message)
+        }, 100);
+        
+        setTimeout(() => {
+          setMsg('')
+          navigate(`/main/group`)
+        }, 2500);
+      }
+    })
+
+  }
+
+  const leaveGroup = async (e) => {
+    e.preventDefault();
+
+    console.log(groupNameId);
+
+    await axios.delete(`http://localhost:3001/studyGroupMembers/remove-member/${groupNameId}/${UserId}`).then((response) => {
+
+      if(response.data.error) {
+
+        setTimeout(() => {
+          setError(true)
+          setMsg(response.data.message)
+        }, 100);
+        
+        setTimeout(() => {
+          setError(false)
+          setMsg('')
+        }, 2500);
+
+
+      } else {
+        setTimeout(() => {
+          setError(false)
+          setMsg(response.data.message)
+        }, 100);
+        
+        setTimeout(() => {
+          setMsg('')
+          navigate(`/main/group`)
+        }, 2500);
+      }
+    })
+
+  }
+
+
   return (
     <div className="relative poppins mcolor-900 flex justify-start items-start">
       
@@ -609,9 +681,24 @@ export const StudyAreaGP = (props) => {
               </div>
             </div>
 
+
+
             {categoryFor === 'Group' && (
 
               <div className={`${groupMemberModal} mt-5`}>
+
+                {!error && msg !== '' && (
+                  <div className='green-bg text-center mt-5 rounded py-3 w-full mb-5'>
+                    {msg}
+                  </div>
+                )}
+
+                {error && msg !== '' && (
+                  <div className='bg-red mcolor-100 text-center mt-5 rounded py-3 w-full mb-5'>
+                    {msg}
+                  </div>
+                )}
+
                 <p className='mb-2 text-lg mcolor-900'>Group Code:</p>
                 <div className='w-full flex items-center'>
                   <input type="text" value={code} disabled className='mbg-200 border-thin-800 text-center w-full py-2 rounded-[3px]' />
@@ -625,19 +712,40 @@ export const StudyAreaGP = (props) => {
                 <br />
                 <p className='mb-2 text-lg mcolor-900'>Group Name:</p>
                 <div className='flex items-center'>
-                  <input type="text" value={groupName} className='border-thin-800 text-center w-full py-2 rounded-[3px]' onChange={(event) => setGroupName(event.target.value)} />
-                  <button onClick={changeGroupName} className='px-4 py-2 mbg-800 mcolor-100 rounded-[3px] border-thin-800'>Change</button>
+                  <input type="text" value={groupName} className={`border-thin-800 text-center w-full py-2 rounded-[3px] ${(msg !== '' || UserId !== userHostId) ? 'mbg-200' :  ''}`} disabled={msg !== '' || UserId !== userHostId} onChange={(event) => setGroupName(event.target.value)} />
+
+                  <button
+                    onClick={changeGroupName}
+                    className='px-4 py-2 mbg-800 mcolor-100 rounded-[3px] border-thin-800'
+                    disabled={msg !== '' || UserId !== userHostId}
+                  >
+                    Change
+                  </button>
+
+
                 </div>
                 {isGroupNameChanged !== '' && (
                   <p className='text-center mcolor-700 my-3'>{isGroupNameChanged}</p>
                   )}
 
 
-                <br />
+                {msg === '' && (
+                  (UserId === userHostId) ? (
+                    <button className='bg-red mcolor-100 rounded py-2 text-center my-5 w-full' onClick={(e) => deleteGroup(e)}>
+                      Delete Group
+                    </button>
+                  ) : ( 
+                    <button className='bg-red mcolor-100 rounded py-2 text-center my-5 w-full' onClick={(e) => leaveGroup(e)}>
+                      Leave Group
+                    </button>
+                  )
+                )}
+
+                <br /><br />
                 <p className='mb-2 text-lg mcolor-900'>Group Host:</p>
                 <div className='flex justify-between my-2'>
                   <span>
-                    <i className="fa-regular fa-user mr-3"></i>@{userHost}
+                    <i className="fa-regular fa-user mr-3"></i>{`@${userHost}` || 'Deleted User'}
                   </span>
                 </div>
 
@@ -673,16 +781,19 @@ export const StudyAreaGP = (props) => {
                           <span>
                             <i className="fa-regular fa-user mr-3"></i>@{filteredData[0]?.username}
                           </span>
-                          <button
-                            onClick={() => {
-                              if (window.confirm('Are you sure you want to delete this user?')) {
-                                removeSelectedUser(filteredData[0]?.id, groupNameId);
-                              }
-                            }}
-                            className='text-lg'
-                          >
-                            <i className="fa-solid fa-xmark"></i>
-                          </button>
+
+                          {(msg !== '' || UserId === userHostId) && (
+                            <button
+                              onClick={() => {
+                                if (window.confirm('Are you sure you want to delete this user?')) {
+                                  removeSelectedUser(filteredData[0]?.id, groupNameId);
+                                }
+                              }}
+                              className='text-lg'
+                            >
+                              <i className="fa-solid fa-xmark"></i>
+                            </button>
+                          )}
                         </li>
                       );
                     })}

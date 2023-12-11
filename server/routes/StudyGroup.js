@@ -61,10 +61,16 @@ router.put('/update-group/:id', async (req, res) => {
 
 // deleting a group
 router.delete('/delete-group/:id', async (req, res) => {
+  
   const groupId = req.params.id;
-  const deletedGroup = await StudyGroup.findByPk(groupId);
-  await deletedGroup.destroy();
-  res.json(deletedGroup);
+
+  try {
+    const deletedGroup = await StudyGroup.findByPk(groupId);
+    await deletedGroup.destroy();
+    res.json({message: 'Successfully Deleted', error: false});
+  } catch (error) {
+    res.json({message: 'Fail to delete', error: true});
+  }
 })
 
 module.exports = router;

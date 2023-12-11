@@ -51,6 +51,15 @@ module.exports = (sequelize, DataTypes) => {
     },    
   });
 
+  DashForPersonalAndGroup.associate = (models) => {
+    DashForPersonalAndGroup.belongsTo(models.User, {
+      foreignKey: {
+        name: 'UserId',
+        allowNull: true, // Allow null to remove the association
+        onDelete: 'SET NULL', // or 'SET DEFAULT'
+      },
+    });
+  }
 
 
   return DashForPersonalAndGroup;

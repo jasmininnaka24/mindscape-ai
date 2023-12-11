@@ -2,24 +2,22 @@ import React, { useEffect, useState } from 'react'
 import { useUser } from '../../UserContext'
 import PersonIcon from '@mui/icons-material/Person';
 import axios from 'axios';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate, useParams } from 'react-router-dom';
 import { useDropzone } from 'react-dropzone';
 import { fetchUserData } from '../../userAPI';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
 
-export const ProfileComponent = ({userId}) => {
+export const ProfileComponent = () => {
 
 
   const handleImage = (e) => {
-    console.log(e.target.files);
     setImage(e.target.files[0]);
   };
 
 
   const { getRootProps, getInputProps, acceptedFiles } = useDropzone({
     onDrop: (acceptedFiles) => {
-      console.log(acceptedFiles);
       setImage(acceptedFiles[0]);
     },
   });
@@ -83,6 +81,12 @@ export const ProfileComponent = ({userId}) => {
   const [showPassword, setShowPassword] = useState(false);
   const [passwordVal, setPasswordVal] = useState('')
 
+  const [following, setFollowing] = useState(false);
+
+  const [followingUsers, setFollowingUsers] = useState([]);
+  const [followerUsers, setFollowerUsers] = useState([]);
+
+
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
   };
@@ -98,14 +102,17 @@ export const ProfileComponent = ({userId}) => {
 
 
 
-  const { user } = useUser()
+  const { user } = useUser();
+  const navigate = useNavigate();
+  const { userId } = useParams();
 
   const UserId = user?.id;
+  
+
 
   const fetchUserDataFrontend = async () => {
     try {
-      const userData = await fetchUserData(UserId);
-      console.log(userData);
+      const userData = await fetchUserData(userId === undefined ? UserId : userId);
 
       setUserData({
         username: userData.username,
@@ -115,7 +122,25 @@ export const ProfileComponent = ({userId}) => {
         userImage: userData.userImage
       });
 
+      const isFollowingResponse = await axios.get(`http://localhost:3001/followers/following/${userId === undefined ? UserId : userId}`);
+      
+      let isFollowing = isFollowingResponse.data;
 
+      console.log(isFollowing);
+      
+      if (isFollowing === null) {
+        setFollowing(false)
+      } else {
+        setFollowing(true)
+      }
+      
+      const followerResponse = await axios.get(`http://localhost:3001/followers/get-follower-list/${userId === undefined ? UserId : userId}`);
+      
+      const followingResponse = await axios.get(`http://localhost:3001/followers/get-following-list/${userId === undefined ? UserId : userId}`);
+
+
+      setFollowingUsers(followingResponse.data);
+      setFollowerUsers(followerResponse.data);
 
     } catch (error) {
       console.error(error.message);
@@ -124,21 +149,44 @@ export const ProfileComponent = ({userId}) => {
 
 
 
+  const followUser = async (e) => {
+    e.preventDefault();
+
+    let data = {
+      FollowingId: userId,
+      FollowerId: UserId
+    }
+
+    await axios.post(`http://localhost:3001/followers/follow`, data);
+    fetchUserDataFrontend();
+  }
+
+  const unfollowUser = async (e) => {
+    e.preventDefault();
+
+    await axios.delete(`http://localhost:3001/followers/unfollow/${userId}/${UserId}`);
+    
+    fetchUserDataFrontend();
+  }
+
+
+
   // for image upload
 
 
   const fetchData = async () => {
 
-    const contributedMaterialsResponse = await axios.get(`http://localhost:3001/studyMaterial/shared-materials-by-userid/${UserId}`)
+
+    
+    const contributedMaterialsResponse = await axios.get(`http://localhost:3001/studyMaterial/shared-materials-by-userid/${userId === undefined ? UserId : userId}`)
 
     setContributedMaterialsLength(contributedMaterialsResponse.data.length)
 
-    console.log(contributedMaterialsResponse.data);
 
 
  
     // for fetching personal
-    const personalStudyMaterial = await axios.get(`http://localhost:3001/studyMaterial/shared-materials-by-userid/${UserId}`)
+    const personalStudyMaterial = await axios.get(`http://localhost:3001/studyMaterial/shared-materials-by-userid/${userId === undefined ? UserId : userId}`)
     setPersonalStudyMaterials(personalStudyMaterial.data);
 
 
@@ -154,10 +202,9 @@ export const ProfileComponent = ({userId}) => {
     setPersonalStudyMaterialsCategory(fetchedPersonalStudyMaterialCategory);
     
     
-    const groupStudyMaterial = await axios.get(`http://localhost:3001/studyMaterial/shared-materials-by-userid/${UserId}`)
+    const groupStudyMaterial = await axios.get(`http://localhost:3001/studyMaterial/shared-materials-by-userid/${userId === undefined ? UserId : userId}`)
     const filteredGroupStudyMaterials = groupStudyMaterial.data.filter(item => item.tag === 'Shared');
     setGroupStudyMaterials(filteredGroupStudyMaterials);
-    console.log(filteredGroupStudyMaterials);
     
     
     // console.log(filteredGroupStudyMaterials);
@@ -176,13 +223,13 @@ export const ProfileComponent = ({userId}) => {
       
       
       
-    const sharedStudyMaterial = await axios.get(`http://localhost:3001/studyMaterial/shared-materials-by-userid/${UserId}`);
+    const sharedStudyMaterial = await axios.get(`http://localhost:3001/studyMaterial/shared-materials-by-userid/${userId === undefined ? UserId : userId}`);
     const sharedStudyMaterialResponse = sharedStudyMaterial.data;  
     setSharedMaterials(sharedStudyMaterialResponse)
 
     const fetchedSharedStudyMaterialCategory = await Promise.all(
       sharedStudyMaterialResponse.map(async (material, index) => {
-        const materialCategorySharedResponse = await axios.get(`http://localhost:3001/studyMaterialCategory/shared-material-category/${material.StudyMaterialsCategoryId}/Group/${UserId}`);
+        const materialCategorySharedResponse = await axios.get(`http://localhost:3001/studyMaterialCategory/shared-material-category/${material.StudyMaterialsCategoryId}/Group/${userId === undefined ? UserId : userId}`);
         return materialCategorySharedResponse.data;
       })
     );
@@ -229,16 +276,15 @@ export const ProfileComponent = ({userId}) => {
     
       
       
-      const response = await axios.get(`http://localhost:3001/studyGroup/extract-group-through-user/${UserId}`);
+      const response = await axios.get(`http://localhost:3001/studyGroup/extract-group-through-user/${userId === undefined ? UserId : userId}`);
       setGroupList(response.data);
       
       let dataLength = response.data.length;
-      console.log(dataLength); // should give the correct value
       
       if (dataLength !== 0) {
         console.log('its not 0');
       } else {
-        const userMemberGroupList = await axios.get(`http://localhost:3001/studyGroupMembers/get-materialId/${UserId}`);
+        const userMemberGroupList = await axios.get(`http://localhost:3001/studyGroupMembers/get-materialId/${userId === undefined ? UserId : userId}`);
         
         const materialPromises = userMemberGroupList.data.map(async (item) => {
           const material = await axios.get(`http://localhost:3001/studyGroup/extract-all-group/${item.StudyGroupId}`);
@@ -263,7 +309,7 @@ export const ProfileComponent = ({userId}) => {
       setIsDone(true)
     }
   
-  }, [UserId]);
+  }, [UserId, userId]);
   
   useEffect(() => {
     if (isDone) {
@@ -738,6 +784,7 @@ export const ProfileComponent = ({userId}) => {
       typeOfLearner: userData.typeOfLearner,
       studyProfTarget: userData.studyProfTarget
     }
+    
 
     await axios.put(`http://localhost:3001/users/update-user/${UserId}`, data).then((response) => {
 
@@ -797,7 +844,6 @@ export const ProfileComponent = ({userId}) => {
         const response = await axios.post('http://localhost:3001/upload', formData);
   
         const serverGeneratedFilename = response.data.filename;
-        console.log(serverGeneratedFilename);
 
         let data = {
           userImage: serverGeneratedFilename,
@@ -828,7 +874,6 @@ export const ProfileComponent = ({userId}) => {
         })
 
         fetchUserDataFrontend()
-        console.log(response);
       } catch (error) {
         console.error('Error:', error);
       }
@@ -836,9 +881,90 @@ export const ProfileComponent = ({userId}) => {
       alert('No image selected!');
     }
   };
+
+
+  const deleteAccount = async (e) => {
+    e.preventDefault()
+    const confirmDeletion = async () => {
+
+      let data = {
+        password: passwordVal,
+      }
+
+      await axios({
+        method: 'delete',
+        url: `http://localhost:3001/users/${UserId}`,
+        data: data,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      }).then((response) => {
+  
+      if(response.data.error) {
+  
+        setTimeout(() => {
+          setError(true)
+          setMsg(response.data.message)
+        }, 100);
+        
+        setTimeout(() => {
+          setError(false)
+          setMsg('')
+        }, 2500);
+  
+        
+      } else {
+        setTimeout(() => {
+          setError(false)
+          setMsg(response.data.message)
+        }, 100);
+        
+        setTimeout(() => {
+          setMsg('')
+          sessionStorage.clear();
+          navigate('/')
+        }, 2500);
+        
+      }})
+  
+  
+    }
+
+
+    // Show confirmation prompt
+    if (window.confirm('Are you sure you want to delete your account?')) {
+      // If confirmed, proceed with deletion
+      confirmDeletion();
+    } else {
+      // If canceled, display a message or perform any other action
+      setError(true);
+      setMsg('Account deletion canceled.');
+      
+      // Clear the cancellation message after a delay
+      setTimeout(() => {
+        setError(false);
+        setMsg('');
+      }, 2500);
+    }
+
+  }
   
 
-
+  // Function to format follower count
+  const formatFollowerCount = (count) => {
+    if (typeof count === 'number' && !isNaN(count)) {
+      if (count >= 1000 && count < 1000000) {
+        return (count / 1000).toFixed(1) + 'k';
+      } else if (count >= 1000000) {
+        return (count / 1000000).toFixed(1) + 'M';
+      } else {
+        return count.toString();
+      }
+    } else {
+      return '0';
+    }
+  };
+  
 
 
 
@@ -856,36 +982,41 @@ export const ProfileComponent = ({userId}) => {
             setShowMainProfile(true)
           }}>
             <p className='text-2xl mb-1text-2xl mb-1'>Main Profile</p>
-            <p className='opacity-75 text-sm'>Discover your journey, contributions, and connections.</p>
+            <p className='opacity-75 text-sm'>{(!userId || UserId === parseInt(userId, 10)) ? 'Discover your details, contributions, and connections.' : `Discover ${userData.username}'s details, contributions, and connections.`}</p>
           </div>
-          <div className={`${showAccountSettings ? 'shadows' : 'border-thin-800'} p-5 mbg-100 rounded my-5 cursor-pointer`} onClick={() => {
-            setShowMainProfile(false)
-            setShowPasswordSecurity(false)
-            setShowAccountDeletion(false)
-            setShowAccountSettings(true)
-          }}>
-            <p className='text-2xl mb-1'>Account Settings</p>
-            <p className='opacity-75 text-sm'>Customize your information details and preferences.</p>
-          </div>
-          <div className={`${showPasswordSecurity ? 'shadows' : 'border-thin-800'} p-5 mbg-100 rounded my-5 cursor-pointer`} onClick={() => {
-            setShowAccountSettings(false)
-            setShowMainProfile(false)
-            setShowAccountDeletion(false)
-            setShowPasswordSecurity(true)
-          }}>
-            <p className='text-2xl mb-1'>Password & Security</p>
-            <p className='opacity-75 text-sm'>Ensure the safety of your account with advanced security settings.</p>
-          </div>
-          <div className={`${showAccountDeletion ? 'shadows' : 'border-thin-800'} p-5 mbg-100 rounded my-5 cursor-pointer`} onClick={() => {
-            setShowAccountSettings(false)
-            setShowMainProfile(false)
-            setShowPasswordSecurity(false)
-            setShowAccountDeletion(true)
-          }}>
-            <p className='text-2xl mb-1'>Account Deletion</p>
-            <p className='opacity-75 text-sm'>To permanently delete your account, including all associated data, please proceed with caution.</p>
 
-          </div>
+          {(!userId || UserId === parseInt(userId, 10)) && (
+            <div>
+              <div className={`${showAccountSettings ? 'shadows' : 'border-thin-800'} p-5 mbg-100 rounded my-5 cursor-pointer`} onClick={() => {
+                setShowMainProfile(false)
+                setShowPasswordSecurity(false)
+                setShowAccountDeletion(false)
+                setShowAccountSettings(true)
+              }}>
+                <p className='text-2xl mb-1'>Account Settings</p>
+                <p className='opacity-75 text-sm'>Customize your information details and preferences.</p>
+              </div>
+              <div className={`${showPasswordSecurity ? 'shadows' : 'border-thin-800'} p-5 mbg-100 rounded my-5 cursor-pointer`} onClick={() => {
+                setShowAccountSettings(false)
+                setShowMainProfile(false)
+                setShowAccountDeletion(false)
+                setShowPasswordSecurity(true)
+              }}>
+                <p className='text-2xl mb-1'>Password & Security</p>
+                <p className='opacity-75 text-sm'>Ensure the safety of your account with advanced security settings.</p>
+              </div>
+              <div className={`${showAccountDeletion ? 'shadows' : 'border-thin-800'} p-5 mbg-100 rounded my-5 cursor-pointer`} onClick={() => {
+                setShowAccountSettings(false)
+                setShowMainProfile(false)
+                setShowPasswordSecurity(false)
+                setShowAccountDeletion(true)
+              }}>
+                <p className='text-2xl mb-1'>Account Deletion</p>
+                <p className='opacity-75 text-sm'>To permanently delete your account, including all associated data, please proceed with caution.</p>
+
+              </div>
+            </div>
+          )}
         </div>
 
 
@@ -903,18 +1034,51 @@ export const ProfileComponent = ({userId}) => {
 
                   <div className=''>
                     <p className='text-2xl mb-1 font-medium text-2xl mb-1 mcolor-800 mb-5'>{userData.username}</p>
-                    <p className='opacity-80 text-md font-medium'>{userData.typeOfLearner} Learner | 20 Followers</p>
+
+                    <p className='opacity-80 text-md font-medium'>
+                      {userData.typeOfLearner} Learner | {formatFollowerCount(followerUsers.length)} Follower{followerUsers.length > 1 ? 's' : ''} | {formatFollowerCount(followingUsers.length)} Following{following.length > 1 ? 's' : ''}
+                    </p>
+
                     <p className='opacity-75 text-md'>5 Group Study Rooms</p>
                     <p className='opacity-75 text-md'>{contributedMaterialsLength} Study Materials Contributes</p>
 
-                    <button className='mbg-700 mcolor-100 px-10 mt-3 py-2 rounded' onClick={() => {
-                      setShowMainProfile(false)
-                      setShowPasswordSecurity(false)
-                      setShowAccountSettings(true)
-                    }}>Update Profile Details</button>
+
+                    {(!userId || UserId === parseInt(userId, 10)) ? (
+                      <div>
+                        <button className='mbg-700 mcolor-100 w-full mt-3 py-2 rounded' onClick={() => {
+                          setShowMainProfile(false)
+                          setShowPasswordSecurity(false)
+                          setShowAccountSettings(true)
+                        }}>Update Profile Details</button>
+                        <button className='mbg-200 mcolor-900 border-thin-800 w-full mt-3 py-2 rounded' onClick={() => {
+                          setShowMainProfile(false)
+                          setShowPasswordSecurity(false)
+                          setShowAccountSettings(true)
+                        }}>Follower and Following List</button>
+                      </div>
+                      ) : (
+                        <div className=''>
+                          <button className='mbg-700 mcolor-100 w-full mt-3 py-2 rounded' onClick={(e) => {
+                            followUser(e)
+                          }}>{!following ? 'Follow' : 'Following'}</button>
+
+                          {following && (
+                            <button className='mbg-200 mcolor-900 border-thin-800 w-full mt-3 py-2 rounded' onClick={(e) => {
+                              unfollowUser(e)
+                            }}>Unfollow</button>
+                          )}
+                      </div>
+                    )}
+
+
                   </div>
                 </div>
-                <p className='mt-8 mb-3 text-lg'>Contributed Materials</p>
+
+                {contributedMaterialsLength > 0 ? (
+                  <p className='mt-8 mb-3 text-lg'>Contributed Materials</p>
+                  ): (
+                  <p className='mt-8 mb-3 text-lg text-center mcolor-500'>No Contributed Materials</p>
+                )}
 
                 <ul className='grid grid-cols-1 gap-5'>
                   {sharedMaterials.map((material, index) => {
@@ -1366,6 +1530,18 @@ export const ProfileComponent = ({userId}) => {
                   </div>
                 </form>
 
+                {!error && msg !== '' && (
+                  <div className='green-bg text-center mt-5 rounded py-3 w-full'>
+                    {msg}
+                  </div>
+                )}
+
+                {error && msg !== '' && (
+                  <div className='bg-red mcolor-100 text-center mt-5 rounded py-3 w-full'>
+                    {msg}
+                  </div>
+                )}
+
                 {showAccountDeletionInputPass && (
                   <div className='w-full rounded flex items-center justify-center my-5'>
                     <div className='w-1/2 border-thin-800 rounded p-5 mbg-200'>
@@ -1390,7 +1566,7 @@ export const ProfileComponent = ({userId}) => {
                       </div>
 
 
-                      <button className='w-full mbg-700 mcolor-100 rounded py-2 my-4'>
+                      <button className='w-full mbg-700 mcolor-100 rounded py-2 my-4' onClick={(e) => deleteAccount(e)}>
                         Confirm
                       </button>
                     </div>

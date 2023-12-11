@@ -251,7 +251,6 @@ export const SavedGeneratedData = (props) => {
               bgColor: randomColor,
               quizType: genQAData[i].distractors.length > 0 ? 'MCQA' : 'Identification',
               StudyMaterialId: smResponse.data.id,
-              UserId: smResponse.data.UserId,
             };
   
 
@@ -265,7 +264,6 @@ export const SavedGeneratedData = (props) => {
                 choice: genQAData[i].distractors[j],
                 QuesAnId: qaResponse.data.id,
                 StudyMaterialId: smResponse.data.id,
-                UserId: smResponse.data.UserId,
               };
   
               if (qacData.choice !== "") {
@@ -286,7 +284,6 @@ export const SavedGeneratedData = (props) => {
               question: genQADataRev[i].question,
               answer: genQADataRev[i].answer,
               StudyMaterialId: smResponse.data.id,
-              UserId: smResponse.data.UserId,
             };
   
             await axios.post('http://localhost:3001/quesRev', qaDataRev);
@@ -307,7 +304,6 @@ export const SavedGeneratedData = (props) => {
               quizType: 'ToF',
               bgColor: randomColor,
               StudyMaterialId: smResponse.data.id,
-              UserId: smResponse.data.UserId,
             };
           
             try {
@@ -320,7 +316,6 @@ export const SavedGeneratedData = (props) => {
                   choice: genTrueSentences[i].distractors[j],
                   QuesAnId: qaResponse.data.id, // Link the question choice to the question ID
                   StudyMaterialId: smResponse.data.id,
-                  UserId: smResponse.data.UserId,
                 };
           
                 if (qacData.choice !== "") {
@@ -345,7 +340,6 @@ export const SavedGeneratedData = (props) => {
               quizType: 'FITB',
               bgColor: randomColor,
               StudyMaterialId: smResponse.data.id,
-              UserId: smResponse.data.UserId,
             }
 
             try {

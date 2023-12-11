@@ -91,6 +91,8 @@ function App() {
               <Route path='/users/:id/verify/:token' element={<EmailVerification/>} />
               <Route path='/verify-email' element={<ForgotPassword/>} />
               <Route path='/reset-password/:id/:token' element={<ResetPassword/>} />
+              <Route path='/main/profile' element={<PersonalProfile />} /> 
+              <Route path='/main/profile/:userId' element={<PersonalProfile />} /> 
 
         
               {/* Room Routes */}
@@ -115,7 +117,6 @@ function App() {
 
               {/* Personal Study Room Routes */}
               <Route path='/main/personal/' element={<PersonalRoom />} /> 
-              <Route path='/main/profile' element={<PersonalProfile />} /> 
               <Route path='/main/personal/tasks' element={<PersonalTask />} />
               <Route path='/main/personal/study-area' element={<PersonalStudyArea />} /> 
               <Route path='/main/personal/study-area/qa-gen' element={<PersonalQAGenerator />} /> 

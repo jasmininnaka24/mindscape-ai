@@ -41,25 +41,7 @@ module.exports = (sequelize, DataTypes) => {
     User.hasMany(models.Token, {
       onDelete: 'cascade',
     })
-    User.hasMany(models.StudyMaterials, {
-      onDelete: 'cascade',
-    })
-    User.hasMany(models.QuesAns, {
-      onDelete: 'cascade',
-    })
-    User.hasMany(models.QuesRev, {
-      onDelete: 'cascade',
-    })
-    User.hasMany(models.QuesAnsChoices, {
-      onDelete: 'cascade',
-    })
-    User.hasMany(models.StudyMaterialsCategories, {
-      onDelete: 'cascade',
-    })
     User.hasMany(models.StudyGroupMembers, {
-      onDelete: 'cascade',
-    })
-    User.hasMany(models.DashForPersonalAndGroup, {
       onDelete: 'cascade',
     })
   }

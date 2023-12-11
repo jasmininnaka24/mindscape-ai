@@ -83,7 +83,6 @@ export const VirtualLibraryMain = () => {
     const groupStudyMaterial = await axios.get(`http://localhost:3001/studyMaterial/study-material-category/Group/${UserId}`)
     const filteredGroupStudyMaterials = groupStudyMaterial.data.filter(item => item.tag === 'Own Record');
     setGroupStudyMaterials(filteredGroupStudyMaterials);
-    console.log(filteredGroupStudyMaterials);
     
     
     // console.log(filteredGroupStudyMaterials);
@@ -159,10 +158,8 @@ export const VirtualLibraryMain = () => {
       setGroupList(response.data);
       
       let dataLength = response.data.length;
-      console.log(dataLength); // should give the correct value
       
       if (dataLength !== 0) {
-        console.log('its not 0');
       } else {
         const userMemberGroupList = await axios.get(`http://localhost:3001/studyGroupMembers/get-materialId/${UserId}`);
         
@@ -452,7 +449,13 @@ export const VirtualLibraryMain = () => {
         studyMaterialResponse = await axios.put(`http://localhost:3001/studyMaterial/update-tag/${personalStudyMaterials[index].id}`, data)
       } else {
         studyMaterialResponse = await axios.put(`http://localhost:3001/studyMaterial/update-tag/${groupStudyMaterials[index].id}`, data)
+      } 
+
+      let categoryData = {
+        isShared: true
       }
+
+      await axios.put(`http://localhost:3001/studyMaterialCategory/update-shared/${studyMaterialResponse.data.StudyMaterialsCategoryId}`, categoryData)
   
     } else {
       console.error(`Material at index ${index} is undefined.`);
@@ -648,7 +651,6 @@ export const VirtualLibraryMain = () => {
   
           try {
               await axios.post('http://localhost:3001/quesAnsChoices', qacData);
-              console.log("Saved! mcq");
           } catch (error) {
               console.error(error);
           }
@@ -697,7 +699,6 @@ export const VirtualLibraryMain = () => {
     
             try {
                 await axios.post('http://localhost:3001/quesAnsChoices', qacData);
-                console.log("Saved! choice");
             } catch (error) {
                 console.error(error);
             }
