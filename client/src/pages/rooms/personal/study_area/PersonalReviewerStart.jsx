@@ -1,10 +1,9 @@
 import axios from 'axios';
 import React, { useEffect, useRef, useState } from 'react'
 import { useParams } from 'react-router-dom';
-import { Navbar } from '../../../../components/navbar/logged_navbar/navbar'
 import FavoriteIcon from '@mui/icons-material/Favorite';
-import VpnKeyIcon from '@mui/icons-material/VpnKey';
 import { useUser } from '../../../../UserContext';
+import { fetchUserData } from '../../../../userAPI';
 import PersonIcon from '@mui/icons-material/Person';
 import FilterListIcon from '@mui/icons-material/FilterList';
 import EmojiObjectsIcon from '@mui/icons-material/EmojiObjects';
@@ -33,7 +32,15 @@ export const PersonalReviewerStart = () => {
   const { user } = useUser()
 
   const UserId = user?.id;
-  const username = user?.username;
+  
+  // user data
+  const [userData, setUserData] = useState({
+    username: '',
+    email: '',
+    studyProfTarget: 0,
+    typeOfLearner: '',
+    userImage: ''
+  })
 
   const [questionIndex, setQuestionIndex] = useState(0)
   const [extractedQA, setQA] = useState({});
@@ -88,6 +95,45 @@ export const PersonalReviewerStart = () => {
   const [timeForPomodoro, setTimeForPomodoro] = useState(true);
   const [timeForBreak, setTimeForBreak] = useState(false);
   const [hidePomodoroModalBreak, setHidePomodoroModalBreak] = useState('hidden');
+  
+  const [isDone, setIsDone] = useState(false);
+
+  const getUserData = async () => {
+    const userData = await fetchUserData(UserId);
+    setUserData({
+      username: userData.username,
+      email: userData.email,
+      studyProfTarget: userData.studyProfTarget,
+      typeOfLearner: userData.typeOfLearner,
+      userImage: userData.userImage
+    });
+  }
+
+  useEffect(() => {
+    
+    
+    if (!isDone) {
+      setIsDone(true)
+    }
+
+  },[UserId])
+
+
+
+  useEffect(() => {
+    if (isDone) {
+      getUserData();
+      setIsDone(false)
+    }
+  }, [isDone])
+
+
+
+
+
+
+
+
 
   function handleDragStart(e, choice) {
     e.dataTransfer.setData("text/plain", choice);
@@ -631,6 +677,7 @@ export const PersonalReviewerStart = () => {
     const chooseBGColor = (num) => {
       setDraggedBG(`${backgroundColors[num]}-bg`)
     }
+
     if(chanceLeft !== 0) {
       // alert('Wrong')
       let currentChanceCount = chanceLeft - 1
@@ -882,14 +929,19 @@ export const PersonalReviewerStart = () => {
     return str.charAt(0).toUpperCase() + str.slice(1);
   }
 
+  const seedValue = 'randomSeedForHighlights';
+  const rng = seedrandom(seedValue);
 
+  // Function to get a random color
   function getRandomColor(colors, lastColor) {
     let newColor = lastColor;
     while (newColor === lastColor) {
-      newColor = colors[Math.floor(Math.random() * colors.length)];
+      const randomIndex = Math.floor(rng() * colors.length);
+      newColor = colors[randomIndex];
     }
     return newColor;
   }
+
   
   const backgroundColors = ['red', 'yellow', 'green', 'blue', 'purple'];
   let lastColor = '';
@@ -1015,7 +1067,7 @@ export const PersonalReviewerStart = () => {
 
 
         <div className='text-xl mcolor-900 text-center py-4 mbg-200'>
-          <PersonIcon className='mr-1' />{username}
+          <PersonIcon className='mr-1' />{userData.username}
         </div>
       </div>
 

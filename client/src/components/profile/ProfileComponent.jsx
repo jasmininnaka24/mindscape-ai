@@ -1,12 +1,13 @@
 import React, { useEffect, useState } from 'react'
 import { useUser } from '../../UserContext'
+import { fetchUserData } from '../../userAPI';
 import PersonIcon from '@mui/icons-material/Person';
 import axios from 'axios';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { useDropzone } from 'react-dropzone';
-import { fetchUserData } from '../../userAPI';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
+import LaunchIcon from '@mui/icons-material/Launch';
 
 export const ProfileComponent = () => {
 
@@ -86,6 +87,14 @@ export const ProfileComponent = () => {
   const [followingUsers, setFollowingUsers] = useState([]);
   const [followerUsers, setFollowerUsers] = useState([]);
 
+  const [followingUsersList, setFollowingUsersList] = useState([]);
+  const [followerUsersList, setFollowerUsersList] = useState([]);
+
+  const [followerAndFollowingModal, setFollowerAndFollowingModal] = useState('hidden')
+
+  const [showFollowerList, setShowFollowerList] = useState(false);
+  const [showFollowingList, setShowFollowingList] = useState(false);
+
 
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
@@ -112,6 +121,11 @@ export const ProfileComponent = () => {
 
   const fetchUserDataFrontend = async () => {
     try {
+
+      setFollowerAndFollowingModal('hidden')
+      setShowFollowerList(false)
+      setShowFollowingList(false)
+
       const userData = await fetchUserData(userId === undefined ? UserId : userId);
 
       setUserData({
@@ -142,6 +156,33 @@ export const ProfileComponent = () => {
       setFollowingUsers(followingResponse.data);
       setFollowerUsers(followerResponse.data);
 
+
+      // Create an array of promises for each axios request
+      const userDetailsFollower = followerResponse.data.map(async (user) => {
+        const userIdToUse = user.FollowerId;
+        const userDetailsResponse = await axios.get(`http://localhost:3001/users/get-user/${userIdToUse}`);
+        return userDetailsResponse.data;
+      });
+
+      // Wait for all promises to resolve using Promise.all
+      const followerListData = await Promise.all(userDetailsFollower);
+
+      // Now, followerListData contains the results of all the asynchronous requests
+      console.log(followerListData);
+
+      // Create an array of promises for each axios request
+      const userDetailsFollowing = followingResponse.data.map(async (user) => {
+        const userIdToUse = user.FollowingId;
+        const userDetailsResponse = await axios.get(`http://localhost:3001/users/get-user/${userIdToUse}`);
+        return userDetailsResponse.data;
+      });
+
+      // Wait for all promises to resolve using Promise.all
+      const followingListData = await Promise.all(userDetailsFollowing);
+
+      // Now, followerListData contains the results of all the asynchronous requests
+      setFollowerUsersList(followerListData);
+      setFollowingUsersList(followingListData);
     } catch (error) {
       console.error(error.message);
     }
@@ -1036,7 +1077,7 @@ export const ProfileComponent = () => {
                     <p className='text-2xl mb-1 font-medium text-2xl mb-1 mcolor-800 mb-5'>{userData.username}</p>
 
                     <p className='opacity-80 text-md font-medium'>
-                      {userData.typeOfLearner} Learner | {formatFollowerCount(followerUsers.length)} Follower{followerUsers.length > 1 ? 's' : ''} | {formatFollowerCount(followingUsers.length)} Following{following.length > 1 ? 's' : ''}
+                      {userData.typeOfLearner} Learner | {formatFollowerCount(followerUsers.length)} Follower{followingUsers.length > 1 ? 's' : ''} | {formatFollowerCount(followingUsers.length)} Following{following.length > 1 ? 's' : ''}
                     </p>
 
                     <p className='opacity-75 text-md'>5 Group Study Rooms</p>
@@ -1051,9 +1092,8 @@ export const ProfileComponent = () => {
                           setShowAccountSettings(true)
                         }}>Update Profile Details</button>
                         <button className='mbg-200 mcolor-900 border-thin-800 w-full mt-3 py-2 rounded' onClick={() => {
-                          setShowMainProfile(false)
-                          setShowPasswordSecurity(false)
-                          setShowAccountSettings(true)
+                          setFollowerAndFollowingModal('')
+                          setShowFollowerList(true)
                         }}>Follower and Following List</button>
                       </div>
                       ) : (
@@ -1069,6 +1109,86 @@ export const ProfileComponent = () => {
                           )}
                       </div>
                     )}
+
+
+
+                    <div className={`${followerAndFollowingModal} absolute top-0 left-0 modal-bg w-full h-full`}>
+                      <div className='flex items-center justify-center h-full'>
+                        <div className='mbg-100 max-h-[60vh] w-1/3 z-10 relative p-10 rounded-[5px] flex items-center justify-center' style={{ overflowY: 'auto' }}>
+
+                          <button className='absolute right-4 top-3 text-xl' onClick={() => {
+                            setShowFollowerList(false)
+                            setShowFollowingList(false)
+                            setFollowerAndFollowingModal('hidden')
+                          }}>
+                            ✖
+                          </button>
+
+                          <div className={`w-full`}>
+
+                            <div className='flex items-center w-full gap-1'>
+                              <button className={`w-full py-2 ${showFollowerList ? 'mcolor-900 mbg-200 rounded border-thin-800' : 'mbg-700 mcolor-100'} border-thin-800 rounded py-2`} onClick={() => {
+                                setShowFollowingList(false)
+                                setShowFollowerList(true)
+                              }}>Followers</button>
+                              <button className={`w-full py-2 ${showFollowingList ? 'mcolor-900 mbg-200 rounded border-thin-800' : 'mbg-700 mcolor-100'}`} onClick={() => {
+                                setShowFollowerList(false)
+                                setShowFollowingList(true)
+                              }}>Following</button>
+                            </div>
+
+                            
+                            <p className='text-center text-xl font-medium mcolor-800 mt-5'>
+                              {showFollowingList ? 'Following' : `Follower${followerUsersList.length > 1 ? 's' : ''}`}
+                            </p>
+
+
+                            {showFollowingList && (
+                              followingUsersList.length !== 0 ? (
+                                followingUsersList.map((user, index) => {
+                                return <div className='shadows w-full rounded my-5 py-2 text-center flex items-center items-center justify-between px-5' key={index}>
+                                <div className='flex items-center'>
+                                  <div className='rounded-full' style={{ width: '30px', height: '30px', objectFit: 'cover' }}>
+                                    <img className='w-full h-full rounded-full' src={`http://localhost:3001/images/${user.userImage}`} alt="" />
+                                  </div>
+                                  <p className='ml-2 font-medium'>{user.username}</p>
+                                </div>
+                                <div>
+                                  <Link to={`/main/profile/${user.id}`}><LaunchIcon fontSize='small'/></Link>
+                                </div>
+                              </div>;
+                              })
+                              ) : (
+                                <div className='text-center mt-5 mcolor-500'>No following users</div>
+                              )
+                            )
+                              }
+
+                            {showFollowerList && (
+                              followerUsersList.length !== 0 ?(
+                                followerUsersList.map((user, index) => {
+                                return <div className='shadows w-full rounded my-5 py-2 text-center flex items-center items-center justify-between px-5' key={index}>
+                                  <div className='flex items-center'>
+                                    <div className='rounded-full' style={{ width: '30px', height: '30px', objectFit: 'cover' }}>
+                                      <img className='w-full h-full rounded-full' src={`http://localhost:3001/images/${user.userImage}`} alt="" />
+                                    </div>
+                                    <p className='ml-2 font-medium'>{user.username}</p>
+                                  </div>
+                                  <div>
+                                    <Link to={`/main/profile/${user.id}`}><LaunchIcon fontSize='small'/></Link>
+                                  </div>
+                                </div>;
+                              })
+                              ) : (
+                                <div className='text-center mt-5 mcolor-500'>No followers</div>
+                              )
+                            )
+                            
+                            }
+                          </div>
+                        </div>
+                      </div>
+                    </div>
 
 
                   </div>

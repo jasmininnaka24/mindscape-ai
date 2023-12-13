@@ -7,7 +7,7 @@ import { BarChart } from '../charts/BarChart';
 import { PieChart } from '../charts/PieChart';
 import { useUser } from '../../UserContext';
 import { useLocation } from 'react-router-dom';
-
+import { fetchUserData } from '../../userAPI';
 
 
 export const TopicPage = ({categoryFor}) => {
@@ -16,8 +16,16 @@ export const TopicPage = ({categoryFor}) => {
   const navigate = useNavigate();
 
   const { user } = useUser();
-  const username = user?.username;
+  const UserId = user?.id;
 
+  // user data
+  const [userData, setUserData] = useState({
+    username: '',
+    email: '',
+    studyProfTarget: 0,
+    typeOfLearner: '',
+    userImage: ''
+  })
 
   const location = useLocation();
   const { filter, performanceStatus, tag } = location.state;
@@ -33,6 +41,25 @@ export const TopicPage = ({categoryFor}) => {
   const [currentAnalysisId, setCurrectAnalysisId] = useState(0);
   const [currentIndex, setCurrectIndex] = useState(0);
   const [fetchedID, setFetchedID] = useState(0)
+
+
+
+  useEffect(() => {
+    const getUserData = async () => {
+      const userData = await fetchUserData(UserId);
+      setUserData({
+        username: userData.username,
+        email: userData.email,
+        studyProfTarget: userData.studyProfTarget,
+        typeOfLearner: userData.typeOfLearner,
+        userImage: userData.userImage
+      });
+    }
+
+    getUserData();
+  }, [UserId])
+
+
 
 
   useEffect(() => {
@@ -75,6 +102,10 @@ export const TopicPage = ({categoryFor}) => {
     fetchData();
     
   }, [materialID])
+
+
+
+
   console.log(studyMaterials[2-1]);
 
   const generateAnalysis = async (id, index) => {
@@ -176,7 +207,7 @@ export const TopicPage = ({categoryFor}) => {
         <div className='flex items-center text-xl gap-3'>
           <i class="fa-regular fa-bell"></i>
           <i class="fa-regular fa-user"></i>
-          <button className='text-xl'>{username} <i class="fa-solid fa-chevron-down ml-1"></i></button>
+          <button className='text-xl'>{userData.username} <i class="fa-solid fa-chevron-down ml-1"></i></button>
         </div>
       </div>
       <div className='flex flex-col'>

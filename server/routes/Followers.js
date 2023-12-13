@@ -36,7 +36,7 @@ router.get('/following/:FollowingId', async (req, res) => {
   res.json(extractedFollowingList);
 })
 
-router.get('/unfollow/:FollowingId/:FollowerId', async (req, res) => {
+router.delete('/unfollow/:FollowingId/:FollowerId', async (req, res) => {
   const { FollowingId, FollowerId } = req.params;
 
   const extractedFollowingList = await Followers.findOne({

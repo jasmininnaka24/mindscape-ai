@@ -3,6 +3,9 @@ import { Navbar } from '../../../components/navbar/logged_navbar/navbar'
 import axios from 'axios'
 import { Link } from 'react-router-dom'
 import { useUser } from '../../../UserContext'
+import DeleteIcon from '@mui/icons-material/Delete';
+import { fetchUserData } from '../../../userAPI'
+
 
 export const VirtualLibraryMain = () => {
 
@@ -15,6 +18,8 @@ export const VirtualLibraryMain = () => {
 
   const [sharedMaterials, setSharedMaterials] = useState([]);
   const [sharedMaterialsCategory, setSharedMaterialsCategory] = useState([]);
+  const [sharedMaterialsCategoryUsers, setSharedMaterialsCategoryUsers] = useState([]);
+  const [sharedMaterialsCategoryBookmarks, setSharedMaterialsCategoryBookmarks] = useState([]);
 
   const [currentMaterialTitle, setCurrentMaterialTitle] = useState('');
   const [currentMaterialCategory, setCurrentMaterialCategory] = useState('');
@@ -26,7 +31,12 @@ export const VirtualLibraryMain = () => {
 
   const [filteredSharedCategories, setFilteredSharedCategories] = useState([]);
   const [filteredStudyMaterialsByCategory, setFilteredStudyMaterialsByCategory] = useState([]);
+
   const [currentFilteredCategory, setCurrentFilteredCategory] = useState('');
+  const [currentFilteredCategoryUsers, setCurrentFilteredCategoryUsers] = useState('');
+  const [currentFilteredCategoryBookmarks, setCurrentFilteredCategoryBookmarks] = useState('');
+
+  const [filteredStudyMaterialsByCategoryUsers, setFilteredStudyMaterialsByCategoryUsers] = useState([]);
 
   const [groupNameValue, setGroupNameValue] = useState('');
 
@@ -36,6 +46,8 @@ export const VirtualLibraryMain = () => {
   const [searchedMaterials, setSearchedMaterials] = useState([]);
   const [searchedMaterialsCategories, setSearchedMaterialsCategories] = useState([]);
   const [searchCategory, setSearchCategory] = useState([]);
+  const [searchCategoryUsers, setSearchCategoryUsers] = useState([]);
+  const [searchCategoryBookmarks, setSearchCategoryBookmarks] = useState([]);
   const [searchCategoryMaterials, setSearchCategoryMaterials] = useState([]);
   const [searchedCategories, setSearchedCategories] = useState([]);
 
@@ -57,10 +69,41 @@ export const VirtualLibraryMain = () => {
   const [showNotes, setShowNotes] = useState(false);
   const [showQuiz, setShowQuiz] = useState(false);
 
+
+  const [isDone, setIsDone] = useState(false);
+  const [deleteModal, setDeleteModal] = useState(false);
+  const [materialIdToRemove, setMaterialIdToRemove] = useState(false);
+  const [materialIdToRemoveBookmarkCounts, setMaterialIdToRemoveBookmarkCounts] = useState(false);
+  const [filteredCategoryCounts, setFilteredCategoryCounts] = useState(0);
+
   const { user } = useUser()
   const UserId = user?.id;
 
+
+  // user data
+  const [userData, setUserData] = useState({
+    username: '',
+    email: '',
+    studyProfTarget: 0,
+    typeOfLearner: '',
+    userImage: ''
+  })
+
+  const getUserData = async () => {
+    const userData = await fetchUserData(UserId);
+    setUserData({
+      username: userData.username,
+      email: userData.email,
+      studyProfTarget: userData.studyProfTarget,
+      typeOfLearner: userData.typeOfLearner,
+      userImage: userData.userImage
+    });
+  }
+
+
   const fetchData = async () => {
+
+    // setFilteredSharedCategories
  
     // for fetching personal
     const personalStudyMaterial = await axios.get(`http://localhost:3001/studyMaterial/study-material-category/Personal/${UserId}`)
@@ -113,6 +156,27 @@ export const VirtualLibraryMain = () => {
     );
           
     setSharedMaterialsCategory(fetchedSharedStudyMaterialCategory);
+    // Use Promise.all with map for asynchronous operations
+    let sortedDataUsers = await Promise.all(
+      sharedStudyMaterialResponse.map(async (user) => {
+        const response = await axios.get(`http://localhost:3001/users/get-user/${user.UserId}`);
+        return response.data;
+      })
+    );  
+
+    setSharedMaterials(sharedStudyMaterialResponse);
+
+    setSharedMaterialsCategoryUsers(sortedDataUsers);
+
+    // Use Promise.all with map for asynchronous operations
+    let sortedDataBookmarksCounts = await Promise.all(
+      sharedStudyMaterialResponse.map(async (user) => {
+        const response = await axios.get(`http://localhost:3001/studyMaterial/bookmark-counts/${user.code}`);
+        return response.data;
+      })
+    );  
+
+    setSharedMaterialsCategoryBookmarks(sortedDataBookmarksCounts);
 
 
     const uniqueCategories = [...new Set(fetchedSharedStudyMaterialCategory.map(item => item.category))];
@@ -141,17 +205,15 @@ export const VirtualLibraryMain = () => {
       };
     });
     
-    // Use Promise.all to wait for all promises to resolve
-    Promise.all(promiseArray)
-      .then(sortedCategoryObjects => {
-        // console.log(sortedCategoryObjects);
-        setFilteredSharedCategories(sortedCategoryObjects);      
+      // Use Promise.all to wait for all promises to resolve
+      Promise.all(promiseArray)
+        .then(async (sortedCategoryObjects) => {
+          setFilteredSharedCategories(sortedCategoryObjects);
+        })
+        .catch((error) => {
+          console.error('Error:', error);
+        });
 
-      })
-      .catch(error => {
-        console.error('Error:', error);
-      });
-    
       
       
       const response = await axios.get(`http://localhost:3001/studyGroup/extract-group-through-user/${UserId}`);
@@ -179,15 +241,26 @@ export const VirtualLibraryMain = () => {
     
   }
 
+  useEffect(() => {
+    
+    
+    if (!isDone) {
+      setIsDone(true)
+    }
+
+  },[UserId])
+
 
   useEffect(() => {
- 
+    if (isDone) {
+      getUserData();
+      fetchData()
+      setIsDone(false)
+    }
+  }, [isDone])
 
-    fetchData()
-  }, [setPersonalStudyMaterials, setGroupStudyMaterials])
+    
 
-
-  
   const viewStudyMaterialDetails = async (index, materialFor, filter, category) => {
 
     setShowPresentStudyMaterials(false)
@@ -436,35 +509,46 @@ export const VirtualLibraryMain = () => {
   }
 
   const shareMaterial = async (index, materialFor) => {
-    let studyMaterialResponse = '';
+    try {
+      let studyMaterialResponse = '';
+      let data = {
+        tag: 'Shared',
+      };
   
-    let data = {
-      tag: 'Shared'
-    }
+      let materialArray = materialFor === 'personal' ? personalStudyMaterials : groupStudyMaterials;
   
-    let materialArray = materialFor === 'personal' ? personalStudyMaterials : groupStudyMaterials;
+      if (materialArray && materialArray[index]) {
+        if (materialFor === 'personal') {
+          studyMaterialResponse = await axios.put(`http://localhost:3001/studyMaterial/update-tag/${personalStudyMaterials[index].id}`, data);
+        } else {
+          studyMaterialResponse = await axios.put(`http://localhost:3001/studyMaterial/update-tag/${groupStudyMaterials[index].id}`, data);
+        }
   
-    if (materialArray && materialArray[index]) {
-      if (materialFor === 'personal') {
-        studyMaterialResponse = await axios.put(`http://localhost:3001/studyMaterial/update-tag/${personalStudyMaterials[index].id}`, data)
+        let categoryData = {
+          isShared: true,
+        };
+  
+        await axios.put(`http://localhost:3001/studyMaterialCategory/update-shared/${studyMaterialResponse.data.StudyMaterialsCategoryId}`, categoryData);
+  
+        if (currentMaterialCategory !== '') {
+          // Fetch the newly shared material
+          const newSharedMaterial = await axios.get(`http://localhost:3001/studyMaterial/get-material/${studyMaterialResponse.data.id}`);
+          
+          // Update the state with the new material added to the beginning of the array
+          setFilteredStudyMaterialsByCategory(prevMaterials => [newSharedMaterial.data, ...prevMaterials]);
+        }
+  
       } else {
-        studyMaterialResponse = await axios.put(`http://localhost:3001/studyMaterial/update-tag/${groupStudyMaterials[index].id}`, data)
-      } 
-
-      let categoryData = {
-        isShared: true
+        console.error(`Material at index ${index} is undefined.`);
       }
-
-      await axios.put(`http://localhost:3001/studyMaterialCategory/update-shared/${studyMaterialResponse.data.StudyMaterialsCategoryId}`, categoryData)
   
-    } else {
-      console.error(`Material at index ${index} is undefined.`);
+      fetchData();
+    } catch (error) {
+      console.error('Error sharing material:', error);
+      // Handle errors if needed
     }
-
-    fetchData()
-
-  }
-
+  };
+  
 
 
 
@@ -800,7 +884,9 @@ export const VirtualLibraryMain = () => {
   
 
   const filterMaterial = async (categoryTitle) => {
+
     let filteredCategory = sharedMaterialsCategory.filter(category => category.category === categoryTitle);
+
 
 
     
@@ -817,7 +903,6 @@ export const VirtualLibraryMain = () => {
       return false;
     });
 
-    // console.log(filteredUniqueCategory);
     let matchingMaterials = [];
 
     filteredUniqueCategory.forEach(biologyItem => {
@@ -826,9 +911,40 @@ export const VirtualLibraryMain = () => {
               matchingMaterials.push(material);
           }
       });
-  });
+    });
+
+
+
+
+
 
   setFilteredStudyMaterialsByCategory(matchingMaterials);
+  // console.log(matchingMaterials);
+
+  // Use Promise.all with map for asynchronous operations
+  let sortedDataUsers = await Promise.all(
+    matchingMaterials.map(async (user) => {
+      const response = await axios.get(`http://localhost:3001/users/get-user/${user.UserId}`);
+      return response.data;
+    })
+  );
+
+
+
+  // Now sortedDataUsers contains the resolved data for all users
+  setCurrentFilteredCategoryUsers(sortedDataUsers);
+
+  // Use Promise.all with map for asynchronous operations
+  let sortedDataBookmarksCounts = await Promise.all(
+    sortedDataUsers.map(async (user) => {
+      const response = await axios.get(`http://localhost:3001/studyMaterial/bookmark-counts/${user.code}`);
+      return response.data;
+    })
+  );  
+
+  setCurrentFilteredCategoryBookmarks(sortedDataBookmarksCounts);
+
+
   setCurrentFilteredCategory(categoryTitle)
   }
 
@@ -899,6 +1015,31 @@ export const VirtualLibraryMain = () => {
   
     setSearchedMaterials(filteredUniqueCategory);
     setSearchCategory(fetchedSharedStudyMaterialCategory);
+
+    // Use Promise.all with map for asynchronous operations
+    let sortedDataBookmarksCounts = await Promise.all(
+      fetchedSharedStudyMaterialCategory.map(async (user) => {
+        const response = await axios.get(`http://localhost:3001/studyMaterial/bookmark-counts/${user.code}`);
+        return response.data;
+      })
+    );  
+
+    setSearchCategoryBookmarks(sortedDataBookmarksCounts);
+
+    // Use Promise.all with map for asynchronous operations
+    let sortedDataUsers = await Promise.all(
+      fetchedSharedStudyMaterialCategory.map(async (user) => {
+        const response = await axios.get(`http://localhost:3001/users/get-user/${user.UserId}`);
+        return response.data;
+      })
+    );
+
+
+
+    // Now sortedDataUsers contains the resolved data for all users
+    setSearchCategoryUsers(sortedDataUsers);
+
+        
     setSearchedMaterialsCategories(filteredCategories);
     setSearchCategoryMaterials(fetchedSearchCategoryMaterials.flat());
   }
@@ -944,6 +1085,64 @@ export const VirtualLibraryMain = () => {
     }
 
   };
+
+
+  const removeFromLibraryOnly = async () => {
+    let data = {
+      tag: 'Own Record'
+    }
+
+    const removed = await axios.put(`http://localhost:3001/studyMaterial/update-tag/${materialIdToRemove}`, data)
+
+
+
+    
+      // Find the index of the material with the specified ID
+      const materialIndexToRemove = filteredStudyMaterialsByCategory.findIndex(material => material.id === materialIdToRemove);
+
+      if (materialIndexToRemove !== -1) {
+        // Create a new array without the material to remove
+        const updatedFilteredStudyMaterials = [...filteredStudyMaterialsByCategory.slice(0, materialIndexToRemove), ...filteredStudyMaterialsByCategory.slice(materialIndexToRemove + 1)];
+  
+        // Update the state with the new array
+        setFilteredStudyMaterialsByCategory(updatedFilteredStudyMaterials);
+      } else {
+        console.error(`Material with ID ${materialIdToRemove} not found in filteredStudyMaterialsByCategory.`);
+      }
+
+      fetchData()
+    
+    // console.log(currentMaterialCategory);
+    setDeleteModal(false)
+  }
+
+  const deleteInAllRecords = async () => {
+    try {
+      const removed = await axios.delete(`http://localhost:3001/studyMaterial/delete-material/${materialIdToRemove}`);
+  
+      // Find the index of the material with the specified ID
+      const materialIndexToRemove = filteredStudyMaterialsByCategory.findIndex((material) => material.id === materialIdToRemove);
+  
+      if (materialIndexToRemove !== -1) {
+        // Create a new array without the material to remove
+        const updatedFilteredStudyMaterials = [
+          ...filteredStudyMaterialsByCategory.slice(0, materialIndexToRemove),
+          ...filteredStudyMaterialsByCategory.slice(materialIndexToRemove + 1),
+        ];
+  
+        // Update the state with the new array
+        setFilteredStudyMaterialsByCategory(updatedFilteredStudyMaterials);
+      } else {
+        console.error(`Material with ID ${materialIdToRemove} not found in filteredStudyMaterialsByCategory.`);
+      }
+  
+      fetchData();
+      setDeleteModal(false)
+    } catch (error) {
+      console.error('Error deleting in all records:', error);
+      // Handle errors if needed
+    }
+  };
   
 
   return (
@@ -977,6 +1176,7 @@ export const VirtualLibraryMain = () => {
                       <button onClick={() => {
                         filterMaterial(material.category)
                         setSearchValue('')
+                        setCurrentMaterialCategory(material.category)
                       }}>{material.category}</button>
                     </div>
                 })
@@ -988,6 +1188,7 @@ export const VirtualLibraryMain = () => {
                       <button onClick={() => {
                         filterMaterial(material.category)
                         setSearchValue('')
+                        setCurrentMaterialCategory(material.category)
                       }}>{material.category}</button>
                     </div>
                 })
@@ -1023,104 +1224,250 @@ export const VirtualLibraryMain = () => {
               </div>
               <div className='grid grid-result gap-3'>
 
+              
 
-                {((filteredStudyMaterialsByCategory && filteredStudyMaterialsByCategory.length === 0) && searchValue === '') &&
-                sharedMaterials.map((material, index) => {
-                  const category = sharedMaterialsCategory[index]?.category || 'Category not available';
-  
-                  return <div key={index} className='my-3 mbg-200 border-thin-800 p-4 rounded flex items-center justify-between'>
-                      <div>
+
+              {/* delete modal */}
+              {deleteModal && (
+                <div className={`absolute top-0 modal-bg left-0 w-full h-full`}>
+                  <div className='flex items-center justify-center h-full'>
+                    <div className='relative mbg-100 min-h-[30vh] w-1/3 z-10 relative py-5 px-5 rounded-[5px]' style={{overflowY: 'auto'}}>
+
+                      <button className='absolute right-5 top-5 font-medium text-xl' onClick={(e) => {
+                        e.preventDefault()
+                        setDeleteModal(false)
+                      }}>&#10006;</button>
+
+                      <div className='flex items-center justify-center h-full'>
+                        <div className='w-full'>
+                          <div>
+                            <div className='flex flex-col gap-4'>
+                              <br />
+                              <button className='mbg-300 py-4 rounded text-md font-medium' onClick={removeFromLibraryOnly}>Remove From Library Only</button>
+                              <button className='mbg-300 py-4 rounded text-md font-medium' onClick={() => {
+                                deleteInAllRecords()
+                              }}>Delete in All Records</button>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+
+
+                    </div>
+                  </div>
+                </div>
+              )}
+
+
+          {((filteredStudyMaterialsByCategory && filteredStudyMaterialsByCategory.length === 0) && searchValue === '') && (
+            // Create an array of objects with material information and timestamp of the latest bookmark
+            sharedMaterials.map((material, index) => {
+              const category = sharedMaterialsCategory[index]?.category || 'Category not available';
+              const user = sharedMaterialsCategoryUsers[index]?.username || 'Deleted user';
+              const bookmarks = sharedMaterialsCategoryBookmarks[index] || [];
+
+              // Find the latest bookmark timestamp or default to 0 if no bookmarks
+              const latestBookmarkTimestamp = Math.max(...bookmarks.map(bookmark => bookmark.timestamp), 0);
+
+              return {
+                index,
+                material,
+                category,
+                user,
+                bookmarksCount: bookmarks.length,
+                latestBookmarkTimestamp
+              };
+            })
+            // Sort the array by the latest bookmark timestamp in descending order
+            .sort((a, b) => b.latestBookmarkTimestamp - a.latestBookmarkTimestamp)
+            .map(({ index, material, category, user, bookmarksCount }) => (
+              <div key={index} className='my-3 mbg-200 border-thin-800 p-4 rounded flex justify-between items-center'>
+                <div>
+                  <p className='font-medium text-lg'>Title: {material.title}</p>
+                  <p className='text-sm mt-1'>Category: {category}</p>
+                  <p className='text-sm mt-1'>Uploader: {user}</p>
+                  <p className='text-sm mt-1'>Bookmarked by {bookmarksCount} user{bookmarksCount > 1 ? 's' : ''}</p>
+                </div>
+
+                <div className='gap-3 mt-5'>
+                  {user === userData.username && (
+                    <div className='flex justify-end'>
+                      <button onClick={() => {
+                        if (bookmarksCount > 0) {
+                          alert('This material has been bookmarked by others. You can no longer remove nor delete it.')
+                        } else {
+                          setDeleteModal(true)
+                          setMaterialIdToRemove(material.id)
+                          setMaterialIdToRemoveBookmarkCounts(bookmarksCount)
+                        }
+                      }}><DeleteIcon className='text-red'/></button>
+                    </div>
+                  )}
+
+                  <button className='mbg-100 w-full my-1 mcolor-900 border-thin-800 px-5 py-2 rounded' onClick={() => viewStudyMaterialDetails(index, 'shared', 'not filtered', category)}>View</button>
+                  <button className='mbg-700 w-full my-1 mcolor-100 px-5 py-2 rounded' onClick={() => {
+                    setShowBookmarkModal(true);
+                    setChooseRoom(true);
+                    setCurrentSharedMaterialIndex(index);
+                  }}>Bookmark</button>
+                </div>
+              </div>
+            ))
+          )}
+
+
+
+
+
+          {
+            (filteredStudyMaterialsByCategory && filteredStudyMaterialsByCategory.length > 0 && searchValue === '') &&
+              filteredStudyMaterialsByCategory.map((material, index) => {
+                const category = currentFilteredCategory;
+                const user = currentFilteredCategoryUsers[index]?.username || 'Deleted user';
+                const bookmarks = currentFilteredCategoryBookmarks[index] || []; // Ensure bookmarks is an array
+
+                // Find the latest bookmark timestamp or default to 0 if no bookmarks
+                const latestBookmarkTimestamp = Math.max(...bookmarks.map(bookmark => bookmark.timestamp), 0);
+
+                return {
+                  index,
+                  material,
+                  category,
+                  user,
+                  bookmarksCount: bookmarks.length,
+                  latestBookmarkTimestamp
+                };
+              })
+              // Sort the array by the latest bookmark timestamp in descending order
+              .sort((a, b) => b.latestBookmarkTimestamp - a.latestBookmarkTimestamp)
+              .map(({ index, material, category, user, bookmarksCount }) => (
+                <div key={index} className='my-3 mbg-200 border-thin-800 p-4 rounded flex items-center justify-between'>
+                  <div>
+                    <p className='font-medium text-lg'>Title: {material.title}</p>
+                    <p className='text-sm mt-1'>Category: {category}</p>
+                    <p className='text-sm mt-1'>Uploader: {user}</p>
+                    <p className='text-sm mt-1'>Bookmarked by {bookmarksCount} user{bookmarksCount > 1 ? 's' : ''}</p>
+                  </div>
+
+                  <div className='gap-3'>
+                    {user === userData.username && (
+                      <div className='flex justify-end'>
+                        <button onClick={() => {
+                          if (bookmarksCount > 0) {
+                            alert('This material has been bookmarked by others. You can no longer remove nor delete it.')
+                          } else {
+                            setDeleteModal(true)
+                            setMaterialIdToRemove(material.id)
+                            setMaterialIdToRemoveBookmarkCounts(bookmarksCount)
+                            setFilteredCategoryCounts(filteredStudyMaterialsByCategory.length)
+                            
+                          }
+                        }}><DeleteIcon className='text-red'/></button>
+                      </div>
+                    )}
+                    <button className='mbg-100 w-full my-1 mcolor-900 border-thin-800 px-5 py-2 rounded' onClick={() => viewStudyMaterialDetails(index, 'shared', 'filtered', category)}>View</button>
+                    <button className='mbg-700 w-full my-1 mcolor-100 px-5 py-2 rounded' onClick={() => {
+                      setShowBookmarkModal(true)
+                      setChooseRoom(true)
+                      setCurrentSharedMaterialIndex(index)
+                    }}>Bookmark</button>
+                  </div>
+                </div>
+              ))
+          }
+
+
+
+
+
+              {
+                searchValue !== '' &&
+                searchedMaterials
+                  .map((material, index) => {
+                    const category = searchCategory[index]?.category || 'Category not available';
+                    const user = searchCategoryUsers[index]?.username || 'Deleted user';
+                    const bookmarks = searchCategoryBookmarks[index] || [];
+
+                    return {
+                      index,
+                      material,
+                      category,
+                      user,
+                      bookmarksCount: bookmarks.length,
+                    };
+                  })
+                  .filter(({ material, category, user, bookmarksCount }) =>
+                    material.title.toLowerCase().includes(searchValue.toLowerCase()) ||
+                    category.toLowerCase().includes(searchValue.toLowerCase()) ||
+                    user.toLowerCase().includes(searchValue.toLowerCase())
+                  )
+                  .map(({ index, material, category, user, bookmarksCount }) => (
+                    <div key={index} className='my-3 mbg-200 border-thin-800 p-4 rounded flex items-center justify-between'>
+                    <div>
                         <p className='font-medium text-lg'>Title: {material.title}</p>
                         <p className='text-sm mt-1'>Category: {category}</p>
+                        <p className='text-sm mt-1'>Uploader: {user}</p>
+                        <p className='text-sm mt-1'>Bookmarked by {bookmarksCount} user{bookmarksCount !== 1 ? 's' : ''}</p>
                       </div>
-  
-                      <div className='flex items-center gap-3'>
-                        <button className='mbg-100 mcolor-900 border-thin-800 px-5 py-2 rounded' onClick={() => viewStudyMaterialDetails(index, 'shared', 'not filtered', category)}>View</button>
-                        <button className='mbg-700 mcolor-100 px-5 py-2 rounded' onClick={() => {
+
+                      <div className='gap-3'>
+                      {user === userData.username && (
+                        <div className='flex justify-end'>
+                          <button onClick={() => {
+                            if (bookmarksCount > 0) {
+                              alert('This material has been bookmarked by others. You can no longer remove nor delete it.')
+                            } else {
+                              setDeleteModal(true)
+                              setMaterialIdToRemove(material.id)
+                              setMaterialIdToRemoveBookmarkCounts(bookmarksCount)
+                              setFilteredCategoryCounts(filteredStudyMaterialsByCategory.length)
+                              
+                            }
+                          }}><DeleteIcon className='text-red'/></button>
+                        </div>
+                      )}
+                        <button className='mbg-100 w-full my-1 mcolor-900 border-thin-800 px-5 py-2 rounded' onClick={() => viewStudyMaterialDetails(index, 'shared', 'filtered', category)}>View</button>
+                        <button className='mbg-700 w-full my-1 mcolor-100 px-5 py-2 rounded' onClick={() => {
                           setShowBookmarkModal(true)
                           setChooseRoom(true)
                           setCurrentSharedMaterialIndex(index)
-                          }}>Bookmark</button>
+                        }}>Bookmark</button>
                       </div>
                     </div>
-                })
-                }
+                  ))
+              }
 
-                {(filteredStudyMaterialsByCategory && filteredStudyMaterialsByCategory.length > 0 && searchValue === '') &&
-                    filteredStudyMaterialsByCategory.map((material, index) => {
-                      const category = currentFilteredCategory;
-      
-                      return <div key={index} className='my-3 mbg-200 border-thin-800 p-4 rounded flex items-center justify-between'>
-                          <div>
-                            <p className='font-medium text-lg'>Title: {material.title}</p>
-                            <p className='text-sm mt-1'>Category: {category}</p>
-                          </div>
-      
-                          <div className='flex items-center gap-3'>
-                            <button className='mbg-100 mcolor-900 border-thin-800 px-5 py-2 rounded' onClick={() => viewStudyMaterialDetails(index, 'shared', 'filtered', category)}>View</button>
-                            <button className='mbg-700 mcolor-100 px-5 py-2 rounded' onClick={() => {
-                              setShowBookmarkModal(true)
-                              setChooseRoom(true)
-                              setCurrentSharedMaterialIndex(index)
-                              }}>Bookmark</button>
-                          </div>
+
+
+              {searchValue !== '' && (
+                // Check if searchedMaterials and searchCategoryMaterials have the same array of objects
+                searchedMaterials.length !== searchCategoryMaterials.length &&
+                searchedMaterials.every((material, index) => material.title && searchCategoryMaterials[index]?.title) && (
+                  searchCategoryMaterials.map((material, index) => {
+                    const category = searchedMaterialsCategories[0]?.category || 'Category not available';
+                    const title = searchCategoryMaterials[index].title;
+
+                    return (
+                      <div key={index} className='my-3 mbg-200 border-thin-800 p-4 rounded '>
+                        <div>
+                          <p className='font-medium text-lg'>Title: {title}</p>
+                          <p className='text-sm mt-1'>Category: {category}</p>
                         </div>
-                    })
-                }
 
-
-
-
-                {searchValue !== '' && (
-                    searchedMaterials.map((material, index) => {
-                      const category = searchCategory[index]?.category || 'Category not available';
-      
-                      return <div key={index} className='my-3 mbg-200 border-thin-800 p-4 rounded flex items-center justify-between'>
-                          <div>
-                            <p className='font-medium text-lg'>Title: {material.title}</p>
-                            <p className='text-sm mt-1'>Category: {category}</p>
-                          </div>
-      
-                          <div className='flex items-center gap-3'>
-                            <button className='mbg-100 mcolor-900 border-thin-800 px-5 py-2 rounded' onClick={() => viewStudyMaterialDetails(index, 'shared', 'searched', category)}>View</button>
-                            <button className='mbg-700 mcolor-100 px-5 py-2 rounded' onClick={() => {
-                              setShowBookmarkModal(true)
-                              setChooseRoom(true)
-                              setCurrentSharedMaterialIndex(index)
-                              }}>Bookmark</button>
-                          </div>
+                        <div className='flex items-center gap-3'>
+                          <button className='mbg-100 mcolor-900 border-thin-800 px-5 py-2 rounded' onClick={() => viewStudyMaterialDetails(index, 'shared', 'searched-category', category)}>View</button>
+                          <button className='mbg-700 mcolor-100 px-5 py-2 rounded' onClick={() => {
+                            setShowBookmarkModal(true)
+                            setChooseRoom(true)
+                            setCurrentSharedMaterialIndex(index)
+                          }}>Bookmark</button>
                         </div>
-                    })
-                )}
-
-                {searchValue !== '' && (
-                  // Check if searchedMaterials and searchCategoryMaterials have the same array of objects
-                  searchedMaterials.length !== searchCategoryMaterials.length &&
-                  searchedMaterials.every((material, index) => material.title && searchCategoryMaterials[index]?.title) && (
-                    searchCategoryMaterials.map((material, index) => {
-                      const category = searchedMaterialsCategories[0]?.category || 'Category not available';
-                      const title = searchCategoryMaterials[index].title;
-
-                      return (
-                        <div key={index} className='my-3 mbg-200 border-thin-800 p-4 rounded flex items-center justify-between'>
-                          <div>
-                            <p className='font-medium text-lg'>Title: {title}</p>
-                            <p className='text-sm mt-1'>Category: {category}</p>
-                          </div>
-
-                          <div className='flex items-center gap-3'>
-                            <button className='mbg-100 mcolor-900 border-thin-800 px-5 py-2 rounded' onClick={() => viewStudyMaterialDetails(index, 'shared', 'searched-category', category)}>View</button>
-                            <button className='mbg-700 mcolor-100 px-5 py-2 rounded' onClick={() => {
-                              setShowBookmarkModal(true)
-                              setChooseRoom(true)
-                              setCurrentSharedMaterialIndex(index)
-                            }}>Bookmark</button>
-                          </div>
-                        </div>
-                      );
-                    })
-                  )
-                )}
+                      </div>
+                    );
+                  })
+                )
+              )}
 
               </div>
             </div>
@@ -1273,11 +1620,12 @@ export const VirtualLibraryMain = () => {
                       <br />
 
 
-                      <p>Personal: </p>
+                      {personalStudyMaterials.length > 0 && <p>Personal: </p>}
+                    
                       {personalStudyMaterials.map((material, index) => {
                         const category = personalStudyMaterialsCategory[index]?.category || 'Category not available';
 
-                        return <div key={index} className='my-3 mbg-200 border-thin-800 p-4 rounded flex items-center justify-between'>
+                        return <div key={index} className='flex justify-between my-3 mbg-200 border-thin-800 p-4 rounded '>
                             <div>
                               <p className='font-medium text-lg'>Title: {material.title}</p>
                               <p className='text-sm mt-1'>Category: {category}</p>
@@ -1293,12 +1641,12 @@ export const VirtualLibraryMain = () => {
 
                       <br />
 
+                      {groupStudyMaterials.length > 0 && <p>Group: </p>}
 
-                      <p>Group: </p>
                       {groupStudyMaterials.map((material, index) => {
                         const category = groupStudyMaterialsCategory[index]?.category || 'Category not available';
 
-                        return <div key={index} className='my-3 mbg-200 border-thin-800 p-4 rounded flex items-center justify-between'>
+                        return <div key={index} className='my-3 mbg-200 border-thin-800 p-4 rounded'>
                             <div>
                               <p className='font-medium text-lg'>Title: {material.title}</p>
                               <p className='text-sm mt-1'>Category: {category}</p>

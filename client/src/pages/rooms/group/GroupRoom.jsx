@@ -71,7 +71,7 @@ export const GroupRoom = () => {
   };
 
   return (
-    <div className='relative poppins mcolor-900 mbg-200 grouproom p-5'>
+    <div className='relative poppins mcolor-900 grouproom p-5'>
       <div className='mt-5 mb-8'>
         <Navbar linkBack={'/main/'} linkBackName={'Main'} currentPageName={'Groups'} username={'Jennie Kim'}/>
       </div>

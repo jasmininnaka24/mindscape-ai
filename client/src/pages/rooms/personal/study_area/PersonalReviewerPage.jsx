@@ -28,43 +28,57 @@ export const PersonalReviewerPage = () => {
   const [recentlyDeletedMaterial, setRecentlyDeletedMaterial] = useState('');
   const [isMaterialDeleted, setIsMaterialDeleted] = useState('hidden');
 
+  const [isDone, setIsDone] = useState(false);
+
+
+  const fetchData = async () => {
+
+    const groupResponse = await axios.get(`http://localhost:3001/studyMaterial/study-material-personal/Personal/${UserId}/${materialId}`);
+
+    setMaterialTitle(groupResponse.data.title);
+
+    await axios.get(`http://localhost:3001/quesRev/study-material-rev/${materialId}`).then((response) => {
+      setNotesReviewer(response.data)
+    })
+
+    await axios.get(`http://localhost:3001/studyMaterial/study-material-personal/Personal/${UserId}/${materialId}`).then((response) => {
+      setLessonContext(response.data.body);
+    })
+
+    try {
+      const previousSavedData = await axios.get(`http://localhost:3001/DashForPersonalAndGroup/get-latest-assessment-personal/${materialId}/${UserId}`);
+      const fetchedData = previousSavedData.data;
+
   
+      if (fetchedData && fetchedData.length >= 1 && fetchedData[0].assessmentScore !== undefined && fetchedData[0].assessmentScore === 'none') {
+        setTakeAssessment(true);
+      } else if (fetchedData && fetchedData.length >= 1 && fetchedData[0].assessmentScore !== undefined) {
+        setTakeAssessment(true);
+      }
+    } catch (error) {
+      console.error('Error fetching assessment data:', error);
+    }
+  }
+
 
   useEffect(() => {
     
-    const fetchData = async () => {
-
-      const groupResponse = await axios.get(`http://localhost:3001/studyMaterial/study-material-personal/Personal/${UserId}/${materialId}`);
-
-      setMaterialTitle(groupResponse.data.title);
-
-      await axios.get(`http://localhost:3001/quesRev/study-material-rev/${materialId}`).then((response) => {
-        setNotesReviewer(response.data)
-      })
-  
-      await axios.get(`http://localhost:3001/studyMaterial/study-material-personal/Personal/${UserId}/${materialId}`).then((response) => {
-        setLessonContext(response.data.body);
-      })
-
-      try {
-        const previousSavedData = await axios.get(`http://localhost:3001/DashForPersonalAndGroup/get-latest-assessment-personal/${materialId}/${UserId}`);
-        const fetchedData = previousSavedData.data;
-
     
-        if (fetchedData && fetchedData.length >= 1 && fetchedData[0].assessmentScore !== undefined && fetchedData[0].assessmentScore === 'none') {
-          setTakeAssessment(true);
-        } else if (fetchedData && fetchedData.length >= 1 && fetchedData[0].assessmentScore !== undefined) {
-          setTakeAssessment(true);
-        }
-      } catch (error) {
-        console.error('Error fetching assessment data:', error);
-      }
+    if (!isDone) {
+      setIsDone(true)
     }
-    
 
-    fetchData();
+  },[UserId])
 
-  },[materialId])
+
+  useEffect(() => {
+    if (isDone) {
+      fetchData();
+      setIsDone(false)
+    }
+  }, [isDone])
+
+  
 
 
 

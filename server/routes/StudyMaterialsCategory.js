@@ -4,8 +4,9 @@ const { StudyMaterialsCategories } = require('../models'); // Ensure it's plural
 
 router.post('/', async (req, res) => {
   const category = req.body;
-  const addedCategory = await StudyMaterialsCategories.create(category);
-  res.json(addedCategory);
+  await StudyMaterialsCategories.create(category);
+  res.json({ message: `Successfully added.`, error: false });
+
 });
 
 
@@ -15,6 +16,36 @@ router.get('/get-categoryy/:id', async (req, res) => {
   const extractedUserDetails = await StudyMaterialsCategories.findByPk(id);
   res.json(extractedUserDetails)
 })
+
+router.get('/get-category-value/:UserId/:category', async (req, res) => {
+  const { category, UserId } = req.params;
+  const extractedUserDetails = await StudyMaterialsCategories.findOne({
+    where: {
+      category: category,
+      UserId: UserId,
+      categoryFor: 'Personal'
+    }
+  });
+  res.json(extractedUserDetails)
+})
+
+router.get('/get-category-value-group/:StudyGroupId/:category', async (req, res) => {
+  try {
+    const { category, StudyGroupId } = req.params;
+    const extractedGroupDetails = await StudyMaterialsCategories.findOne({
+      where: {
+        category: category,
+        StudyGroupId: StudyGroupId,
+        categoryFor: 'Group'
+      }
+    });
+
+    res.json(extractedGroupDetails);
+  } catch (error) {
+    console.error('Error fetching category details:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
 
 
 
@@ -174,6 +205,47 @@ router.put('/update-shared/:id', async (req, res) => {
     res.status(500).json({ error: 'Internal Server Error' });
   }
 });
+
+
+
+
+router.put('/update-category/:id', async (req, res) => {
+  const id = req.params.id;
+  const { category } = req.body;
+
+  try {
+    const StudyMaterialsCategoriesData = await StudyMaterialsCategories.findByPk(id);
+
+    if (!StudyMaterialsCategoriesData) {
+      return res.status(404).json({ error: 'Dashboard data not found' });
+    }
+
+    StudyMaterialsCategoriesData.category = category;
+
+    const updatedStudyPerformance = await StudyMaterialsCategoriesData.save();
+
+    console.log('Dashboard data updated successfully:', updatedStudyPerformance);
+    res.json(updatedStudyPerformance);
+  } catch (error) {
+    console.error('Error updating dashboard data:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
+
+
+
+
+
+
+router.delete('/delete-category/:categoryId/:category', async (req, res) => {
+  const { categoryId, category } = req.params;
+  const studyMaterial = await StudyMaterialsCategories.findByPk(categoryId);
+
+  await studyMaterial.destroy();
+  res.json({ message: `${category} is successfully deleted.`, error: false });
+});
+
 
 
 module.exports = router;

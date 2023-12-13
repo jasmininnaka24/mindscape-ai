@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import io from 'socket.io-client';
 import { useParams } from 'react-router-dom';
-import VpnKeyIcon from '@mui/icons-material/VpnKey';
 import WorkspacePremiumIcon from '@mui/icons-material/WorkspacePremium';
 import ScrollToBottom from "react-scroll-to-bottom";
 
@@ -10,7 +9,7 @@ import { PreJoinPage } from '../../../../components/group/PreJoinPage';
 import { AssessmentPage } from '../../../../components/group/AssessmentPage';
 import axios from 'axios';
 import { useUser } from '../../../../UserContext';
-
+import { fetchUserData } from '../../../../userAPI';
 
 const socket = io.connect("http://localhost:3001");
 
@@ -26,7 +25,17 @@ export const GroupReviewerPage = () => {
   const { groupId, materialId } = useParams();
 
   const userId = user?.id;
-  const username = user?.username;
+
+  // user data
+  const [userData, setUserData] = useState({
+    username: '',
+    email: '',
+    studyProfTarget: 0,
+    typeOfLearner: '',
+    userImage: ''
+  })
+    
+
 
   const userActivity = useRef(null);
   
@@ -112,9 +121,37 @@ export const GroupReviewerPage = () => {
   const [messageList, setMessageList] = useState([])
   const [isStartAssessmentButtonStarted, setIsStartAssessmentButtonStarted] = useState(false)
 
+  const [isDone, setIsDone] = useState(false);
+
+
+  const getUserData = async () => {
+    const userData = await fetchUserData(userId);
+    setUserData({
+      username: userData.username,
+      email: userData.email,
+      studyProfTarget: userData.studyProfTarget,
+      typeOfLearner: userData.typeOfLearner,
+      userImage: userData.userImage
+    });
+  }
+
+  useEffect(() => {
+    
+    
+    if (!isDone) {
+      setIsDone(true)
+    }
+
+  },[userId])
 
 
 
+  useEffect(() => {
+    if (isDone) {
+      getUserData();
+      setIsDone(false)
+    }
+  }, [isDone])
 
 
   
@@ -379,6 +416,8 @@ export const GroupReviewerPage = () => {
     let points = 0;
     setFailCount(2)
     // setInCall(true)
+
+    let username = userData.username;
 
     socket.emit("join_room", { room, username, userId, points, questionIndex, shuffledChoices, userList, failCount, lostPoints, gainedPoints, isRunningReview: true, timeDurationValReview: currentCount, extractedQA, isStudyStarted: false, itemsDone: itemsDone });
 
@@ -697,11 +736,41 @@ export const GroupReviewerPage = () => {
 
 
 
+  function generateRandomString() {
+    const letters = 'aBcDeFgHiJkLmNoPqRsTuVwXyZ';
+    const numbers = '0123456789';
+  
+    let randomString = '';
+  
+    // Generate 3 random letters
+    for (let i = 0; i < 3; i++) {
+      const randomLetter = letters.charAt(Math.floor(Math.random() * letters.length));
+      randomString += randomLetter;
+    }
+    
+    // Generate 4 random numbers
+    for (let i = 0; i < 3; i++) {
+      const randomNumber = numbers.charAt(Math.floor(Math.random() * numbers.length));
+      randomString += randomNumber;
+    }
+    
+    // Generate 5 random letters
+    for (let i = 0; i < 3; i++) {
+      const randomLetter = letters.charAt(Math.floor(Math.random() * letters.length));
+      randomString += randomLetter;
+    }
+    return randomString;
+  }
+
+
   const startStudySessionBtn = async () => {
     setIsStartStudyButtonStarted(true)
     socket.emit('updated_study_session_started', { isStarted: true, room })
 
-    await axios.put(`http://localhost:3001/studyMaterial/update-data/${materialId}`, {isStarted: 'true'});
+    await axios.put(`http://localhost:3001/studyMaterial/update-data/${materialId}`, {
+      isStarted: 'true',
+      codeDashTrackingNum: generateRandomString(),
+    });
   }
 
 
@@ -742,7 +811,7 @@ export const GroupReviewerPage = () => {
     let data = {
       room: room,
       userId: userId,
-      author: username,
+      author: userData.username,
       message: messageReview,
       time: new Date(Date.now()).getHours() + ':' + new Date(Date.now()).getMinutes()
     }
@@ -781,11 +850,11 @@ export const GroupReviewerPage = () => {
               <div>
 
                 {showPreJoin && (
-                  <PreJoinPage joinRoom={joinRoom} materialId={materialId} groupId={groupId} setShowPreJoin={setShowPreJoin} setShowAssessmentPage={setShowAssessmentPage} room={room} assessementRoom={assessementRoom} username={username} userId={userId} userListAssessment={userListAssessment} setUserListAssessment={setUserListAssessment} selectedAssessmentAnswer={selectedAssessmentAnswer} setSelectedAssessmentAnswer={setSelectedAssessmentAnswer} isRunning={isRunning} setIsRunning={setIsRunning} seconds={seconds} setSeconds={setSeconds} itemCount={itemCount} setQA={setQA} extractedQA={extractedQA} shuffledChoices={shuffledChoices} setShuffledChoices={setShuffledChoices} isSubmittedButtonClicked={isSubmittedButtonClicked} setIsSubmittedButtonClicked={setIsSubmittedButtonClicked} idOfWhoSubmitted={idOfWhoSubmitted} setIdOfWhoSubmitted={setIdOfWhoSubmitted} usernameOfWhoSubmitted={usernameOfWhoSubmitted} setUsernameOfWhoSubmitted={setUsernameOfWhoSubmitted} score={score} setScore={setScore} isSubmitted={isSubmitted} setIsSubmitted={setIsSubmitted} isAssessmentDone={isAssessmentDone} setIsAssessmentDone={setIsAssessmentDone} showSubmittedAnswerModal={showSubmittedAnswerModal} setShowSubmittedAnswerModal={setShowSubmittedAnswerModal} showTexts={showTexts} setShowTexts={setShowTexts} showAnalysis={showAnalysis} setShowAnalysis={setShowAnalysis} showAssessment={showAssessment} setShowAssessment={setShowAssessment} overAllItems={overAllItems} setOverAllItems={setOverAllItems} preAssessmentScore={preAssessmentScore} setPreAssessmentScore={setPreAssessmentScore} assessmentScore={assessmentScore} setAssessmentScore={setAssessmentScore} assessmentImp={assessmentImp} setAssessmentImp={setAssessmentImp} assessmentScorePerf={assessmentScorePerf} setAssessmentScorePerf={setAssessmentScorePerf} completionTime={completionTime} setCompletionTime={setCompletionTime} confidenceLevel={confidenceLevel} setConfidenceLevel={setConfidenceLevel} overAllPerformance={overAllPerformance} setOverAllPerformance={setOverAllPerformance} assessmentCountMoreThanOne={assessmentCountMoreThanOne} setAssessmentCountMoreThanOne={setAssessmentCountMoreThanOne} generatedAnalysis={generatedAnalysis} setGeneratedAnalysis={setGeneratedAnalysis} extractedQAAssessment={extractedQAAssessment} setQAAssessment={setQAAssessment} shuffledChoicesAssessment={shuffledChoicesAssessment} setShuffledChoicesAssessment={setShuffledChoicesAssessment} assessmentUsersChoices={assessmentUsersChoices} setAssessmentUsersChoices={setAssessmentUsersChoices} message={message} setMessage={setMessage} messageList={messageList} setMessageList={setMessageList} isStartAssessmentButtonStarted={isStartAssessmentButtonStarted} setIsStartAssessmentButtonStarted={setIsStartAssessmentButtonStarted} />
+                  <PreJoinPage joinRoom={joinRoom} materialId={materialId} groupId={groupId} setShowPreJoin={setShowPreJoin} setShowAssessmentPage={setShowAssessmentPage} room={room} assessementRoom={assessementRoom} username={userData.username} userId={userId} userListAssessment={userListAssessment} setUserListAssessment={setUserListAssessment} selectedAssessmentAnswer={selectedAssessmentAnswer} setSelectedAssessmentAnswer={setSelectedAssessmentAnswer} isRunning={isRunning} setIsRunning={setIsRunning} seconds={seconds} setSeconds={setSeconds} itemCount={itemCount} setQA={setQA} extractedQA={extractedQA} shuffledChoices={shuffledChoices} setShuffledChoices={setShuffledChoices} isSubmittedButtonClicked={isSubmittedButtonClicked} setIsSubmittedButtonClicked={setIsSubmittedButtonClicked} idOfWhoSubmitted={idOfWhoSubmitted} setIdOfWhoSubmitted={setIdOfWhoSubmitted} usernameOfWhoSubmitted={usernameOfWhoSubmitted} setUsernameOfWhoSubmitted={setUsernameOfWhoSubmitted} score={score} setScore={setScore} isSubmitted={isSubmitted} setIsSubmitted={setIsSubmitted} isAssessmentDone={isAssessmentDone} setIsAssessmentDone={setIsAssessmentDone} showSubmittedAnswerModal={showSubmittedAnswerModal} setShowSubmittedAnswerModal={setShowSubmittedAnswerModal} showTexts={showTexts} setShowTexts={setShowTexts} showAnalysis={showAnalysis} setShowAnalysis={setShowAnalysis} showAssessment={showAssessment} setShowAssessment={setShowAssessment} overAllItems={overAllItems} setOverAllItems={setOverAllItems} preAssessmentScore={preAssessmentScore} setPreAssessmentScore={setPreAssessmentScore} assessmentScore={assessmentScore} setAssessmentScore={setAssessmentScore} assessmentImp={assessmentImp} setAssessmentImp={setAssessmentImp} assessmentScorePerf={assessmentScorePerf} setAssessmentScorePerf={setAssessmentScorePerf} completionTime={completionTime} setCompletionTime={setCompletionTime} confidenceLevel={confidenceLevel} setConfidenceLevel={setConfidenceLevel} overAllPerformance={overAllPerformance} setOverAllPerformance={setOverAllPerformance} assessmentCountMoreThanOne={assessmentCountMoreThanOne} setAssessmentCountMoreThanOne={setAssessmentCountMoreThanOne} generatedAnalysis={generatedAnalysis} setGeneratedAnalysis={setGeneratedAnalysis} extractedQAAssessment={extractedQAAssessment} setQAAssessment={setQAAssessment} shuffledChoicesAssessment={shuffledChoicesAssessment} setShuffledChoicesAssessment={setShuffledChoicesAssessment} assessmentUsersChoices={assessmentUsersChoices} setAssessmentUsersChoices={setAssessmentUsersChoices} message={message} setMessage={setMessage} messageList={messageList} setMessageList={setMessageList} isStartAssessmentButtonStarted={isStartAssessmentButtonStarted} setIsStartAssessmentButtonStarted={setIsStartAssessmentButtonStarted} />
                 )}
  
                 {showAssessmentPage && (
-                  <AssessmentPage groupId={groupId} materialId={materialId} setShowAssessmentPage={setShowAssessmentPage} userListAssessment={userListAssessment} setUserListAssessment={setUserListAssessment} room={room} assessementRoom={assessementRoom} username={username} userId={userId} selectedAssessmentAnswer={selectedAssessmentAnswer} setSelectedAssessmentAnswer={setSelectedAssessmentAnswer} isRunning={isRunning} setIsRunning={setIsRunning} seconds={seconds} setSeconds={setSeconds} setQA={setQA} extractedQA={extractedQA} shuffledChoices={shuffledChoices} setShuffledChoices={setShuffledChoices} isSubmittedButtonClicked={isSubmittedButtonClicked} setIsSubmittedButtonClicked={setIsSubmittedButtonClicked} idOfWhoSubmitted={idOfWhoSubmitted} setIdOfWhoSubmitted={setIdOfWhoSubmitted} usernameOfWhoSubmitted={usernameOfWhoSubmitted} setUsernameOfWhoSubmitted={setUsernameOfWhoSubmitted} score={score} setScore={setScore} isSubmitted={isSubmitted} setIsSubmitted={setIsSubmitted} isAssessmentDone={isAssessmentDone} setIsAssessmentDone={setIsAssessmentDone} showSubmittedAnswerModal={showSubmittedAnswerModal} setShowSubmittedAnswerModal={setShowSubmittedAnswerModal} showTexts={showTexts} setShowTexts={setShowTexts} showAnalysis={showAnalysis} setShowAnalysis={setShowAnalysis} showAssessment={showAssessment} setShowAssessment={setShowAssessment} overAllItems={overAllItems} setOverAllItems={setOverAllItems} preAssessmentScore={preAssessmentScore} setPreAssessmentScore={setPreAssessmentScore} assessmentScore={assessmentScore} setAssessmentScore={setAssessmentScore} assessmentImp={assessmentImp} setAssessmentImp={setAssessmentImp} assessmentScorePerf={assessmentScorePerf} setAssessmentScorePerf={setAssessmentScorePerf} completionTime={completionTime} setCompletionTime={setCompletionTime} confidenceLevel={confidenceLevel} setConfidenceLevel={setConfidenceLevel} overAllPerformance={overAllPerformance} setOverAllPerformance={setOverAllPerformance} assessmentCountMoreThanOne={assessmentCountMoreThanOne} setAssessmentCountMoreThanOne={setAssessmentCountMoreThanOne} generatedAnalysis={generatedAnalysis} setGeneratedAnalysis={setGeneratedAnalysis} extractedQAAssessment={extractedQAAssessment} setQAAssessment={setQAAssessment} shuffledChoicesAssessment={shuffledChoicesAssessment} setShuffledChoicesAssessment={setShuffledChoicesAssessment} assessmentUsersChoices={assessmentUsersChoices} setAssessmentUsersChoices={setAssessmentUsersChoices} message={message} setMessage={setMessage} messageList={messageList} setMessageList={setMessageList} isStartAssessmentButtonStarted={isStartAssessmentButtonStarted} setIsStartAssessmentButtonStarted={setIsStartAssessmentButtonStarted} setShowPreJoin={setShowPreJoin} setIsJoined={setIsJoined}  />
+                  <AssessmentPage groupId={groupId} materialId={materialId} setShowAssessmentPage={setShowAssessmentPage} userListAssessment={userListAssessment} setUserListAssessment={setUserListAssessment} room={room} assessementRoom={assessementRoom} username={userData.username} userId={userId} selectedAssessmentAnswer={selectedAssessmentAnswer} setSelectedAssessmentAnswer={setSelectedAssessmentAnswer} isRunning={isRunning} setIsRunning={setIsRunning} seconds={seconds} setSeconds={setSeconds} setQA={setQA} extractedQA={extractedQA} shuffledChoices={shuffledChoices} setShuffledChoices={setShuffledChoices} isSubmittedButtonClicked={isSubmittedButtonClicked} setIsSubmittedButtonClicked={setIsSubmittedButtonClicked} idOfWhoSubmitted={idOfWhoSubmitted} setIdOfWhoSubmitted={setIdOfWhoSubmitted} usernameOfWhoSubmitted={usernameOfWhoSubmitted} setUsernameOfWhoSubmitted={setUsernameOfWhoSubmitted} score={score} setScore={setScore} isSubmitted={isSubmitted} setIsSubmitted={setIsSubmitted} isAssessmentDone={isAssessmentDone} setIsAssessmentDone={setIsAssessmentDone} showSubmittedAnswerModal={showSubmittedAnswerModal} setShowSubmittedAnswerModal={setShowSubmittedAnswerModal} showTexts={showTexts} setShowTexts={setShowTexts} showAnalysis={showAnalysis} setShowAnalysis={setShowAnalysis} showAssessment={showAssessment} setShowAssessment={setShowAssessment} overAllItems={overAllItems} setOverAllItems={setOverAllItems} preAssessmentScore={preAssessmentScore} setPreAssessmentScore={setPreAssessmentScore} assessmentScore={assessmentScore} setAssessmentScore={setAssessmentScore} assessmentImp={assessmentImp} setAssessmentImp={setAssessmentImp} assessmentScorePerf={assessmentScorePerf} setAssessmentScorePerf={setAssessmentScorePerf} completionTime={completionTime} setCompletionTime={setCompletionTime} confidenceLevel={confidenceLevel} setConfidenceLevel={setConfidenceLevel} overAllPerformance={overAllPerformance} setOverAllPerformance={setOverAllPerformance} assessmentCountMoreThanOne={assessmentCountMoreThanOne} setAssessmentCountMoreThanOne={setAssessmentCountMoreThanOne} generatedAnalysis={generatedAnalysis} setGeneratedAnalysis={setGeneratedAnalysis} extractedQAAssessment={extractedQAAssessment} setQAAssessment={setQAAssessment} shuffledChoicesAssessment={shuffledChoicesAssessment} setShuffledChoicesAssessment={setShuffledChoicesAssessment} assessmentUsersChoices={assessmentUsersChoices} setAssessmentUsersChoices={setAssessmentUsersChoices} message={message} setMessage={setMessage} messageList={messageList} setMessageList={setMessageList} isStartAssessmentButtonStarted={isStartAssessmentButtonStarted} setIsStartAssessmentButtonStarted={setIsStartAssessmentButtonStarted} setShowPreJoin={setShowPreJoin} setIsJoined={setIsJoined}  />
                 )}
 
                 
@@ -815,9 +884,9 @@ export const GroupReviewerPage = () => {
                             </div>
 
 
-                            <div className={`${hideModalReview} absolute top-0 left-0 modal-bg w-full h-full`}>
+                            <div className={`${hideModalReview} absolute top-0 left-0 modal-bg w-full h-full`} >
                               <div className='flex items-center justify-center h-full'>
-                                <div className='mbg-100 max-h-[60vh] w-1/3 z-10 relative p-10 rounded-[5px] flex items-center justify-center' style={{ overflowY: 'auto' }}>
+                                <div className='mbg-100 max-h-[60vh] w-1/3 relative p-10 rounded-[5px] flex items-center justify-center' style={{ overflowY: 'auto' }}>
 
                                   <button className='absolute right-4 top-3 text-xl' onClick={() => setHideModalReview('hidden')}>
                                     ✖
@@ -827,9 +896,9 @@ export const GroupReviewerPage = () => {
                                     <p className='text-center text-2xl font-medium mcolor-800 mb-5'>Connected Users:</p>
 
                                     <ul className='grid grid-results col-6 gap-5'>
-                                      {userList.map((user,index) => (
+                                      {userList.map(user => (
                                         <li key={user?.userId} className='shadows flex items-center justify-center py-4 rounded'>
-                                          <p><i className="fa-solid fa-circle text-green-500 mr-1"></i> {user?.username.charAt(0).toUpperCase() + user?.username.slice(1)} - {userList[index]?.points}</p>
+                                          <p><i className="fa-solid fa-circle text-green-500 mr-1"></i> {user?.username.charAt(0).toUpperCase() + user?.username.slice(1)}</p>
                                         </li>
                                       ))}
                                     </ul>
@@ -850,7 +919,7 @@ export const GroupReviewerPage = () => {
                                   return (
                                     <div
                                       className="message"
-                                      id={username === messageContent.author ? "you" : "other"}
+                                      id={userData.username === messageContent.author ? "you" : "other"}
                                     >
                                       <div>
                                         <div className="message-content">
@@ -928,9 +997,9 @@ export const GroupReviewerPage = () => {
                                       <div>
 
                                         {/* question */}
-                                        <div className='flex items-center justify-between gap-4 relative mt-4 pb-8 text-center text-xl font-medium text-xl mcolor-900'>
-                                          <div className={`relative w-full mbg-300 mcolor-900 min-h-[50vh] w-full rounded-[5px] pt-14 mcolor-800`}>
-                                            <p className='mcolor-800 text-lg mt-2 font-medium absolute top-3 left-5'>Type: {
+                                        <div className='flex items-center justify-between gap-4 mt-4 pb-8 text-center text-xl font-medium text-xl mcolor-900'>
+                                        <div className={`w-full mbg-300 mcolor-900 px-10 pt-5 pb-8 w-full rounded-[5px] mcolor-800`} >
+                                            <p className='mcolor-800 text-lg font-medium text-start'>Type: {
                                               (extractedQA[questionIndex].quizType === 'ToF' && 'True or False') ||
                                               (extractedQA[questionIndex].quizType === 'FITB' && 'Fill In The Blanks') ||
                                               (extractedQA[questionIndex].quizType === 'Identification' && 'Identification') ||
@@ -939,8 +1008,8 @@ export const GroupReviewerPage = () => {
 
                                             { (extractedQA[questionIndex].quizType === 'Identification' || extractedQA[questionIndex].quizType === 'FITB') && (
                                               <div>
-                                                <p className='mcolor-800 text-lg mt-2 font-medium absolute top-10 left-5'>Remaining Hints: {remainingHints}</p>
-                                                <button className='mcolor-800 mbg-200 border-thin-800 rounded-[5px] px-2 py-1 text-lg mt-2 font-medium absolute bottom-5 left-5' onClick={giveHint}>Use hint</button>
+                                                <p className='mcolor-800 text-lg mt-2 font-medium  top-10 left-5'>Remaining Hints: {remainingHints}</p>
+                                                <button className='mcolor-800 mbg-200 border-thin-800 rounded-[5px] px-2 py-1 text-lg mt-2 font-medium  bottom-5 left-5' onClick={giveHint}>Use hint</button>
                                               </div>
                                             )}
 
@@ -955,7 +1024,7 @@ export const GroupReviewerPage = () => {
 
                                             <div className='flex justify-center'>
                                               <div
-                                                className={`dragHere w-1/2 h-[12vh] rounded-[5px] absolute bottom-14 flex justify-center items-center px-10 mbg-100 ${borderMedium}`}
+                                                className={`dragHere w-1/2 h-[12vh] rounded-[5px] bottom-14 flex justify-center items-center px-10 mbg-100 ${borderMedium}`}
                                                 onDrop={handleDrop}
                                                 onDragOver={handleDragOver}
                                               >
@@ -994,11 +1063,11 @@ export const GroupReviewerPage = () => {
                                       <div>
             
                                         {(failCount === 2 || failCount === 1 || failCount === 0) && lostPoints === true && (
-                                          <div className='text-red text-lg text-center mb-3'>{selectedChoice === '' ? 'No answer.' : (extractedQA[questionIndex].quizType !== 'MCQA' && userList[userTurn]?.points > 0) ? 'Wrong. You lost 1 point' : 'Wrong answer.'}</div>
+                                          <div className='text-red text-lg text-center mb-3'>{selectedChoice === '' ? 'No answer.' : (extractedQA[questionIndex].quizType !== 'MCQA' && userList[userTurn]?.points > 0) ? 'Wrong. You lost 3 points' : 'Wrong answer.'}</div>
                                         )}
 
                                         {gainedPoints === true && (
-                                          <div className='text-emerald-500 text-lg text-center mb-1'>Correct! You earned 1 point</div>
+                                          <div className='text-emerald-500 text-lg text-center mb-1'>Correct! You earned 5 points</div>
                                         )}
 
                                         {(failCount < 2 && (extractedQA[questionIndex].quizType === 'Identification' || extractedQA[questionIndex].quizType === 'FITB')) && lostPoints === false && gainedPoints === false && (
@@ -1121,9 +1190,9 @@ export const GroupReviewerPage = () => {
                                       <div>
 
                                         {/* question */}
-                                        <div className='flex items-center justify-between gap-4 relative mt-4 pb-8 text-center text-xl font-medium text-xl mcolor-900'>
-                                          <div className={`relative w-full mbg-300 mcolor-900 min-h-[50vh] w-full rounded-[5px] pt-14 mcolor-800`}>
-                                            <p className='mcolor-800 text-lg mt-2 font-medium absolute top-3 left-5'>Type: {
+                                        <div className='flex items-center justify-between gap-4 mt-4 pb-8 text-center text-xl font-medium text-xl mcolor-900'>
+                                          <div className={`w-full mbg-300 mcolor-900 px-10 pt-5 pb-8 w-full rounded-[5px] mcolor-800`} >
+                                            <p className='mcolor-800 text-lg font-medium text-start'>Type: {
                                               (extractedQA[questionIndex].quizType === 'ToF' && 'True or False') ||
                                               (extractedQA[questionIndex].quizType === 'FITB' && 'Fill In The Blanks') ||
                                               (extractedQA[questionIndex].quizType === 'Identification' && 'Identification') ||
@@ -1143,7 +1212,7 @@ export const GroupReviewerPage = () => {
 
                                             <div className='flex justify-center'>
                                               <div
-                                                className={`dragHere w-1/2 h-[12vh] rounded-[5px] absolute bottom-14 flex justify-center items-center px-10 mbg-100 ${borderMedium}`}
+                                                className={`dragHere w-1/2 h-[12vh] rounded-[5px] flex justify-center items-center px-10 mbg-100 ${borderMedium}`}
                                                 onDrop={handleDrop}
                                                 onDragOver={handleDragOver}
                                               >
@@ -1174,12 +1243,12 @@ export const GroupReviewerPage = () => {
 
                                         {(failCount === 2 || failCount === 1 || failCount === 0) && lostPoints === true && (
                                           <div className='text-emerald-500 text-lg text-center mb-1'>
-                                            You have gained 1 point as a result of {userList[userTurn]?.username}'s incorrect answer.
+                                            You have gained 5 points as a result of {userList[userTurn]?.username}'s incorrect answer.
                                           </div>
                                         )}
 
                                         {gainedPoints === true && (
-                                          <div className='text-emerald-500 text-lg text-center mb-1'>{userList[userTurn]?.username} earned 1 point</div>
+                                          <div className='text-emerald-500 text-lg text-center mb-1'>{userList[userTurn]?.username} earned 5 points</div>
                                         )}
 
                                         {(selectedChoice !== "" && (extractedQA[questionIndex].quizType === 'MCQA' || extractedQA[questionIndex].quizType === 'ToF')) && 

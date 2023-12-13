@@ -6,7 +6,7 @@ import { PieChart } from '../charts/PieChart';
 import Category from '@mui/icons-material/Category';
 import { useUser } from '../../UserContext';
 import { useLocation } from 'react-router-dom';
-
+import { fetchUserData } from '../../userAPI';
 
 
 export const TopicList = ({categoryFor}) => {
@@ -25,7 +25,34 @@ export const TopicList = ({categoryFor}) => {
   const navigate = useNavigate()
 
   const UserId = user?.id;
-  const username = user?.username;
+  
+  // user data
+  const [userData, setUserData] = useState({
+    username: '',
+    email: '',
+    studyProfTarget: 0,
+    typeOfLearner: '',
+    userImage: ''
+  })
+
+
+
+  useEffect(() => {
+    const getUserData = async () => {
+      const userData = await fetchUserData(UserId);
+      setUserData({
+        username: userData.username,
+        email: userData.email,
+        studyProfTarget: userData.studyProfTarget,
+        typeOfLearner: userData.typeOfLearner,
+        userImage: userData.userImage
+      });
+    }
+
+    getUserData();
+  }, [UserId])
+
+
   
   useEffect(() => {
 
@@ -115,8 +142,6 @@ export const TopicList = ({categoryFor}) => {
   }, [UserId, categoryFor, categoryID, filter, groupId])
 
 
-
-
   return (
     <div>
 
@@ -151,7 +176,7 @@ export const TopicList = ({categoryFor}) => {
         <div className='flex items-center text-xl gap-3'>
           <i class="fa-regular fa-bell"></i>
           <i class="fa-regular fa-user"></i>
-          <button className='text-xl'>{username} <i class="fa-solid fa-chevron-down ml-1"></i></button>
+          <button className='text-xl'>{userData.username} <i class="fa-solid fa-chevron-down ml-1"></i></button>
         </div>
       </div>
 

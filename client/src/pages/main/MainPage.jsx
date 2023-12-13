@@ -9,6 +9,11 @@ import LaunchIcon from '@mui/icons-material/Launch';
 import PersonOutlineIcon from '@mui/icons-material/PersonOutline';
 import { useUser } from '../../UserContext';
 import axios from 'axios';
+import PersonIcon from '@mui/icons-material/Person';
+import Sidebar from '../../components/Styles/Sidebar/Sidebar';
+import MindScapeLogo from '../../assets/mindscape_logo.png';
+
+
 
 export const MainPage = () => {
 
@@ -20,7 +25,8 @@ export const MainPage = () => {
   const [data, setData] = useState([])
   const [users, setUsers] = useState([]);
   const [searchResults, setSearchResults] = useState([]);
-
+  const [isOpen, setIsOpen] = useState(false);
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
   const toggleExpansion = () => {
     setdropDownPersonalLinks(!dropDownPersonalLinks ? true : false);
@@ -62,22 +68,39 @@ export const MainPage = () => {
     setSearchResults(filteredUsers);
   };
 
+
+  const toggleSidebar = () => {
+    setIsOpen(!isOpen);
+  };
+
   return (
     <div className='poppins mcolor-900 mbg-100 relative' >
       <div className='absolute main-home-page mbg-200'></div>
-      <div className='container'>
-        <div className='flex justify-between w-full mainpage-inside py-8'>
-          <div className='flex gap-5 relative'>
-            <Link to={'/main/profile'}>
-              <div className='text-3xl'><i class="fa-solid fa-user"></i></div>
-            </Link>
 
+
+      <div className='mbg-100 pt-8 pb-6'>
+        <div className='container flex justify-between w-full mainpage-inside items-center'>
+
+          <div className='flex items-center'>
+            {/* <button onClick={toggleSidebar}><MenuIcon fontSize='large' className='mcolor-900 mr-1' /></button> */}
+            <div className='flex items-center'>
+              <div className='mr-2' style={{ width: '40px', height: '40px' }}>
+                <img src={MindScapeLogo} alt="" />
+              </div>
+              <p className='font-normal text-3xl'>MindScape</p>
+            </div>
+          </div>
+
+          <div className='flex gap-5 relative mr-[6rem]'>
+            {/* <Link to={'/main/profile'}>
+              <div className='text-3xl'><i class="fa-solid fa-user"></i></div>
+            </Link> */}
 
             <div>
               <input
                 type="text"
                 placeholder="Search for a user..."
-                className="border-thin-800 rounded py-1 px-5"
+                className="border-thin-800 rounded py-2 px-8"
                 value={searchTerm}
                 onChange={handleSearch}
               />
@@ -98,16 +121,22 @@ export const MainPage = () => {
 
           </div>
 
-          <div>
-            <p className='font-normal text-3xl'>MindScape</p>
-          </div>
-          <div>
-            <button className='text-2xl' onClick={handleLogout}>Logout <i class="fa-solid fa-right-from-bracket"></i></button>
+          <div className='flex items-center'>
+            <button onClick={() => {
+              navigate('/main/profile')
+            }} className='mcolor-100 mbg-800 rounded-full p-1'><PersonIcon fontSize='medium' /></button>
+            <button className='text-2xl ml-3' onClick={handleLogout}>Logout <i class="fa-solid fa-right-from-bracket"></i></button>
           </div>
         </div>
+      </div>
+
+      <Sidebar isOpen={isOpen} setIsOpen={setIsOpen} isDropdownOpen={isDropdownOpen} setIsDropdownOpen={setIsDropdownOpen} toggleSidebar={toggleSidebar} />
+
+
+      <div className='container'>
 
         <div className='w-full grid lg:grid-cols-2 gap-10 mt-8'>
-          <div className='p-5 flex flex-col justify-between mbg-100 mainpage-room rounded-[10px]'>
+          <div className='p-5 flex flex-col justify-between mbg-100 mainpage-room border-thin-800 rounded-[10px]'>
             <div className='flex justify-center' style={{width: '100%', height: '27vh'}}>
               <img src={personalStudyRoomImg} style={{height: '100%', width: '100%', objectFit: 'cover'}} alt="" />
             </div>
@@ -134,7 +163,7 @@ export const MainPage = () => {
             </div>
           </div>
 
-          <div className='p-5 flex flex-col justify-between mbg-100 mainpage-room rounded-[10px]'>
+          <div className='p-5 flex flex-col justify-between mbg-100 mainpage-room border-thin-800 rounded-[10px]'>
             <div className='flex justify-center' style={{width: '100%', height: '27vh'}}>
               <img src={groupStudyRoomImg} style={{height: '100%', width: '100%', objectFit: 'cover'}} alt="" />
             </div>
@@ -147,7 +176,7 @@ export const MainPage = () => {
               </div>
             </div>
           </div>
-          <div className='p-5 flex flex-col justify-between mbg-100 mainpage-room rounded-[10px]'>
+          <div className='p-5 flex flex-col justify-between mbg-100 mainpage-room border-thin-800 rounded-[10px]'>
             <div className='flex justify-center' style={{width: '100%', height: '27vh'}}>
               <img src={virtualLibraryRoomImg} style={{height: '100%', width: '100%', objectFit: 'cover'}} alt="" />
             </div>
@@ -160,7 +189,7 @@ export const MainPage = () => {
               </div>
             </div>
           </div>
-          <div className='p-5 flex flex-col justify-between mbg-100 mainpage-room rounded-[10px]'>
+          <div className='p-5 flex flex-col justify-between mbg-100 mainpage-room border-thin-800 rounded-[10px]'>
             <div className='flex justify-center' style={{width: '100%', height: '27vh'}}>
               <img src={discussionFormusImg} style={{height: '100%', width: '100%', objectFit: 'cover'}} alt="" />
             </div>

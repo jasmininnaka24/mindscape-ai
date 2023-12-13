@@ -6,11 +6,12 @@ import { useNavigate, useParams } from 'react-router-dom';
 import CategoryIcon from '@mui/icons-material/Category';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 import DeleteIcon from '@mui/icons-material/Delete';
+import BorderColorIcon from '@mui/icons-material/BorderColor';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 import { SearchFunctionality } from '../search/SearchFunctionality';
 
 import { useUser } from '../../UserContext';
-
+import { fetchUserData } from '../../userAPI';
 
 export const StudyAreaGP = (props) => {
   const navigate = useNavigate();
@@ -25,6 +26,28 @@ export const StudyAreaGP = (props) => {
   const { user } = useUser();
 
   const UserId = user?.id;
+
+  // user data
+  const [userData, setUserData] = useState({
+    username: '',
+    email: '',
+    studyProfTarget: 0,
+    typeOfLearner: '',
+    userImage: ''
+  })
+  
+
+  const getUserData = async () => {
+    const userData = await fetchUserData(UserId);
+    setUserData({
+      username: userData.username,
+      email: userData.email,
+      studyProfTarget: userData.studyProfTarget,
+      typeOfLearner: userData.typeOfLearner,
+      userImage: userData.userImage
+    });
+  }
+
 
 
   const { categoryFor } = props;
@@ -70,11 +93,13 @@ export const StudyAreaGP = (props) => {
   const [filteredData, setFilteredData] = useState([]);
   const [msg, setMsg] = useState('');
   const [error, setError] = useState(false);
+  const [isDone, setIsDone] = useState(false);
 
 
 
   // shared materials usestates
   const [sharedMaterials, setSharedMaterials] = useState([]);
+  const [sharedMaterialsCategoriesOrig, setSharedMaterialsCategoriesOrig] = useState([]);
   const [sharedMaterialsCategories, setSharedMaterialsCategories] = useState([]);
   const [sharedMaterialsCategoriesEach, setSharedMaterialsCategoriesEach] = useState([])
 
@@ -82,6 +107,10 @@ export const StudyAreaGP = (props) => {
   const [recentlyDeletedMaterial, setRecentlyDeletedMaterial] = useState('');
   const [isMaterialDeleted, setIsMaterialDeleted] = useState('hidden');
 
+  // editing category
+  const [currentCategoryIdToEdit, setCurrentCategoryIdToEdit] = useState(0);
+  const [currentCategoryToEdit, setCurrentCategoryToEdit] = useState(0);
+  const [editCategoryModal, setEditCategoryModal] = useState(false);
 
 
   const toggleExpand = () => {
@@ -92,14 +121,34 @@ export const StudyAreaGP = (props) => {
     setIsBookmarkExpanded(!isBookmarkExpanded);
   };  
 
-  const addToModalList = () => {
-    if(currentModalVal !== '') {
-      setModalList([...modalList, currentModalVal]);
-      setCurrentModalVal("")
+  const addToModalList = async () => {
+    if (currentModalVal !== '') {
+      let categoryExists = '';
+  
+      try {
+        if (categoryFor === 'Personal') {
+          categoryExists = await axios.get(`http://localhost:3001/studyMaterialCategory/get-category-value/${UserId}/${currentModalVal}`);
+        } else {
+          categoryExists = await axios.get(`http://localhost:3001/studyMaterialCategory/get-category-value-group/${groupNameId}/${currentModalVal}`);
+        }
+
+        console.log(categoryExists.data);
+  
+        // Check if categoryExists.data is truthy before accessing its length
+        if (categoryExists.data === null) {
+          setModalList([...modalList, currentModalVal]);
+          setCurrentModalVal('');
+        } else {
+          alert(`${currentModalVal} already exists in your shelf.`);
+        }
+      } catch (error) {
+        console.error('Error checking category existence:', error);
+        // Handle error, e.g., show an alert or log it
+      }
     } else {
-      alert("Does not accept empty field.")
+      alert('Does not accept an empty field.');
     }
-  }
+  };
   
   const saveCategories = async () => {
     if (modalList.length > 0) {
@@ -114,21 +163,38 @@ export const StudyAreaGP = (props) => {
           };
   
           // Use await to wait for the axios.post call to complete
-          await axios.post(`http://localhost:3001/studyMaterialCategory/`, categoryData);
+          await axios.post(`http://localhost:3001/studyMaterialCategory/`, categoryData).then((response) => {
+
+          if(response.data.error) {
+    
+            setTimeout(() => {
+              setError(true)
+              setMsg(response.data.message)
+            }, 100);
+            
+            setTimeout(() => {
+              setError(false)
+              setMsg('')
+            }, 2500);
+    
+    
+          } else {
+            setTimeout(() => {
+              setError(false)
+              setHidden("hidden");
+              setCategoryModal("hidden");
+              setGroupMemberModal("hidden");
+              setMsg(response.data.message)
+            }, 100);
+            
+            setTimeout(() => {
+              setMsg('')
+            }, 2500);
+          }
+        })
         }));
   
-        setHidden("hidden");
-        setModalList([]);
-        setCurrentModalVal("");
-        setCategoryModal("hidden");
-  
-        setTimeout(() => {
-          setSavedGroupNotif("");
-        }, 500);
-        setTimeout(() => {
-          setSavedGroupNotif("hidden");
-          window.location.reload();
-        }, 1800);
+        fetchData()
       } catch (error) {
         // Handle error if needed
         console.error("Error saving categories:", error);
@@ -345,6 +411,8 @@ export const StudyAreaGP = (props) => {
           return materialCategoryResponse.data; // Return the data from each promise
         })
       );
+
+      setSharedMaterialsCategoriesOrig(fetchedSharedStudyMaterialCategory)
       
       // Use a custom filter to remove objects with duplicate id values
       const uniqueCategories = fetchedSharedStudyMaterialCategory.filter(
@@ -391,8 +459,6 @@ export const StudyAreaGP = (props) => {
         } catch (error) {
           console.error('Error fetching last material data:', error);
         }
-      } else {
-        console.error('Missing required data for constructing the URL and making the request');
       }
 
       if (lastMaterial) {
@@ -445,13 +511,24 @@ export const StudyAreaGP = (props) => {
 
   };
 
-  // console.log(groupMemberIndex);
+  
   useEffect(() => {
 
+    
+    if (!isDone) {
+      setIsDone(true)
+    }
   
-    fetchData();
+  }, [UserId]);
 
-  }, [UserId, categoryFor, groupNameId, navigate, currentModalVal, modalList, isCodeCopied]);
+  useEffect(() => {
+    if (isDone) {
+      fetchData();
+      getUserData()
+      setIsDone(false)
+    }
+  }, [isDone])
+
   
 
   
@@ -575,13 +652,16 @@ export const StudyAreaGP = (props) => {
 
       } else {
         setTimeout(() => {
+          setHidden("hidden");
+          setCategoryModal("hidden");
+          setGroupMemberModal("hidden");
           setError(false)
           setMsg(response.data.message)
         }, 100);
         
         setTimeout(() => {
           setMsg('')
-          navigate(`/main/group`)
+          navigate('/main/group')
         }, 2500);
       }
     })
@@ -624,199 +704,339 @@ export const StudyAreaGP = (props) => {
   }
 
 
+  const editCategory = async () => {
+    try {
+      // Ask for confirmation
+      let data = {
+        category: currentCategoryToEdit
+      }
+  
+      const response = await axios.put(`http://localhost:3001/studyMaterialCategory/update-category/${currentCategoryIdToEdit}`, data);
+  
+      setEditCategoryModal(false) 
+      
+      setTimeout(() => {
+        setError(false);
+        fetchData()
+        setMsg(`Successfully updated`);
+      }, 100);
+
+      setTimeout(() => {
+        setError(false);
+        setMsg('');
+      }, 2500);
+      
+
+    } catch (error) {
+      console.error('Error fetching materials:', error);
+    }
+  };
+
+
+
+
+
+  const deleteCategoryMaterials = async (categoryId, category) => {
+    try {
+      // Ask for confirmation
+      const confirmDelete = window.confirm(`Are you sure you want to remove ${category}?`);
+  
+      // If the user doesn't confirm, do nothing
+      if (!confirmDelete) {
+        return;
+      }
+  
+      const response = await axios.get(`http://localhost:3001/studyMaterial/get-material-from-categoryId/${categoryId}`);
+  
+      let responseData = response.data;
+      let filteredData = responseData.filter(item => item.tag === 'Shared');
+      let notSharedData = responseData.filter(item => item.tag !== 'Shared');
+  
+      console.log(responseData);
+  
+      if (filteredData.length > 0) {
+        return alert(`${category} cannot be deleted. Some study materials that you shared in the virtual library room are found in this category.`);
+      } else {
+        // Use Promise.all to perform multiple asynchronous operations concurrently
+        await Promise.all(notSharedData.map(async (item) => {
+          await axios.delete(`http://localhost:3001/studyMaterial/delete-material/${item.id}`);
+          await axios.delete(`http://localhost:3001/DashForPersonalAndGroup/get-dash-data/${item.id}`);
+
+        }));
+  
+        const categoryDeleteResponse = await axios.delete(`http://localhost:3001/studyMaterialCategory/delete-category/${categoryId}/${category}`);
+  
+        if (categoryDeleteResponse.data.error) {
+          setError(true);
+          setMsg(categoryDeleteResponse.data.message);
+        } else {
+          setError(false);
+          setMsg(categoryDeleteResponse.data.message);
+        }
+  
+        // Reset message after a delay or any other desired logic
+        setTimeout(() => {
+          setError(false);
+          setMsg('');
+        }, 2500);
+  
+        fetchData();
+      }
+    } catch (error) {
+      console.error('Error fetching materials:', error);
+    }
+  };
+  
+
+  const deleteCategoryMaterialsShared = async (categoryName) => {
+    try {
+      // Ask for confirmation
+      const confirmDelete = window.confirm(`Are you sure you want to remove ${categoryName} category and all the study materials of it?`);
+  
+      if (confirmDelete) {
+        const materialCategory = sharedMaterialsCategoriesOrig.filter((material) => material.category === categoryName);
+  
+        // Initialize an array to store the filtered materials
+        let filteredMaterialsArray = [];
+  
+        materialCategory.forEach((material) => {
+          // Filter materials based on the condition and concatenate the results to the array
+          filteredMaterialsArray = filteredMaterialsArray.concat(
+            sharedMaterials.filter((res) => res.StudyMaterialsCategoryId === material.id)
+          );
+        });
+
+        // Reset message after a delay or any other desired logic
+        setTimeout(() => {
+          setError(false);
+          setMsg(`All materials under ${categoryName} have been removed.`);
+        }, 100);
+  
+        setTimeout(() => {
+          setError(false);
+          setMsg('');
+          window.location.reload()
+        }, 2500);
+
+
+  
+        // Execute asynchronous operations sequentially using a for...of loop
+        for (const item of filteredMaterialsArray) {
+          await axios.delete(`http://localhost:3001/studyMaterial/delete-material/${item.id}`);
+          await axios.delete(`http://localhost:3001/DashForPersonalAndGroup/get-dash-data/${item.id}`);
+        }
+  
+        // Update sharedMaterials by directly modifying the state
+        setSharedMaterials((prevSharedMaterials) =>
+          prevSharedMaterials.filter(
+            (item) => !filteredMaterialsArray.some((deletedItem) => deletedItem.id === item.id)
+          )
+        );
+        
+      }
+    } catch (error) {
+      console.error('Error deleting materials:', error);
+    }
+  };
+  
+  
+  
+  
+
   return (
     <div className="relative poppins mcolor-900 flex justify-start items-start">
       
       {/* modal */}
-        <div style={{ zIndex: 1000 }} className={`${hidden} absolute flex items-center justify-center modal-bg w-full h-full`}>
-          <div className='flex justify-center'>
-            <div className='mbg-100 max-h-[60vh] w-[40vw] w-1/3 z-10 relative p-10 rounded-[5px]' style={{ overflowY: 'auto' }}>
+      <div style={{ zIndex: 1000 }} className={`${hidden} absolute flex items-center justify-center modal-bg w-full h-full`}>
+        <div className='flex justify-center'>
+          <div className='mbg-100 max-h-[60vh] w-[40vw] w-1/3 z-10 relative p-10 rounded-[5px]' style={{ overflowY: 'auto' }}>
 
-            <button className='absolute right-4 top-3 text-xl' onClick={() => {
-              setHidden("hidden");
-              setCategoryModal("hidden");
-              setGroupMemberModal("hidden");
-              }}>
-              ✖
-            </button>
+          <button className='absolute right-4 top-3 text-xl' onClick={() => {
+            setHidden("hidden");
+            setCategoryModal("hidden");
+            setGroupMemberModal("hidden");
+            }}>
+            ✖
+          </button>
 
-            <div className={categoryModal}>
-              <p className='text-center text-2xl font-medium mcolor-800 my-5'>Add a category</p>
-              <div className="groupName flex flex-col">
+          <div className={categoryModal}>
+            <p className='text-center text-2xl font-medium mcolor-800 my-5'>Add a category</p>
+            <div className="groupName flex flex-col">
 
-                <div className='relative'>
-                  <input type="text" placeholder='Category...' className='border-medium-800-scale px-5 py-2 w-full rounded-[5px] outline-none border-none' onChange={(event) => {setCurrentModalVal(event.target.value)}} value={currentModalVal === '' ? '' : currentModalVal} />
-                  <button onClick={addToModalList} className='absolute right-5 top-1 text-3xl'>+</button>
+              <div className='relative'>
+                <input type="text" placeholder='Category...' className='border-medium-800-scale px-5 py-2 w-full rounded-[5px] outline-none border-none' onChange={(event) => {setCurrentModalVal(event.target.value)}} value={currentModalVal === '' ? '' : currentModalVal} />
+                <button onClick={addToModalList} className='absolute right-5 top-1 text-3xl'>+</button>
+              </div>
+
+              <ul className='mt-3'>
+                {/* list of members that will be added */}
+                {
+                  modalList.length > 0 && (
+                    modalList.map((item, index) => {
+                      return (
+                        <div className='relative flex items-center my-2 text-lg' key={index}>
+                          <span>
+                            <CategoryIcon fontSize='small' /> <span className='ml-1'>{item}</span>
+                          </span>
+                          <button
+                            className='absolute right-4 text-xl'
+                            onClick={() => {
+                              const updatedList = modalList.filter((_, i) => i !== index);
+                              setModalList(updatedList);
+                            }}
+                          >
+                            ✖
+                          </button>
+                        </div>
+                      );
+                    })
+                  )
+                }
+
+              </ul>
+
+              <button onClick={saveCategories} className='mt-3 mbg-800 mcolor-100 py-2 rounded-[5px]'>Add</button>
+
+            </div>
+          </div>
+          
+
+
+
+          {categoryFor === 'Group' && (
+
+            <div className={`${groupMemberModal} mt-5`}>
+
+              {!error && msg !== '' && (
+                <div className='green-bg text-center mt-5 rounded py-3 w-full mb-5'>
+                  {msg}
                 </div>
+              )}
 
-                <ul className='mt-3'>
-                  {/* list of members that will be added */}
-                  {
-                    modalList.length > 0 && (
-                      modalList.map((item, index) => {
-                        return (
-                          <div className='relative flex items-center my-2 text-lg' key={index}>
-                            <span>
-                              <CategoryIcon fontSize='small' /> <span className='ml-1'>{item}</span>
-                            </span>
-                            <button
-                              className='absolute right-4 text-xl'
-                              onClick={() => {
-                                const updatedList = modalList.filter((_, i) => i !== index);
-                                setModalList(updatedList);
-                              }}
-                            >
-                              ✖
-                            </button>
-                          </div>
-                        );
-                      })
-                    )
-                  }
+              {error && msg !== '' && (
+                <div className='bg-red mcolor-100 text-center mt-5 rounded py-3 w-full mb-5'>
+                  {msg}
+                </div>
+              )}
 
-                </ul>
-  
-                <button onClick={saveCategories} className='mt-3 mbg-800 mcolor-100 py-2 rounded-[5px]'>Add</button>
+              <p className='mb-2 text-lg mcolor-900'>Group Code:</p>
+              <div className='w-full flex items-center'>
+                <input type="text" value={code} disabled className='mbg-200 border-thin-800 text-center w-full py-2 rounded-[3px]' />
+                <button onClick={copyGroupCode} className='px-7 py-2 mbg-800 mcolor-100 rounded-[3px] border-thin-800'>Copy</button>
+              </div>
+              {isCodeCopied !== '' && (
+                <p className='text-center mcolor-700 mt-2'>{isCodeCopied}</p>
+              )}
+
+
+              <br />
+              <p className='mb-2 text-lg mcolor-900'>Group Name:</p>
+              <div className='flex items-center'>
+                <input type="text" value={groupName} className={`border-thin-800 text-center w-full py-2 rounded-[3px] ${(msg !== '' || UserId !== userHostId) ? 'mbg-200' :  ''}`} disabled={msg !== '' || UserId !== userHostId} onChange={(event) => setGroupName(event.target.value)} />
+
+                <button
+                  onClick={changeGroupName}
+                  className='px-4 py-2 mbg-800 mcolor-100 rounded-[3px] border-thin-800'
+                  disabled={msg !== '' || UserId !== userHostId}
+                >
+                  Change
+                </button>
+
 
               </div>
-            </div>
-
-
-
-            {categoryFor === 'Group' && (
-
-              <div className={`${groupMemberModal} mt-5`}>
-
-                {!error && msg !== '' && (
-                  <div className='green-bg text-center mt-5 rounded py-3 w-full mb-5'>
-                    {msg}
-                  </div>
+              {isGroupNameChanged !== '' && (
+                <p className='text-center mcolor-700 my-3'>{isGroupNameChanged}</p>
                 )}
 
-                {error && msg !== '' && (
-                  <div className='bg-red mcolor-100 text-center mt-5 rounded py-3 w-full mb-5'>
-                    {msg}
-                  </div>
-                )}
 
-                <p className='mb-2 text-lg mcolor-900'>Group Code:</p>
-                <div className='w-full flex items-center'>
-                  <input type="text" value={code} disabled className='mbg-200 border-thin-800 text-center w-full py-2 rounded-[3px]' />
-                  <button onClick={copyGroupCode} className='px-7 py-2 mbg-800 mcolor-100 rounded-[3px] border-thin-800'>Copy</button>
+              {msg === '' && (
+                (UserId === userHostId) ? (
+                  <button className='bg-red mcolor-100 rounded py-2 text-center my-5 w-full' onClick={(e) => deleteGroup(e)}>
+                    Delete Group
+                  </button>
+                ) : ( 
+                  <button className='bg-red mcolor-100 rounded py-2 text-center my-5 w-full' onClick={(e) => leaveGroup(e)}>
+                    Leave Group
+                  </button>
+                )
+              )}
+
+              <br /><br />
+              <p className='mb-2 text-lg mcolor-900'>Group Host:</p>
+              <div className='flex justify-between my-2'>
+                <span>
+                  <i className="fa-regular fa-user mr-3"></i>{`@${userHost}` || 'Deleted User'}
+                </span>
+              </div>
+
+                <br />
+
+
+
+                {/* add group member */}
+                <p className='mb-1'>Add a group member: </p>
+                <div className='relative'>
+                  <SearchFunctionality data={data} onSearch={handleSearch} setSearchTermApp={setSearchTermApp} setSelectedDataId={setSelectedDataId} filteredData={filteredData} setFilteredData={setFilteredData} searchTermApp={searchTermApp} searchAssetFor={'search-username-for-group-creation'} />
+                  <button className='absolute right-5 top-1 text-3xl' onClick={addToChosenData}>+</button>
                 </div>
-                {isCodeCopied !== '' && (
-                  <p className='text-center mcolor-700 mt-2'>{isCodeCopied}</p>
-                )}
+
 
 
                 <br />
-                <p className='mb-2 text-lg mcolor-900'>Group Name:</p>
-                <div className='flex items-center'>
-                  <input type="text" value={groupName} className={`border-thin-800 text-center w-full py-2 rounded-[3px] ${(msg !== '' || UserId !== userHostId) ? 'mbg-200' :  ''}`} disabled={msg !== '' || UserId !== userHostId} onChange={(event) => setGroupName(event.target.value)} />
+                <p className='mcolor-900 my-3'>Group Members:</p>
+                <ul className='mt-5'>
+                {Array.isArray(groupMemberIndex) &&
+                  groupMemberIndex.map((user, indexGroup) => {
+                    let targetValue = user.UserId;
+                    let filteredData = tempUserList.filter(item => item.id === targetValue);
 
-                  <button
-                    onClick={changeGroupName}
-                    className='px-4 py-2 mbg-800 mcolor-100 rounded-[3px] border-thin-800'
-                    disabled={msg !== '' || UserId !== userHostId}
-                  >
-                    Change
-                  </button>
+                    // Check if the user is found in tempUserList
+                    if (!filteredData[0]) {
+                      // User not found, skip rendering this list item
+                      return null;
+                    }
 
+                    return (
+                      <li key={indexGroup} className='flex justify-between my-2'>
+                        <span>
+                          <i className="fa-regular fa-user mr-3"></i>@{filteredData[0]?.username}
+                        </span>
 
-                </div>
-                {isGroupNameChanged !== '' && (
-                  <p className='text-center mcolor-700 my-3'>{isGroupNameChanged}</p>
-                  )}
-
-
-                {msg === '' && (
-                  (UserId === userHostId) ? (
-                    <button className='bg-red mcolor-100 rounded py-2 text-center my-5 w-full' onClick={(e) => deleteGroup(e)}>
-                      Delete Group
-                    </button>
-                  ) : ( 
-                    <button className='bg-red mcolor-100 rounded py-2 text-center my-5 w-full' onClick={(e) => leaveGroup(e)}>
-                      Leave Group
-                    </button>
-                  )
-                )}
-
-                <br /><br />
-                <p className='mb-2 text-lg mcolor-900'>Group Host:</p>
-                <div className='flex justify-between my-2'>
-                  <span>
-                    <i className="fa-regular fa-user mr-3"></i>{`@${userHost}` || 'Deleted User'}
-                  </span>
-                </div>
-
-                  <br />
+                        {(msg !== '' || UserId === userHostId) && (
+                          <button
+                            onClick={() => {
+                              if (window.confirm('Are you sure you want to delete this user?')) {
+                                removeSelectedUser(filteredData[0]?.id, groupNameId);
+                              }
+                            }}
+                            className='text-lg'
+                          >
+                            <i className="fa-solid fa-xmark"></i>
+                          </button>
+                        )}
+                      </li>
+                    );
+                  })}
 
 
 
-                  {/* add group member */}
-                  <p className='mb-1'>Add a group member: </p>
-                  <div className='relative'>
-                    <SearchFunctionality data={data} onSearch={handleSearch} setSearchTermApp={setSearchTermApp} setSelectedDataId={setSelectedDataId} filteredData={filteredData} setFilteredData={setFilteredData} searchTermApp={searchTermApp} searchAssetFor={'search-username-for-group-creation'} />
-                    <button className='absolute right-5 top-1 text-3xl' onClick={addToChosenData}>+</button>
+                </ul>
+                {/* {userList !== tempUserList && (
+                  <div>
+                    <button onClick={updateUserList} className='mt-2 mbg-800 mcolor-100 w-full py-2 rounded-[5px]'>Update User List</button>
+
+                    {isUserListUpdated !== "" && (
+                      <p className='text-center mcolor-700 my-3'>{isUserListUpdated}</p>
+                    )}
                   </div>
-
-
-
-                  <br />
-                  <p className='mcolor-900 my-3'>Group Members:</p>
-                  <ul className='mt-5'>
-                  {Array.isArray(groupMemberIndex) &&
-                    groupMemberIndex.map((user, indexGroup) => {
-                      let targetValue = user.UserId;
-                      let filteredData = tempUserList.filter(item => item.id === targetValue);
-
-                      // Check if the user is found in tempUserList
-                      if (!filteredData[0]) {
-                        // User not found, skip rendering this list item
-                        return null;
-                      }
-
-                      return (
-                        <li key={indexGroup} className='flex justify-between my-2'>
-                          <span>
-                            <i className="fa-regular fa-user mr-3"></i>@{filteredData[0]?.username}
-                          </span>
-
-                          {(msg !== '' || UserId === userHostId) && (
-                            <button
-                              onClick={() => {
-                                if (window.confirm('Are you sure you want to delete this user?')) {
-                                  removeSelectedUser(filteredData[0]?.id, groupNameId);
-                                }
-                              }}
-                              className='text-lg'
-                            >
-                              <i className="fa-solid fa-xmark"></i>
-                            </button>
-                          )}
-                        </li>
-                      );
-                    })}
-
-
-
-                  </ul>
-                  {/* {userList !== tempUserList && (
-                    <div>
-                      <button onClick={updateUserList} className='mt-2 mbg-800 mcolor-100 w-full py-2 rounded-[5px]'>Update User List</button>
-
-                      {isUserListUpdated !== "" && (
-                        <p className='text-center mcolor-700 my-3'>{isUserListUpdated}</p>
-                      )}
-                    </div>
-                  )} */}
-              </div>
-
-            )}
-      
+                )} */}
             </div>
+
+          )}
+    
           </div>
         </div>
+      </div>
    
       {/* Side */}
       <div className={`flex flex-col justify-between h-[100vh] w-1/4 p-5 sidebar mbg-300 mcolor-900`} style={{ overflowY: 'auto' }}>
@@ -837,20 +1057,75 @@ export const StudyAreaGP = (props) => {
                 isExpanded && materialCategories.map((category) => (
                 <div className="shelf-category my-5" key={category.id}>
                   <div className="shadows mbg-100 mt-2 mcolor-900 p-4 rounded-[5px]">
-                    <div className='flex items-center'>
-                      <div className="text-lg font-medium">{category.category}</div>
-                      <button onClick={() => toggleExpandId(category.id)} className='ml-2'>
-                        {!expandedCategories[category.id] ? (
-                          <i className="fa-solid fa-chevron-down"></i>
-                        ) : (
-                          <i className="fa-solid fa-chevron-up"></i>
-                        )}
-                      </button>
+
+                  <div className='flex items-center justify-between' style={expandedCategories[category.id] ? { borderBottom: 'solid 1px #999', paddingBottom: '1rem', marginBottom: '.5rem' } : {}}>
+
+                      <div className='flex items-center'>
+                        <div className="text-lg font-medium">{category.category}</div>
+                        <button onClick={() => toggleExpandId(category.id)} className='ml-2'>
+                          {!expandedCategories[category.id] ? (
+                            <i className="fa-solid fa-chevron-down"></i>
+                          ) : (
+                            <i className="fa-solid fa-chevron-up"></i>
+                          )}
+                        </button>
+                      </div>
+
+                      {/* delete this */}
+                      <div>
+                        <button onClick={async () => {
+
+                          const response = await axios.get(`http://localhost:3001/studyMaterial/get-material-from-categoryId/${category.id}`);
+                            
+                          let responseData = response.data;
+                          let filteredData = responseData.filter(item => item.tag === 'Shared');
+
+                          console.log(responseData);
+
+                          if (filteredData.length > 0) {
+                            return alert(`${category.category} cannot be edited. Some study materials that you shared in the virtual library room are found in this category.`);
+                          } else {
+                            setCurrentCategoryIdToEdit(category.id)
+                            setCurrentCategoryToEdit(category.category)
+                            setEditCategoryModal(true)
+                          }
+
+                          }}><BorderColorIcon className='mcolor-900' sx={{fontSize: '18px'}} /></button>
+                        <button onClick={() => deleteCategoryMaterials(category.id, category.category)}><DeleteIcon className='text-red' sx={{fontSize: '20px'}} /></button>
+                      </div>
                     </div>
+
+                    {editCategoryModal && (
+                      <div style={{ zIndex: 1000 }} className={`absolute flex items-center justify-center modal-bg w-full h-full`}>
+                        <div className='flex justify-center'>
+                          <div className='mbg-100 max-h-[60vh] w-[30vw] w-1/3 z-10 relative p-10 rounded-[5px]' style={{ overflowY: 'auto' }}>
+
+                          <button className='absolute right-4 top-3 text-xl' onClick={() => {
+                            setEditCategoryModal(false);
+                            }}>
+                            ✖
+                          </button>
+
+                          <p className='text-center text-2xl mcolor-800 font-medium'>Edit Category</p>
+                          
+                          <br />
+
+
+                          <div className='w-full'>
+                            <input className='border-thin-800 rounded py-2 text-center w-full' type="text" placeholder='Type category...' onChange={(e) => setCurrentCategoryToEdit(e.target.value)} value={currentCategoryToEdit} />
+                            <br />
+                            <button onClick={editCategory} className='mt-3 w-full mbg-700 mcolor-100 py-2 rounded'>Update</button>
+                          </div>
+
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+
+
                     {/* Check if the category is expanded before rendering the study materials */}
-                    <div>
-                      
-                    </div>
+              
                     {expandedCategories[category.id] && (
                       studyMaterialsCategory
                         .filter((material) => material.StudyMaterialsCategoryId === category.id)
@@ -916,18 +1191,26 @@ export const StudyAreaGP = (props) => {
             )}
             <div className={`expandable-container ${isBookmarkExpanded ? 'expanded' : ''}`}>
               {sharedMaterialsCategories.length > 0 && (
-                isBookmarkExpanded && [...new Set(sharedMaterialsCategories.map(category => category.category))].map((categoryName) => (
+                isBookmarkExpanded && [...new Set(sharedMaterialsCategories.map(category => category.category))].map((categoryName, index) => (
                   <div className="shelf-category my-5" key={categoryName}>
                     <div className="shadows mbg-100 mt-2 mcolor-900 p-4 rounded-[5px]">
-                      <div className='flex items-center'>
-                        <div className="text-lg font-medium">{categoryName}</div>
-                        <button onClick={() => toggleSharedExpandId(categoryName)} className='ml-2'>
-                          {!expandedSharedCategories[categoryName] ? (
-                            <i className="fa-solid fa-chevron-down"></i>
-                          ) : (
-                            <i className="fa-solid fa-chevron-up"></i>
-                          )}
-                        </button>
+                      <div className='flex items-center justify-between' style={expandedSharedCategories[categoryName] ? { borderBottom: 'solid 1px #999', paddingBottom: '1rem', marginBottom: '.5rem' } : {}}>
+                        <div className='flex items-center'>
+                          <div className="text-lg font-medium">{categoryName}</div>
+                          <button onClick={() => toggleSharedExpandId(categoryName)} className='ml-2'>
+                            {!expandedSharedCategories[categoryName] ? (
+                              <i className="fa-solid fa-chevron-down"></i>
+                            ) : (
+                              <i className="fa-solid fa-chevron-up"></i>
+                            )}
+                          </button>
+                        </div>
+                        
+                        {/* delete this */}
+                        <div>
+                          <button onClick={() => deleteCategoryMaterialsShared(categoryName)}><DeleteIcon className='text-red' sx={{fontSize: '20px'}} /></button>
+                        </div>
+                        
                       </div>
                       {/* Check if the category is expanded before rendering the study materials */}
                       {expandedSharedCategories[categoryName] && (
@@ -988,7 +1271,7 @@ export const StudyAreaGP = (props) => {
 
       <div className='py-6 px-10 w-3/4 '>
         
-        <Navbar linkBack={`${categoryFor === 'Group' ? `/main/${categoryForToLower}/` : '/main'}`} linkBackName={`${categoryFor === 'Personal' ? 'Main' : 'Groups'}`} currentPageName={'Study Area'} username={'Jennie Kim'}/>
+        <Navbar linkBack={`${categoryFor === 'Group' ? `/main/${categoryForToLower}/` : '/main'}`} linkBackName={`${categoryFor === 'Personal' ? 'Main' : 'Groups'}`} currentPageName={'Study Area'} username={userData.username}/>
         
 
         <div className='flex justify-between items-center mt-10 mb-6'>
@@ -1002,6 +1285,9 @@ export const StudyAreaGP = (props) => {
             })
           : alert('No category saved. Add a category first.');
       }}>Create Reviewer</button>
+
+
+
 
           <div>
             <button className='mx-1 mbg-300 mcolor-800 px-6 py-2 rounded-[5px] font-medium font-lg' onClick={() => {
@@ -1018,6 +1304,14 @@ export const StudyAreaGP = (props) => {
             )}
           </div>
         </div>
+
+
+        {!error && msg !== '' && (
+          <div className='green-bg text-center mt-5 rounded py-3 w-full mb-5'>
+            {msg}
+          </div>
+        )}
+
 
         <p className={`${savedGroupNotif} my-5 py-2 mbg-300 mcolor-800 text-center rounded-[5px] text-lg`}>New categories added!</p>
 

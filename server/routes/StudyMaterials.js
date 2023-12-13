@@ -37,6 +37,20 @@ router.get('/study-material/:materialFor/:StudyGroupId/:UserId/:id', async(req, 
   res.json(latestMaterial);
 });
 
+router.get('/bookmark-counts/:code', async(req, res) => {
+  const { code } = req.params;
+
+  const latestMaterial = await StudyMaterials.findAll({
+    where: { 
+      tag: 'Bookmarked',
+      code: code,
+    },
+    order: [['id', 'DESC']]
+  });
+
+  res.json(latestMaterial);
+});
+
 
 
 router.get('/study-material-personal/:materialFor/:UserId/:id', async(req,res) => {
@@ -58,6 +72,30 @@ router.get('/get-material/:id', async(req,res) => {
   const personalStudyMaterial = await StudyMaterials.findByPk(id);
 
   res.json(personalStudyMaterial);
+
+})
+
+router.get('/get-material-from-categoryId/:StudyMaterialsCategoryId', async(req,res) => {
+  const { StudyMaterialsCategoryId } = req.params;
+  const materialResponse = await StudyMaterials.findAll({
+    where: {
+      StudyMaterialsCategoryId: StudyMaterialsCategoryId,
+    }
+  });
+
+  res.json(materialResponse);
+
+})
+
+router.get('/get-material-from-categoryName/:StudyMaterialsCategoryId', async(req,res) => {
+  const { StudyMaterialsCategoryId } = req.params;
+  const materialResponse = await StudyMaterials.findAll({
+    where: {
+      StudyMaterialsCategoryId: StudyMaterialsCategoryId,
+    }
+  });
+
+  res.json(materialResponse);
 
 })
 
@@ -100,7 +138,7 @@ router.get('/shared-materials-by-userid/:UserId', async(req, res) => {
       tag: 'Shared',
       UserId: UserId
     },
-    order: [['id', 'DESC']]
+    order: [['updatedAt', 'DESC']]
   });
 
   res.json(latestMaterial);
@@ -111,7 +149,7 @@ router.get('/shared-materials', async(req, res) => {
     where: { 
       tag: 'Shared',
     },
-    order: [['id', 'DESC']]
+    order: [['updatedAt', 'DESC']]
   });
 
   res.json(latestMaterial);
@@ -124,7 +162,7 @@ router.get('/shared-materials/:StudyMaterialsCategoryId', async(req, res) => {
       tag: 'Shared',
       StudyMaterialsCategoryId: StudyMaterialsCategoryId,
     },
-    order: [['id', 'DESC']]
+    order: [['updatedAt', 'DESC']]
   });
 
   res.json(latestMaterial);
@@ -140,20 +178,15 @@ router.put('/update-data/:id', async (req, res) => {
   try {
     const StudyMaterialsData = await StudyMaterials.findByPk(materialId);
 
-    if (!StudyMaterialsData) {
-      return res.status(404).json({ error: 'Dashboard data not found' });
-    }
 
     StudyMaterialsData.codeDashTrackingNum = codeDashTrackingNum;
     StudyMaterialsData.isStarted = isStarted;
 
     await StudyMaterialsData.save();
 
-    console.log('Dashboard data updated successfully:', StudyMaterialsData);
     res.json(StudyMaterialsData);
   } catch (error) {
-    console.error('Error updating dashboard data:', error);
-    res.status(500).json({ error: 'Internal Server Error' });
+    res.json({ error: 'Internal Server Error' });
   }
 });
 
@@ -173,7 +206,6 @@ router.put('/update-tag/:id', async (req, res) => {
 
     const savedMaterialData = await StudyMaterialsData.save();
 
-    console.log('Dashboard data updated successfully:', StudyMaterialsData);
     res.json(savedMaterialData);
 
   } catch (error) {
@@ -190,15 +222,10 @@ router.put('/update-study-performance/:id', async (req, res) => {
   try {
     const StudyMaterialsData = await StudyMaterials.findByPk(materialId);
 
-    if (!StudyMaterialsData) {
-      return res.status(404).json({ error: 'Dashboard data not found' });
-    }
-
     StudyMaterialsData.studyPerformance = studyPerformance;
 
     const updatedStudyPerformance = await StudyMaterialsData.save();
 
-    console.log('Dashboard data updated successfully:', updatedStudyPerformance);
     res.json(updatedStudyPerformance);
   } catch (error) {
     console.error('Error updating dashboard data:', error);

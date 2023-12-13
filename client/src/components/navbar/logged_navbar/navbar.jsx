@@ -16,9 +16,8 @@ export const Navbar = (props) => {
       </div>
 
       <div className='flex items-center text-xl gap-3'>
-        <i class="fa-regular fa-bell"></i>
         <i class="fa-regular fa-user"></i>
-        <button className='text-xl'>{username} <i class="fa-solid fa-chevron-down ml-1"></i></button>
+        <button className='text-xl'>{username} <i class="fa-solid fa-chevron-down"></i></button>
       </div>
     </div>
   )

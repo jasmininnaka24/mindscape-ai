@@ -2,12 +2,12 @@ import React, { useEffect, useId, useState } from 'react'
 import { Navbar } from '../../../components/navbar/logged_navbar/navbar'
 import ScrollToBottom from "react-scroll-to-bottom";
 import { useUser } from '../../../UserContext';
+import { fetchUserData } from '../../../userAPI';
 
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import GroupsIcon from '@mui/icons-material/Groups';import SupervisorAccountIcon from '@mui/icons-material/SupervisorAccount';
 import SensorDoorIcon from '@mui/icons-material/SensorDoor';
 import ClearAllIcon from '@mui/icons-material/ClearAll';
-
 
 import io from 'socket.io-client';
 import { Link } from 'react-router-dom';
@@ -19,8 +19,15 @@ export const DiscussionForums = () => {
   const { user } = useUser();
 
   const userId = user?.id;
-  const username = user?.username;
-
+  
+  // user data
+  const [userData, setUserData] = useState({
+    username: '',
+    email: '',
+    studyProfTarget: 0,
+    typeOfLearner: '',
+    userImage: ''
+  })
 
   const [showCreateRoomModal, setShowCreateRoomModal] = useState(false);
   const [roomNameValue, setRoomNameValue] = useState('')
@@ -82,10 +89,21 @@ export const DiscussionForums = () => {
 
   
   const joinDiscussionRoom = async () => {
+
+    const userData = await fetchUserData(userId);
+    setUserData({
+      username: userData.username,
+      email: userData.email,
+      studyProfTarget: userData.studyProfTarget,
+      typeOfLearner: userData.typeOfLearner,
+      userImage: userData.userImage
+    });
+
+
     let data = {
       room: discussionForumRoom,
-      username: user?.username,
-      userId: user?.id,
+      username: userData.username,
+      userId: userId,
     };
   
     socket.emit('join_discussion_room', data);
@@ -103,6 +121,9 @@ export const DiscussionForums = () => {
   
 
   useEffect(() => {
+
+
+
     if (!alreadyJoined) {
       if (user) {
         joinDiscussionRoom();
@@ -128,8 +149,8 @@ export const DiscussionForums = () => {
       roomName: roomNameValue,
       roomCategory: roomCategoryValue,
       roomDescription: roomDescValue,
-      username: user?.username,
-      userId: user?.id,
+      username: userData.username,
+      userId: userId,
       discussionForumRoom: discussionForumRoom
     };
     
@@ -151,7 +172,7 @@ export const DiscussionForums = () => {
     let data = {
       room: roomCode,
       userId: userId,
-      username: username,
+      username: userData.username,
       discussionForumRoom: discussionForumRoom,
       users: users,
       index,
@@ -167,8 +188,8 @@ export const DiscussionForums = () => {
   const sendMessage = async () => {
     let data = {
       room: currentRoom,
-      username: user.username,
-      userId: user.id,
+      username: userData.username,
+      userId: userId,
       discussionForumRoom: discussionForumRoom,
       message: message,
       time: new Date(Date.now()).getHours() + ':' + new Date(Date.now()).getMinutes(),
@@ -256,11 +277,11 @@ export const DiscussionForums = () => {
     <div>
 
       {showRooms && (
-        <div className='mbg-200 min-h-screen flex poppins'>
+        <div className='mbg-100 min-h-screen flex poppins'>
 
           <div className='w-1/6 mbg-300 mcolor-900 flex flex-col justify-between'>
             <div>
-              <p className='mcolor-900 text-2xl font-medium text-center pt-12'>{username}</p>
+              <p className='mcolor-900 text-2xl font-medium text-center pt-12'>{userData.username}</p>
 
               <br />
               <br />
@@ -303,7 +324,7 @@ export const DiscussionForums = () => {
           </div>
 
       
-          <div className='rounded flex-1 h-[89vh] px-7 mbg-200'>
+          <div className='rounded flex-1 h-[89vh] px-7 mbg-100'>
 
             <p className='text-4xl font-bold flex items-center justify-center mt-12 mcolor-900'>
               <GroupsIcon className='mr-3' sx={{ fontSize: 45 }} />
@@ -517,7 +538,7 @@ export const DiscussionForums = () => {
 
           <div className='w-1/6 mbg-300 mcolor-900 flex flex-col justify-between'>
             <div>
-              <p className='mcolor-900 text-2xl font-medium text-center pt-12'>{username}</p>
+              <p className='mcolor-900 text-2xl font-medium text-center pt-12'>{userData.username}</p>
 
               <br />
               <br />
@@ -638,7 +659,7 @@ export const DiscussionForums = () => {
                           roomList[currentIndex].messages.map((messageContent) => (
                             <div
                               className="message"
-                              id={username === messageContent.username ? "you" : "other"}
+                              id={userData.username === messageContent.username ? "you" : "other"}
                               key={messageContent.id} // Assuming there's an 'id' property for each message
                             >
                               <div>

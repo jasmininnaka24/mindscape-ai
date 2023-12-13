@@ -5,7 +5,7 @@ import CheckIcon from '@mui/icons-material/Check';
 import { useUser } from '../../../../UserContext';
 // chart
 import { BarChartForAnalysis } from '../../../../components/charts/BarChartForAnalysis';
-
+import { fetchUserData } from '../../../../userAPI';
 
 
 export const PersonalAssessment = () => {
@@ -13,7 +13,6 @@ export const PersonalAssessment = () => {
   const { materialId } = useParams();
   const { user } = useUser()
 
-  let studyProfeciencyTarget = 90;
 
   // hooks
   const [materialTitle, setMaterialTitle] = useState('')
@@ -46,9 +45,48 @@ export const PersonalAssessment = () => {
   const [categoryID, setCategoryID] = useState(0);
   const [seconds, setSeconds] = useState(0);
   const [isRunning, setIsRunning] = useState(false);
+  const [isDone, setIsDone] = useState(false);
 
   const UserId = user?.id;
   
+  // user data
+  const [userData, setUserData] = useState({
+    username: '',
+    email: '',
+    studyProfTarget: 0,
+    typeOfLearner: '',
+    userImage: ''
+  })
+
+
+  const getUserData = async () => {
+    const userData = await fetchUserData(UserId);
+    setUserData({
+      username: userData.username,
+      email: userData.email,
+      studyProfTarget: userData.studyProfTarget,
+      typeOfLearner: userData.typeOfLearner,
+      userImage: userData.userImage
+    });
+  }
+
+  useEffect(() => {
+    
+    
+    if (!isDone) {
+      setIsDone(true)
+    }
+
+  },[UserId])
+
+
+
+  useEffect(() => {
+    if (isDone) {
+      getUserData();
+      setIsDone(false)
+    }
+  }, [isDone])
 
 
   useEffect(() => {
@@ -167,6 +205,7 @@ export const PersonalAssessment = () => {
   }, [UserId, extractedQA.length, isAssessmentDone, materialId])
 
 
+  let studyProfeciencyTarget = parseInt(userData.studyProfTarget, 10);
 
 
   const shuffleArray = (array) => {
@@ -186,24 +225,36 @@ export const PersonalAssessment = () => {
   };
 
 
-  // const updateStudyPerformance = async (overallperf) => {
-  //   const updatedStudyPerformance = await axios.put(`http://localhost:3001/studyMaterial/update-study-performance/${materialId}`, {studyPerformance: (overallperf).toFixed(2)});
-
-
-  //   const categoryId = updatedStudyPerformance.data.StudyMaterialsCategoryId;
-  //   setCategoryID(categoryId)
-
-  //   const extractedStudyMaterials = await axios.get(`http://localhost:3001/studyMaterial/all-study-material/${categoryId}`);
-    
-  //   const extractedStudyMaterialsResponse = extractedStudyMaterials.data;
-  //   const materialsLength = extractedStudyMaterialsResponse.length;
-    
-  //   let calcStudyPerfVal = extractedStudyMaterialsResponse.reduce((sum, item) => sum + item.studyPerformance, 0);
-  //   let overAllCalcVal = (calcStudyPerfVal / materialsLength).toFixed(2);
-    
-  //   await axios.put(`http://localhost:3001/studyMaterialCategory/update-study-performance/${categoryId}`, {studyPerformance: overAllCalcVal});
-  // }
-
+  const updateStudyPerformance = async (overallperf) => {
+    try {
+      const updatedStudyPerformance = await axios.put(`http://localhost:3001/studyMaterial/update-study-performance/${materialId}`, {
+        studyPerformance: (overallperf).toFixed(2)
+      });
+  
+      const categoryId = updatedStudyPerformance.data && updatedStudyPerformance.data.StudyMaterialsCategoryId;
+      
+      if (categoryId) {
+        setCategoryID(categoryId);
+  
+        const extractedStudyMaterials = await axios.get(`http://localhost:3001/studyMaterial/all-study-material/${categoryId}`);
+        const extractedStudyMaterialsResponse = extractedStudyMaterials.data;
+        const materialsLength = extractedStudyMaterialsResponse.length;
+  
+        let calcStudyPerfVal = extractedStudyMaterialsResponse.reduce((sum, item) => sum + item.studyPerformance, 0);
+        let overAllCalcVal = (calcStudyPerfVal / materialsLength).toFixed(2);
+  
+        await axios.put(`http://localhost:3001/studyMaterialCategory/update-study-performance/${categoryId}`, {
+          studyPerformance: overAllCalcVal
+        });
+      } else {
+        console.error('Category ID is not available in the response data');
+      }
+    } catch (error) {
+      console.error('Error updating study performance:', error);
+      // Handle the error appropriately, you might want to throw or log it.
+    }
+  };
+  
 
 
 
@@ -320,7 +371,7 @@ export const PersonalAssessment = () => {
 
         let overallperf = ((parseFloat(newlyFetchedDashboardDataValues.assessmentImp) + parseFloat(newlyFetchedDashboardDataValues.assessmentScorePerf) + parseFloat(newlyFetchedDashboardDataValues.confidenceLevel)) / 3);
 
-        // updateStudyPerformance(overallperf)
+        updateStudyPerformance(overallperf)
       } 
       
       
@@ -379,7 +430,7 @@ export const PersonalAssessment = () => {
 
         let overallperf = ((parseFloat(newlyFetchedDashboardDataValues.assessmentImp) + parseFloat(newlyFetchedDashboardDataValues.assessmentScorePerf) + parseFloat(newlyFetchedDashboardDataValues.confidenceLevel)) / 3);
 
-        // updateStudyPerformance(overallperf)
+        updateStudyPerformance(overallperf)
 
 
 
@@ -605,12 +656,6 @@ export const PersonalAssessment = () => {
                     <button>Back to Study Area</button>
                   </Link>
 
-                  {takeAssessment && (
-                    <Link to={`/main/personal/dashboard/category-list/topic-list/topic-page/${categoryID}/${materialId}`} className='mbg-800 mcolor-100 px-5 py-3 rounded-[5px] w-1/4 text-center'>
-                      <button>View Analytics</button>
-                    </Link>  
-                    )
-                  }
                 </div>
               </div>
 
@@ -910,10 +955,7 @@ export const PersonalAssessment = () => {
             <Link to={`/main/personal/study-area/personal-review/${materialId}`} className='border-thin-800 px-5 py-3 rounded-[5px] w-1/4 text-center'>
               <button>Back to Study Area</button>
             </Link>      
-
-            <Link to={`/main/personal/dashboard/category-list/topic-list/topic-page/${categoryID}/${materialId}`} className='mbg-800 mcolor-100 px-5 py-3 rounded-[5px] w-1/4 text-center'>
-              <button>View Analytics</button>
-            </Link>      
+    
           </div>
 
         </div>

@@ -29,57 +29,75 @@ export const AssessmentPage = (props) => {
   const [analysisId, setAnalysisId] = useState(0);
   const [categoryID, setCategoryID] = useState(0);
   const [hideModal, setHideModal] = useState('hidden')
-  
+  const [isDone, setIsDone] = useState(false);
+
   
   
   const UserId = 1;
   
   
   
-  useEffect(() => {
+  const fetchData = async () => {
+    
 
-    const fetchData = async () => {
-      
+    const materialTitleResponse = await axios.get(`http://localhost:3001/studyMaterial/get-material/${materialId}`)
+    setMaterialTitle(materialTitleResponse.data.title)
 
-      const materialTitleResponse = await axios.get(`http://localhost:3001/studyMaterial/get-material/${materialId}`)
-      setMaterialTitle(materialTitleResponse.data.title)
+    
 
-      
-
-      const materialCategoryResponse = await axios.get(`http://localhost:3001/studyMaterialCategory/get-categoryy/${materialTitleResponse.data.StudyMaterialsCategoryId}`)
-      setMaterialCategory(materialCategoryResponse.data.category)
+    const materialCategoryResponse = await axios.get(`http://localhost:3001/studyMaterialCategory/get-categoryy/${materialTitleResponse.data.StudyMaterialsCategoryId}`)
+    setMaterialCategory(materialCategoryResponse.data.category)
 
 
-      const previousSavedData = await axios.get(`http://localhost:3001/DashForPersonalAndGroup/get-latest-assessment-group/${materialId}/${groupId}`);
-      const fetchedData = previousSavedData.data;
+    const previousSavedData = await axios.get(`http://localhost:3001/DashForPersonalAndGroup/get-latest-assessment-group/${materialId}/${groupId}`);
+    const fetchedData = previousSavedData.data;
 
 
 
-      if (fetchedData && Array.isArray(fetchedData) && fetchedData.length > 0) {
-        setOverAllItems(fetchedData[0].overAllItems)
-      } 
-      
-      if (fetchedData && Array.isArray(fetchedData) && fetchedData.length > 0 && fetchedData[0].assessmentScore !== 'none') {
-        if (fetchedData.length >= 2) {
-          setLastAssessmentScore(fetchedData[1].assessmentScore);
-          setAssessmentCountMoreThanOne(true); 
-        }
-      } 
-
-      if (fetchedData && fetchedData.length >= 1 && fetchedData[0].assessmentScore !== undefined && fetchedData[0].assessmentScore === 'none') {
-        setTakeAssessment(true);
-      } else if (fetchedData && fetchedData.length >= 1 && fetchedData[0].assessmentScore !== undefined) {
-        setTakeAssessment(true);
+    if (fetchedData && Array.isArray(fetchedData) && fetchedData.length > 0) {
+      setOverAllItems(fetchedData[0].overAllItems)
+    } 
+    
+    if (fetchedData && Array.isArray(fetchedData) && fetchedData.length > 0 && fetchedData[0].assessmentScore !== 'none') {
+      if (fetchedData.length >= 2) {
+        setLastAssessmentScore(fetchedData[1].assessmentScore);
+        setAssessmentCountMoreThanOne(true); 
       }
-    
+    } 
+
+    if (fetchedData && fetchedData.length >= 1 && fetchedData[0].assessmentScore !== undefined && fetchedData[0].assessmentScore === 'none') {
+      setTakeAssessment(true);
+    } else if (fetchedData && fetchedData.length >= 1 && fetchedData[0].assessmentScore !== undefined) {
+      setTakeAssessment(true);
     }
 
-    if(!isAssessmentDone) {
-      fetchData();
+    console.log(takeAssessment);
+  
+  }
+
+
+  useEffect(() => {
+    
+    
+    if (!isDone) {
+      setIsDone(true)
+    }
+
+  },[UserId])
+
+
+
+  
+  useEffect(() => {
+    if (isDone) {
+      if(!isAssessmentDone) {
+        fetchData();
+      }
+      setIsDone(false)
     }
 
 
-    
+        
     socket.on("assessment_user_list", (updatedData) => {
       setUserListAssessment(updatedData);
     });
@@ -113,10 +131,7 @@ export const AssessmentPage = (props) => {
     });
     
 
-    if (isAssessmentDone) { 
-      const targetElement = document.getElementById("currSec");
-      targetElement.scrollIntoView({ behavior: 'smooth' });
-    }
+
 
     
     return () => {
@@ -126,8 +141,18 @@ export const AssessmentPage = (props) => {
       socket.off('disconnect');
 
     };
-    
-  }, [groupId, isSubmittedButtonClicked, idOfWhoSubmitted, isAssessmentDone, materialId, setIdOfWhoSubmitted, setIsSubmitted, setScore, setSelectedAssessmentAnswer, seconds, setUserListAssessment, userListAssessment, isRunning, userId, setIsAssessmentDone, showAnalysis, score, isSubmitted, setOverAllItems, setAssessmentCountMoreThanOne, setAssessmentUsersChoices, messageList, setMessageList])
+  }, [isDone])
+
+
+
+  useEffect(() => {
+
+    if (isAssessmentDone) { 
+      const targetElement = document.getElementById("currSec");
+      targetElement.scrollIntoView({ behavior: 'smooth' });
+    }
+
+  }, [isAssessmentDone])
 
 
 
@@ -149,23 +174,34 @@ export const AssessmentPage = (props) => {
 
 
   const updateStudyPerformance = async (overallperf) => {
-    const updatedStudyPerformance = await axios.put(`http://localhost:3001/studyMaterial/update-study-performance/${materialId}`, {studyPerformance: (overallperf).toFixed(2)});
-
-
-    const categoryId = updatedStudyPerformance.data.StudyMaterialsCategoryId;
-    setCategoryID(categoryId)
-
-    const extractedStudyMaterials = await axios.get(`http://localhost:3001/studyMaterial/all-study-material/${categoryId}`);
-    
-    const extractedStudyMaterialsResponse = extractedStudyMaterials.data;
-    const materialsLength = extractedStudyMaterialsResponse.length;
-    
-    let calcStudyPerfVal = extractedStudyMaterialsResponse.reduce((sum, item) => sum + item.studyPerformance, 0);
-    let overAllCalcVal = (calcStudyPerfVal / materialsLength).toFixed(2);
-    
-    await axios.put(`http://localhost:3001/studyMaterialCategory/update-study-performance/${categoryId}`, {studyPerformance: overAllCalcVal});
-  }
-
+    try {
+      const updatedStudyPerformance = await axios.put(`http://localhost:3001/studyMaterial/update-study-performance/${materialId}`, {
+        studyPerformance: (overallperf).toFixed(2)
+      });
+  
+      const categoryId = updatedStudyPerformance.data && updatedStudyPerformance.data.StudyMaterialsCategoryId;
+      
+      if (categoryId) {
+        setCategoryID(categoryId);
+  
+        const extractedStudyMaterials = await axios.get(`http://localhost:3001/studyMaterial/all-study-material/${categoryId}`);
+        const extractedStudyMaterialsResponse = extractedStudyMaterials.data;
+        const materialsLength = extractedStudyMaterialsResponse.length;
+  
+        let calcStudyPerfVal = extractedStudyMaterialsResponse.reduce((sum, item) => sum + item.studyPerformance, 0);
+        let overAllCalcVal = (calcStudyPerfVal / materialsLength).toFixed(2);
+  
+        await axios.put(`http://localhost:3001/studyMaterialCategory/update-study-performance/${categoryId}`, {
+          studyPerformance: overAllCalcVal
+        });
+      } else {
+        console.error('Category ID is not available in the response data');
+      }
+    } catch (error) {
+      console.error('Error updating study performance:', error);
+      // Handle the error appropriately, you might want to throw or log it.
+    }
+  };
 
 
 
@@ -391,16 +427,16 @@ export const AssessmentPage = (props) => {
       
         dataForSubmittingAnswers(userId);
 
-
-
     } else {
       
-      if ((selectedAssessmentAnswer.length !== extractedQAAssessment.length) || selectedAssessmentAnswer.some(answer => answer === '' || answer === undefined)) {
-        alert('There are some empty fields');
-      } else {
-          dataForSubmittingAnswers(userId);
+      const hasNullValues = selectedAssessmentAnswer.some(answer => answer === null);
 
+      if (!hasNullValues && selectedAssessmentAnswer.length === extractedQAAssessment.length) {
+        dataForSubmittingAnswers(userId);
+      } else {
+        alert('Fill out some of the empty fields');
       }
+      
     }
 
   
@@ -612,7 +648,7 @@ export const AssessmentPage = (props) => {
     setShowPreJoin(true)
     setIsJoined(false)
     setShowAssessmentPage(false)
-
+    window.location.reload()
   };
 
 
@@ -799,11 +835,8 @@ export const AssessmentPage = (props) => {
                         </Link>      
                         )}
 
-                        {takeAssessment && (
-                          <Link to={`/main/personal/dashboard/category-list/topic-list/topic-page/${categoryID}/${materialId}`} className='mbg-800 mcolor-100 px-5 py-3 rounded-[5px] w-1/4 text-center'>
-                            <button>View Analytics</button>
-                          </Link>  
-                        )}
+
+
                       </div>
                     </div>
 
@@ -894,6 +927,7 @@ export const AssessmentPage = (props) => {
                                   className={`custom-radio cursor-pointer`}
                                   onClick={() => handleRadioChange(choice, index)}
                                   checked={selectedAssessmentAnswer[index] === choice}
+                                  disabled={isAssessmentDone}
                                 />
                                   <div className={`flex items-center `}>
                                     <label htmlFor={`choice-${choiceIndex}-${index}`} className={`mr-5 pt-1 cursor-pointer text-xl`}>
@@ -908,8 +942,40 @@ export const AssessmentPage = (props) => {
                             </div>
 
                           ) : (
-                            <div className={`flex items-center justify-center px-5 py-3 text-center choice rounded-[5px] border-thin-800 text-xl ${selectedAssessmentAnswer[index] === choice ? 'mbg-700 mcolor-100' : ''}`}>
-                              {choice}
+                            <div
+                            key={choiceIndex}
+                            className={`flex items-center justify-center px-5 py-3 text-center choice rounded-[5px] 
+                            ${(isSubmitted && extractedQAAssessment[index].answer === choice) ? 'border-thin-800-correct' : 
+                            (isSubmitted && selectedAssessmentAnswer[index] !== extractedQAAssessment[index].answer && selectedAssessmentAnswer[index] === choice) ? 'border-thin-800-wrong' : selectedAssessmentAnswer[index] === choice ? 'mbg-700 mcolor-100' : 'border-thin-800'}`}
+                            >
+
+
+                              <div className='flex items-center justify-center'>
+
+                                {isSubmitted &&
+                                
+                                  <input
+                                    type="radio"
+                                    name={`option-${index}`}
+                                    value={choice}
+                                    id={`choice-${choiceIndex}-${index}`}
+                                    className={`custom-radio cursor-pointer`}
+                                    onClick={() => handleRadioChange(choice, index)}
+                                    checked={selectedAssessmentAnswer[index] === choice}
+                                    disabled={ userListAssessment[0]?.userId !== userId}
+                                  />
+                                }
+
+                                <div className={`flex items-center `}>
+                                  <label htmlFor={`choice-${choiceIndex}-${index}`} className={`mr-5 pt-1 cursor-pointer text-xl`}>
+                                    {choice}
+                                  </label>
+                                </div>
+                              </div>
+                              
+
+
+
                             </div>
                           ))
                         )}
@@ -948,10 +1014,45 @@ export const AssessmentPage = (props) => {
                           </div>
                         </div>
                         ) : (
-                          <div className={`flex items-center justify-center px-5 py-3 text-center choice rounded-[5px] border-thin-800 text-xl ${selectedAssessmentAnswer[index] === 'True' ? 'mbg-700 mcolor-100' : ''}`}>
-                          {'True'}
+                          <div
+                          key={1}
+                          className={`flex items-center justify-center px-5 py-3 text-center choice rounded-[5px] 
+                          ${(isSubmitted && extractedQAAssessment[index].answer === 'True') ? 'border-thin-800-correct' : 
+                          (isSubmitted && selectedAssessmentAnswer[index] !== extractedQAAssessment[index].answer && selectedAssessmentAnswer[index] === 'True') ? 'border-thin-800-wrong' : selectedAssessmentAnswer[index] === 'True' ? 'mbg-700 mcolor-100' : 'border-thin-800'}`}
+                          >
+                          
+                          {isSubmitted &&
+                            <input
+                              type="radio"
+                              name={`option-${index}`}
+                              value={'True'}
+                              id={`choice-${1}-${index}`}
+                              className={`custom-radio cursor-pointer`}
+                              onClick={() => handleRadioChange('True', index)}
+                              checked={selectedAssessmentAnswer[index] === 'True'}
+                              disabled={userListAssessment[0]?.userId !== userId} 
+                              />
+                          }
+
+
+                          <div className=''>
+                            <div className={`flex items-center`}>
+                              <label htmlFor={`choice-${1}-${index}`} className={`mr-5 pt-1 cursor-pointer text-xl`}>
+                                {'True'}
+                              </label>
+                            </div>
+                          </div>
                         </div>
                         )}
+
+
+
+
+
+
+
+
+                      {/* false */}
                       
                       {(userListAssessment && userListAssessment.length > 0 && userListAssessment[0] && userListAssessment[0]?.userId === userId) ? (
                         <div
@@ -982,8 +1083,34 @@ export const AssessmentPage = (props) => {
                           </div>
                         </div>
                         ) : (
-                          <div className={`flex items-center justify-center px-5 py-3 text-center choice rounded-[5px] border-thin-800 text-xl ${selectedAssessmentAnswer[index] === 'False' ? 'mbg-700 mcolor-100' : ''}`}>
-                          {'False'}
+                          <div
+                          key={2}
+                          className={`flex items-center justify-center px-5 py-3 text-center choice rounded-[5px] 
+                          ${(isSubmitted && extractedQAAssessment[index].answer === 'False') ? 'border-thin-800-correct' : 
+                          (isSubmitted && selectedAssessmentAnswer[index] !== extractedQAAssessment[index].answer && selectedAssessmentAnswer[index] === 'False') ? 'border-thin-800-wrong' : selectedAssessmentAnswer[index] === 'False' ? 'mbg-700 mcolor-100' : 'border-thin-800'}`}
+                          >
+                          
+                          {isSubmitted &&
+
+                            <input
+                              type="radio"
+                              name={`option-${index}`}
+                              value={'False'}
+                              id={`choice-${2}-${index}`}
+                              className={`custom-radio cursor-pointer`}
+                              onClick={() => handleRadioChange('False', index)}
+                              checked={selectedAssessmentAnswer[index] === 'False'}
+                              disabled={userListAssessment[0]?.userId !== userId} 
+                              />
+                          }
+
+                          <div className=''>
+                            <div className={`flex items-center`}>
+                              <label htmlFor={`choice-${2}-${index}`} className={`mr-5 pt-1 cursor-pointer text-xl`}>
+                                {'False'}
+                              </label>
+                            </div>
+                          </div>
                         </div>
                         )}
                       </div>
@@ -1191,15 +1318,7 @@ export const AssessmentPage = (props) => {
             </Link>      
             )}
 
-            {groupId !== undefined ? (
-              <Link to={`/main/group/dashboard/category-list/topic-list/topic-page/${groupId}/${categoryID}/${materialId}`} className='mbg-800 mcolor-100 px-5 py-3 rounded-[5px] w-1/4 text-center'>
-                <button>View Analytics</button>
-              </Link>      
-            ) : (
-              <Link to={`/main/personal/dashboard/category-list/topic-list/topic-page/${categoryID}/${materialId}`} className='mbg-800 mcolor-100 px-5 py-3 rounded-[5px] w-1/4 text-center'>
-                <button>View Analytics</button>
-              </Link>      
-            )}
+
           </div>
           <br />
           <br />

@@ -3,7 +3,8 @@ import { Navbar } from '../navbar/logged_navbar/navbar';
 import axios from 'axios';
 import io from 'socket.io-client';
 import { useUser } from '../../UserContext';
-import { Link, useNavigate } from 'react-router-dom';
+import { fetchUserData } from '../../userAPI';
+import { useNavigate } from 'react-router-dom';
 import PushPinIcon from '@mui/icons-material/PushPin';
 
 
@@ -22,13 +23,24 @@ export const PreJoinPage = (props) => {
 
 
 
-
-
-
-
-
   const UserId = user?.id;
-  const username = user?.username;
+  
+  // user data
+  const [userData, setUserData] = useState({
+    username: '',
+    email: '',
+    studyProfTarget: 0,
+    typeOfLearner: '',
+    userImage: ''
+  })
+  
+
+
+
+
+
+
+
 
   const [showNotesReviewer, SetShowNotesReviewer] = useState(true);
   const [showLessonContext, SetShowLessonContext] = useState(false);
@@ -44,8 +56,40 @@ export const PreJoinPage = (props) => {
   const [recentlyDeletedMaterial, setRecentlyDeletedMaterial] = useState('');
   const [isMaterialDeleted, setIsMaterialDeleted] = useState('hidden');
   const [materialTitle, setMaterialTitle] = useState('');
+  const [isDone, setIsDone] = useState(false);
+
+  
+  const getUserData = async () => {
+    const userData = await fetchUserData(UserId);
+    setUserData({
+      username: userData.username,
+      email: userData.email,
+      studyProfTarget: userData.studyProfTarget,
+      typeOfLearner: userData.typeOfLearner,
+      userImage: userData.userImage
+    });
+  }
+
+  useEffect(() => {
+    
+    
+    if (!isDone) {
+      setIsDone(true)
+    }
+
+  },[UserId])
 
 
+
+  useEffect(() => {
+    if (isDone) {
+      getUserData();
+      setIsDone(false)
+    }
+  }, [isDone])
+
+
+  
   useEffect(() => {
     
     const fetchData = async () => {
@@ -101,7 +145,7 @@ export const PreJoinPage = (props) => {
   
     let data = {
       room: assessementRoom,
-      username: username,
+      username: userData.username,
       userId: userId,
       selectedAssessmentAnswer: selectedAssessmentAnswer,
       timeDurationVal: itemCount,
@@ -285,7 +329,7 @@ export const PreJoinPage = (props) => {
 
   return (
     <div className='container py-8 poppins'>
-      <Navbar linkBack={`/main/group/study-area/${groupId}`} linkBackName={`Study Area`} currentPageName={'Reviewer Page Preview'} username={'Jennie Kim'}/>
+      <Navbar linkBack={`/main/group/study-area/${groupId}`} linkBackName={`Study Area`} currentPageName={'Reviewer Page Preview'} username={userData.username}/>
       <div>
 
           <div className='flex justify-between items-center my-5 py-3'>
