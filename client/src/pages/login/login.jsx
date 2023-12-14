@@ -101,7 +101,7 @@ export const Login = () => {
   useEffect(() => {
     // global google
     google.accounts.id.initialize({
-      client_id: "220847377508-mb7a1fbtuqn2ibg2s1ihj0lesl17vut0.apps.googleusercontent.com",
+      client_id: "18641853465-5fifaj11js27u2friocstqne8kt6977q.apps.googleusercontent.com",
       callback: handleCallBackResponse
     });
     
