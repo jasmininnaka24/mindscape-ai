@@ -50,7 +50,7 @@ export const PreJoinPage = (props) => {
   const [showModal, setShowModal] = useState("");
   const [userUploaderId, setUserUploaderId] = useState(0);
   const [showModifyModal, setShowModifyModal] = useState(false)
-
+  const [word, setWord] = useState('')
 
   // deleting material
   const [recentlyDeletedMaterial, setRecentlyDeletedMaterial] = useState('');
@@ -337,13 +337,25 @@ export const PreJoinPage = (props) => {
 
             {/* modify buttons */}
             <div className='flex items-center gap-3'>
-              <button className='px-6 py-2 rounded-[5px] text-lg mbg-200 mcolor-800 border-thin-800 font-normal' onClick={() => deleteStudyMaterial(materialId, materialTitle)}>Delete Material</button>
+
+
+              <button className='px-6 py-2 rounded-[5px] text-lg mbg-200 mcolor-800 border-thin-800 font-normal' onClick={() => {
+
+                if (userUploaderId === UserId) {
+                  deleteStudyMaterial(materialId, materialTitle)
+                } else {
+                  setWord('Deleting this material is only allowed by the individual who uploaded this material.')
+                  setShowModal(true)
+                  setShowModifyModal(true)
+                }
+              }}>Delete Material</button>
 
               {!takeAssessment && (
                 <button className='px-6 py-2 rounded-[5px] text-lg mbg-200 mcolor-800 border-thin-800 font-normal' onClick={() => {
                   if (userUploaderId === UserId) {
                     navigate(`/main/group/study-area/update-material/${groupId}/${materialId}`)
                   } else {
+                    setWord('Modifications are only allowed by the individual who uploaded this material.')
                     setShowModal(true)
                     setShowModifyModal(true)
                   }
@@ -388,8 +400,8 @@ export const PreJoinPage = (props) => {
                 </div>
                 {notesReviewer.map((item, index) => {
                   return <div key={index} className='flex gap-3'>
-                    <p className='text-start w-full m-3 p-2 mcolor-700 font-medium'>{item.question}</p>
-                    <p className='text-start w-full m-3 p-2 mcolor-900 font-medium'>{item.answer}</p>
+                    <p className='text-start w-full m-3 mcolor-700 font-medium mbg-200 border-thin-800 py-4 px-5 rounded'>{item.question}</p>
+                    <p className='text-start w-full m-3 mcolor-800 font-medium mbg-200 border-thin-800 py-4 px-5 rounded'>{item.answer}</p>
                   </div>
                 })}
               </div>
@@ -417,7 +429,7 @@ export const PreJoinPage = (props) => {
                     {showModifyModal ? (
                       <div>
                         <p className='mcolor-900 text-2xl font-medium text-center'>Reminder</p>
-                        <p className='text-center text-lg font-medium mcolor-800 mt-5'><PushPinIcon className='text-red-dark' />Modifications are only allowed by the individual who uploaded this material.</p>     
+                        <p className='text-center text-lg font-medium mcolor-800 mt-5'><PushPinIcon className='text-red-dark' />{word}</p>     
                       </div>
                       ) : (
                       <div>

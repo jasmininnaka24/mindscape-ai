@@ -79,14 +79,11 @@ export const Home = () => {
         </section>
 
         {/* Benefits section */}
-        <section id="benefits">
+        <section id="benefits" className='h-[100vh] flex items-center justify-center'>
           <Benefits />
         </section>
 
-        {/* How to use section */}
-        <section id="howtouse">
-          <HowToUse />
-        </section>
+
 
       </div>
     </div>

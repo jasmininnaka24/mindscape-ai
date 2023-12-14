@@ -26,7 +26,6 @@ export const Navbar = () => {
           <HashLink to={'#'}>Home</HashLink>
           <HashLink to={'#about'}>About</HashLink>
           <HashLink to={'#benefits'}>Benefits</HashLink>
-          <HashLink to={'#howtouse'}>How To Use</HashLink>
         </div>
         <div className='ms-login'>
           <Link to={'/login'} className='flex justify-between items-center gap-2'>

@@ -7,6 +7,7 @@ import { useUser } from '../../UserContext';
 import jwt_decode from 'jwt-decode';
 import { CustomModal } from '../../components/CustomModal';
 import { Link } from 'react-router-dom';
+import MindScapeLogo from '../../assets/mindscape_logo.png';
 
 
 export const Login = () => {
@@ -129,63 +130,60 @@ export const Login = () => {
   
 
   return (
-    <div className='poppins flex justify-between mcolor-900 w-full'>
+    <div className='poppins flex justify-center items-center mcolor-900 w-full h-[100vh] mbg-300'>
 
-      <section className='w-1/3 flex items-center justify-center'>
-        <div>
-          <article className='text-4xl text-center font-normal'><i class="fa-solid fa-spa"></i> MindScape</article>
-          
-          <h2 className='text-xl dark-color font-normal mt-10 text-center'>Log into your account</h2>
-          
-          <div className='flex justify-center mt-4'>
-            <button >
-              <div id='signInDiv' className='flex items-center px-10 py-3 rounded-[30px] text-md'>
-
-              </div>
-            </button>
+      <div className='mbg-100 p-8 rounded'>
+        <div className='flex items-center justify-center'>
+          <div style={{ width: '50px', height: '50px' }}>
+            <img src={MindScapeLogo} alt="" />
           </div>
-          
-          <div className='flex items-center gap-5 justify-center my-4'>
-            <div className='line'></div>
-            <p>or</p>
-            <div className='line'></div>
-          </div>
+          <p className='font-medium ml-2 text-3xl'>MindScape</p>
+        </div>
 
-          <div className='mb-5 w-full flex items-center justify-center'>
-            <div>
+        
+        <div className='flex justify-center mt-5'>
+          <button >
+            <div id='signInDiv' className='flex items-center px-10 py-3 rounded-[30px] text-md'>
 
-              <div className='mb-3 w-full'>
-                <p htmlFor="" className='font-medium'>Email<span className='text-red'>*</span></p>
-                <input required autoComplete='no' placeholder='Enter your email...' type="email" className='bg-transparent w-full border-bottom-thin py-1 rounded-[5px]' value={emailLogVal !== '' ? emailLogVal : ''} onChange={(event) => setEmailLogVal(event.target.value)} />
-              </div>
+            </div>
+          </button>
+        </div>
+        
+        <div className='flex items-center gap-5 justify-center'>
+          <div className='line'></div>
+          <p>or</p>
+          <div className='line'></div>
+        </div>
 
-              <div className='mb-4 mt-8'>
-                <p className='font-medium'>Password<span className='text-red'>*</span></p>
-                <input required autoComplete='no' placeholder='Enter your password...' type="password" className='bg-transparent w-full border-bottom-thin py-1 rounded-[5px]' value={passwordLogVal !== '' ? passwordLogVal : ''} onChange={(event) => setPasswordLogVal(event.target.value)} />
-              </div>
+        <div className='mb-5 w-full flex items-center justify-center'>
+          <div>
 
-                
-              <div className='w-full mb-5 font-medium mcolor-700'>
-                <Link to={'/verify-email'}>Forgot Password</Link>
-              </div>
-
-              <p className={`text-center ${(msg !== '' && error) && 'text-red my-3'}`} style={{ whiteSpace: 'pre-wrap' }}>{(msg !== '' && error) && msg}</p>
-              
-              <button className={`font-medium input-btn py-2 rounded-[20px] ${(msg !== '' && !error) ? 'dark-green mcolor-900' : 'mbg-800 mcolor-100'}`} onClick={(e) => loginAccount(e)}>{(msg !== '' && !error) ? msg : 'Sign In'}</button>
+            <div className='mb-3 w-full'>
+              <p htmlFor="" className='font-medium'>Email<span className='text-red'>*</span></p>
+              <input required autoComplete='no' placeholder='Enter your email...' type="email" className='bg-transparent w-full border-bottom-thin py-1 rounded-[5px]' value={emailLogVal !== '' ? emailLogVal : ''} onChange={(event) => setEmailLogVal(event.target.value)} />
             </div>
 
-          </div>
+            <div className='mb-4 mt-8'>
+              <p className='font-medium'>Password<span className='text-red'>*</span></p>
+              <input required autoComplete='no' placeholder='Enter your password...' type="password" className='bg-transparent w-full border-bottom-thin py-1 rounded-[5px]' value={passwordLogVal !== '' ? passwordLogVal : ''} onChange={(event) => setPasswordLogVal(event.target.value)} />
+            </div>
 
-          <div className='w-full flex items-center justify-center px-14'>
-            Don't have an account? <span className='font-bold ml-1'><Link to={'/register'}>Sign Up</Link></span>
+              
+            <div className='w-full mb-5 font-medium mcolor-700'>
+              <Link to={'/verify-email'}>Forgot Password</Link>
+            </div>
+
+            <p className={`text-center ${(msg !== '' && error) && 'text-red my-3'}`} style={{ whiteSpace: 'pre-wrap' }}>{(msg !== '' && error) && msg}</p>
+            
+            <button className={`font-medium input-btn py-2 rounded-[20px] ${(msg !== '' && !error) ? 'mbg-200 border-thin-800 mcolor-900' : 'mbg-800 mcolor-100'}`} onClick={(e) => loginAccount(e)}>{(msg !== '' && !error) ? msg : 'Sign In'}</button>
           </div>
 
         </div>
 
-      </section>
-      
-      <div className='flex-1 mbg-300 h-[100vh]'>
-        {/* <LogReg/> */}
+        <div className='w-full flex items-center justify-center px-14'>
+          Don't have an account? <span className='font-bold ml-1'><Link to={'/register'}>Sign Up</Link></span>
+        </div>
+
       </div>
     </div>
   )

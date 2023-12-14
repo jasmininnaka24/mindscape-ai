@@ -5,6 +5,7 @@ import { Link } from 'react-router-dom';
 import { CreateGroupComp } from '../../../components/group/CreateGroupComp';
 import axios from 'axios';
 import { useUser } from '../../../UserContext';
+import { fetchUserData } from '../../../userAPI';
 
 
 export const GroupRoom = () => {
@@ -16,16 +17,39 @@ export const GroupRoom = () => {
   const [expandedGroupId, setExpandedGroupId] = useState(null);
   const [memberGroupList, setMemberGroupList] = useState([])
   const [isDone, setIsDone] = useState(false);
+  const [users, setUsers] = useState([]);
+  const [searchResults, setSearchResults] = useState([]);
+
   const UserId = user?.id;
 
+  // user data
+  const [userData, setUserData] = useState({
+    username: '',
+    email: '',
+    studyProfTarget: 0,
+    typeOfLearner: '',
+    userImage: ''
+  })
+  
 
-
+  const getUserData = async () => {
+    const userData = await fetchUserData(UserId);
+    setUserData({
+      username: userData.username,
+      email: userData.email,
+      studyProfTarget: userData.studyProfTarget,
+      typeOfLearner: userData.typeOfLearner,
+      userImage: userData.userImage
+    });
+  }
 
 
   const fetchGroupListData = async () => {
     try {
 
 
+      const responseUsers = await axios.get('http://localhost:3001/users');
+      setUsers(responseUsers.data);
 
       const response = await axios.get(`http://localhost:3001/studyGroup/extract-group-through-user/${UserId}`);
       
@@ -59,6 +83,7 @@ export const GroupRoom = () => {
   
   useEffect(() => {
     if (isDone) {
+      getUserData()
       fetchGroupListData();
       setIsDone(false)
     }
@@ -71,13 +96,13 @@ export const GroupRoom = () => {
   };
 
   return (
-    <div className='relative poppins mcolor-900 grouproom p-5'>
+    <div className='relative poppins mcolor-900 grouproom p-5 container'>
       <div className='mt-5 mb-8'>
-        <Navbar linkBack={'/main/'} linkBackName={'Main'} currentPageName={'Groups'} username={'Jennie Kim'}/>
+        <Navbar linkBack={'/main/'} linkBackName={'Main'} currentPageName={'Groups'} username={userData.username}/>
       </div>
 
       {savedGroupNotif && (
-        <p className={`my-5 py-2 mbg-300 mcolor-800 text-center rounded-[5px] text-lg`}>New Created group saved!</p>
+        <p className={`my-5 py-2 green-bg mcolor-900 text-center rounded-[5px] text-lg`}>New Created group saved!</p>
       )}
 
 
@@ -90,14 +115,16 @@ export const GroupRoom = () => {
         <div className='py-4'>
           
           <div className='flex items-center justify-center'>
-            <CreateGroupComp setSavedGroupNotif={setSavedGroupNotif} fetchGroupListData={fetchGroupListData} />
+            <CreateGroupComp setSavedGroupNotif={setSavedGroupNotif} fetchGroupListData={fetchGroupListData} setUsers={setUsers} users={users} searchResults={searchResults} setSearchResults={setSearchResults} />
           </div>
 
-          <div className='mt-6'>
-            <p className='text-xl mcolor-900 font-medium'>Rooms:</p>
+          <div className='mt-16'>
+            <p className={`text-xl font-medium ${groupList.length === 0 ? 'text-center mcolor-500' : 'mcolor-900'}`}>
+              {groupList.length === 0 ? 'You have not joined or created any rooms yet.' : 'Rooms:'}
+            </p>
           </div>
             
-          <div className='mt-5 grid grid-cols-3 gap-5'>
+          <div className='grid grid-cols-3 gap-5'>
 
             {groupList && groupList.length > 0 && groupList.slice().sort((a, b) => b.id - a.id).map(({ id, groupName}) => (
               <div key={id} className='shadows mcolor-900 rounded-[5px] p-5 my-6 mbg-100 flex items-center justify-between relative'>

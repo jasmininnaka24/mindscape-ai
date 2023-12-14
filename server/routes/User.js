@@ -468,6 +468,7 @@ router.delete('/:id', async (req, res) => {
       where: { 
         UserId: userId,
         isShared: false,
+        StudyGroupId: !null
       },
     });
 
@@ -492,46 +493,46 @@ router.delete('/:id', async (req, res) => {
     console.log(studyMaterial.length);
 
     
-    // // Delete each dashRecord individually
-    // for (const dashRecord of DashForPersonalAndGroupResponse) {
-    //   await dashRecord.destroy();
-    // }
+    // Delete each dashRecord individually
+    for (const dashRecord of DashForPersonalAndGroupResponse) {
+      await dashRecord.destroy();
+    }
     
-    // // Delete each material individually
-    // for (const material of studyMaterial) {
-    //   await material.destroy();
-    // }
+    // Delete each material individually
+    for (const material of studyMaterial) {
+      await material.destroy();
+    }
 
-    // // Delete each material individually
-    // for (const material of studyMaterialCategories) {
-    //   await material.destroy();
-    // }
-
-
+    // Delete each material individually
+    for (const material of studyMaterialCategories) {
+      await material.destroy();
+    }
 
 
 
 
 
 
-    // // Check if the new userImage is different from the existing one
-    // if (user.dataValues.userImage !== "user.png") {
-    //   // Define the absolute path to the existing image file
-    //   const existingImagePath = path.join(__dirname, '..', 'public/images', user.dataValues.userImage);
 
-    //   // Delete the existing image file if it exists
-    //   if (fs.existsSync(existingImagePath)) {
-    //     fs.unlinkSync(existingImagePath);
-    //     console.log('Existing image deleted:', existingImagePath);
-    //   }
-    // } else {
-    //   console.log('User image remains unchanged. Skipping unlinking.');
-    // }
 
-    // // Wait for user deletion to complete before sending the response
-    // await user.destroy();
+    // Check if the new userImage is different from the existing one
+    if (user.dataValues.userImage !== "user.png") {
+      // Define the absolute path to the existing image file
+      const existingImagePath = path.join(__dirname, '..', 'public/images', user.dataValues.userImage);
 
-    // res.json({ message: "Your account has been permanently deleted.", error: false });
+      // Delete the existing image file if it exists
+      if (fs.existsSync(existingImagePath)) {
+        fs.unlinkSync(existingImagePath);
+        console.log('Existing image deleted:', existingImagePath);
+      }
+    } else {
+      console.log('User image remains unchanged. Skipping unlinking.');
+    }
+
+    // Wait for user deletion to complete before sending the response
+    await user.destroy();
+
+    res.json({ message: "Your account has been permanently deleted.", error: false });
     } catch (error) {
       console.error('Error deleting account:', error);
       res.json({ message: "Failed deleting your account.", error: true });

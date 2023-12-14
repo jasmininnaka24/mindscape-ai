@@ -5,7 +5,7 @@ import resonsibilityPic from '../../../assets/responsibility.png'
 
 export const Benefits = () => {
   return (
-    <div id='benefits-page' data-aos='fade-up'>
+    <div className='' id='benefits-page' data-aos='fade-up'>
       <div className='py-6 nav mcolor-100'>nav</div>
       {/* top */}
       <div className='flex justify-between items-center'>

@@ -75,6 +75,8 @@ export const VirtualLibraryMain = () => {
   const [materialIdToRemove, setMaterialIdToRemove] = useState(false);
   const [materialIdToRemoveBookmarkCounts, setMaterialIdToRemoveBookmarkCounts] = useState(false);
   const [filteredCategoryCounts, setFilteredCategoryCounts] = useState(0);
+  const [msg, setMsg] = useState('');
+  const [error, setError] = useState(false);
 
   const { user } = useUser()
   const UserId = user?.id;
@@ -92,11 +94,11 @@ export const VirtualLibraryMain = () => {
   const getUserData = async () => {
     const userData = await fetchUserData(UserId);
     setUserData({
-      username: userData.username,
-      email: userData.email,
-      studyProfTarget: userData.studyProfTarget,
-      typeOfLearner: userData.typeOfLearner,
-      userImage: userData.userImage
+      username: userData?.username,
+      email: userData?.email,
+      studyProfTarget: userData?.studyProfTarget,
+      typeOfLearner: userData?.typeOfLearner,
+      userImage: userData?.userImage
     });
   }
 
@@ -844,6 +846,14 @@ export const VirtualLibraryMain = () => {
 
 
     fetchData()
+    setTimeout(() => {
+      setError(false)
+      setMsg("Successfully bookmarked.");
+    }, 100);
+    
+    setTimeout(() => {
+      setMsg("");
+    }, 2000);
    }
 
 
@@ -1291,7 +1301,7 @@ export const VirtualLibraryMain = () => {
                 </div>
 
                 <div className='gap-3 mt-5'>
-                  {user === userData.username && (
+                  {user === userData?.username && (
                     <div className='flex justify-end'>
                       <button onClick={() => {
                         if (bookmarksCount > 0) {
@@ -1351,7 +1361,7 @@ export const VirtualLibraryMain = () => {
                   </div>
 
                   <div className='gap-3'>
-                    {user === userData.username && (
+                    {user === userData?.username && (
                       <div className='flex justify-end'>
                         <button onClick={() => {
                           if (bookmarksCount > 0) {
@@ -1412,7 +1422,7 @@ export const VirtualLibraryMain = () => {
                       </div>
 
                       <div className='gap-3'>
-                      {user === userData.username && (
+                      {user === userData?.username && (
                         <div className='flex justify-end'>
                           <button onClick={() => {
                             if (bookmarksCount > 0) {
@@ -1494,6 +1504,13 @@ export const VirtualLibraryMain = () => {
                     <div className='w-full'>
                       <div>
                         <p className='text-lg mb-5'>Bookmark to: </p>
+
+                        {!error && msg !== '' && (
+                          <div className='green-bg text-center mt-5 rounded py-3 w-full mb-5'>
+                            {msg}
+                          </div>
+                        )}
+
                         <div className='flex flex-col gap-4'>
                           <button className='mbg-300 py-4 rounded text-md font-medium' onClick={() => bookmarkMaterial(currentSharedMaterialIndex, null, 'Personal')}>Personal Study Room</button>
                           <button className='mbg-300 py-4 rounded text-md font-medium' onClick={() => {
@@ -1535,9 +1552,15 @@ export const VirtualLibraryMain = () => {
                       
                     </div>
 
+                    {!error && msg !== '' && (
+                      <div className='green-bg text-center mt-5 rounded py-3 w-full mb-5'>
+                        {msg}
+                      </div>
+                    )}
                     {showCreateGroupInput === false && (
                       groupList.slice().sort((a, b) => b.id - a.id).map(({ id, groupName}) => (
                         <div key={id} className='shadows mcolor-900 rounded-[5px] p-5 my-6 mbg-100 flex items-center justify-between relative'>
+
 
 
                           <p className='px-1'>{groupName}</p>
@@ -1646,7 +1669,7 @@ export const VirtualLibraryMain = () => {
                       {groupStudyMaterials.map((material, index) => {
                         const category = groupStudyMaterialsCategory[index]?.category || 'Category not available';
 
-                        return <div key={index} className='my-3 mbg-200 border-thin-800 p-4 rounded'>
+                        return <div key={index} className='my-3 mbg-200 border-thin-800 p-4 rounded flex items-center justify-between'>
                             <div>
                               <p className='font-medium text-lg'>Title: {material.title}</p>
                               <p className='text-sm mt-1'>Category: {category}</p>

@@ -12,6 +12,10 @@ import DoneIcon from '@mui/icons-material/Done';
 
 export const MainDash = ({categoryFor}) => {
 
+  const categoryForLowerCase = categoryFor.toLowerCase();
+
+
+  const [materialId, setMaterialId] = useState('')
   const [materialTitle, setMaterialTitle] = useState('')
   const [materialCategory, setMaterialCategory] = useState('')
   const [materialCategories, setMaterialCategories] = useState([])
@@ -263,6 +267,7 @@ export const MainDash = ({categoryFor}) => {
         console.log();
      
 
+        setMaterialId(materialResponseOwnRecord.data[0].id)    
         setMaterialTitle(materialResponseOwnRecord.data[0].title)    
         setMaterialCategory(materialCategoryResponseOwnRecord.data.category)
         setGroupStudyPerformance(materialResponseOwnRecord.data[0].studyPerformance);
@@ -435,7 +440,9 @@ export const MainDash = ({categoryFor}) => {
               </div>
 
               {materialCategory && (
-                <button className='absolute bottom-5 right-5 mbg-800 mcolor-100 px-5 py-2 rounded-[5px]'>View Reviewer</button>
+                <Link to={`/main/${categoryForLowerCase}/study-area/${categoryForLowerCase}-review-start/${materialId}`}>
+                  <button className='absolute bottom-5 right-5 mbg-800 mcolor-100 px-5 py-2 rounded-[5px]'>View Reviewer</button>
+                </Link>
               )}
             </div>
           </div>

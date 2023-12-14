@@ -150,57 +150,53 @@ export const StudyAreaGP = (props) => {
     }
   };
   
+  const displayError = (message, duration = 2500) => {
+    setError(true);
+    setMsg(message);
+    setTimeout(() => {
+      setError(false);
+      setMsg('');
+    }, duration);
+  };
+  
   const saveCategories = async () => {
-    if (modalList.length > 0) {
-      try {
+    try {
+      if (modalList.length > 0) {
         // Use Promise.all to wait for all axios.post calls to complete
         await Promise.all(modalList.map(async (item, index) => {
-          let categoryData = {
+          const categoryData = {
             category: item,
             categoryFor: categoryFor,
             StudyGroupId: groupNameId,
             UserId: UserId,
           };
   
-          // Use await to wait for the axios.post call to complete
-          await axios.post(`http://localhost:3001/studyMaterialCategory/`, categoryData).then((response) => {
-
-          if(response.data.error) {
-    
-            setTimeout(() => {
-              setError(true)
-              setMsg(response.data.message)
-            }, 100);
-            
-            setTimeout(() => {
-              setError(false)
-              setMsg('')
-            }, 2500);
-    
-    
-          } else {
-            setTimeout(() => {
-              setError(false)
+          try {
+            // Use await to wait for the axios.post call to complete
+            const response = await axios.post(`http://localhost:3001/studyMaterialCategory/`, categoryData);
+  
+            if (response.data.error) {
+              displayError(response.data.message);
+            } else {
+              displayError(response.data.message, 100);
               setHidden("hidden");
               setCategoryModal("hidden");
               setGroupMemberModal("hidden");
-              setMsg(response.data.message)
-            }, 100);
-            
-            setTimeout(() => {
-              setMsg('')
-            }, 2500);
+            }
+          } catch (error) {
+            // Handle specific error or log it
+            console.error("Error saving category:", error);
+            displayError("Failed to save category. Please try again.");
           }
-        })
         }));
-  
-        fetchData()
-      } catch (error) {
-        // Handle error if needed
-        console.error("Error saving categories:", error);
+        
+        fetchData();
+      } else {
+        displayError("Cannot save empty field.");
       }
-    } else {
-      alert("Cannot save empty field.");
+    } catch (error) {
+      // Handle general error if needed
+      console.error("Error saving categories:", error);
     }
   };
   
@@ -283,12 +279,15 @@ export const StudyAreaGP = (props) => {
 
   const fetchFollowerData = async () => {
     try {
-      const followers = await axios.get(`http://localhost:3001/followers/get-follower-list/${UserId}`);
-      let followersData = followers.data;
+      const response = await axios.get(`http://localhost:3001/users`);
+      let responseData = response.data;
+
+      let filteredUsers = responseData.filter(user => user.id !== UserId);
+  
   
       // Create an array to store all the Axios requests
-      const axiosRequests = followersData.map(async (item) =>
-        await axios.get(`http://localhost:3001/users/get-user/${item.FollowingId}`)
+      const axiosRequests = filteredUsers.map(async (item) =>
+        await axios.get(`http://localhost:3001/users/get-user/${item.id}`)
       );
 
 
@@ -690,10 +689,11 @@ export const StudyAreaGP = (props) => {
 
       } else {
         setTimeout(() => {
+          setGroupMemberModal('hidden')
           setError(false)
           setMsg(response.data.message)
         }, 100);
-        
+
         setTimeout(() => {
           setMsg('')
           navigate(`/main/group`)
@@ -739,12 +739,7 @@ export const StudyAreaGP = (props) => {
   const deleteCategoryMaterials = async (categoryId, category) => {
     try {
       // Ask for confirmation
-      const confirmDelete = window.confirm(`Are you sure you want to remove ${category}?`);
   
-      // If the user doesn't confirm, do nothing
-      if (!confirmDelete) {
-        return;
-      }
   
       const response = await axios.get(`http://localhost:3001/studyMaterial/get-material-from-categoryId/${categoryId}`);
   
@@ -755,32 +750,29 @@ export const StudyAreaGP = (props) => {
       console.log(responseData);
   
       if (filteredData.length > 0) {
-        return alert(`${category} cannot be deleted. Some study materials that you shared in the virtual library room are found in this category.`);
+        return alert(`${category} cannot be deleted. Some study materials that ${categoryFor === 'Personal' ? 'you have' : 'your group has'} shared in the virtual library room are found in this category.`);
       } else {
-        // Use Promise.all to perform multiple asynchronous operations concurrently
-        await Promise.all(notSharedData.map(async (item) => {
-          await axios.delete(`http://localhost:3001/studyMaterial/delete-material/${item.id}`);
-          await axios.delete(`http://localhost:3001/DashForPersonalAndGroup/get-dash-data/${item.id}`);
 
-        }));
-  
-        const categoryDeleteResponse = await axios.delete(`http://localhost:3001/studyMaterialCategory/delete-category/${categoryId}/${category}`);
-  
-        if (categoryDeleteResponse.data.error) {
-          setError(true);
-          setMsg(categoryDeleteResponse.data.message);
-        } else {
-          setError(false);
-          setMsg(categoryDeleteResponse.data.message);
+        if (window.confirm(`Are you sure you want to remove ${category}?`)){
+
+          
+          // Reset message after a delay or any other desired logic
+          setTimeout(() => {
+            setError(false);
+            setMsg(`All materials under ${category} have been removed.`);
+          }, 100);
+    
+          setTimeout(() => {
+            setError(false);
+            setMsg('');
+            window.location.reload()
+          }, 2500);
+
+          await axios.delete(`http://localhost:3001/studyMaterialCategory/delete-category/${categoryId}/${category}`);
+
+    
+          
         }
-  
-        // Reset message after a delay or any other desired logic
-        setTimeout(() => {
-          setError(false);
-          setMsg('');
-        }, 2500);
-  
-        fetchData();
       }
     } catch (error) {
       console.error('Error fetching materials:', error);
@@ -1083,7 +1075,7 @@ export const StudyAreaGP = (props) => {
                           console.log(responseData);
 
                           if (filteredData.length > 0) {
-                            return alert(`${category.category} cannot be edited. Some study materials that you shared in the virtual library room are found in this category.`);
+                            return alert(`${category.category} cannot be edited. Some study materials that ${categoryFor === 'Personal' ? 'you have' : 'your group has'} shared in the virtual library room are found in this category.`);
                           } else {
                             setCurrentCategoryIdToEdit(category.id)
                             setCurrentCategoryToEdit(category.category)
@@ -1346,26 +1338,12 @@ export const StudyAreaGP = (props) => {
                 </div>
                 <div className='p-10'>
                   {showLesson && lastMaterial && <div>{lastMaterial.body}</div>}
-                  {/* {showMCQAs && materialMCQ && (
-                    <div>
-                      {materialMCQ.map((material) => (
-                        <div className='mb-10' key={material.id}>
-                          <p className='my-2 mcolor-900 font-bold'>{material.question}</p>
-                          <p className='font-medium'>Answer: <span className='text-emerald-500'>{material.answer}</span></p>
-                          <ul>
-                            {materialMCQChoices.filter((choice) => choice.QuesAnId === material.id).map((choice, index) => (
-                              <li key={index}>{choice.choice}</li>
-                            ))}
-                          </ul>
-                        </div>
-                      ))}
-                    </div>
-                  )} */}
+
                   {showRev && materialRev && (
                     <div>
                       {materialRev.map((material) => (
-                        <div className='mb-10'>
-                          <p className='my-1 mcolor-900 font-bold'>{material.question}</p>
+                        <div className='mb-10 p-5 mbg-200 border-thin-800 rounded'>
+                          <p className='my-1 mcolor-900 font-medium'>{material.question}</p>
                           <p className='font-medium mcolor-700'>Answer: <span className='mcolor-900 font-medium'>{material.answer}</span></p>
                         </div>
                       ))}

@@ -499,6 +499,16 @@ input:focus{
   background: #f4a75b;
 }
 
+.dark-green-str {
+  color: #61a046;
+}
+.dark-red-str {
+  color: #a23c3c;
+}
+.dark-orange-str {
+  color: #b87b3d;
+}
+
 
 .red-key {
   color: #d14848;

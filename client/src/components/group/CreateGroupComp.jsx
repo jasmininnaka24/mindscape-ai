@@ -78,12 +78,14 @@ export const CreateGroupComp = (props) => {
 
   const fetchFollowerData = async () => {
     try {
-      const response = await axios.get(`http://localhost:3001/followers/get-follower-list/${UserId}`);
+      const response = await axios.get(`http://localhost:3001/users`);
       let responseData = response.data;
+
+      let filteredUsers = responseData.filter(user => user.id !== UserId);
   
       // Create an array to store all the Axios requests
-      const axiosRequests = responseData.map(async (item) =>
-        await axios.get(`http://localhost:3001/users/get-user/${item.FollowingId}`)
+      const axiosRequests = filteredUsers.map(async (item) =>
+        await axios.get(`http://localhost:3001/users/get-user/${item.id}`)
       );
 
       Promise.all(axiosRequests)

@@ -78,7 +78,9 @@ export const Tasks = ({room, groupId}) => {
               {/* Updating a task form */}
               <UpdateTasks task={task} dueDate={dueDate} room={room} taskID={taskID} listOfTasks={listOfTasks} setListOfTasks={setListOfTasks} setTask={setTask} setDueDate={setDueDate} setTaskID={setTaskID} hideModal={dynamicClassNameForHidden} closeModal={closeModal} setIsButtonClicked={setIsButtonClicked} UserId={UserId} groupId={groupId} />
 
-
+              
+              {listOfTasks.length === 0 && <p className='text-center text-xl mcolor-500 my-10'>No assigned task.</p>}
+              
               {/* Unaccomplished Tasks */}
               <div className='my-5'>
                 {/* List of tasks that are need to be accomplished */}

@@ -10,7 +10,6 @@ import PersonOutlineIcon from '@mui/icons-material/PersonOutline';
 import { useUser } from '../../UserContext';
 import axios from 'axios';
 import PersonIcon from '@mui/icons-material/Person';
-import Sidebar from '../../components/Styles/Sidebar/Sidebar';
 import MindScapeLogo from '../../assets/mindscape_logo.png';
 
 
@@ -46,7 +45,7 @@ export const MainPage = () => {
         const response = await axios.get('http://localhost:3001/users');
         setUsers(response.data);
 
-
+        
       } catch (error) {
         console.error('Error fetching users:', error);
       }
@@ -69,9 +68,6 @@ export const MainPage = () => {
   };
 
 
-  const toggleSidebar = () => {
-    setIsOpen(!isOpen);
-  };
 
   return (
     <div className='poppins mcolor-900 mbg-100 relative' >
@@ -82,7 +78,6 @@ export const MainPage = () => {
         <div className='container flex justify-between w-full mainpage-inside items-center'>
 
           <div className='flex items-center'>
-            {/* <button onClick={toggleSidebar}><MenuIcon fontSize='large' className='mcolor-900 mr-1' /></button> */}
             <div className='flex items-center'>
               <div className='mr-2' style={{ width: '40px', height: '40px' }}>
                 <img src={MindScapeLogo} alt="" />
@@ -130,7 +125,6 @@ export const MainPage = () => {
         </div>
       </div>
 
-      <Sidebar isOpen={isOpen} setIsOpen={setIsOpen} isDropdownOpen={isDropdownOpen} setIsDropdownOpen={setIsDropdownOpen} toggleSidebar={toggleSidebar} />
 
 
       <div className='container'>

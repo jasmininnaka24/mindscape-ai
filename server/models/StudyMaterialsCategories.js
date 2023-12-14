@@ -1,3 +1,5 @@
+// Assuming this is the file where your StudyMaterialsCategories model is defined
+
 module.exports = (sequelize, DataTypes) => {
   const StudyMaterialsCategories = sequelize.define("StudyMaterialsCategories", {
     category: {
@@ -24,29 +26,30 @@ module.exports = (sequelize, DataTypes) => {
     StudyMaterialsCategories.belongsTo(models.User, {
       foreignKey: {
         name: 'UserId',
-        allowNull: true, // Allow null to remove the association
-        onDelete: 'cascade', // or 'SET DEFAULT'
+        allowNull: true,
+        onDelete: 'cascade',
       },
     });
-    StudyMaterialsCategories.belongsTo(models.User, {
+    
+    // Update the following line to reference the StudyGroup model
+    StudyMaterialsCategories.belongsTo(models.StudyGroup, {
       foreignKey: {
         name: 'StudyGroupId',
-        allowNull: true, // Allow null to remove the association
-        onDelete: 'cascade', // or 'SET DEFAULT'
+        allowNull: true,
+        onDelete: 'cascade',
       },
     });
-
 
     StudyMaterialsCategories.hasMany(models.StudyMaterials, {
       onDelete: 'cascade',
-    })
+    });
 
     StudyMaterialsCategories.beforeDestroy(async (instance, options) => {
       if (instance.isShared === true) {
         options.cascade = false;
       }
     });
-  }
+  };
 
   return StudyMaterialsCategories;
-}
+};

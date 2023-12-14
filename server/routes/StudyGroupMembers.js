@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { StudyGroupMembers } = require('../models')
+const { StudyGroupMembers, StudyGroup } = require('../models')
 
 // creating a member to the group
 router.post('/add-member', async (req, res) => {
@@ -46,18 +46,44 @@ router.delete('/remove-member/:groupNameId/:userId', async (req, res) => {
   const { groupNameId, userId } = req.params;
 
   try {
-    const deletedGroupMember = await StudyGroupMembers.destroy({
+
+    const ifTheresAHost = await StudyGroup.findByPk(groupNameId, {
       where: {
-        UserId: userId,
+        UserId: !null
+      }
+    })
+
+    const groupMembersLength = await StudyGroupMembers.findAll({
+      where: {
         StudyGroupId: groupNameId
       }
-    });
+    })
 
-    if (deletedGroupMember > 0) {
-      res.json({ message: 'Leaving the group...', error: false });
+
+    if (ifTheresAHost.dataValues.UserId === null && groupMembersLength.length === 1) {
+      const deletedGroup = await StudyGroup.findByPk(groupNameId);
+      await deletedGroup.destroy();
+
+      if (deletedGroup) {
+        res.json({ message: 'Leaving the group...', error: false });
+      } else {
+        res.json({ message: 'Group member not found.', error: true });
+      }
     } else {
-      res.json({ message: 'Group member not found.', error: true });
+      const deletedGroupMember = await StudyGroupMembers.destroy({
+          where: {
+          UserId: userId,
+          StudyGroupId: groupNameId
+        }
+      });
+      if (deletedGroupMember > 0) {
+        res.json({ message: 'Leaving the group...', error: false });
+      } else {
+        res.json({ message: 'Group member not found.', error: true });
+      }
     }
+      
+
   } catch (error) {
     console.error(error);
     res.json({ message: 'Group member not found.', error: true });

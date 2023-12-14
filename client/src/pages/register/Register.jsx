@@ -6,8 +6,9 @@ import VisibilityIcon from '@mui/icons-material/Visibility';
 import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
 import axios from 'axios'
 import InboxIcon from '../../assets/mail.png';
-
-
+import MindScapeLogo from '../../assets/mindscape_logo.png';
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import DangerousIcon from '@mui/icons-material/Dangerous';
 
 export const Register = () => {
 
@@ -48,7 +49,7 @@ export const Register = () => {
           setTimeout(() => {
             setError(false)
             setMsg("Signing Up...");
-          }, 100);
+          }, 0);
           
           setTimeout(() => {
             setShowResetPasswordUI(false)
@@ -87,11 +88,11 @@ export const Register = () => {
   const getStrengthColor = () => {
     switch (strength) {
       case 'strong':
-        return 'dark-green';
+        return 'dark-green-str';
       case 'average':
-        return 'dark-orange';
+        return 'dark-orange-str';
       case 'weak':
-        return 'dark-red';
+        return 'dark-red-str';
       default:
         return '';
     }
@@ -114,9 +115,14 @@ export const Register = () => {
   return (
     showResetPasswordUI ? (
 
-      <div className='poppins flex justify-between mcolor-900 w-full' >
-        <section className='flex flex-col justify-center w-1/3'>
-          <article className='text-4xl text-center mt-20 font-normal'><i class="fa-solid fa-spa"></i> MindScape</article>
+      <div className='poppins flex justify-center items-center mcolor-900 w-full h-[100vh] mbg-300' >
+        <section className='mbg-100 flex flex-col justify-center w-1/3 py-10 rounded'>
+          <div className='flex items-center justify-center'>
+            <div style={{ width: '50px', height: '50px' }}>
+              <img src={MindScapeLogo} alt="" />
+            </div>
+            <p className='font-medium ml-2 text-3xl'>MindScape</p>
+          </div>
           
           <h2 className='text-xl mcolor-700 font-normal mt-4 text-center'>Sign Up for an Account</h2>
           
@@ -162,15 +168,15 @@ export const Register = () => {
 
 
               {passwordRegVal !== '' && (
-              <div className='my-4'>
-                <div className={`mcolor-100 text-center rounded ${getStrengthColor()}`} style={{ width: progressBarWidth(), transition: 'width 0.3s ease' }}>{`${strength.charAt(0).toUpperCase() + strength.slice(1)}`}</div>
+              <div className='my-4 flex items-center justify-center'>
+                <div className={`mcolor-900 text-center rounded border-thin-800 py-1`} style={{ width: progressBarWidth(), transition: 'width 0.3s ease' }}>{`${strength.charAt(0).toUpperCase() + strength.slice(1)}`} <span className={`${getStrengthColor()}`}>{getStrengthColor() !== 'dark-green-str' ? <DangerousIcon /> : <CheckCircleIcon sx='18px' />}</span></div>
               </div>
               )}
 
               <p className={`text-center ${(msg !== '' && error) && 'text-red my-3'}`} style={{ whiteSpace: 'pre-wrap' }}>{(msg !== '' && error) && msg}</p>
 
               <button
-                className={`font-medium input-btn py-2 rounded-[20px] ${enableDisabled ? 'dark-green mcolor-900' : (msg !== '' && !error) ? 'dark-green mcolor-900' : 'mbg-800 mcolor-100'}`}
+                className={`font-medium input-btn py-2 rounded-[20px] ${(msg !== '' && !error) ? 'mbg-200 border-thin-800 mcolor-900' : 'mbg-800 mcolor-100'}`}
                 onClick={(e) => registerAccount(e)}
                 disabled={enableDisabled}
               >
@@ -186,14 +192,10 @@ export const Register = () => {
           </div>
 
         </section>
-
-        <div className='flex-1 mbg-300 h-[100vh]'>
-        {/* <LogReg/> */}
-      </div>
       </div>
     ) : (
-      <div>
-        <div className='px-8 gap-8 py-5'>
+      <div className='h-[100vh] flex items-center justify-center'>
+        <div className=''>
           <br />
           <div className='flex items-center justify-center'>
             <div className='text-emerald-500' style={{ width: '200px' }}>
@@ -201,7 +203,7 @@ export const Register = () => {
             </div>
           </div>
 
-          <br /><br />
+          <br />
           <h1 className='text-3xl font-medium mcolor-800 text-center'>Check Your Gmail Inbox</h1> 
 
           <p className='text-center mcolor-800 my-3 px-10'>Email verification has been sent to your email. Kindly check it out. Thank you for your patience.</p>
