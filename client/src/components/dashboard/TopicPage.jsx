@@ -15,7 +15,7 @@ export const TopicPage = ({categoryFor}) => {
   const { categoryID, materialID, groupId } = useParams();
   const navigate = useNavigate();
 
-  const { user } = useUser();
+  const { user, SERVER_URL } = useUser();
   const UserId = user?.id;
 
   // user data
@@ -64,7 +64,7 @@ export const TopicPage = ({categoryFor}) => {
 
   useEffect(() => {
     const fetchData = async () => {
-      const extractedData = await axios.get(`http://localhost:3001/DashForPersonalAndGroup/get-assessments/${materialID}`);
+      const extractedData = await axios.get(`${SERVER_URL}/DashForPersonalAndGroup/get-assessments/${materialID}`);
 
       setStudyMaterials(extractedData.data)
       const fetchedData = extractedData.data;
@@ -144,7 +144,7 @@ export const TopicPage = ({categoryFor}) => {
     console.log(response.data);
     let generatedAnalysisResponse = (response.data.generated_analysis).replace('\n\n\n\n\n', '');
 
-    await axios.put(`http://localhost:3001/DashForPersonalAndGroup/set-update-analysis/${id}`, {analysis: generatedAnalysisResponse});
+    await axios.put(`${SERVER_URL}/DashForPersonalAndGroup/set-update-analysis/${id}`, {analysis: generatedAnalysisResponse});
 
     setShowModal(false)
     setShowFirstText(false)
@@ -241,7 +241,6 @@ export const TopicPage = ({categoryFor}) => {
                 <td className='text-center text-xl py-3 font-medium'>Score <br /> Performance</td>
                 <td className='text-center text-xl py-3 font-medium'>Confidence <br /> Level</td>
                 <td className='text-center text-xl py-3 font-medium'>Preparation <br /> Status</td>
-                <td className='text-center text-xl py-3 font-medium'>Analysis</td>
               </tr>
             </thead>
             <tbody>
@@ -264,9 +263,7 @@ export const TopicPage = ({categoryFor}) => {
                   <td className='text-center py-3 text-lg mcolor-800'>{item.assessmentScorePerf}%</td>
                   <td className='text-center py-3 text-lg mcolor-800'>{item.confidenceLevel}%</td>
                   <td className='text-center py-3 text-lg mcolor-800'>{((parseFloat(item.assessmentImp) + parseFloat(item.assessmentScorePerf) + parseFloat(item.confidenceLevel)) / 3).toFixed(2) >= 90 ? 'Prepared' : 'Unprepared'}</td>
-                  <td className='text-center py-3 text-lg mcolor-800 cursor-pointer' onClick={() => {checkIFTheresRecordedAnalysis(item.id, index)}}>
-                    <RemoveRedEyeIcon />
-                  </td>
+
                 </tr>
               })}
             </tbody>

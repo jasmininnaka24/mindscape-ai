@@ -1,9 +1,15 @@
 import axios from 'axios';
 import React from 'react';
 import { DateTime } from 'luxon';  // Import Luxon DateTime for date manipulation
+import { useUser } from '../../UserContext';
+
 
 export const AddingTask = (props) => {
   const { task, dueDate, room, listOfTasks, setListOfTasks, setTask, setDueDate, unhideModal, UserId, groupId } = props;
+
+
+  const { SERVER_URL } = useUser();
+
 
   // Adding task to the database
   const addTask = async (event) => {
@@ -25,7 +31,7 @@ export const AddingTask = (props) => {
     };
 
     try {
-      const response = await axios.post("http://localhost:3001/tasks", data);
+      const response = await axios.post(`${SERVER_URL}/tasks`, data);
       setListOfTasks([response.data, ...listOfTasks]);
     } catch (error) {
       console.error("Error adding task:", error);

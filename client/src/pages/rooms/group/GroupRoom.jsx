@@ -10,7 +10,7 @@ import { fetchUserData } from '../../../userAPI';
 
 export const GroupRoom = () => {
   
-  const { user } = useUser();
+  const { user, SERVER_URL } = useUser();
 
   const [savedGroupNotif, setSavedGroupNotif] = useState(false);
   const [groupList, setGroupList] = useState([]);
@@ -47,18 +47,17 @@ export const GroupRoom = () => {
   const fetchGroupListData = async () => {
     try {
 
-
-      const responseUsers = await axios.get('http://localhost:3001/users');
+      const responseUsers = await axios.get(`${SERVER_URL}/users`);
       setUsers(responseUsers.data);
 
-      const response = await axios.get(`http://localhost:3001/studyGroup/extract-group-through-user/${UserId}`);
+      const response = await axios.get(`${SERVER_URL}/studyGroup/extract-group-through-user/${UserId}`);
       
       setGroupList(response.data);
 
-      const userMemberGroupList = await axios.get(`http://localhost:3001/studyGroupMembers/get-materialId/${UserId}`);
+      const userMemberGroupList = await axios.get(`${SERVER_URL}/studyGroupMembers/get-materialId/${UserId}`);
       
       const materialPromises = userMemberGroupList.data.map(async (item) => {
-        const material = await axios.get(`http://localhost:3001/studyGroup/extract-all-group/${item.StudyGroupId}`);
+        const material = await axios.get(`${SERVER_URL}/studyGroup/extract-all-group/${item.StudyGroupId}`);
         return material.data;
       });
       

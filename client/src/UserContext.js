@@ -1,4 +1,5 @@
 import { createContext, useContext, useEffect, useState } from 'react';
+import { SERVER_URL } from './serverConfig';
 
 const UserContext = createContext();
 
@@ -19,7 +20,7 @@ export const UserProvider = ({ children }) => {
   };
 
   return (
-    <UserContext.Provider value={{ user, setUserInformation }}>
+    <UserContext.Provider value={{ user, setUserInformation, SERVER_URL }}>
       {children}
     </UserContext.Provider>
   );

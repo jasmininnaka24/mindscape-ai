@@ -11,15 +11,17 @@ import ClearAllIcon from '@mui/icons-material/ClearAll';
 
 import io from 'socket.io-client';
 import { Link, useNavigate } from 'react-router-dom';
-const socket = io.connect("http://localhost:3001");
 
 
 export const DiscussionForums = () => {
-
-  const { user } = useUser();
+  
+  const { user, SERVER_URL } = useUser();
   const navigate = useNavigate()
-
+  
   const userId = user?.id;
+
+
+  const socket = io.connect(SERVER_URL);
   
   // user data
   const [userData, setUserData] = useState({

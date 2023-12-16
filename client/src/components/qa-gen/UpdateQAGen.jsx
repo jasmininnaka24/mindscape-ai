@@ -10,7 +10,7 @@ export const UpdateQAGen = ({ groupId, categoryFor }) => {
 
   const textAreaRef = useRef(null);
 
-  const { user } = useUser()
+  const { user, SERVER_URL } = useUser()
   const UserId = user?.id;
 
   const { materialID } = useParams();
@@ -50,13 +50,13 @@ export const UpdateQAGen = ({ groupId, categoryFor }) => {
   const [revAns, setRevAns] = useState("");
   
   const fetchData = async () => {
-    let studyMaterialLink = `http://localhost:3001/studyMaterial/get-material/${materialID}`;
+    let studyMaterialLink = `${SERVER_URL}/studyMaterial/get-material/${materialID}`;
     let studyMaterialCategoryLink = '';
 
     if (categoryFor === 'Personal') {
-      studyMaterialCategoryLink = `http://localhost:3001/studyMaterialCategory/personal-study-material/${categoryFor}/${UserId}`;
+      studyMaterialCategoryLink = `${SERVER_URL}/studyMaterialCategory/personal-study-material/${categoryFor}/${UserId}`;
     } else {
-      studyMaterialCategoryLink = `http://localhost:3001/studyMaterialCategory/${categoryFor}/${groupId}`;
+      studyMaterialCategoryLink = `${SERVER_URL}/studyMaterialCategory/${categoryFor}/${groupId}`;
     }
 
     try {
@@ -71,13 +71,13 @@ export const UpdateQAGen = ({ groupId, categoryFor }) => {
 
 
       
-      const categoryResponse = await axios.get(`http://localhost:3001/studyMaterialCategory/get-categoryy/${materialResponse.data.StudyMaterialsCategoryId}`);
+      const categoryResponse = await axios.get(`${SERVER_URL}/studyMaterialCategory/get-categoryy/${materialResponse.data.StudyMaterialsCategoryId}`);
 
       setMaterialCategory(categoryResponse.data);
       setMaterialCategoryId(categoryResponse.data.id);
 
 
-      let mcqResponse = await axios.get(`http://localhost:3001/quesAns/study-material-mcq/${materialID}`);
+      let mcqResponse = await axios.get(`${SERVER_URL}/quesAns/study-material-mcq/${materialID}`);
 
       if (categoryFor === 'Personal') {
         setPDFDetails(materialResponse.data.body)
@@ -97,7 +97,7 @@ export const UpdateQAGen = ({ groupId, categoryFor }) => {
       if (Array.isArray(mcqResponse.data)) {
         const materialChoices = mcqResponse.data.map(async (materialChoice) => {
           try {
-            let choiceResponse = await axios.get(`http://localhost:3001/quesAnsChoices/study-material/${materialID}/${materialChoice.id}`);
+            let choiceResponse = await axios.get(`${SERVER_URL}/quesAnsChoices/study-material/${materialID}/${materialChoice.id}`);
   
 
               return choiceResponse.data;
@@ -123,7 +123,7 @@ export const UpdateQAGen = ({ groupId, categoryFor }) => {
   }  
 
   const fetchRevData = async () => {
-    const revResponse = await axios.get(`http://localhost:3001/quesRev/study-material-rev/${materialID}`);
+    const revResponse = await axios.get(`${SERVER_URL}/quesRev/study-material-rev/${materialID}`);
     setMaterialRev(revResponse.data);
   }
 
@@ -353,10 +353,10 @@ export const UpdateQAGen = ({ groupId, categoryFor }) => {
 
     if (type === 'MCQA' || type === 'ToF' || type === 'FITB' || type === 'Identification') {
       setMaterialMCQ(updatedMaterialData)
-      await axios.put(`http://localhost:3001/quesAns/update-question/${id}`, qaData);
+      await axios.put(`${SERVER_URL}/quesAns/update-question/${id}`, qaData);
     } else {
       setMaterialRev(updatedMaterialData)
-      await axios.put(`http://localhost:3001/quesRev/update-rev-question/${id}`, qaData);
+      await axios.put(`${SERVER_URL}/quesRev/update-rev-question/${id}`, qaData);
     }
 
   };
@@ -394,10 +394,10 @@ export const UpdateQAGen = ({ groupId, categoryFor }) => {
 
     if (type === 'MCQA' || type === 'ToF' || type === 'FITB' || type === 'Identification') {
       setMaterialMCQ(updatedMaterialData)
-      await axios.put(`http://localhost:3001/quesAns/update-answer/${id}`, qaData);
+      await axios.put(`${SERVER_URL}/quesAns/update-answer/${id}`, qaData);
     } else {
       setMaterialRev(updatedMaterialData)
-      await axios.put(`http://localhost:3001/quesRev/update-rev-answer/${id}`, qaData);
+      await axios.put(`${SERVER_URL}/quesRev/update-rev-answer/${id}`, qaData);
     }
   };
 
@@ -426,7 +426,7 @@ export const UpdateQAGen = ({ groupId, categoryFor }) => {
     });
 
 
-    await axios.put(`http://localhost:3001/quesAnsChoices/update-choices/${choiceId}`, qaData);
+    await axios.put(`${SERVER_URL}/quesAnsChoices/update-choices/${choiceId}`, qaData);
 
   };
 
@@ -437,7 +437,7 @@ export const UpdateQAGen = ({ groupId, categoryFor }) => {
 
     if (confirmed) {
 
-      await axios.delete(`http://localhost:3001/quesAns/delete-qa/${mcqId}`)
+      await axios.delete(`${SERVER_URL}/quesAns/delete-qa/${mcqId}`)
       fetchData();
     }
 
@@ -450,7 +450,7 @@ export const UpdateQAGen = ({ groupId, categoryFor }) => {
 
     if (confirmed) {
 
-      await axios.delete(`http://localhost:3001/quesAnsChoices/delete-choice/${choiceId}`)
+      await axios.delete(`${SERVER_URL}/quesAnsChoices/delete-choice/${choiceId}`)
       
       fetchData();
     }
@@ -467,7 +467,7 @@ export const UpdateQAGen = ({ groupId, categoryFor }) => {
     const confirmed = window.confirm(`Are you sure you want to remove this item?`);
     
     if(confirmed) {
-      await axios.delete(`http://localhost:3001/quesRev/delete-rev/${id}`)
+      await axios.delete(`${SERVER_URL}/quesRev/delete-rev/${id}`)
       
       fetchRevData()
     }
@@ -483,7 +483,7 @@ export const UpdateQAGen = ({ groupId, categoryFor }) => {
         StudyMaterialId: materialID,
       }
 
-      await axios.post('http://localhost:3001/quesRev', data);
+      await axios.post(`${SERVER_URL}/quesRev`, data);
       
       fetchRevData()
 
@@ -513,7 +513,7 @@ export const UpdateQAGen = ({ groupId, categoryFor }) => {
         StudyMaterialId: materialID,
       };
 
-      await axios.post('http://localhost:3001/quesAns', qaData);
+      await axios.post(`${SERVER_URL}/quesAns`, qaData);
 
       
       fetchData()
@@ -536,7 +536,7 @@ export const UpdateQAGen = ({ groupId, categoryFor }) => {
       };
       
       setMaterialTitle(newValue)
-      await axios.put(`http://localhost:3001/studyMaterial/update-study-title/${materialId}`, studyMaterialsData);
+      await axios.put(`${SERVER_URL}/studyMaterial/update-study-title/${materialId}`, studyMaterialsData);
 
 
     }
@@ -551,7 +551,7 @@ export const UpdateQAGen = ({ groupId, categoryFor }) => {
     };
 
     setPDFDetails(newValue)
-    await axios.put(`http://localhost:3001/studyMaterial/update-study-body/${materialID}`, studyMaterialsData);
+    await axios.put(`${SERVER_URL}/studyMaterial/update-study-body/${materialID}`, studyMaterialsData);
 
   }
 
@@ -562,7 +562,7 @@ export const UpdateQAGen = ({ groupId, categoryFor }) => {
     };
 
     setMaterialCategoryId(newValue)
-    await axios.put(`http://localhost:3001/studyMaterial/update-study-categorId/${materialID}`, studyMaterialsData);
+    await axios.put(`${SERVER_URL}/studyMaterial/update-study-categorId/${materialID}`, studyMaterialsData);
     
   }
   
@@ -770,7 +770,7 @@ export const UpdateQAGen = ({ groupId, categoryFor }) => {
                           };
               
                           const qaResponse = await axios.post(
-                            'http://localhost:3001/quesAns',
+                            `${SERVER_URL}/quesAns`,
                             qaData
                           );
                           
@@ -783,7 +783,7 @@ export const UpdateQAGen = ({ groupId, categoryFor }) => {
                 
                             if (qacData.choice !== "") {
                               await axios.post(
-                                'http://localhost:3001/quesAnsChoices',
+                                `${SERVER_URL}/quesAnsChoices`,
                                 qacData
                               );
                               console.log("Saved!");
@@ -1108,7 +1108,7 @@ export const UpdateQAGen = ({ groupId, categoryFor }) => {
                           };
 
                           const qaResponse = await axios.post(
-                            'http://localhost:3001/quesAns',
+                            `${SERVER_URL}/quesAns`,
                             qaData
                           );
                           
@@ -1121,7 +1121,7 @@ export const UpdateQAGen = ({ groupId, categoryFor }) => {
                 
                             if (qacData.choice !== "") {
                               await axios.post(
-                                'http://localhost:3001/quesAnsChoices',
+                                `${SERVER_URL}/quesAnsChoices`,
                                 qacData
                               );
                               console.log("Saved!");
@@ -1274,7 +1274,7 @@ export const UpdateQAGen = ({ groupId, categoryFor }) => {
                           StudyMaterialId: materialID,
                         };
             
-                        await axios.post('http://localhost:3001/quesAns', qaData);
+                        await axios.post(`${SERVER_URL}/quesAns`, qaData);
                       }
 
                       if (revQues === '' || revAns === '') {
@@ -1385,7 +1385,7 @@ export const UpdateQAGen = ({ groupId, categoryFor }) => {
                         StudyMaterialId: materialID,
                       };
           
-                      await axios.post('http://localhost:3001/quesAns', qaData);
+                      await axios.post(`${SERVER_URL}/quesAns`, qaData);
                     }
 
                     if (revQues === '' || revAns === '') {

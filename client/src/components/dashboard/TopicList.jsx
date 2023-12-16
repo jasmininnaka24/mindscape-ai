@@ -19,7 +19,7 @@ export const TopicList = ({categoryFor}) => {
   const location = useLocation();
 
   const { groupId, categoryID } = useParams()
-  const { user } = useUser()
+  const { user, SERVER_URL } = useUser()
   const { filter, performanceStatus, tag } = location.state;
 
   const navigate = useNavigate()
@@ -66,7 +66,7 @@ export const TopicList = ({categoryFor}) => {
           // Use Promise.all to wait for all promises to resolve
           await Promise.all(filter.map(async (material, index) => {
             try {
-              let materialResponse = await axios.get(`http://localhost:3001/studyMaterial/all-study-material-personal/${UserId}/${material.id}`);
+              let materialResponse = await axios.get(`${SERVER_URL}/studyMaterial/all-study-material-personal/${UserId}/${material.id}`);
               // Check if the ID is already in the set
               if (!uniqueIds.has(material.id)) {
                 extractedStudyMaterials.push(materialResponse.data);
@@ -80,7 +80,7 @@ export const TopicList = ({categoryFor}) => {
   
           // Use Promise.all to wait for all promises to resolve
           await Promise.all(filter.map(async (material, index) => {
-            let materialResponse = await axios.get(`http://localhost:3001/studyMaterial/all-study-material-group/${groupId}/${material.id}`);
+            let materialResponse = await axios.get(`${SERVER_URL}/studyMaterial/all-study-material-group/${groupId}/${material.id}`);
             extractedStudyMaterials.push(materialResponse.data);
           }));
   
@@ -96,9 +96,9 @@ export const TopicList = ({categoryFor}) => {
             let extractedData = [];
         
             if (groupId === undefined) {
-              extractedData = await axios.get(`http://localhost:3001/DashForPersonalAndGroup/get-latest-assessment-personal/${material.id}/${UserId}`);
+              extractedData = await axios.get(`${SERVER_URL}/DashForPersonalAndGroup/get-latest-assessment-personal/${material.id}/${UserId}`);
             } else if (categoryFor === 'Group') {
-              extractedData = await axios.get(`http://localhost:3001/DashForPersonalAndGroup/get-latest-assessment-group/${material.id}/${groupId}`);
+              extractedData = await axios.get(`${SERVER_URL}/DashForPersonalAndGroup/get-latest-assessment-group/${material.id}/${groupId}`);
             }
         
             return extractedData.data;

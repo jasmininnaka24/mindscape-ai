@@ -14,7 +14,7 @@ export const Login = () => {
   
   
   const navigate = useNavigate();
-  const { setUserInformation } = useUser();
+  const { setUserInformation, SERVER_URL } = useUser();
   
   const [modalIsOpen, setModalIsOpen] = useState(false);
 
@@ -46,7 +46,7 @@ export const Login = () => {
     };
     
     console.log(data);
-    await axios.post('http://localhost:3001/users/login', data).then((response) => {
+    await axios.post(`${SERVER_URL}/users/login`, data).then((response) => {
       if (response.data.error) {
         setMsg(response.data.message);
         setError(true)
@@ -76,7 +76,7 @@ export const Login = () => {
       email: userObject.email,
     };
   
-    await axios.post('http://localhost:3001/users/login', data).then((response) => {
+    await axios.post(`${SERVER_URL}/users/login`, data).then((response) => {
       if (response.data.error) {
         setMsg(response.data.message);
         setError(true)

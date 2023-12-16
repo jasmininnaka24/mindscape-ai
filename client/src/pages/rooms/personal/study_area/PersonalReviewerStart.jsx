@@ -29,7 +29,7 @@ export const PersonalReviewerStart = () => {
 
 
   const { materialId } = useParams();
-  const { user } = useUser()
+  const { user, SERVER_URL } = useUser()
 
   const UserId = user?.id;
   
@@ -203,7 +203,7 @@ export const PersonalReviewerStart = () => {
 
   const choiceFunc = async (id) => {
     try {
-      const choicesResponse = await axios.get(`http://localhost:3001/quesAnsChoices/study-material/${materialId}/${id}`);
+      const choicesResponse = await axios.get(`${SERVER_URL}/quesAnsChoices/study-material/${materialId}/${id}`);
       const randomIndex = Math.floor(Math.random() * choicesResponse.data.length);
       return choicesResponse.data[randomIndex].choice;
     } catch (error) {
@@ -216,11 +216,11 @@ export const PersonalReviewerStart = () => {
   useEffect(() => {
     async function fetchData() {
       try {
-        const userDetailsResponse = await axios.get(`http://localhost:3001/users/get-user/${UserId}`);
+        const userDetailsResponse = await axios.get(`${SERVER_URL}/users/get-user/${UserId}`);
         setTypeOfLearner(userDetailsResponse.data.typeOfLearner)
         console.log(userDetailsResponse.data.typeOfLearner);
         
-        const quesRevResponse = await axios.get(`http://localhost:3001/quesRev/study-material-rev/${materialId}`);
+        const quesRevResponse = await axios.get(`${SERVER_URL}/quesRev/study-material-rev/${materialId}`);
         setQuesRev(quesRevResponse.data);
       
 
@@ -229,7 +229,7 @@ export const PersonalReviewerStart = () => {
         if (filteredDataValue !== 'Correct' && filteredDataValue !== 'Wrong' && filteredDataValue !== 'Unattempted') {
 
           
-          const materialResponse = await axios.get(`http://localhost:3001/quesAns/study-material-mcq/${materialId}`);
+          const materialResponse = await axios.get(`${SERVER_URL}/quesAns/study-material-mcq/${materialId}`);
           const fetchedQA = materialResponse.data;
 
 
@@ -239,7 +239,7 @@ export const PersonalReviewerStart = () => {
                 const randomNumber = Math.floor(Math.random() * 10);
                 if (randomNumber % 2 === 0) {
                   try {
-                    const choicesResponse = await axios.get(`http://localhost:3001/quesAnsChoices/study-material/${materialId}/${item.id}`);
+                    const choicesResponse = await axios.get(`${SERVER_URL}/quesAnsChoices/study-material/${materialId}/${item.id}`);
                     const randomIndex = Math.floor(Math.random() * choicesResponse.data.length);
                     const question = choicesResponse.data[randomIndex].choice;
                     return {
@@ -307,7 +307,7 @@ export const PersonalReviewerStart = () => {
             
           
           
-            const choicesResponse = await axios.get(`http://localhost:3001/quesAnsChoices/study-material/${materialId}/${updatedData[questionIndex].id}`);
+            const choicesResponse = await axios.get(`${SERVER_URL}/quesAnsChoices/study-material/${materialId}/${updatedData[questionIndex].id}`);
 
             setChoices(choicesResponse.data);
   
@@ -336,7 +336,7 @@ export const PersonalReviewerStart = () => {
         else if(filteredDataValue === 'Correct') {
 
 
-          const materialResponse = await axios.get(`http://localhost:3001/quesAns/study-material-mcq/${materialId}/${filteredDataValue}`);
+          const materialResponse = await axios.get(`${SERVER_URL}/quesAns/study-material-mcq/${materialId}/${filteredDataValue}`);
 
           
           const fetchedQA = materialResponse.data;
@@ -347,7 +347,7 @@ export const PersonalReviewerStart = () => {
                 const randomNumber = Math.floor(Math.random() * 10);
                 if (randomNumber % 2 === 0) {
                   try {
-                    const choicesResponse = await axios.get(`http://localhost:3001/quesAnsChoices/study-material/${materialId}/${item.id}`);
+                    const choicesResponse = await axios.get(`${SERVER_URL}/quesAnsChoices/study-material/${materialId}/${item.id}`);
                     const randomIndex = Math.floor(Math.random() * choicesResponse.data.length);
                     const question = choicesResponse.data[randomIndex].choice;
                     return {
@@ -386,7 +386,7 @@ export const PersonalReviewerStart = () => {
           
           
           
-            const choicesResponse = await axios.get(`http://localhost:3001/quesAnsChoices/study-material/${materialId}/${updatedData[questionIndex].id}`);
+            const choicesResponse = await axios.get(`${SERVER_URL}/quesAnsChoices/study-material/${materialId}/${updatedData[questionIndex].id}`);
             setChoices(choicesResponse.data);
   
             let shuffledArray = shuffleArray([...choicesResponse.data, { choice: updatedData[questionIndex].answer }])
@@ -404,7 +404,7 @@ export const PersonalReviewerStart = () => {
 
         } else if(filteredDataValue === 'Wrong') { 
 
-          const materialResponse = await axios.get(`http://localhost:3001/quesAns/study-material-mcq/${materialId}/${filteredDataValue}`);
+          const materialResponse = await axios.get(`${SERVER_URL}/quesAns/study-material-mcq/${materialId}/${filteredDataValue}`);
 
           
           const fetchedQA = materialResponse.data;
@@ -414,7 +414,7 @@ export const PersonalReviewerStart = () => {
                 const randomNumber = Math.floor(Math.random() * 10);
                 if (randomNumber % 2 === 0) {
                   try {
-                    const choicesResponse = await axios.get(`http://localhost:3001/quesAnsChoices/study-material/${materialId}/${item.id}`);
+                    const choicesResponse = await axios.get(`${SERVER_URL}/quesAnsChoices/study-material/${materialId}/${item.id}`);
                     const randomIndex = Math.floor(Math.random() * choicesResponse.data.length);
                     const question = choicesResponse.data[randomIndex].choice;
                     return {
@@ -453,7 +453,7 @@ export const PersonalReviewerStart = () => {
           
           
           
-            const choicesResponse = await axios.get(`http://localhost:3001/quesAnsChoices/study-material/${materialId}/${updatedData[questionIndex].id}`);
+            const choicesResponse = await axios.get(`${SERVER_URL}/quesAnsChoices/study-material/${materialId}/${updatedData[questionIndex].id}`);
             setChoices(choicesResponse.data);
   
             let shuffledArray = shuffleArray([...choicesResponse.data, { choice: updatedData[questionIndex].answer }])
@@ -473,7 +473,7 @@ export const PersonalReviewerStart = () => {
         } else if(filteredDataValue === 'Unattempted') { 
 
 
-          const materialResponse = await axios.get(`http://localhost:3001/quesAns/study-material-mcq/${materialId}/${filteredDataValue}`);
+          const materialResponse = await axios.get(`${SERVER_URL}/quesAns/study-material-mcq/${materialId}/${filteredDataValue}`);
 
           
           const fetchedQA = materialResponse.data;
@@ -483,7 +483,7 @@ export const PersonalReviewerStart = () => {
                 const randomNumber = Math.floor(Math.random() * 10);
                 if (randomNumber % 2 === 0) {
                   try {
-                    const choicesResponse = await axios.get(`http://localhost:3001/quesAnsChoices/study-material/${materialId}/${item.id}`);
+                    const choicesResponse = await axios.get(`${SERVER_URL}/quesAnsChoices/study-material/${materialId}/${item.id}`);
                     const randomIndex = Math.floor(Math.random() * choicesResponse.data.length);
                     const question = choicesResponse.data[randomIndex].choice;
                     return {
@@ -520,7 +520,7 @@ export const PersonalReviewerStart = () => {
             } 
 
           
-            const choicesResponse = await axios.get(`http://localhost:3001/quesAnsChoices/study-material/${materialId}/${updatedData[questionIndex].id}`);
+            const choicesResponse = await axios.get(`${SERVER_URL}/quesAnsChoices/study-material/${materialId}/${updatedData[questionIndex].id}`);
             setChoices(choicesResponse.data);
   
             let shuffledArray = shuffleArray([...choicesResponse.data, { choice: updatedData[questionIndex].answer }])
@@ -632,7 +632,7 @@ export const PersonalReviewerStart = () => {
       response_state: responseStateInp, 
     };
     
-    await axios.put(`http://localhost:3001/quesAns/update-response-state/${materialId}/${choice}`, data);
+    await axios.put(`${SERVER_URL}/quesAns/update-response-state/${materialId}/${choice}`, data);
     
     setUnattemptedCounts(unattemptedCounts - 1)
 
@@ -650,7 +650,7 @@ export const PersonalReviewerStart = () => {
 
     let currentQuestionId = extractedQA[questionIndexVal].id; 
 
-    await axios.put(`http://localhost:3001/quesAns/update-stoppedAt/${materialId}/${currentQuestionId}`, data);
+    await axios.put(`${SERVER_URL}/quesAns/update-stoppedAt/${materialId}/${currentQuestionId}`, data);
   }
 
 

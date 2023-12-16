@@ -2,16 +2,20 @@
 import axios from 'axios';
 import React, { Fragment, useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
+import { useUser } from '../../UserContext';
+
 
 export const EmailVerification = () => {
   const [validUrl, setValidUrl] = useState(false);
   const [userId, setUserId] = useState(0)
   const param = useParams();
 
+  const { SERVER_URL } = useUser();
+
   useEffect(() => {
     const verify = async () => {
       try {
-        const url = `http://localhost:3001/users/${param.id}/verify/${param.token}`;
+        const url = `${SERVER_URL}/users/${param.id}/verify/${param.token}`;
 
         const { data } = await axios.get(url);
 

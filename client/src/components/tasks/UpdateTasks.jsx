@@ -1,10 +1,16 @@
 import axios from 'axios';
 import React from 'react'
 import { DateTime, Interval } from 'luxon';
+import { useUser } from '../../UserContext';
+
 
 export const UpdateTasks = (props) => {
 
   const { task, dueDate, room, taskID, listOfTasks, setListOfTasks, setTask, setDueDate, setTaskID, hideModal, closeModal, setIsButtonClicked } = props;
+
+
+  const { SERVER_URL } = useUser()
+
 
   const updateTask = async (event) => {
     event.preventDefault();
@@ -14,7 +20,7 @@ export const UpdateTasks = (props) => {
       completedTask: "Uncompleted",
     }
 
-    await axios.put(`http://localhost:3001/tasks/${taskID}`, data).then((response) => {
+    await axios.put(`${SERVER_URL}/tasks/${taskID}`, data).then((response) => {
 
       const updatedTask = response.data;
 

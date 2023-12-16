@@ -11,16 +11,16 @@ import axios from 'axios';
 import { useUser } from '../../../../UserContext';
 import { fetchUserData } from '../../../../userAPI';
 
-const socket = io.connect("http://localhost:3001");
 
 
 
 
 export const GroupReviewerPage = () => {
-
-
-  const { user } = useUser();
-
+  
+  
+  const { user, SERVER_URL } = useUser();
+  
+  const socket = io.connect(SERVER_URL);
 
   const { groupId, materialId } = useParams();
 
@@ -243,8 +243,8 @@ export const GroupReviewerPage = () => {
   useEffect(() => {
     async function fetchData() {
       try {
-        const groupResponse = await axios.get(`http://localhost:3001/studyMaterial/study-code/${groupId}/${materialId}`);
-        const materialResponse = await axios.get(`http://localhost:3001/quesAns/study-material-mcq/${materialId}`);
+        const groupResponse = await axios.get(`${SERVER_URL}/studyMaterial/study-code/${groupId}/${materialId}`);
+        const materialResponse = await axios.get(`${SERVER_URL}/quesAns/study-material-mcq/${materialId}`);
         const fetchedQA = materialResponse.data;
 
         setRoom(groupResponse.data.code);
@@ -257,7 +257,7 @@ export const GroupReviewerPage = () => {
               const randomNumber = Math.floor(Math.random() * 10);
               if (randomNumber % 2 === 0) {
                 try {
-                  const choicesResponse = await axios.get(`http://localhost:3001/quesAnsChoices/study-material/${materialId}/${item.id}`);
+                  const choicesResponse = await axios.get(`${SERVER_URL}/quesAnsChoices/study-material/${materialId}/${item.id}`);
                   const randomIndex = Math.floor(rng() * choicesResponse.data.length);
                   const question = choicesResponse.data[randomIndex].choice;
                   return {
@@ -284,7 +284,7 @@ export const GroupReviewerPage = () => {
         if (Array.isArray(updatedData)) {
           const shuffledChoicesPromises = updatedData.map(async (item) => {
             try {
-              const materialChoicesResponse = await axios.get(`http://localhost:3001/quesAnsChoices/study-material/${materialId}/${item.id}`);
+              const materialChoicesResponse = await axios.get(`${SERVER_URL}/quesAnsChoices/study-material/${materialId}/${item.id}`);
               const choices = materialChoicesResponse.data.map(choice => choice.choice);
               const combinedArray = [...choices, item.answer];
               const shuffledArray = shuffleArray(combinedArray);
@@ -455,7 +455,7 @@ export const GroupReviewerPage = () => {
       response_state: responseStateInp, 
     };
     
-    await axios.put(`http://localhost:3001/quesAns/update-response-state/${materialId}/${questionId}`, data);
+    await axios.put(`${SERVER_URL}/quesAns/update-response-state/${materialId}/${questionId}`, data);
     
   }
 
@@ -767,7 +767,7 @@ export const GroupReviewerPage = () => {
     setIsStartStudyButtonStarted(true)
     socket.emit('updated_study_session_started', { isStarted: true, room })
 
-    await axios.put(`http://localhost:3001/studyMaterial/update-data/${materialId}`, {
+    await axios.put(`${SERVER_URL}/studyMaterial/update-data/${materialId}`, {
       isStarted: 'true',
       codeDashTrackingNum: generateRandomString(),
     });

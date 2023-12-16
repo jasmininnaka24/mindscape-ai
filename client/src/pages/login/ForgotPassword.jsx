@@ -1,8 +1,12 @@
 import axios from 'axios';
 import React, { useState } from 'react'
 import InboxIcon from '../../assets/mail.png'
+import { useUser } from '../../UserContext';
+
 
 export const ForgotPassword = () => {
+
+  const { SERVER_URL } = useUser();
 
   const [email, setEmail] = useState('');
   const [showResetPasswordUI, setShowResetPasswordUI] = useState(true)
@@ -14,7 +18,7 @@ export const ForgotPassword = () => {
       email: email
     }
 
-    await axios.post(`http://localhost:3001/users/verify-email`, data);
+    await axios.post(`${SERVER_URL}/users/verify-email`, data);
 
     setShowResetPasswordUI(false)
     

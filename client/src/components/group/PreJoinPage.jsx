@@ -9,14 +9,16 @@ import PushPinIcon from '@mui/icons-material/PushPin';
 
 
 
-const socket = io.connect("http://localhost:3001");
 
 
 
 export const PreJoinPage = (props) => {
-
-  const { user } = useUser();
+  
+  const { user, SERVER_URL } = useUser();
   const navigate = useNavigate()
+  
+  const socket = io.connect(SERVER_URL);
+
 
   const { joinRoom, materialId, groupId, setShowPreJoin, setShowAssessmentPage, userId, assessementRoom, setUserListAssessment, selectedAssessmentAnswer, setSelectedAssessmentAnswer,  isRunning, setIsRunning, setSeconds, itemCount, setQA, extractedQA, shuffledChoices, setShuffledChoices, isSubmittedButtonClicked, setIsSubmittedButtonClicked, idOfWhoSubmitted, setIdOfWhoSubmitted, usernameOfWhoSubmitted, setUsernameOfWhoSubmitted, score, setScore, isSubmitted, setIsSubmitted, isAssessmentDone, setIsAssessmentDone, showSubmittedAnswerModal, setShowSubmittedAnswerModal, showTexts, setShowTexts, showAnalysis, setShowAnalysis, showAssessment, setShowAssessment, overAllItems, setOverAllItems, preAssessmentScore, setPreAssessmentScore, assessmentScore, setAssessmentScore, assessmentImp, setAssessmentImp, assessmentScorePerf, setAssessmentScorePerf, completionTime, setCompletionTime, confidenceLevel, setConfidenceLevel, overAllPerformance, setOverAllPerformance, assessmentCountMoreThanOne, setAssessmentCountMoreThanOne, generatedAnalysis, setGeneratedAnalysis, shuffledChoicesAssessment, setShuffledChoicesAssessment, extractedQAAssessment, setQAAssessment, assessmentUsersChoices, setAssessmentUsersChoices, message, setMessage, messageList, setMessageList, isStartAssessmentButtonStarted, setIsStartAssessmentButtonStarted } = props;
 
@@ -95,18 +97,18 @@ export const PreJoinPage = (props) => {
     const fetchData = async () => {
       try {
         
-        await axios.get(`http://localhost:3001/quesRev/study-material-rev/${materialId}`).then((response) => {
+        await axios.get(`${SERVER_URL}/quesRev/study-material-rev/${materialId}`).then((response) => {
           setNotesReviewer(response.data)
         })
 
     
-        await axios.get(`http://localhost:3001/studyMaterial/get-material/${materialId}`).then((response) => {
+        await axios.get(`${SERVER_URL}/studyMaterial/get-material/${materialId}`).then((response) => {
           setLessonContext(response.data.body);
           setMaterialTitle(response.data.title);
           setUserUploaderId(response.data.UserId)
         })
         
-        const previousSavedData = await axios.get(`http://localhost:3001/DashForPersonalAndGroup/get-latest-assessment-group/${materialId}/${groupId}`);
+        const previousSavedData = await axios.get(`${SERVER_URL}/DashForPersonalAndGroup/get-latest-assessment-group/${materialId}/${groupId}`);
 
 
         console.log(previousSavedData.data);
@@ -306,7 +308,7 @@ export const PreJoinPage = (props) => {
     const confirmed = window.confirm(`Are you sure you want to delete ${title}?`);
   
     if (confirmed) {
-      await axios.delete(`http://localhost:3001/studyMaterial/delete-material/${id}`)
+      await axios.delete(`${SERVER_URL}/studyMaterial/delete-material/${id}`)
 
       setTimeout(() => {
         setIsMaterialDeleted('')

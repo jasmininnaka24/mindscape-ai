@@ -13,10 +13,9 @@ import PersonIcon from '@mui/icons-material/Person';
 import MindScapeLogo from '../../assets/mindscape_logo.png';
 
 
-
 export const MainPage = () => {
 
-  const { user } = useUser();
+  const { user, SERVER_URL } = useUser();
   const navigate = useNavigate();
 
   const [dropDownPersonalLinks, setdropDownPersonalLinks] = useState(false);
@@ -26,6 +25,8 @@ export const MainPage = () => {
   const [searchResults, setSearchResults] = useState([]);
   const [isOpen, setIsOpen] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+
+  const UserId = user?.id;
 
   const toggleExpansion = () => {
     setdropDownPersonalLinks(!dropDownPersonalLinks ? true : false);
@@ -42,9 +43,12 @@ export const MainPage = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await axios.get('http://localhost:3001/users');
-        setUsers(response.data);
-
+        const response = await axios.get(`${SERVER_URL}/users`);
+        let responseData = response.data;
+  
+        let filteredUsers = responseData.filter(user => user.id !== UserId);
+        
+        setUsers(filteredUsers)
         
       } catch (error) {
         console.error('Error fetching users:', error);
@@ -55,14 +59,17 @@ export const MainPage = () => {
   }, []);
 
 
-  const handleSearch = (event) => {
-    const term = event.target.value;
-    setSearchTerm(term);
+  const handleSearch = async (event) => {
+    setSearchTerm(event)
 
+    const response = await axios.get(`${SERVER_URL}/users`);
+    let responseData = response.data;
+
+    let filteredUsers = responseData.filter(user => user.id !== UserId);
     // Filter users based on the search term
-    const filteredUsers = users.filter((user) =>
-      user.username.toLowerCase().includes(term.toLowerCase())
-    );
+    // const filteredUsers = users.filter((user) =>
+    //   user.username.toLowerCase().includes(term.toLowerCase())
+    // );
 
     setSearchResults(filteredUsers);
   };
@@ -97,7 +104,7 @@ export const MainPage = () => {
                 placeholder="Search for a user..."
                 className="border-thin-800 rounded py-2 px-8"
                 value={searchTerm}
-                onChange={handleSearch}
+                onChange={(event) => handleSearch(event.target.value)}
               />
             </div>
 

@@ -10,8 +10,8 @@ import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
 import LaunchIcon from '@mui/icons-material/Launch';
 import { Navbar } from '../navbar/logged_navbar/navbar';
 
-export const ProfileComponent = () => {
 
+export const ProfileComponent = () => {
 
   const handleImage = (e) => {
     setImage(e.target.files[0]);
@@ -113,7 +113,7 @@ export const ProfileComponent = () => {
 
 
 
-  const { user } = useUser();
+  const { user, SERVER_URL } = useUser();
   const navigate = useNavigate();
   const { userId } = useParams();
 
@@ -138,7 +138,7 @@ export const ProfileComponent = () => {
         userImage: userData.userImage
       });
 
-      const isFollowingResponse = await axios.get(`http://localhost:3001/followers/following/${userId === undefined ? UserId : userId}`);
+      const isFollowingResponse = await axios.get(`${SERVER_URL}/followers/following/${userId === undefined ? UserId : userId}`);
       
       let isFollowing = isFollowingResponse.data;
 
@@ -150,9 +150,9 @@ export const ProfileComponent = () => {
         setFollowing(true)
       }
       
-      const followerResponse = await axios.get(`http://localhost:3001/followers/get-follower-list/${userId === undefined ? UserId : userId}`);
+      const followerResponse = await axios.get(`${SERVER_URL}/followers/get-follower-list/${userId === undefined ? UserId : userId}`);
       
-      const followingResponse = await axios.get(`http://localhost:3001/followers/get-following-list/${userId === undefined ? UserId : userId}`);
+      const followingResponse = await axios.get(`${SERVER_URL}/followers/get-following-list/${userId === undefined ? UserId : userId}`);
 
 
       setFollowingUsers(followingResponse.data);
@@ -162,7 +162,7 @@ export const ProfileComponent = () => {
       // Create an array of promises for each axios request
       const userDetailsFollower = followerResponse.data.map(async (user) => {
         const userIdToUse = user.FollowerId;
-        const userDetailsResponse = await axios.get(`http://localhost:3001/users/get-user/${userIdToUse}`);
+        const userDetailsResponse = await axios.get(`${SERVER_URL}/users/get-user/${userIdToUse}`);
         return userDetailsResponse.data;
       });
 
@@ -175,7 +175,7 @@ export const ProfileComponent = () => {
       // Create an array of promises for each axios request
       const userDetailsFollowing = followingResponse.data.map(async (user) => {
         const userIdToUse = user.FollowingId;
-        const userDetailsResponse = await axios.get(`http://localhost:3001/users/get-user/${userIdToUse}`);
+        const userDetailsResponse = await axios.get(`${SERVER_URL}/users/get-user/${userIdToUse}`);
         return userDetailsResponse.data;
       });
 
@@ -201,14 +201,14 @@ export const ProfileComponent = () => {
       UserId: UserId
     }
 
-    await axios.post(`http://localhost:3001/followers/follow`, data);
+    await axios.post(`${SERVER_URL}/followers/follow`, data);
     fetchUserDataFrontend();
   }
 
   const unfollowUser = async (e) => {
     e.preventDefault();
 
-    await axios.delete(`http://localhost:3001/followers/unfollow/${userId}/${UserId}`);
+    await axios.delete(`${SERVER_URL}/followers/unfollow/${userId}/${UserId}`);
     
     fetchUserDataFrontend();
   }
@@ -222,9 +222,9 @@ export const ProfileComponent = () => {
 
 
     let totalGroups = 0
-    const groupListLengthResponse = await axios.get(`http://localhost:3001/studyGroup/extract-group-through-user/${userId === undefined ? UserId : userId}`)
+    const groupListLengthResponse = await axios.get(`${SERVER_URL}/studyGroup/extract-group-through-user/${userId === undefined ? UserId : userId}`)
 
-    const groupListMemberLengthResponse = await axios.get(`http://localhost:3001/studyGroupMembers/get-materialId/${userId === undefined ? UserId : userId}`)
+    const groupListMemberLengthResponse = await axios.get(`${SERVER_URL}/studyGroupMembers/get-materialId/${userId === undefined ? UserId : userId}`)
 
     totalGroups += groupListLengthResponse.data.length;
     totalGroups += groupListMemberLengthResponse.data.length;
@@ -232,7 +232,7 @@ export const ProfileComponent = () => {
     setGroupListLength(totalGroups)
     
 
-    const contributedMaterialsResponse = await axios.get(`http://localhost:3001/studyMaterial/shared-materials-by-userid/${userId === undefined ? UserId : userId}`)
+    const contributedMaterialsResponse = await axios.get(`${SERVER_URL}/studyMaterial/shared-materials-by-userid/${userId === undefined ? UserId : userId}`)
 
     setContributedMaterialsLength(contributedMaterialsResponse.data.length)
 
@@ -240,7 +240,7 @@ export const ProfileComponent = () => {
 
  
     // for fetching personal
-    const personalStudyMaterial = await axios.get(`http://localhost:3001/studyMaterial/shared-materials-by-userid/${userId === undefined ? UserId : userId}`)
+    const personalStudyMaterial = await axios.get(`${SERVER_URL}/studyMaterial/shared-materials-by-userid/${userId === undefined ? UserId : userId}`)
     setPersonalStudyMaterials(personalStudyMaterial.data);
 
 
@@ -248,7 +248,7 @@ export const ProfileComponent = () => {
 
     const fetchedPersonalStudyMaterialCategory = await Promise.all(
       fetchedPersonalStudyMaterial.map(async (material, index) => {
-        const materialCategoryResponse = await axios.get(`http://localhost:3001/studyMaterialCategory/get-categoryy/${material.StudyMaterialsCategoryId}`);
+        const materialCategoryResponse = await axios.get(`${SERVER_URL}/studyMaterialCategory/get-categoryy/${material.StudyMaterialsCategoryId}`);
         return materialCategoryResponse.data; // Return the data from each promise
       })
     );
@@ -256,7 +256,7 @@ export const ProfileComponent = () => {
     setPersonalStudyMaterialsCategory(fetchedPersonalStudyMaterialCategory);
     
     
-    const groupStudyMaterial = await axios.get(`http://localhost:3001/studyMaterial/shared-materials-by-userid/${userId === undefined ? UserId : userId}`)
+    const groupStudyMaterial = await axios.get(`${SERVER_URL}/studyMaterial/shared-materials-by-userid/${userId === undefined ? UserId : userId}`)
     const filteredGroupStudyMaterials = groupStudyMaterial.data.filter(item => item.tag === 'Shared');
     setGroupStudyMaterials(filteredGroupStudyMaterials);
     
@@ -266,7 +266,7 @@ export const ProfileComponent = () => {
 
     const fetchedGroupStudyMaterialCategory = await Promise.all(
       filteredGroupStudyMaterials.map(async (material, index) => {
-        const materialCategoryResponse = await axios.get(`http://localhost:3001/studyMaterialCategory/get-categoryy/${material.StudyMaterialsCategoryId}`);
+        const materialCategoryResponse = await axios.get(`${SERVER_URL}/studyMaterialCategory/get-categoryy/${material.StudyMaterialsCategoryId}`);
         return materialCategoryResponse.data; // Return the data from each promise
       })
     );
@@ -277,13 +277,13 @@ export const ProfileComponent = () => {
       
       
       
-    const sharedStudyMaterial = await axios.get(`http://localhost:3001/studyMaterial/shared-materials-by-userid/${userId === undefined ? UserId : userId}`);
+    const sharedStudyMaterial = await axios.get(`${SERVER_URL}/studyMaterial/shared-materials-by-userid/${userId === undefined ? UserId : userId}`);
     const sharedStudyMaterialResponse = sharedStudyMaterial.data;  
     setSharedMaterials(sharedStudyMaterialResponse)
 
     const fetchedSharedStudyMaterialCategory = await Promise.all(
       sharedStudyMaterialResponse.map(async (material, index) => {
-        const materialCategorySharedResponse = await axios.get(`http://localhost:3001/studyMaterialCategory/shared-material-category/${material.StudyMaterialsCategoryId}/Group/${userId === undefined ? UserId : userId}`);
+        const materialCategorySharedResponse = await axios.get(`${SERVER_URL}/studyMaterialCategory/shared-material-category/${material.StudyMaterialsCategoryId}/Group/${userId === undefined ? UserId : userId}`);
         return materialCategorySharedResponse.data;
       })
     );
@@ -330,7 +330,7 @@ export const ProfileComponent = () => {
     
       
       
-      const response = await axios.get(`http://localhost:3001/studyGroup/extract-group-through-user/${userId === undefined ? UserId : userId}`);
+      const response = await axios.get(`${SERVER_URL}/studyGroup/extract-group-through-user/${userId === undefined ? UserId : userId}`);
       setGroupList(response.data);
       
       let dataLength = response.data.length;
@@ -338,10 +338,10 @@ export const ProfileComponent = () => {
       if (dataLength !== 0) {
         console.log('its not 0');
       } else {
-        const userMemberGroupList = await axios.get(`http://localhost:3001/studyGroupMembers/get-materialId/${userId === undefined ? UserId : userId}`);
+        const userMemberGroupList = await axios.get(`${SERVER_URL}/studyGroupMembers/get-materialId/${userId === undefined ? UserId : userId}`);
         
         const materialPromises = userMemberGroupList.data.map(async (item) => {
-          const material = await axios.get(`http://localhost:3001/studyGroup/extract-all-group/${item.StudyGroupId}`);
+          const material = await axios.get(`${SERVER_URL}/studyGroup/extract-all-group/${item.StudyGroupId}`);
           return material.data;
         });
     
@@ -397,14 +397,14 @@ export const ProfileComponent = () => {
         let mcqResponse = []
         if (materialFor === 'personal') {
   
-        mcqResponse = await axios.get(`http://localhost:3001/quesAns/study-material-mcq/${personalStudyMaterials[index].id}`);
+        mcqResponse = await axios.get(`${SERVER_URL}/quesAns/study-material-mcq/${personalStudyMaterials[index].id}`);
   
         setContext(personalStudyMaterials[index].body)
       } else if (materialFor === 'group') {
-        mcqResponse = await axios.get(`http://localhost:3001/quesAns/study-material-mcq/${groupStudyMaterials[index].id}`);
+        mcqResponse = await axios.get(`${SERVER_URL}/quesAns/study-material-mcq/${groupStudyMaterials[index].id}`);
         setContext(groupStudyMaterials[index].body)
       } else {
-        mcqResponse = await axios.get(`http://localhost:3001/quesAns/study-material-mcq/${sharedMaterials[index].id}`);
+        mcqResponse = await axios.get(`${SERVER_URL}/quesAns/study-material-mcq/${sharedMaterials[index].id}`);
         setContext(sharedMaterials[index].body)
       }
       
@@ -416,11 +416,11 @@ export const ProfileComponent = () => {
             let choiceResponse = []
   
             if (materialFor === 'personal') {
-              choiceResponse = await axios.get(`http://localhost:3001/quesAnsChoices/study-material/${personalStudyMaterials[index].id}/${materialChoice.id}`);
+              choiceResponse = await axios.get(`${SERVER_URL}/quesAnsChoices/study-material/${personalStudyMaterials[index].id}/${materialChoice.id}`);
             } else if (materialFor === 'group') {
-              choiceResponse = await axios.get(`http://localhost:3001/quesAnsChoices/study-material/${groupStudyMaterials[index].id}/${materialChoice.id}`);
+              choiceResponse = await axios.get(`${SERVER_URL}/quesAnsChoices/study-material/${groupStudyMaterials[index].id}/${materialChoice.id}`);
             } else {
-              choiceResponse = await axios.get(`http://localhost:3001/quesAnsChoices/study-material/${sharedMaterials[index].id}/${materialChoice.id}`);
+              choiceResponse = await axios.get(`${SERVER_URL}/quesAnsChoices/study-material/${sharedMaterials[index].id}/${materialChoice.id}`);
             }
               return choiceResponse.data;
             } catch (error) {
@@ -441,11 +441,11 @@ export const ProfileComponent = () => {
         let revResponse = []
   
         if (materialFor === 'personal') {
-          revResponse = await axios.get(`http://localhost:3001/quesRev/study-material-rev/${personalStudyMaterials[index].id}`);
+          revResponse = await axios.get(`${SERVER_URL}/quesRev/study-material-rev/${personalStudyMaterials[index].id}`);
         } else if (materialFor === 'group') {
-          revResponse = await axios.get(`http://localhost:3001/quesRev/study-material-rev/${groupStudyMaterials[index].id}`);
+          revResponse = await axios.get(`${SERVER_URL}/quesRev/study-material-rev/${groupStudyMaterials[index].id}`);
         } else {
-          revResponse = await axios.get(`http://localhost:3001/quesRev/study-material-rev/${sharedMaterials[index].id}`);
+          revResponse = await axios.get(`${SERVER_URL}/quesRev/study-material-rev/${sharedMaterials[index].id}`);
         }
   
   
@@ -520,7 +520,7 @@ export const ProfileComponent = () => {
  
      
      try {
-       let mcqResponse = await axios.get(`http://localhost:3001/quesAns/study-material-mcq/${sharedMaterials[index].id}`);
+       let mcqResponse = await axios.get(`${SERVER_URL}/quesAns/study-material-mcq/${sharedMaterials[index].id}`);
  
        genQAData = mcqResponse.data
  
@@ -535,7 +535,7 @@ export const ProfileComponent = () => {
      if (Array.isArray(genMCQAData)) {
        const materialChoices = genMCQAData.map(async (materialChoice) => {
          try {
-           let choiceResponse = await axios.get(`http://localhost:3001/quesAnsChoices/study-material/${sharedMaterials[index].id}/${materialChoice.id}`);
+           let choiceResponse = await axios.get(`${SERVER_URL}/quesAnsChoices/study-material/${sharedMaterials[index].id}/${materialChoice.id}`);
  
              return choiceResponse.data;
            } catch (error) {
@@ -554,7 +554,7 @@ export const ProfileComponent = () => {
      if (Array.isArray(genToF)) {
        const materialChoices = genToF.map(async (materialChoice) => {
          try {
-           let choiceResponse = await axios.get(`http://localhost:3001/quesAnsChoices/study-material/${sharedMaterials[index].id}/${materialChoice.id}`);
+           let choiceResponse = await axios.get(`${SERVER_URL}/quesAnsChoices/study-material/${sharedMaterials[index].id}/${materialChoice.id}`);
  
              return choiceResponse.data;
            } catch (error) {
@@ -574,7 +574,7 @@ export const ProfileComponent = () => {
  
      try {
  
-       let revResponse = await axios.get(`http://localhost:3001/quesRev/study-material-rev/${sharedMaterials[index].id}`);
+       let revResponse = await axios.get(`${SERVER_URL}/quesRev/study-material-rev/${sharedMaterials[index].id}`);
  
        genQADataRev = revResponse.data;
        
@@ -589,7 +589,7 @@ export const ProfileComponent = () => {
  
      try {
        const smResponse = await axios.post(
-         'http://localhost:3001/studyMaterial',
+         `${SERVER_URL}/studyMaterial`,
          studyMaterialsData
        );
  
@@ -611,7 +611,7 @@ export const ProfileComponent = () => {
          };
  
          const qaResponse = await axios.post(
-           'http://localhost:3001/quesAns',
+           `${SERVER_URL}/quesAns`,
            qaData
          );
  
@@ -624,7 +624,7 @@ export const ProfileComponent = () => {
            };
    
            try {
-               await axios.post('http://localhost:3001/quesAnsChoices', qacData);
+               await axios.post(`${SERVER_URL}/quesAnsChoices`, qacData);
                console.log("Saved! mcq");
            } catch (error) {
                console.error(error);
@@ -643,7 +643,7 @@ export const ProfileComponent = () => {
            UserId: smResponse.data.UserId,
          };
  
-         await axios.post('http://localhost:3001/quesRev', qaDataRev);
+         await axios.post(`${SERVER_URL}/quesRev`, qaDataRev);
  
        }
  
@@ -661,7 +661,7 @@ export const ProfileComponent = () => {
        
          try {
            // Create the question and get the response
-           const qaResponse = await axios.post('http://localhost:3001/quesAns', trueSentencesData);
+           const qaResponse = await axios.post(`${SERVER_URL}/quesAns`, trueSentencesData);
        
            // Iterate through mcqaDistractors and create question choices
            for (let j = 0; j < tofDistractors[i].length; j++) {
@@ -673,7 +673,7 @@ export const ProfileComponent = () => {
              };
      
              try {
-                 await axios.post('http://localhost:3001/quesAnsChoices', qacData);
+                 await axios.post(`${SERVER_URL}/quesAnsChoices`, qacData);
                  console.log("Saved! choice");
              } catch (error) {
                  console.error(error);
@@ -698,7 +698,7 @@ export const ProfileComponent = () => {
  
          try {
            await axios.post(
-             'http://localhost:3001/quesAns',
+             `${SERVER_URL}/quesAns`,
              fillInTheBlankData
              );
          } catch (error) {
@@ -720,7 +720,7 @@ export const ProfileComponent = () => {
  
          try {
            await axios.post(
-             'http://localhost:3001/quesAns',
+             `${SERVER_URL}/quesAns`,
              identificationData
              );
          } catch (error) {
@@ -741,7 +741,7 @@ export const ProfileComponent = () => {
  
     if (materialFor === 'Personal') {
  
-     const personalStudyMaterial = await axios.get(`http://localhost:3001/studyMaterial/study-material-category/Personal/${UserId}`)
+     const personalStudyMaterial = await axios.get(`${SERVER_URL}/studyMaterial/study-material-category/Personal/${UserId}`)
  
      let bookmarkedPersonalMaterial = personalStudyMaterial.data;
  
@@ -757,7 +757,7 @@ export const ProfileComponent = () => {
  
      } else {
  
-       const groupStudyMaterial = await axios.get(`http://localhost:3001/studyMaterial/study-material-category/Group/${UserId}`)
+       const groupStudyMaterial = await axios.get(`${SERVER_URL}/studyMaterial/study-material-category/Group/${UserId}`)
  
        let bookmarkedPersonalMaterial = groupStudyMaterial.data;
  
@@ -815,7 +815,7 @@ export const ProfileComponent = () => {
       };
       
       if (groupNameValue !== '') {
-        await axios.post('http://localhost:3001/studyGroup/create-group', groupData);
+        await axios.post(`${SERVER_URL}/studyGroup/create-group`, groupData);
   
         fetchData();
         setShowCreateGroupInput(false);
@@ -840,7 +840,7 @@ export const ProfileComponent = () => {
     }
     
 
-    await axios.put(`http://localhost:3001/users/update-user/${UserId}`, data).then((response) => {
+    await axios.put(`${SERVER_URL}/users/update-user/${UserId}`, data).then((response) => {
 
     if(response.data.error) {
 
@@ -895,7 +895,7 @@ export const ProfileComponent = () => {
   
       try {
 
-        const response = await axios.post('http://localhost:3001/upload', formData);
+        const response = await axios.post(`${SERVER_URL}/upload`, formData);
   
         const serverGeneratedFilename = response.data.filename;
 
@@ -903,7 +903,7 @@ export const ProfileComponent = () => {
           userImage: serverGeneratedFilename,
         };
 
-        await axios.put(`http://localhost:3001/users/update-user-image/${UserId}`, data).then((response) => {
+        await axios.put(`${SERVER_URL}/users/update-user-image/${UserId}`, data).then((response) => {
 
           if(response.data.error) {
             setTimeout(() => {
@@ -947,7 +947,7 @@ export const ProfileComponent = () => {
 
       await axios({
         method: 'delete',
-        url: `http://localhost:3001/users/${UserId}`,
+        url: `${SERVER_URL}/users/${UserId}`,
         data: data,
         headers: {
           'Content-Type': 'application/json',
@@ -1088,7 +1088,7 @@ export const ProfileComponent = () => {
 
                   <div className='flex items-center justify-center gap-8 pt-3'>
                     <div style={{ width: '200px' }}>
-                    <img src={`http://localhost:3001/images/${userData.userImage}`} className='rounded-full' style={{ width: '200px', objectFit: 'cover', height: '200px' }} alt="" />
+                    <img src={`http://localhost:3000/images/${userData.userImage}`} className='rounded-full' style={{ width: '200px', objectFit: 'cover', height: '200px' }} alt="" />
                     </div>
 
                     <div className=''>
@@ -1407,7 +1407,7 @@ export const ProfileComponent = () => {
                   <div className='p-2 rounded-full' {...getRootProps()} style={{ width: '220px', cursor: 'pointer', border: '3px dashed #888' }}>
                     <input {...getInputProps()} name='image' type='file' />
                     {acceptedFiles.length === 0 ? (
-                      <img src={`http://localhost:3001/images/${userData.userImage}`} className='rounded-full' style={{ width: '200px', objectFit: 'cover', height: '200px' }} alt="" />
+                      <img src={`http://localhost:3000/images/${userData.userImage}`} className='rounded-full' style={{ width: '200px', objectFit: 'cover', height: '200px' }} alt="" />
                     ) : (
                       <>
                         <img src={URL.createObjectURL(acceptedFiles[0])} className='rounded-full' style={{ width: '200px', objectFit: 'cover', height: '200px' }} alt="" />

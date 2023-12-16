@@ -17,6 +17,7 @@ export const DropZoneComponent = (props) => {
   const [showLoading, setShowLoading] = useState(false);
 
 
+  // link here
   const url = 'http://127.0.0.1:8000/qa-generation';
 
   const [data, setData] = useState({

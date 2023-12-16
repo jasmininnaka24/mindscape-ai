@@ -2,8 +2,12 @@ import axios from 'axios';
 import React, { useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom';
 import InboxIcon from '../../assets/mail.png'
+import { useUser } from '../../UserContext';
+
 
 export const ResetPassword = () => {
+
+  const { SERVER_URL } = useUser
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('')
@@ -14,7 +18,7 @@ export const ResetPassword = () => {
 
   useEffect(() => {
     const fetchData = async () => {
-      const resetData = await axios.get(`http://localhost:3001/users/reset-password/${id}/${token}`)
+      const resetData = await axios.get(`${SERVER_URL}/users/reset-password/${id}/${token}`)
 
       setEmail(resetData.data.email);
     }
@@ -29,7 +33,7 @@ export const ResetPassword = () => {
       password: password
     }
 
-    const updatePassword =  await axios.post(`http://localhost:3001/users/reset-password/${id}/${token}`, data);
+    const updatePassword =  await axios.post(`${SERVER_URL}/users/reset-password/${id}/${token}`, data);
 
     alert(updatePassword.data.message)
 

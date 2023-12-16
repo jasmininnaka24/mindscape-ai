@@ -1,10 +1,14 @@
 import axios from 'axios';
 import React from 'react'
 import DeleteIcon from '@mui/icons-material/Delete';
+import { useUser } from '../../UserContext';
+
 
 export const DeleteTask = (props) => {
 
   const { taskId, listOfTasks, setListOfTasks } = props;
+
+  const { SERVER_URL } = useUser()
 
   const deleteTask = async () => {
     console.log(taskId, listOfTasks);
@@ -12,7 +16,7 @@ export const DeleteTask = (props) => {
     const confirmed = window.confirm("Are you sure you want to delete?");
   
     if (confirmed) {
-       await axios.delete(`http://localhost:3001/tasks/${taskId}`).then(() => {
+       await axios.delete(`${SERVER_URL}/tasks/${taskId}`).then(() => {
         const updatedTasks = listOfTasks.filter((task) => task.id !== taskId);  
         setListOfTasks(updatedTasks);
         }

@@ -9,6 +9,8 @@ import InboxIcon from '../../assets/mail.png';
 import MindScapeLogo from '../../assets/mindscape_logo.png';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import DangerousIcon from '@mui/icons-material/Dangerous';
+import { useUser } from '../../UserContext';
+
 
 export const Register = () => {
 
@@ -20,6 +22,8 @@ export const Register = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showResetPasswordUI, setShowResetPasswordUI] = useState(true)
   const [enableDisabled, setEnableDisabled] = useState(false)
+
+  const { SERVER_URL } = useUser();
 
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
@@ -39,7 +43,7 @@ export const Register = () => {
     setEnableDisabled(true)
 
     try {
-       await axios.post('http://localhost:3001/users/', data).then((response) => {
+       await axios.post(`${SERVER_URL}/users/`, data).then((response) => {
         
         if (response.data.error) {
           setMsg(response.data.message);

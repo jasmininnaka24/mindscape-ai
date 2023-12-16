@@ -2,10 +2,14 @@ import React, { useEffect, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import { useUser } from '../../UserContext';
+
 
 export const DataSubmission = () => {
   const location = useLocation();
   const { selectedStr, id } = location.state;
+
+  const { SERVER_URL } = useUser()
 
   const [sentence, setSentence] = useState("");
   const [newSentence, setNewSentence] = useState("");
@@ -40,7 +44,7 @@ export const DataSubmission = () => {
       typeOfLearner: learningStyle
     }
 
-    await axios.put(`http://localhost:3001/users/update-typeoflearner/${id}`, data)
+    await axios.put(`${SERVER_URL}/users/update-typeoflearner/${id}`, data)
 
 
     navigate('/data-result', {

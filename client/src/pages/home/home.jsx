@@ -5,6 +5,10 @@ import { Benefits } from './benefits/benefits';
 import { HowToUse } from './howtouse/howtouse';
 import { Navbar } from '../../components/navbar/navbar';
 import { Link } from 'react-router-dom';
+import personalStudyRoomImg from '../../assets/personal_study.jpg';
+import groupStudyRoomImg from '../../assets/group_study.jpg';
+import virtualLibraryRoomImg from '../../assets/library.jpg';
+import discussionFormusImg from '../../assets/discussion_forum.jpg';
 
 export const Home = () => {
 
@@ -31,32 +35,32 @@ export const Home = () => {
           {/* 4 main features */}
           <div className='grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mt-10 boxes'>
           <div className='box rounded-[5px]'>
-            <div className='main-page-image'>
-              
+            <div className='main-page-image' style={{height:'100%', objectFit: 'cover'}}>
+              <img src={personalStudyRoomImg} alt="" />
             </div>
             <div className='flex justify-center items-end mbg-300 inner-box'>
               <div className="self-end py-2 rounded-[5px] text-xl font-medium">Personal Study Room</div>
             </div>
           </div>
           <div className='box rounded-[5px]'>
-            <div className='main-page-image'>
-              
+            <div className='main-page-image' style={{height:'100%', objectFit: 'cover'}}>
+              <img src={groupStudyRoomImg} alt="" />
             </div>
             <div className='flex justify-center items-end mbg-300 inner-box'>
               <div className="self-end py-2 rounded-[5px] text-xl font-medium">Group Study Room</div>
             </div>
           </div>
           <div className='box rounded-[5px]'>
-            <div className='main-page-image'>
-              
+            <div className='main-page-image' style={{height:'100%', objectFit: 'cover'}}>
+              <img src={virtualLibraryRoomImg} alt="" />
             </div>
             <div className='flex justify-center items-end mbg-300 inner-box'>
               <div className="self-end py-2 rounded-[5px] text-xl font-medium">Virtual Library Room</div>
             </div>
           </div>
           <div className='box rounded-[5px]'>
-            <div className='main-page-image'>
-              
+            <div className='main-page-image' style={{height:'100%', objectFit: 'cover'}}>
+              <img src={discussionFormusImg} alt="" />
             </div>
             <div className='flex justify-center items-end mbg-300 inner-box'>
               <div className="self-end py-2 rounded-[5px] text-xl font-medium">Discussion Forums</div>
