@@ -23,9 +23,9 @@ export const Navbar = () => {
             </HashLink>
         </div>
         <div className='ms-nav-links flex justify-between items-center gap-5'>
-          <HashLink to={'#'}>Home</HashLink>
-          <HashLink to={'#about'}>About</HashLink>
-          <HashLink to={'#benefits'}>Benefits</HashLink>
+          <HashLink className='mx-4' to={'#'}>Home</HashLink>
+          <HashLink className='mx-4' to={'#about'}>About</HashLink>
+          <HashLink className='mx-4' to={'#benefits'}>Benefits</HashLink>
         </div>
         <div className='ms-login'>
           <Link to={'/login'} className='flex justify-between items-center gap-2'>

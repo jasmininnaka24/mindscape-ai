@@ -160,12 +160,12 @@ export const Login = () => {
 
             <div className='mb-3 w-full'>
               <p htmlFor="" className='font-medium'>Email<span className='text-red'>*</span></p>
-              <input required autoComplete='no' placeholder='Enter your email...' type="email" className='bg-transparent w-full border-bottom-thin py-1 rounded-[5px]' value={emailLogVal !== '' ? emailLogVal : ''} onChange={(event) => setEmailLogVal(event.target.value)} />
+              <input required autoComplete='no' placeholder='Enter your email...' type="email" className='bg-transparent w-full border-bottom-thin py-1 rounded-[5px] input-login' value={emailLogVal !== '' ? emailLogVal : ''} onChange={(event) => setEmailLogVal(event.target.value)} />
             </div>
 
             <div className='mb-4 mt-8'>
               <p className='font-medium'>Password<span className='text-red'>*</span></p>
-              <input required autoComplete='no' placeholder='Enter your password...' type="password" className='bg-transparent w-full border-bottom-thin py-1 rounded-[5px]' value={passwordLogVal !== '' ? passwordLogVal : ''} onChange={(event) => setPasswordLogVal(event.target.value)} />
+              <input required autoComplete='no' placeholder='Enter your password...' type="password" className='bg-transparent w-full border-bottom-thin py-1 rounded-[5px] input-login' value={passwordLogVal !== '' ? passwordLogVal : ''} onChange={(event) => setPasswordLogVal(event.target.value)} />
             </div>
 
               
@@ -175,7 +175,7 @@ export const Login = () => {
 
             <p className={`text-center ${(msg !== '' && error) && 'text-red my-3'}`} style={{ whiteSpace: 'pre-wrap' }}>{(msg !== '' && error) && msg}</p>
             
-            <button className={`font-medium input-btn py-2 rounded-[20px] ${(msg !== '' && !error) ? 'mbg-200 border-thin-800 mcolor-900' : 'mbg-800 mcolor-100'}`} onClick={(e) => loginAccount(e)}>{(msg !== '' && !error) ? msg : 'Sign In'}</button>
+            <button className={`font-medium input-btn py-2 rounded-[20px] ${(msg !== '' && !error) ? 'mbg-200 border-thin-800 mcolor-900' : 'btn-800'}`} onClick={(e) => loginAccount(e)}>{(msg !== '' && !error) ? msg : 'Sign In'}</button>
           </div>
 
         </div>

@@ -71,7 +71,7 @@ export const Home = () => {
           {/* main-page get started button */}
 
           <div className='mt-5 flex justify-center items-center'>
-            <Link to={'/register'} className='mbg-800 mcolor-100 py-2 px-10 rounded-[5px] text-xl font-medium'>Get Started</Link>
+            <Link to={'/register'} className='btn-800 py-2 px-10 rounded-[5px] text-xl font-medium'>Get Started</Link>
           </div>
           </div>
         </div>

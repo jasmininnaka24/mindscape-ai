@@ -1216,7 +1216,7 @@ export const VirtualLibraryMain = () => {
               </div>
               <div className='flex items-center justify-center w-1/2'>
 
-                <button className='mbg-300 px-5 py-2 rounded border-thin-800 w-full' onClick={() => {
+                <button className='btn-100 px-5 py-2 rounded w-full' onClick={() => {
                   setShowModal(true);
                   setShowPresentStudyMaterials(true);
 
@@ -1227,7 +1227,7 @@ export const VirtualLibraryMain = () => {
 
               <div className='flex items-center justify-between'>
                 <p className='font-medium text-lg mb-2'>Latest Shared Study Materials:</p>
-                <button className='mbg-300 rounded px-4 py-1' onClick={() => {
+                <button className='btn-300 rounded px-4 py-1' onClick={() => {
                   setFilteredStudyMaterialsByCategory([])
                   setSearchValue('')
                   }}>Clear Filter</button>
@@ -1637,7 +1637,7 @@ export const VirtualLibraryMain = () => {
                       <br />
                       <div className='flex items-center justify-center mb-2'>
                         <Link to={'/main/library/generate-quiz'}>
-                          <button className='mbg-700 mcolor-100 px-5 py-2 rounded border-thin-800'>Generate a new Study Material</button>
+                          <button className='btn-800 px-5 py-2 rounded border-thin-800'>Generate a new Study Material</button>
                         </Link>
                       </div>
                       <br />

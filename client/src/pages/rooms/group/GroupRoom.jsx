@@ -130,19 +130,19 @@ export const GroupRoom = () => {
 
 
                 <p className='px-1'>{groupName}</p>
-                <button onClick={() => toggleExpansion(id)} className='px-5 py-2 mbg-700 mcolor-100 rounded'>View</button>
+                <button onClick={() => toggleExpansion(id)} className='px-9 py-2 btn-800 rounded'>View</button>
 
                 {expandedGroupId === id && (
 
-                  <div className='absolute right-0 bottom-0 px-7 mb-[-114px] mbg-700 mcolor-100 rounded pt-3 pb-4 opacity-80'>
+                  <div className='absolute right-0 bottom-0 w-1/3 mb-[-118px] mbg-700 mcolor-100 rounded opacity-80'>
                     <Link to={`/main/group/study-area/${id}`}>
-                      <p className='pt-1'>Study Area</p>
+                      <p className='btn-700 w-full text-center py-2'>Study Area</p>
                     </Link>
                     <Link to={`/main/group/tasks/${id}`}>
-                      <p className='pt-1'>Tasks</p>
+                      <p className='btn-700 w-full text-center py-2'>Tasks</p>
                     </Link>
                     <Link to={`/main/group/dashboard/${id}`}>
-                      <p className='pt-1'>Dashboard</p>
+                      <p className='btn-700 w-full text-center py-2'>Dashboard</p>
                     </Link>
                   </div>
                 )}

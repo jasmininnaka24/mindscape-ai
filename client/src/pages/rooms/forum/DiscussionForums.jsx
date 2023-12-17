@@ -361,12 +361,12 @@ export const DiscussionForums = () => {
                   />         
                 </div>
                 <div className='flex items-center justify-center w-full gap-1 my-5'>
-                  <button className='mbg-700 mcolor-100 px-5 py-2 rounded w-full' onClick={() => {
+                  <button className='btn-800 px-5 py-2 rounded w-full' onClick={() => {
                     setShowCreateRoomModal(true)
                   }}>Create a room</button>
                 </div>
                 <div className='flex items-center justify-center w-full gap-1 my-5'>
-                  <button className='mbg-300 mcolor-900 border-thin-800 px-5 py-2 rounded w-full' onClick={() => {
+                  <button className='btn-150 border-thin-800 px-5 py-2 rounded w-full' onClick={() => {
                     setShowCategories(true)
                   }}>View Categories</button>
                 </div>
@@ -429,7 +429,7 @@ export const DiscussionForums = () => {
                     </div>
 
                     <br />
-                    <button className='mbg-700 mcolor-100 px-5 py-2 rounded w-full' onClick={createRoom}>Create a room</button>
+                    <button className='btn-800 px-5 py-2 rounded w-full' onClick={createRoom}>Create a room</button>
 
 
 
@@ -522,7 +522,7 @@ export const DiscussionForums = () => {
                             </button>
                           ) : (
                             <button
-                              className='mbg-700 mcolor-100 px-5 py-2 rounded'
+                              className='btn-800 px-5 py-2 rounded'
                               onClick={() => {
                                 setCurrentRoom(room?.room)
                                 setCurrentMessageRoom(room?.roomName)
@@ -644,7 +644,7 @@ export const DiscussionForums = () => {
                                 )
                               }
 
-                              <button className='bg-red mcolor-100 px-5 text-sm py-2 rounded' onClick={() => leaveDiscussionForumRoom(room?.room)}>
+                              <button className='btn-red px-5 text-sm py-2 rounded' onClick={() => leaveDiscussionForumRoom(room?.room)}>
                                 Leave Room
                               </button>
 
@@ -664,7 +664,7 @@ export const DiscussionForums = () => {
                   {(roomList && roomList[currentIndex]?.users?.some((userr) => userr.userId === userId)) && (
                     <div className='chat-header flex items-center justify-between px-5 w-full'>
                       <p>{roomList[currentIndex]?.roomName}</p>
-                      <button className='mcolor-900 mbg-300 px-4 py-1 my-2 rounded' onClick={() => setShowActiveUsers(true)}>Active Users</button>
+                      <button className='btn-reversed-150 px-4 py-1 my-2 rounded' onClick={() => setShowActiveUsers(true)}>Active Users</button>
                     </div>
                   )}
                 </div>
@@ -740,7 +740,7 @@ export const DiscussionForums = () => {
                           key={user.userId} 
                           className='text-center'
                         >
-                          <p className='mbg-200 shadows w-full mcolor-900 rounded py-2'><PersonIcon />{user.username}</p>
+                          <p className='mbg-200 shadows w-full mcolor-900 rounded py-2 my-2'><PersonIcon />{user.username}</p>
                         </div>
                       ))
                     ) : (

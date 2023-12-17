@@ -145,18 +145,18 @@ export const MainPage = () => {
               <p className='font-medium text-2xl'>Personal Study Room</p>
               <div className='relative'>
 
-                <button className='mbg-700 font-medium text-lg mcolor-100 px-14 py-2 rounded-[5px]' onClick={toggleExpansion}>Go visit</button>
+                <button className='mbg-700 font-medium text-lg mcolor-100 px-14 py-2 rounded-[5px] btn-800 btn-800' onClick={toggleExpansion}>Go visit</button>
 
                 {dropDownPersonalLinks && (
-                  <div className='absolute right-0 bottom-0 px-11 mb-[-114px] mbg-700 mcolor-100 rounded pt-3 pb-4 opacity-80'>
+                  <div className='absolute right-0 bottom-0 w-full mb-[-125px] mbg-700 mcolor-100 opacity-80'>
                     <Link to={`/main/personal/study-area`}>
-                      <p className='pt-1'>Study Area</p>
+                      <p className='btn-700 w-full text-center py-2'>Study Area</p>
                     </Link>
                     <Link to={`/main/personal/tasks`}>
-                      <p className='pt-1'>Tasks</p>
+                      <p className='btn-700 w-full text-center py-2'>Tasks</p>
                     </Link>
                     <Link to={`/main/personal/dashboard`}>
-                      <p className='pt-1'>Dashboard</p>
+                      <p className='btn-700 w-full text-center py-2'>Dashboard</p>
                     </Link>
                   </div>
                 )}
@@ -172,7 +172,7 @@ export const MainPage = () => {
               <p className='font-medium text-2xl'>Group Study Room</p>
               <div>
                 <Link to={'/main/group/'}>
-                  <button className='mbg-700 font-medium text-lg mcolor-100 px-14 py-2 rounded-[5px]'>Go visit</button>
+                  <button className='mbg-700 font-medium text-lg mcolor-100 px-14 py-2 rounded-[5px] btn-800'>Go visit</button>
                 </Link>
               </div>
             </div>
@@ -185,7 +185,7 @@ export const MainPage = () => {
               <p className='font-medium text-2xl'>Virtual Library Room</p>
               <div>
                 <Link to={'/main/library'}>
-                <button className='mbg-700 font-medium text-lg mcolor-100 px-14 py-2 rounded-[5px]'>Go visit</button>
+                <button className='mbg-700 font-medium text-lg mcolor-100 px-14 py-2 rounded-[5px] btn-800'>Go visit</button>
                 </Link>
               </div>
             </div>
@@ -198,7 +198,7 @@ export const MainPage = () => {
               <p className='font-medium text-2xl'>Discussion Forums</p>
               <div>
                 <Link to={'/main/forums'}>
-                  <button className='mbg-700 font-medium text-lg mcolor-100 px-14 py-2 rounded-[5px]'>Go visit</button>
+                  <button className='mbg-700 font-medium text-lg mcolor-100 px-14 py-2 rounded-[5px] btn-800 btn-800'>Go visit</button>
                 </Link>
               </div>
             </div>

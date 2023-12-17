@@ -1088,7 +1088,7 @@ export const ProfileComponent = () => {
 
                   <div className='flex items-center justify-center gap-8 pt-3'>
                     <div style={{ width: '200px' }}>
-                    <img src={`http://localhost:3000/images/${userData.userImage}`} className='rounded-full' style={{ width: '200px', objectFit: 'cover', height: '200px' }} alt="" />
+                    <img src={`${SERVER_URL}/images/${userData.userImage}`} className='rounded-full' style={{ width: '200px', objectFit: 'cover', height: '200px' }} alt="" />
                     </div>
 
                     <div className=''>
@@ -1407,7 +1407,7 @@ export const ProfileComponent = () => {
                   <div className='p-2 rounded-full' {...getRootProps()} style={{ width: '220px', cursor: 'pointer', border: '3px dashed #888' }}>
                     <input {...getInputProps()} name='image' type='file' />
                     {acceptedFiles.length === 0 ? (
-                      <img src={`http://localhost:3000/images/${userData.userImage}`} className='rounded-full' style={{ width: '200px', objectFit: 'cover', height: '200px' }} alt="" />
+                      <img src={`${SERVER_URL}/images/${userData.userImage}`} className='rounded-full' style={{ width: '200px', objectFit: 'cover', height: '200px' }} alt="" />
                     ) : (
                       <>
                         <img src={URL.createObjectURL(acceptedFiles[0])} className='rounded-full' style={{ width: '200px', objectFit: 'cover', height: '200px' }} alt="" />

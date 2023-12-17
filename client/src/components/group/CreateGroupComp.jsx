@@ -220,12 +220,12 @@ export const CreateGroupComp = (props) => {
   return (
     <div className='w-1/2 flex justify-between items-center gap-5'>
 
-      <button className='w-1/2 mbg-100 border-thin-800 font-medium mcolor-900 px-6 py-3 rounded-[5px]' onClick={() => {
+      <button className='w-1/2 btn-100 border-thin-800 font-medium px-6 py-3 rounded-[5px] btn-100' onClick={() => {
         setHidden('')
         setJoinGroup('')
       }}>Join Group</button>
       
-      <button className='w-1/2 mbg-100 border-thin-800 font-medium mcolor-900 px-6 py-3 rounded-[5px]' onClick={() => {
+      <button className='w-1/2 btn-100 border-thin-800 font-medium px-6 py-3 rounded-[5px]' onClick={() => {
         setHidden('')
         setCreateGroup('')
         }}>
