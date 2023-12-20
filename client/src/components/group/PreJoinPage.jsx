@@ -69,6 +69,16 @@ export const PreJoinPage = (props) => {
       userImage: userData.userImage
     });
   }
+  const getUserDataeeeee = async () => {
+    const userData = await fetchUserData(UserId);
+    setUserData({
+      username: userData.username,
+      email: userData.email,
+      studyProfTarget: userData.studyProfTarget,
+      typeOfLearner: userData.typeOfLearner,
+      userImage: userData.userImage
+    });
+  }
 
   useEffect(() => {
     
