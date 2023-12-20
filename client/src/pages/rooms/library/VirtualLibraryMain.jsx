@@ -108,7 +108,7 @@ export const VirtualLibraryMain = () => {
     // setFilteredSharedCategories
  
     // for fetching personal
-    const personalStudyMaterial = await axios.get(`${SERVER_URL}/studyMaterial/study-material-category/Personal/${UserId}`)
+    const personalStudyMaterial = await axios.get(`${'http://localhost:3001'}/studyMaterial/study-material-category/Personal/${UserId}`)
     const filteredPersonalStudyMaterials = personalStudyMaterial.data.filter(item => item.tag === 'Own Record');
     setPersonalStudyMaterials(filteredPersonalStudyMaterials);
 
@@ -117,7 +117,7 @@ export const VirtualLibraryMain = () => {
 
     const fetchedPersonalStudyMaterialCategory = await Promise.all(
       fetchedPersonalStudyMaterial.map(async (material, index) => {
-        const materialCategoryResponse = await axios.get(`${SERVER_URL}/studyMaterialCategory/get-categoryy/${material.StudyMaterialsCategoryId}`);
+        const materialCategoryResponse = await axios.get(`${'http://localhost:3001'}/studyMaterialCategory/get-categoryy/${material.StudyMaterialsCategoryId}`);
         return materialCategoryResponse.data; // Return the data from each promise
       })
     );
@@ -125,7 +125,7 @@ export const VirtualLibraryMain = () => {
     setPersonalStudyMaterialsCategory(fetchedPersonalStudyMaterialCategory);
     
     
-    const groupStudyMaterial = await axios.get(`${SERVER_URL}/studyMaterial/study-material-category/Group/${UserId}`)
+    const groupStudyMaterial = await axios.get(`${'http://localhost:3001'}/studyMaterial/study-material-category/Group/${UserId}`)
     const filteredGroupStudyMaterials = groupStudyMaterial.data.filter(item => item.tag === 'Own Record');
     setGroupStudyMaterials(filteredGroupStudyMaterials);
     
@@ -135,7 +135,7 @@ export const VirtualLibraryMain = () => {
 
     const fetchedGroupStudyMaterialCategory = await Promise.all(
       filteredGroupStudyMaterials.map(async (material, index) => {
-        const materialCategoryResponse = await axios.get(`${SERVER_URL}/studyMaterialCategory/get-categoryy/${material.StudyMaterialsCategoryId}`);
+        const materialCategoryResponse = await axios.get(`${'http://localhost:3001'}/studyMaterialCategory/get-categoryy/${material.StudyMaterialsCategoryId}`);
         return materialCategoryResponse.data; // Return the data from each promise
       })
     );
@@ -146,13 +146,13 @@ export const VirtualLibraryMain = () => {
       
       
       
-    const sharedStudyMaterial = await axios.get(`${SERVER_URL}/studyMaterial/shared-materials`);
+    const sharedStudyMaterial = await axios.get(`${'http://localhost:3001'}/studyMaterial/shared-materials`);
     const sharedStudyMaterialResponse = sharedStudyMaterial.data;  
     setSharedMaterials(sharedStudyMaterialResponse)
 
     const fetchedSharedStudyMaterialCategory = await Promise.all(
       sharedStudyMaterialResponse.map(async (material, index) => {
-        const materialCategorySharedResponse = await axios.get(`${SERVER_URL}/studyMaterialCategory/shared-material-category/${material.StudyMaterialsCategoryId}/Group/${UserId}`);
+        const materialCategorySharedResponse = await axios.get(`${'http://localhost:3001'}/studyMaterialCategory/shared-material-category/${material.StudyMaterialsCategoryId}/Group/${UserId}`);
         return materialCategorySharedResponse.data;
       })
     );
@@ -161,7 +161,7 @@ export const VirtualLibraryMain = () => {
     // Use Promise.all with map for asynchronous operations
     let sortedDataUsers = await Promise.all(
       sharedStudyMaterialResponse.map(async (user) => {
-        const response = await axios.get(`${SERVER_URL}/users/get-user/${user.UserId}`);
+        const response = await axios.get(`${'http://localhost:3001'}/users/get-user/${user.UserId}`);
         return response.data;
       })
     );  
@@ -173,7 +173,7 @@ export const VirtualLibraryMain = () => {
     // Use Promise.all with map for asynchronous operations
     let sortedDataBookmarksCounts = await Promise.all(
       sharedStudyMaterialResponse.map(async (user) => {
-        const response = await axios.get(`${SERVER_URL}/studyMaterial/bookmark-counts/${user.code}`);
+        const response = await axios.get(`${'http://localhost:3001'}/studyMaterial/bookmark-counts/${user.code}`);
         return response.data;
       })
     );  
@@ -218,17 +218,17 @@ export const VirtualLibraryMain = () => {
 
       
       
-      const response = await axios.get(`${SERVER_URL}/studyGroup/extract-group-through-user/${UserId}`);
+      const response = await axios.get(`${'http://localhost:3001'}/studyGroup/extract-group-through-user/${UserId}`);
       setGroupList(response.data);
       
       let dataLength = response.data.length;
       
       if (dataLength !== 0) {
       } else {
-        const userMemberGroupList = await axios.get(`${SERVER_URL}/studyGroupMembers/get-materialId/${UserId}`);
+        const userMemberGroupList = await axios.get(`${'http://localhost:3001'}/studyGroupMembers/get-materialId/${UserId}`);
         
         const materialPromises = userMemberGroupList.data.map(async (item) => {
-          const material = await axios.get(`${SERVER_URL}/studyGroup/extract-all-group/${item.StudyGroupId}`);
+          const material = await axios.get(`${'http://localhost:3001'}/studyGroup/extract-all-group/${item.StudyGroupId}`);
           return material.data;
         });
     
@@ -284,14 +284,14 @@ export const VirtualLibraryMain = () => {
         let mcqResponse = []
         if (materialFor === 'personal') {
   
-        mcqResponse = await axios.get(`${SERVER_URL}/quesAns/study-material-mcq/${personalStudyMaterials[index].id}`);
+        mcqResponse = await axios.get(`${'http://localhost:3001'}/quesAns/study-material-mcq/${personalStudyMaterials[index].id}`);
   
         setContext(personalStudyMaterials[index].body)
       } else if (materialFor === 'group') {
-        mcqResponse = await axios.get(`${SERVER_URL}/quesAns/study-material-mcq/${groupStudyMaterials[index].id}`);
+        mcqResponse = await axios.get(`${'http://localhost:3001'}/quesAns/study-material-mcq/${groupStudyMaterials[index].id}`);
         setContext(groupStudyMaterials[index].body)
       } else {
-        mcqResponse = await axios.get(`${SERVER_URL}/quesAns/study-material-mcq/${sharedMaterials[index].id}`);
+        mcqResponse = await axios.get(`${'http://localhost:3001'}/quesAns/study-material-mcq/${sharedMaterials[index].id}`);
         setContext(sharedMaterials[index].body)
       }
       
@@ -303,11 +303,11 @@ export const VirtualLibraryMain = () => {
             let choiceResponse = []
   
             if (materialFor === 'personal') {
-              choiceResponse = await axios.get(`${SERVER_URL}/quesAnsChoices/study-material/${personalStudyMaterials[index].id}/${materialChoice.id}`);
+              choiceResponse = await axios.get(`${'http://localhost:3001'}/quesAnsChoices/study-material/${personalStudyMaterials[index].id}/${materialChoice.id}`);
             } else if (materialFor === 'group') {
-              choiceResponse = await axios.get(`${SERVER_URL}/quesAnsChoices/study-material/${groupStudyMaterials[index].id}/${materialChoice.id}`);
+              choiceResponse = await axios.get(`${'http://localhost:3001'}/quesAnsChoices/study-material/${groupStudyMaterials[index].id}/${materialChoice.id}`);
             } else {
-              choiceResponse = await axios.get(`${SERVER_URL}/quesAnsChoices/study-material/${sharedMaterials[index].id}/${materialChoice.id}`);
+              choiceResponse = await axios.get(`${'http://localhost:3001'}/quesAnsChoices/study-material/${sharedMaterials[index].id}/${materialChoice.id}`);
             }
               return choiceResponse.data;
             } catch (error) {
@@ -328,11 +328,11 @@ export const VirtualLibraryMain = () => {
         let revResponse = []
   
         if (materialFor === 'personal') {
-          revResponse = await axios.get(`${SERVER_URL}/quesRev/study-material-rev/${personalStudyMaterials[index].id}`);
+          revResponse = await axios.get(`${'http://localhost:3001'}/quesRev/study-material-rev/${personalStudyMaterials[index].id}`);
         } else if (materialFor === 'group') {
-          revResponse = await axios.get(`${SERVER_URL}/quesRev/study-material-rev/${groupStudyMaterials[index].id}`);
+          revResponse = await axios.get(`${'http://localhost:3001'}/quesRev/study-material-rev/${groupStudyMaterials[index].id}`);
         } else {
-          revResponse = await axios.get(`${SERVER_URL}/quesRev/study-material-rev/${sharedMaterials[index].id}`);
+          revResponse = await axios.get(`${'http://localhost:3001'}/quesRev/study-material-rev/${sharedMaterials[index].id}`);
         }
   
   
@@ -363,7 +363,7 @@ export const VirtualLibraryMain = () => {
 
 
       try {
-        let mcqResponse = await axios.get(`${SERVER_URL}/quesAns/study-material-mcq/${filteredStudyMaterialsByCategory[index].id}`);
+        let mcqResponse = await axios.get(`${'http://localhost:3001'}/quesAns/study-material-mcq/${filteredStudyMaterialsByCategory[index].id}`);
   
         setContext(filteredStudyMaterialsByCategory[index].body)
         setMaterialMCQ(mcqResponse.data);
@@ -371,7 +371,7 @@ export const VirtualLibraryMain = () => {
       if (Array.isArray(mcqResponse.data)) {
         const materialChoices = mcqResponse.data.map(async (materialChoice) => {
           try {
-            let choiceResponse = await axios.get(`${SERVER_URL}/quesAnsChoices/study-material/${filteredStudyMaterialsByCategory[index].id}/${materialChoice.id}`);
+            let choiceResponse = await axios.get(`${'http://localhost:3001'}/quesAnsChoices/study-material/${filteredStudyMaterialsByCategory[index].id}/${materialChoice.id}`);
             
               return choiceResponse.data;
             } catch (error) {
@@ -389,7 +389,7 @@ export const VirtualLibraryMain = () => {
   
       try {
   
-        let revResponse = await axios.get(`${SERVER_URL}/quesRev/study-material-rev/${filteredStudyMaterialsByCategory[index].id}`);
+        let revResponse = await axios.get(`${'http://localhost:3001'}/quesRev/study-material-rev/${filteredStudyMaterialsByCategory[index].id}`);
        
   
         setMaterialNotes(revResponse.data);
@@ -414,7 +414,7 @@ export const VirtualLibraryMain = () => {
 
 
       try {
-        let mcqResponse = await axios.get(`${SERVER_URL}/quesAns/study-material-mcq/${searchedMaterials[index].id}`);
+        let mcqResponse = await axios.get(`${'http://localhost:3001'}/quesAns/study-material-mcq/${searchedMaterials[index].id}`);
   
         setContext(searchedMaterials[index].body)
         setMaterialMCQ(mcqResponse.data);
@@ -422,7 +422,7 @@ export const VirtualLibraryMain = () => {
       if (Array.isArray(mcqResponse.data)) {
         const materialChoices = mcqResponse.data.map(async (materialChoice) => {
           try {
-            let choiceResponse = await axios.get(`${SERVER_URL}/quesAnsChoices/study-material/${searchedMaterials[index].id}/${materialChoice.id}`);
+            let choiceResponse = await axios.get(`${'http://localhost:3001'}/quesAnsChoices/study-material/${searchedMaterials[index].id}/${materialChoice.id}`);
             
               return choiceResponse.data;
             } catch (error) {
@@ -440,7 +440,7 @@ export const VirtualLibraryMain = () => {
   
       try {
   
-        let revResponse = await axios.get(`${SERVER_URL}/quesRev/study-material-rev/${searchedMaterials[index].id}`);
+        let revResponse = await axios.get(`${'http://localhost:3001'}/quesRev/study-material-rev/${searchedMaterials[index].id}`);
        
   
         setMaterialNotes(revResponse.data);
@@ -465,7 +465,7 @@ export const VirtualLibraryMain = () => {
 
 
       try {
-        let mcqResponse = await axios.get(`${SERVER_URL}/quesAns/study-material-mcq/${searchCategoryMaterials[index].id}`);
+        let mcqResponse = await axios.get(`${'http://localhost:3001'}/quesAns/study-material-mcq/${searchCategoryMaterials[index].id}`);
   
         setContext(searchCategoryMaterials[index].body)
         setMaterialMCQ(mcqResponse.data);
@@ -473,7 +473,7 @@ export const VirtualLibraryMain = () => {
       if (Array.isArray(mcqResponse.data)) {
         const materialChoices = mcqResponse.data.map(async (materialChoice) => {
           try {
-            let choiceResponse = await axios.get(`${SERVER_URL}/quesAnsChoices/study-material/${searchCategoryMaterials[index].id}/${materialChoice.id}`);
+            let choiceResponse = await axios.get(`${'http://localhost:3001'}/quesAnsChoices/study-material/${searchCategoryMaterials[index].id}/${materialChoice.id}`);
             
               return choiceResponse.data;
             } catch (error) {
@@ -491,7 +491,7 @@ export const VirtualLibraryMain = () => {
   
       try {
   
-        let revResponse = await axios.get(`${SERVER_URL}/quesRev/study-material-rev/${searchCategoryMaterials[index].id}`);
+        let revResponse = await axios.get(`${'http://localhost:3001'}/quesRev/study-material-rev/${searchCategoryMaterials[index].id}`);
        
   
         setMaterialNotes(revResponse.data);
@@ -521,20 +521,20 @@ export const VirtualLibraryMain = () => {
   
       if (materialArray && materialArray[index]) {
         if (materialFor === 'personal') {
-          studyMaterialResponse = await axios.put(`${SERVER_URL}/studyMaterial/update-tag/${personalStudyMaterials[index].id}`, data);
+          studyMaterialResponse = await axios.put(`${'http://localhost:3001'}/studyMaterial/update-tag/${personalStudyMaterials[index].id}`, data);
         } else {
-          studyMaterialResponse = await axios.put(`${SERVER_URL}/studyMaterial/update-tag/${groupStudyMaterials[index].id}`, data);
+          studyMaterialResponse = await axios.put(`${'http://localhost:3001'}/studyMaterial/update-tag/${groupStudyMaterials[index].id}`, data);
         }
   
         let categoryData = {
           isShared: true,
         };
   
-        await axios.put(`${SERVER_URL}/studyMaterialCategory/update-shared/${studyMaterialResponse.data.StudyMaterialsCategoryId}`, categoryData);
+        await axios.put(`${'http://localhost:3001'}/studyMaterialCategory/update-shared/${studyMaterialResponse.data.StudyMaterialsCategoryId}`, categoryData);
   
         if (currentMaterialCategory !== '') {
           // Fetch the newly shared material
-          const newSharedMaterial = await axios.get(`${SERVER_URL}/studyMaterial/get-material/${studyMaterialResponse.data.id}`);
+          const newSharedMaterial = await axios.get(`${'http://localhost:3001'}/studyMaterial/get-material/${studyMaterialResponse.data.id}`);
           
           // Update the state with the new material added to the beginning of the array
           setFilteredStudyMaterialsByCategory(prevMaterials => [newSharedMaterial.data, ...prevMaterials]);
@@ -632,7 +632,7 @@ export const VirtualLibraryMain = () => {
 
     
     try {
-      let mcqResponse = await axios.get(`${SERVER_URL}/quesAns/study-material-mcq/${sharedMaterials[index].id}`);
+      let mcqResponse = await axios.get(`${'http://localhost:3001'}/quesAns/study-material-mcq/${sharedMaterials[index].id}`);
 
       genQAData = mcqResponse.data
 
@@ -647,7 +647,7 @@ export const VirtualLibraryMain = () => {
     if (Array.isArray(genMCQAData)) {
       const materialChoices = genMCQAData.map(async (materialChoice) => {
         try {
-          let choiceResponse = await axios.get(`${SERVER_URL}/quesAnsChoices/study-material/${sharedMaterials[index].id}/${materialChoice.id}`);
+          let choiceResponse = await axios.get(`${'http://localhost:3001'}/quesAnsChoices/study-material/${sharedMaterials[index].id}/${materialChoice.id}`);
 
             return choiceResponse.data;
           } catch (error) {
@@ -666,7 +666,7 @@ export const VirtualLibraryMain = () => {
     if (Array.isArray(genToF)) {
       const materialChoices = genToF.map(async (materialChoice) => {
         try {
-          let choiceResponse = await axios.get(`${SERVER_URL}/quesAnsChoices/study-material/${sharedMaterials[index].id}/${materialChoice.id}`);
+          let choiceResponse = await axios.get(`${'http://localhost:3001'}/quesAnsChoices/study-material/${sharedMaterials[index].id}/${materialChoice.id}`);
 
             return choiceResponse.data;
           } catch (error) {
@@ -686,7 +686,7 @@ export const VirtualLibraryMain = () => {
 
     try {
 
-      let revResponse = await axios.get(`${SERVER_URL}/quesRev/study-material-rev/${sharedMaterials[index].id}`);
+      let revResponse = await axios.get(`${'http://localhost:3001'}/quesRev/study-material-rev/${sharedMaterials[index].id}`);
 
       genQADataRev = revResponse.data;
       
@@ -701,7 +701,7 @@ export const VirtualLibraryMain = () => {
 
     try {
       const smResponse = await axios.post(
-        `${SERVER_URL}/studyMaterial`,
+        `${'http://localhost:3001'}/studyMaterial`,
         studyMaterialsData
       );
 
@@ -723,7 +723,7 @@ export const VirtualLibraryMain = () => {
         };
 
         const qaResponse = await axios.post(
-          `${SERVER_URL}/quesAns`,
+          `${'http://localhost:3001'}/quesAns`,
           qaData
         );
 
@@ -736,7 +736,7 @@ export const VirtualLibraryMain = () => {
           };
   
           try {
-              await axios.post(`${SERVER_URL}/quesAnsChoices`, qacData);
+              await axios.post(`${'http://localhost:3001'}/quesAnsChoices`, qacData);
           } catch (error) {
               console.error(error);
           }
@@ -754,7 +754,7 @@ export const VirtualLibraryMain = () => {
           UserId: smResponse.data.UserId,
         };
 
-        await axios.post(`${SERVER_URL}/quesRev`, qaDataRev);
+        await axios.post(`${'http://localhost:3001'}/quesRev`, qaDataRev);
 
       }
 
@@ -772,7 +772,7 @@ export const VirtualLibraryMain = () => {
       
         try {
           // Create the question and get the response
-          const qaResponse = await axios.post(`${SERVER_URL}/quesAns`, trueSentencesData);
+          const qaResponse = await axios.post(`${'http://localhost:3001'}/quesAns`, trueSentencesData);
       
           // Iterate through mcqaDistractors and create question choices
           for (let j = 0; j < tofDistractors[i].length; j++) {
@@ -784,7 +784,7 @@ export const VirtualLibraryMain = () => {
             };
     
             try {
-                await axios.post(`${SERVER_URL}/quesAnsChoices`, qacData);
+                await axios.post(`${'http://localhost:3001'}/quesAnsChoices`, qacData);
             } catch (error) {
                 console.error(error);
             }
@@ -808,7 +808,7 @@ export const VirtualLibraryMain = () => {
 
         try {
           await axios.post(
-            `${SERVER_URL}/quesAns`,
+            `${'http://localhost:3001'}/quesAns`,
             fillInTheBlankData
             );
         } catch (error) {
@@ -830,7 +830,7 @@ export const VirtualLibraryMain = () => {
 
         try {
           await axios.post(
-            `${SERVER_URL}/quesAns`,
+            `${'http://localhost:3001'}/quesAns`,
             identificationData
             );
         } catch (error) {
@@ -859,7 +859,7 @@ export const VirtualLibraryMain = () => {
 
    if (materialFor === 'Personal') {
 
-    const personalStudyMaterial = await axios.get(`${SERVER_URL}/studyMaterial/study-material-category/Personal/${UserId}`)
+    const personalStudyMaterial = await axios.get(`${'http://localhost:3001'}/studyMaterial/study-material-category/Personal/${UserId}`)
 
     let bookmarkedPersonalMaterial = personalStudyMaterial.data;
 
@@ -875,7 +875,7 @@ export const VirtualLibraryMain = () => {
 
     } else {
 
-      const groupStudyMaterial = await axios.get(`${SERVER_URL}/studyMaterial/study-material-category/Group/${UserId}`)
+      const groupStudyMaterial = await axios.get(`${'http://localhost:3001'}/studyMaterial/study-material-category/Group/${UserId}`)
 
       let bookmarkedPersonalMaterial = groupStudyMaterial.data;
 
@@ -934,7 +934,7 @@ export const VirtualLibraryMain = () => {
   // Use Promise.all with map for asynchronous operations
   let sortedDataUsers = await Promise.all(
     matchingMaterials.map(async (user) => {
-      const response = await axios.get(`${SERVER_URL}/users/get-user/${user.UserId}`);
+      const response = await axios.get(`${'http://localhost:3001'}/users/get-user/${user.UserId}`);
       return response.data;
     })
   );
@@ -946,14 +946,13 @@ export const VirtualLibraryMain = () => {
 
   // Use Promise.all with map for asynchronous operations
   let sortedDataBookmarksCounts = await Promise.all(
-    matchingMaterials.map(async (user) => {
-      const response = await axios.get(`${SERVER_URL}/studyMaterial/bookmark-counts/${user.code}`);
+    sortedDataUsers.map(async (user) => {
+      const response = await axios.get(`${'http://localhost:3001'}/studyMaterial/bookmark-counts/${user.code}`);
       return response.data;
     })
   );  
 
   setCurrentFilteredCategoryBookmarks(sortedDataBookmarksCounts);
-  console.log(sortedDataBookmarksCounts.length)
 
 
   setCurrentFilteredCategory(categoryTitle)
@@ -1011,14 +1010,14 @@ export const VirtualLibraryMain = () => {
 
     const fetchedSharedStudyMaterialCategory = await Promise.all(
       filteredMaterials.map(async (material, index) => {
-        const materialCategorySharedResponse = await axios.get(`${SERVER_URL}/studyMaterialCategory/shared-material-category/${material.StudyMaterialsCategoryId}/Group/${UserId}`);
+        const materialCategorySharedResponse = await axios.get(`${'http://localhost:3001'}/studyMaterialCategory/shared-material-category/${material.StudyMaterialsCategoryId}/Group/${UserId}`);
         return materialCategorySharedResponse.data;
       })
     );
 
     const fetchedSearchCategoryMaterials = await Promise.all(
       filteredCategories.map(async (material, index) => {
-        const sharedStudyMaterial = await axios.get(`${SERVER_URL}/studyMaterial/shared-materials/${material.id}`);
+        const sharedStudyMaterial = await axios.get(`${'http://localhost:3001'}/studyMaterial/shared-materials/${material.id}`);
         return sharedStudyMaterial.data;
       })
     );
@@ -1029,8 +1028,8 @@ export const VirtualLibraryMain = () => {
 
     // Use Promise.all with map for asynchronous operations
     let sortedDataBookmarksCounts = await Promise.all(
-      matchingMaterials.map(async (user) => {
-        const response = await axios.get(`${SERVER_URL}/studyMaterial/bookmark-counts/${user.code}`);
+      fetchedSharedStudyMaterialCategory.map(async (user) => {
+        const response = await axios.get(`${'http://localhost:3001'}/studyMaterial/bookmark-counts/${user.code}`);
         return response.data;
       })
     );  
@@ -1040,7 +1039,7 @@ export const VirtualLibraryMain = () => {
     // Use Promise.all with map for asynchronous operations
     let sortedDataUsers = await Promise.all(
       fetchedSharedStudyMaterialCategory.map(async (user) => {
-        const response = await axios.get(`${SERVER_URL}/users/get-user/${user.UserId}`);
+        const response = await axios.get(`${'http://localhost:3001'}/users/get-user/${user.UserId}`);
         return response.data;
       })
     );
@@ -1082,7 +1081,7 @@ export const VirtualLibraryMain = () => {
       };
       
       if (groupNameValue !== '') {
-        await axios.post(`${SERVER_URL}/studyGroup/create-group`, groupData);
+        await axios.post(`${'http://localhost:3001'}/studyGroup/create-group`, groupData);
   
         fetchData();
         setShowCreateGroupInput(false);
@@ -1103,7 +1102,7 @@ export const VirtualLibraryMain = () => {
       tag: 'Own Record'
     }
 
-    const removed = await axios.put(`${SERVER_URL}/studyMaterial/update-tag/${materialIdToRemove}`, data)
+    const removed = await axios.put(`${'http://localhost:3001'}/studyMaterial/update-tag/${materialIdToRemove}`, data)
 
 
 
@@ -1129,7 +1128,7 @@ export const VirtualLibraryMain = () => {
 
   const deleteInAllRecords = async () => {
     try {
-      const removed = await axios.delete(`${SERVER_URL}/studyMaterial/delete-material/${materialIdToRemove}`);
+      const removed = await axios.delete(`${'http://localhost:3001'}/studyMaterial/delete-material/${materialIdToRemove}`);
   
       // Find the index of the material with the specified ID
       const materialIndexToRemove = filteredStudyMaterialsByCategory.findIndex((material) => material.id === materialIdToRemove);

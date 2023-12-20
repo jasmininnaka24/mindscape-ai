@@ -16,7 +16,7 @@ export const DeleteTask = (props) => {
     const confirmed = window.confirm("Are you sure you want to delete?");
   
     if (confirmed) {
-       await axios.delete(`${SERVER_URL}/tasks/${taskId}`).then(() => {
+       await axios.delete(`${'http://localhost:3001'}/tasks/${taskId}`).then(() => {
         const updatedTasks = listOfTasks.filter((task) => task.id !== taskId);  
         setListOfTasks(updatedTasks);
         }

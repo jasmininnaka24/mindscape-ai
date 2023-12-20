@@ -20,7 +20,7 @@ module.exports = (sequelize, DataTypes) => {
     studyProfTarget: {
       type: DataTypes.INTEGER,
       allowNull: false,
-      defaultValue: 90, 
+      defaultValue: 0, 
     },
     userImage: {
       type: DataTypes.STRING,

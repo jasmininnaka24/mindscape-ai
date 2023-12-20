@@ -33,20 +33,20 @@ export const PersonalReviewerPage = () => {
 
   const fetchData = async () => {
 
-    const groupResponse = await axios.get(`${SERVER_URL}/studyMaterial/study-material-personal/Personal/${UserId}/${materialId}`);
+    const groupResponse = await axios.get(`${'http://localhost:3001'}/studyMaterial/study-material-personal/Personal/${UserId}/${materialId}`);
 
     setMaterialTitle(groupResponse.data.title);
 
-    await axios.get(`${SERVER_URL}/quesRev/study-material-rev/${materialId}`).then((response) => {
+    await axios.get(`${'http://localhost:3001'}/quesRev/study-material-rev/${materialId}`).then((response) => {
       setNotesReviewer(response.data)
     })
 
-    await axios.get(`${SERVER_URL}/studyMaterial/study-material-personal/Personal/${UserId}/${materialId}`).then((response) => {
+    await axios.get(`${'http://localhost:3001'}/studyMaterial/study-material-personal/Personal/${UserId}/${materialId}`).then((response) => {
       setLessonContext(response.data.body);
     })
 
     try {
-      const previousSavedData = await axios.get(`${SERVER_URL}/DashForPersonalAndGroup/get-latest-assessment-personal/${materialId}/${UserId}`);
+      const previousSavedData = await axios.get(`${'http://localhost:3001'}/DashForPersonalAndGroup/get-latest-assessment-personal/${materialId}/${UserId}`);
       const fetchedData = previousSavedData.data;
 
   
@@ -111,7 +111,7 @@ export const PersonalReviewerPage = () => {
   const startStudySession = async () => {
 
     if (takeAssessment) {
-      await axios.put(`${SERVER_URL}/studyMaterial/update-data/${materialId}`, {
+      await axios.put(`${'http://localhost:3001'}/studyMaterial/update-data/${materialId}`, {
         isStarted: 'true',
         codeDashTrackingNum: generateRandomString(),
       });
@@ -131,7 +131,7 @@ export const PersonalReviewerPage = () => {
     const confirmed = window.confirm(`Are you sure you want to delete ${title}?`);
   
     if (confirmed) {
-      await axios.delete(`${SERVER_URL}/studyMaterial/delete-material/${id}`)
+      await axios.delete(`${'http://localhost:3001'}/studyMaterial/delete-material/${id}`)
 
       setTimeout(() => {
         setIsMaterialDeleted('')

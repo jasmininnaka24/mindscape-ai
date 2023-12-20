@@ -43,7 +43,7 @@ export const MainPage = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await axios.get(`${SERVER_URL}/users`);
+        const response = await axios.get(`${'http://localhost:3001'}/users`);
         let responseData = response.data;
   
         let filteredUsers = responseData.filter(user => user.id !== UserId);
@@ -62,7 +62,7 @@ export const MainPage = () => {
   const handleSearch = async (event) => {
     setSearchTerm(event)
 
-    const response = await axios.get(`${SERVER_URL}/users`);
+    const response = await axios.get(`${'http://localhost:3001'}/users`);
     let responseData = response.data;
 
     let filteredUsers = responseData.filter(user => user.id !== UserId);
@@ -71,7 +71,7 @@ export const MainPage = () => {
     //   user.username.toLowerCase().includes(term.toLowerCase())
     // );
 
-    setSearchResults(responseData);
+    setSearchResults(filteredUsers);
   };
 
 

@@ -1,7 +1,7 @@
 {
   "development": {
     "username": "root",
-    "password": "MindScapeDatabase@3",
+    "password": "123456789",
     "database": "mindscapedb",
     "host": "localhost",
     "dialect": "mysql"

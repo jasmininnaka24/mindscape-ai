@@ -70,7 +70,6 @@ export const PreJoinPage = (props) => {
     });
   }
 
-
   useEffect(() => {
     
     

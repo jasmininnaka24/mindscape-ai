@@ -92,18 +92,18 @@ export const PersonalAssessment = () => {
   useEffect(() => {
     const fetchData = async () => {
 
-      const materialTitleResponse = await axios.get(`${SERVER_URL}/studyMaterial/study-material-personal/Personal/${UserId}/${materialId}`)
+      const materialTitleResponse = await axios.get(`${'http://localhost:3001'}/studyMaterial/study-material-personal/Personal/${UserId}/${materialId}`)
       setMaterialTitle(materialTitleResponse.data.title)
       
 
-      const materialCategoryResponse = await axios.get(`${SERVER_URL}/studyMaterialCategory/get-categoryy/${materialTitleResponse.data.StudyMaterialsCategoryId}/`)
+      const materialCategoryResponse = await axios.get(`${'http://localhost:3001'}/studyMaterialCategory/get-categoryy/${materialTitleResponse.data.StudyMaterialsCategoryId}/`)
       setMaterialCategory(materialCategoryResponse.data.category)
 
-      const materialResponse = await axios.get(`${SERVER_URL}/quesAns/study-material-mcq/${materialId}`);
+      const materialResponse = await axios.get(`${'http://localhost:3001'}/quesAns/study-material-mcq/${materialId}`);
       const fetchedQA = materialResponse.data;
 
 
-      const previousSavedData = await axios.get(`${SERVER_URL}/DashForPersonalAndGroup/get-latest-assessment-personal/${materialId}/${UserId}`);
+      const previousSavedData = await axios.get(`${'http://localhost:3001'}/DashForPersonalAndGroup/get-latest-assessment-personal/${materialId}/${UserId}`);
       const fetchedData = previousSavedData.data;
 
       if (fetchedData && Array.isArray(fetchedData) && fetchedData.length > 0) {
@@ -126,7 +126,7 @@ export const PersonalAssessment = () => {
             const randomNumber = Math.floor(Math.random() * 10);
             if (randomNumber % 2 === 0) {
               try {
-                const choicesResponse = await axios.get(`${SERVER_URL}/quesAnsChoices/study-material/${materialId}/${item.id}`);
+                const choicesResponse = await axios.get(`${'http://localhost:3001'}/quesAnsChoices/study-material/${materialId}/${item.id}`);
                 const randomIndex = Math.floor(Math.random() * choicesResponse.data.length);
                 const question = choicesResponse.data[randomIndex].choice;
                 return {
@@ -152,7 +152,7 @@ export const PersonalAssessment = () => {
       if (Array.isArray(updatedData)) {
         const shuffledChoicesPromises = updatedData.map(async (item) => {
           try {
-            const materialChoicesResponse = await axios.get(`${SERVER_URL}/quesAnsChoices/study-material/${materialId}/${item.id}`);
+            const materialChoicesResponse = await axios.get(`${'http://localhost:3001'}/quesAnsChoices/study-material/${materialId}/${item.id}`);
             const choices = materialChoicesResponse.data.map(choice => choice.choice);
             const combinedArray = [...choices, item.answer];
             const shuffledArray = shuffleArray(combinedArray);
@@ -175,7 +175,7 @@ export const PersonalAssessment = () => {
 
       
       try {
-        const previousSavedData = await axios.get(`${SERVER_URL}/DashForPersonalAndGroup/get-latest-assessment-personal/${materialId}/${UserId}`);
+        const previousSavedData = await axios.get(`${'http://localhost:3001'}/DashForPersonalAndGroup/get-latest-assessment-personal/${materialId}/${UserId}`);
         const fetchedData = previousSavedData.data;
 
     
@@ -227,7 +227,7 @@ export const PersonalAssessment = () => {
 
   const updateStudyPerformance = async (overallperf) => {
     try {
-      const updatedStudyPerformance = await axios.put(`${SERVER_URL}/studyMaterial/update-study-performance/${materialId}`, {
+      const updatedStudyPerformance = await axios.put(`${'http://localhost:3001'}/studyMaterial/update-study-performance/${materialId}`, {
         studyPerformance: (overallperf).toFixed(2)
       });
   
@@ -236,14 +236,14 @@ export const PersonalAssessment = () => {
       if (categoryId) {
         setCategoryID(categoryId);
   
-        const extractedStudyMaterials = await axios.get(`${SERVER_URL}/studyMaterial/all-study-material/${categoryId}`);
+        const extractedStudyMaterials = await axios.get(`${'http://localhost:3001'}/studyMaterial/all-study-material/${categoryId}`);
         const extractedStudyMaterialsResponse = extractedStudyMaterials.data;
         const materialsLength = extractedStudyMaterialsResponse.length;
   
         let calcStudyPerfVal = extractedStudyMaterialsResponse.reduce((sum, item) => sum + item.studyPerformance, 0);
         let overAllCalcVal = (calcStudyPerfVal / materialsLength).toFixed(2);
   
-        await axios.put(`${SERVER_URL}/studyMaterialCategory/update-study-performance/${categoryId}`, {
+        await axios.put(`${'http://localhost:3001'}/studyMaterialCategory/update-study-performance/${categoryId}`, {
           studyPerformance: overAllCalcVal
         });
       } else {
@@ -272,7 +272,7 @@ export const PersonalAssessment = () => {
     }, 0);
     
 
-    const previousSavedData = await axios.get(`${SERVER_URL}/DashForPersonalAndGroup/get-latest-assessment-personal/${materialId}/${UserId}`);
+    const previousSavedData = await axios.get(`${'http://localhost:3001'}/DashForPersonalAndGroup/get-latest-assessment-personal/${materialId}/${UserId}`);
     const fetchedData = previousSavedData.data;
     
 
@@ -320,7 +320,7 @@ export const PersonalAssessment = () => {
       }
 
 
-      const newlyFetchedDashboardData = await axios.post(`${SERVER_URL}/DashForPersonalAndGroup/`, data);
+      const newlyFetchedDashboardData = await axios.post(`${'http://localhost:3001'}/DashForPersonalAndGroup/`, data);
 
       const newlyFetchedDashboardDataValues = newlyFetchedDashboardData.data;
 
@@ -352,7 +352,7 @@ export const PersonalAssessment = () => {
 
 
 
-        const newlyFetchedDashboardData = await axios.put(`${SERVER_URL}/DashForPersonalAndGroup/update-data/${fetchedData[0].id}`, data);
+        const newlyFetchedDashboardData = await axios.put(`${'http://localhost:3001'}/DashForPersonalAndGroup/update-data/${fetchedData[0].id}`, data);
         const newlyFetchedDashboardDataValues = newlyFetchedDashboardData.data;
 
         setAnalysisId(newlyFetchedDashboardDataValues.id);
@@ -405,7 +405,7 @@ export const PersonalAssessment = () => {
         setLastAssessmentScore(fetchedData[0].assessmentScore)
         setAssessmentImp(assessmentImp.assessmentImp)
 
-        const newlyFetchedDashboardData = await axios.post(`${SERVER_URL}/DashForPersonalAndGroup/`, data);
+        const newlyFetchedDashboardData = await axios.post(`${'http://localhost:3001'}/DashForPersonalAndGroup/`, data);
         const newlyFetchedDashboardDataValues = newlyFetchedDashboardData.data;
 
 
@@ -487,7 +487,7 @@ export const PersonalAssessment = () => {
 
     let predictionVal = overAllPerformance.toFixed(2);
     
-    const previousSavedData = await axios.get(`${SERVER_URL}/DashForPersonalAndGroup/get-latest-assessment-personal/${materialId}/${UserId}`);
+    const previousSavedData = await axios.get(`${'http://localhost:3001'}/DashForPersonalAndGroup/get-latest-assessment-personal/${materialId}/${UserId}`);
     const fetchedData = previousSavedData.data;    
     
     let lastExamStr = 'Pre-Assessment';
@@ -539,7 +539,7 @@ export const PersonalAssessment = () => {
     let generatedAnalysisResponse = (response.data.generated_analysis).replace('\n\n\n\n\n', '');
     setGeneratedAnalysis(generatedAnalysisResponse)
 
-    const newlyFetchedDashboardData = await axios.put(`${SERVER_URL}/DashForPersonalAndGroup/set-update-analysis/${id}`, {analysis: generatedAnalysisResponse});
+    const newlyFetchedDashboardData = await axios.put(`${'http://localhost:3001'}/DashForPersonalAndGroup/set-update-analysis/${id}`, {analysis: generatedAnalysisResponse});
     const newlyFetchedDashboardDataValues = newlyFetchedDashboardData.data;
     
     const dashID = newlyFetchedDashboardDataValues.id;

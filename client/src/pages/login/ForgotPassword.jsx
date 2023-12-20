@@ -18,11 +18,9 @@ export const ForgotPassword = () => {
       email: email
     }
 
-    setShowResetPasswordUI(false)
-    
-    await axios.post(`${SERVER_URL}/users/verify-email`, data);
+    await axios.post(`${'http://localhost:3001'}/users/verify-email`, data);
 
-    
+    setShowResetPasswordUI(false)
     
   }
 
@@ -36,7 +34,7 @@ export const ForgotPassword = () => {
 
           <div>
             <p className='text-lg'>Email Address: </p>
-            <input className='my-2 py-2 px-4 rounded border-thin-800 w-full' autoComplete='no' type="email" placeholder='Enter email' onChange={(e) => setEmail(e.target.value)} />
+            <input className='my-2 py-2 px-4 rounded border-thin-800 w-full' type="email" placeholder='Enter email' onChange={(e) => setEmail(e.target.value)} />
           </div>
 
           <div>

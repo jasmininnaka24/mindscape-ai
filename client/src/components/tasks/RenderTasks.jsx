@@ -14,9 +14,9 @@ export const RenderTasks = ({ setListOfTasks, UserId, groupId, room }) => {
       let renderLink = ''
 
       if (room === 'Personal') {
-        renderLink = `${SERVER_URL}/tasks/personal/${UserId}`
+        renderLink = `${'http://localhost:3001'}/tasks/personal/${UserId}`
       } else {
-        renderLink = `${SERVER_URL}/tasks/group/${groupId}`
+        renderLink = `${'http://localhost:3001'}/tasks/group/${groupId}`
       }
 
       await axios.get(renderLink).then((response) => {

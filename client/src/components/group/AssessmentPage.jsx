@@ -795,7 +795,7 @@ export const AssessmentPage = (props) => {
 
                       <div className=' flex items-center justify-center gap-5'>
 
-                        {/* {takeAssessment && (
+                        {takeAssessment && (
                           (generatedAnalysis === '' && !showScoreForPreAssessment ) ? (
                             <button
                               className='border-thin-800 px-5 py-3 rounded-[5px] w-1/4'
@@ -822,7 +822,7 @@ export const AssessmentPage = (props) => {
                               View Analysis
                             </button>
                           )
-                        )} */}
+                        )}
 
 
                         {groupId !== undefined ? (

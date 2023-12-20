@@ -35,7 +35,7 @@ export const Analysis = () => {
   useEffect(() => {
     const fetchData = async () => {
 
-      const materialResponse = await axios.get(`${SERVER_URL}/DashForPersonalAndGroup/get-dash-data/${dashID}`);
+      const materialResponse = await axios.get(`${'http://localhost:3001'}/DashForPersonalAndGroup/get-dash-data/${dashID}`);
       const fetchedQA = materialResponse.data;
 
       setPreAssessmentScore(fetchedQA.preAssessmentScore)
@@ -49,7 +49,7 @@ export const Analysis = () => {
       setOverAllPerformance(((parseFloat(fetchedQA.assessmentImp) + parseFloat(fetchedQA.assessmentScorePerf) + parseFloat(fetchedQA.confidenceLevel)) / 3).toFixed(2))
 
 
-      const previousSavedData = await axios.get(`${SERVER_URL}/DashForPersonalAndGroup/get-assessments/${materialID}`);
+      const previousSavedData = await axios.get(`${'http://localhost:3001'}/DashForPersonalAndGroup/get-assessments/${materialID}`);
       const fetchedData = previousSavedData.data;
       setFetchedData(fetchedData);
 

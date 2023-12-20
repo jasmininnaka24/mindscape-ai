@@ -52,7 +52,7 @@ export const QAGenerator = (props) => {
     let studyMaterialCategoryLink = '';
 
     if (materialFor === 'Personal') {
-      studyMaterialCategoryLink = `${SERVER_URL}/studyMaterialCategory/personal-study-material/${materialFor}/${UserId}`;
+      studyMaterialCategoryLink = `${'http://localhost:3001'}/studyMaterialCategory/personal-study-material/${materialFor}/${UserId}`;
 
       
       const sharedStudyMaterialResponse = await axios.get(studyMaterialCategoryLink);
@@ -60,21 +60,21 @@ export const QAGenerator = (props) => {
 
 
     } else if (materialFor === 'Group') {
-      studyMaterialCategoryLink = `${SERVER_URL}/studyMaterialCategory/${materialFor}/${groupNameId}`;
+      studyMaterialCategoryLink = `${'http://localhost:3001'}/studyMaterialCategory/${materialFor}/${groupNameId}`;
 
       const sharedStudyMaterialResponse = await axios.get(studyMaterialCategoryLink);
       console.log(sharedStudyMaterialResponse.data);
 
     } else {
 
-      // studyMaterialLink = `${SERVER_URL}/studyMaterial/study-material-group-category/${categoryFor}/${groupNameId}`;
+      // studyMaterialLink = `${'http://localhost:3001'}/studyMaterial/study-material-group-category/${categoryFor}/${groupNameId}`;
 
-      const sharedStudyMaterialResponse = await axios.get(`${SERVER_URL}/studyMaterial/shared-materials`);
+      const sharedStudyMaterialResponse = await axios.get(`${'http://localhost:3001'}/studyMaterial/shared-materials`);
       console.log('API Response:', sharedStudyMaterialResponse.data);
       
       const fetchedSharedStudyMaterialCategory = await Promise.all(
         sharedStudyMaterialResponse.data.map(async (material, index) => {
-          const materialCategorySharedResponse = await axios.get(`${SERVER_URL}/studyMaterialCategory/shared-material-category/${material.StudyMaterialsCategoryId}/Group/${UserId}`);
+          const materialCategorySharedResponse = await axios.get(`${'http://localhost:3001'}/studyMaterialCategory/shared-material-category/${material.StudyMaterialsCategoryId}/Group/${UserId}`);
           return materialCategorySharedResponse.data;
         })
       );
@@ -957,8 +957,6 @@ export const QAGenerator = (props) => {
                         </tr>
                       </thead>
                       {generatedQA.true_or_false_sentences.map((item, index) => (
-
-                        item.distractors.length > 0 &&
                         <tr key={index}>
                           <td className='pr-5'>{index+1}</td>
                           <td>

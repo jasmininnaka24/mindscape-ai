@@ -44,7 +44,7 @@ export const DataSubmission = () => {
       typeOfLearner: learningStyle
     }
 
-    await axios.put(`${SERVER_URL}/users/update-typeoflearner/${id}`, data)
+    await axios.put(`${'http://localhost:3001'}/users/update-typeoflearner/${id}`, data)
 
 
     navigate('/data-result', {

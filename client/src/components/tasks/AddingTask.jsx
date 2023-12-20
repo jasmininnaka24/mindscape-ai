@@ -31,7 +31,7 @@ export const AddingTask = (props) => {
     };
 
     try {
-      const response = await axios.post(`${SERVER_URL}/tasks`, data);
+      const response = await axios.post(`${'http://localhost:3001'}/tasks`, data);
       setListOfTasks([response.data, ...listOfTasks]);
     } catch (error) {
       console.error("Error adding task:", error);

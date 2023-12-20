@@ -32,9 +32,9 @@ export const SavedGeneratedData = (props) => {
         let studyMaterialCatPersonalLink = '';
     
         if (materialFor === 'Personal') {
-          studyMaterialCatPersonalLink = `${SERVER_URL}/studyMaterialCategory/personal-study-material/${materialFor}/${userId}`;
+          studyMaterialCatPersonalLink = `${'http://localhost:3001'}/studyMaterialCategory/personal-study-material/${materialFor}/${userId}`;
         } else if (materialFor === 'Group') {
-          studyMaterialCatPersonalLink = `${SERVER_URL}/studyMaterialCategory/${materialFor}/${groupNameId}`;
+          studyMaterialCatPersonalLink = `${'http://localhost:3001'}/studyMaterialCategory/${materialFor}/${groupNameId}`;
         } 
       
   
@@ -236,7 +236,7 @@ export const SavedGeneratedData = (props) => {
 
         try {
           const smResponse = await axios.post(
-            `${SERVER_URL}/studyMaterial`,
+            `${'http://localhost:3001'}/studyMaterial`,
             studyMaterialsData
           );
   
@@ -255,7 +255,7 @@ export const SavedGeneratedData = (props) => {
   
 
             const qaResponse = await axios.post(
-              `${SERVER_URL}/quesAns`,
+              `${'http://localhost:3001'}/quesAns`,
               qaData
             );
   
@@ -268,7 +268,7 @@ export const SavedGeneratedData = (props) => {
   
               if (qacData.choice !== "") {
                 await axios.post(
-                  `${SERVER_URL}/quesAnsChoices`,
+                  `${'http://localhost:3001'}/quesAnsChoices`,
                   qacData
                 );
                 console.log("Saved!");
@@ -286,7 +286,7 @@ export const SavedGeneratedData = (props) => {
               StudyMaterialId: smResponse.data.id,
             };
   
-            await axios.post(`${SERVER_URL}/quesRev`, qaDataRev);
+            await axios.post(`${'http://localhost:3001'}/quesRev`, qaDataRev);
             console.log('Saved rev!');
           }
 
@@ -308,7 +308,7 @@ export const SavedGeneratedData = (props) => {
           
             try {
               // Create the question and get the response
-              const qaResponse = await axios.post(`${SERVER_URL}/quesAns`, trueSentencesData);
+              const qaResponse = await axios.post(`${'http://localhost:3001'}/quesAns`, trueSentencesData);
           
               // Iterate through distractors and create question choices
               for (let j = 0; j < genTrueSentences[i].distractors.length; j++) {
@@ -319,7 +319,7 @@ export const SavedGeneratedData = (props) => {
                 };
           
                 if (qacData.choice !== "") {
-                  await axios.post(`${SERVER_URL}/quesAnsChoices`, qacData);
+                  await axios.post(`${'http://localhost:3001'}/quesAnsChoices`, qacData);
                   console.log("Saved!");
                 }
               }
@@ -344,7 +344,7 @@ export const SavedGeneratedData = (props) => {
 
             try {
               await axios.post(
-                `${SERVER_URL}/quesAns`,
+                `${'http://localhost:3001'}/quesAns`,
                 fillInTheBlank
                 );
             } catch (error) {
