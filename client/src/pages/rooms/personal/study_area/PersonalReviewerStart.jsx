@@ -972,7 +972,7 @@ export const PersonalReviewerStart = () => {
                   setHidePomodoroModalBreak('hidden')
                   setTimeForBreak(false)
                   setTimeForPomodoro(true)
-                  setSeconds(10); 
+                  setSeconds(300); 
                 }}>Resume</button>
               </div>
             </div>

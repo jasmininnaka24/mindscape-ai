@@ -71,7 +71,7 @@ export const MainPage = () => {
     //   user.username.toLowerCase().includes(term.toLowerCase())
     // );
 
-    setSearchResults(filteredUsers);
+    setSearchResults(responseData);
   };
 
 

@@ -4,19 +4,16 @@ import { Link } from 'react-router-dom';
 import CheckIcon from '@mui/icons-material/Check';
 import io from 'socket.io-client';
 import ScrollToBottom from "react-scroll-to-bottom";
-import { useUser } from '../../UserContext';
+
 
 // chart
 import { BarChartForAnalysis } from '../charts/BarChartForAnalysis';
 
 
+const socket = io.connect("http://localhost:3001");
+
 
 export const AssessmentPage = (props) => {
-  const { SERVER_URL } = useUser();
-  
-  const socket = io.connect(SERVER_URL);
-
-
 
   const { groupId, materialId, username, userId, userListAssessment, setUserListAssessment, selectedAssessmentAnswer, setSelectedAssessmentAnswer, assessementRoom, isRunning, setIsRunning, seconds, setSeconds, setQA, extractedQA, shuffledChoices, setShuffledChoices, isSubmittedButtonClicked, setIsSubmittedButtonClicked, idOfWhoSubmitted, setIdOfWhoSubmitted, usernameOfWhoSubmitted, setUsernameOfWhoSubmitted, score, setScore, isSubmitted, setIsSubmitted, isAssessmentDone, setIsAssessmentDone, showSubmittedAnswerModal, setShowSubmittedAnswerModal, showTexts, setShowTexts, showAnalysis, setShowAnalysis, showAssessment, setShowAssessment, overAllItems, setOverAllItems, preAssessmentScore, setPreAssessmentScore, assessmentScore, setAssessmentScore, assessmentImp, setAssessmentImp, assessmentScorePerf, setAssessmentScorePerf, completionTime, setCompletionTime, confidenceLevel, setConfidenceLevel, overAllPerformance, setOverAllPerformance, assessmentCountMoreThanOne, setAssessmentCountMoreThanOne, generatedAnalysis, setGeneratedAnalysis, shuffledChoicesAssessment, setShuffledChoicesAssessment, extractedQAAssessment, setQAAssessment, assessmentUsersChoices, setAssessmentUsersChoices, message, setMessage, messageList, setMessageList,isStartAssessmentButtonStarted, setIsStartAssessmentButtonStarted, setShowPreJoin, setIsJoined, setShowAssessmentPage } = props;
 
@@ -43,16 +40,16 @@ export const AssessmentPage = (props) => {
   const fetchData = async () => {
     
 
-    const materialTitleResponse = await axios.get(`${SERVER_URL}/studyMaterial/get-material/${materialId}`)
+    const materialTitleResponse = await axios.get(`http://localhost:3001/studyMaterial/get-material/${materialId}`)
     setMaterialTitle(materialTitleResponse.data.title)
 
     
 
-    const materialCategoryResponse = await axios.get(`${SERVER_URL}/studyMaterialCategory/get-categoryy/${materialTitleResponse.data.StudyMaterialsCategoryId}`)
+    const materialCategoryResponse = await axios.get(`http://localhost:3001/studyMaterialCategory/get-categoryy/${materialTitleResponse.data.StudyMaterialsCategoryId}`)
     setMaterialCategory(materialCategoryResponse.data.category)
 
 
-    const previousSavedData = await axios.get(`${SERVER_URL}/DashForPersonalAndGroup/get-latest-assessment-group/${materialId}/${groupId}`);
+    const previousSavedData = await axios.get(`http://localhost:3001/DashForPersonalAndGroup/get-latest-assessment-group/${materialId}/${groupId}`);
     const fetchedData = previousSavedData.data;
 
 
@@ -178,7 +175,7 @@ export const AssessmentPage = (props) => {
 
   const updateStudyPerformance = async (overallperf) => {
     try {
-      const updatedStudyPerformance = await axios.put(`${SERVER_URL}/studyMaterial/update-study-performance/${materialId}`, {
+      const updatedStudyPerformance = await axios.put(`http://localhost:3001/studyMaterial/update-study-performance/${materialId}`, {
         studyPerformance: (overallperf).toFixed(2)
       });
   
@@ -187,14 +184,14 @@ export const AssessmentPage = (props) => {
       if (categoryId) {
         setCategoryID(categoryId);
   
-        const extractedStudyMaterials = await axios.get(`${SERVER_URL}/studyMaterial/all-study-material/${categoryId}`);
+        const extractedStudyMaterials = await axios.get(`http://localhost:3001/studyMaterial/all-study-material/${categoryId}`);
         const extractedStudyMaterialsResponse = extractedStudyMaterials.data;
         const materialsLength = extractedStudyMaterialsResponse.length;
   
         let calcStudyPerfVal = extractedStudyMaterialsResponse.reduce((sum, item) => sum + item.studyPerformance, 0);
         let overAllCalcVal = (calcStudyPerfVal / materialsLength).toFixed(2);
   
-        await axios.put(`${SERVER_URL}/studyMaterialCategory/update-study-performance/${categoryId}`, {
+        await axios.put(`http://localhost:3001/studyMaterialCategory/update-study-performance/${categoryId}`, {
           studyPerformance: overAllCalcVal
         });
       } else {
@@ -227,7 +224,7 @@ export const AssessmentPage = (props) => {
     }, 0);
     
 
-    const previousSavedData = await axios.get(`${SERVER_URL}/DashForPersonalAndGroup/get-latest-assessment-group/${materialId}/${groupId}`);
+    const previousSavedData = await axios.get(`http://localhost:3001/DashForPersonalAndGroup/get-latest-assessment-group/${materialId}/${groupId}`);
     const fetchedData = previousSavedData.data;
     
 
@@ -274,7 +271,7 @@ export const AssessmentPage = (props) => {
         }
 
 
-        const newlyFetchedDashboardData = await axios.post(`${SERVER_URL}/DashForPersonalAndGroup/`, data);
+        const newlyFetchedDashboardData = await axios.post(`http://localhost:3001/DashForPersonalAndGroup/`, data);
 
         const newlyFetchedDashboardDataValues = newlyFetchedDashboardData.data;
 
@@ -306,7 +303,7 @@ export const AssessmentPage = (props) => {
 
 
 
-          const newlyFetchedDashboardData = await axios.put(`${SERVER_URL}/DashForPersonalAndGroup/update-data/${fetchedData[0].id}`, data);
+          const newlyFetchedDashboardData = await axios.put(`http://localhost:3001/DashForPersonalAndGroup/update-data/${fetchedData[0].id}`, data);
           const newlyFetchedDashboardDataValues = newlyFetchedDashboardData.data;
 
           setAnalysisId(newlyFetchedDashboardDataValues.id);
@@ -361,7 +358,7 @@ export const AssessmentPage = (props) => {
           setLastAssessmentScore(fetchedData[0].assessmentScore)
           setAssessmentImp(assessmentImp.assessmentImp)
 
-          const newlyFetchedDashboardData = await axios.post(`${SERVER_URL}/DashForPersonalAndGroup/`, data);
+          const newlyFetchedDashboardData = await axios.post(`http://localhost:3001/DashForPersonalAndGroup/`, data);
           const newlyFetchedDashboardDataValues = newlyFetchedDashboardData.data;
 
 
@@ -460,7 +457,7 @@ export const AssessmentPage = (props) => {
 
     let predictionVal = overAllPerformance.toFixed(2);
     
-    const previousSavedData = await axios.get(`${SERVER_URL}/DashForPersonalAndGroup/get-latest-assessment-group/${materialId}/${groupId}`);
+    const previousSavedData = await axios.get(`http://localhost:3001/DashForPersonalAndGroup/get-latest-assessment-group/${materialId}/${groupId}`);
     const fetchedData = previousSavedData.data;    
     
     let lastExamStr = 'Pre-Assessment';
@@ -517,7 +514,7 @@ export const AssessmentPage = (props) => {
     socket.emit('updated_generated_analysis', {room: assessementRoom, generatedAnalysis: generatedAnalysisResponse});
 
 
-    const newlyFetchedDashboardData = await axios.put(`${SERVER_URL}/DashForPersonalAndGroup/set-update-analysis/${id}`, {analysis: generatedAnalysisResponse});
+    const newlyFetchedDashboardData = await axios.put(`http://localhost:3001/DashForPersonalAndGroup/set-update-analysis/${id}`, {analysis: generatedAnalysisResponse});
     const newlyFetchedDashboardDataValues = newlyFetchedDashboardData.data;
     
     const dashID = newlyFetchedDashboardDataValues.id;

@@ -7,6 +7,8 @@ const crypto = require('crypto');
 const bcrypt  = require('bcrypt');
 const fs = require('fs');
 const path = require('path');
+const { Op } = require('sequelize');
+
 
 
 
@@ -245,46 +247,48 @@ router.put('/update-user/:id', async (req, res) => {
   const { username, studyProfTarget, typeOfLearner } = req.body;
 
   try {
-
-    const usernameReponse = await User.findOne({
+    // Check if the provided username is already taken by another user
+    const existingUser = await User.findOne({
       where: {
         username: username,
+        id: {
+          [Op.not]: userId, // Exclude the current user from the search
+        },
       },
       attributes: {
-        exclude: ["password"]
-      }
+        exclude: ["password"],
+      },
     });
 
-
-
-    // User already exists
-    if (studyProfTarget == '' || username === '' || typeOfLearner === '') {
-      return res.json({ message: 'Fill out all the empty fields.', error: true });
-    } 
-
-    if (usernameReponse.username === username && usernameReponse.id !== parseInt(userId, 10)) {
+    if (existingUser) {
       return res.json({ message: 'Username is already taken.', error: true });
-    } 
+    }
 
-
-
+    // Validate other input fields
+    if (studyProfTarget === '' || username === '' || typeOfLearner === '') {
+      return res.json({ message: 'Fill out all the empty fields.', error: true });
+    }
 
     const UserData = await User.findByPk(userId);
 
     if (!UserData) {
-      return res.status(404).json({ error: 'Dashboard data not found' });
+      return res.json({ message: 'User not found', error: true });
     }
 
+    // Update user details
     UserData.username = username;
     UserData.studyProfTarget = studyProfTarget;
     UserData.typeOfLearner = typeOfLearner;
 
-    const updatedUserData = await UserData.save();
+    console.log('updated:', UserData);
 
-    res.json({message: 'User details has been updated.', error: false});
-    
+    // Save the updated user data
+    await UserData.save();
+
+    res.json({ message: 'User details have been updated.', error: false });
   } catch (error) {
-    res.json({message: 'Failed updating user details.', error: true});
+    console.error(error);
+    res.json({ message: 'Failed updating user details.', error: true });
   }
 });
 
@@ -379,7 +383,7 @@ router.get('/reset-password/:id/:token', async(req,res) => {
   const oldUser = await User.findByPk(id)
 
   if (!oldUser) {
-    return res.json({message: "User does not exist."})
+    return res.json({message: "User does not exist.", error: true})
   }
 
   const secret = jwtSecret + oldUser.password;
@@ -388,11 +392,11 @@ router.get('/reset-password/:id/:token', async(req,res) => {
   try {
 
     const verifyData = verify(token,secret);
-    res.json({email: verifyData.email});
+    res.json({message: "Your password has been updated.", error: false});
 
   } catch (error) {
     console.log(error);
-    res.json({message: "Not verified"});
+    res.json({message: "Your token has already expired.", error: true});
   }
 
 })

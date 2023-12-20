@@ -9,16 +9,14 @@ import PushPinIcon from '@mui/icons-material/PushPin';
 
 
 
+const socket = io.connect("http://localhost:3001");
 
 
 
 export const PreJoinPage = (props) => {
-  
-  const { user, SERVER_URL } = useUser();
-  const navigate = useNavigate()
-  
-  const socket = io.connect(SERVER_URL);
 
+  const { user } = useUser();
+  const navigate = useNavigate()
 
   const { joinRoom, materialId, groupId, setShowPreJoin, setShowAssessmentPage, userId, assessementRoom, setUserListAssessment, selectedAssessmentAnswer, setSelectedAssessmentAnswer,  isRunning, setIsRunning, setSeconds, itemCount, setQA, extractedQA, shuffledChoices, setShuffledChoices, isSubmittedButtonClicked, setIsSubmittedButtonClicked, idOfWhoSubmitted, setIdOfWhoSubmitted, usernameOfWhoSubmitted, setUsernameOfWhoSubmitted, score, setScore, isSubmitted, setIsSubmitted, isAssessmentDone, setIsAssessmentDone, showSubmittedAnswerModal, setShowSubmittedAnswerModal, showTexts, setShowTexts, showAnalysis, setShowAnalysis, showAssessment, setShowAssessment, overAllItems, setOverAllItems, preAssessmentScore, setPreAssessmentScore, assessmentScore, setAssessmentScore, assessmentImp, setAssessmentImp, assessmentScorePerf, setAssessmentScorePerf, completionTime, setCompletionTime, confidenceLevel, setConfidenceLevel, overAllPerformance, setOverAllPerformance, assessmentCountMoreThanOne, setAssessmentCountMoreThanOne, generatedAnalysis, setGeneratedAnalysis, shuffledChoicesAssessment, setShuffledChoicesAssessment, extractedQAAssessment, setQAAssessment, assessmentUsersChoices, setAssessmentUsersChoices, message, setMessage, messageList, setMessageList, isStartAssessmentButtonStarted, setIsStartAssessmentButtonStarted } = props;
 
@@ -52,7 +50,7 @@ export const PreJoinPage = (props) => {
   const [showModal, setShowModal] = useState("");
   const [userUploaderId, setUserUploaderId] = useState(0);
   const [showModifyModal, setShowModifyModal] = useState(false)
-  const [word, setWord] = useState('')
+
 
   // deleting material
   const [recentlyDeletedMaterial, setRecentlyDeletedMaterial] = useState('');
@@ -97,18 +95,18 @@ export const PreJoinPage = (props) => {
     const fetchData = async () => {
       try {
         
-        await axios.get(`${SERVER_URL}/quesRev/study-material-rev/${materialId}`).then((response) => {
+        await axios.get(`http://localhost:3001/quesRev/study-material-rev/${materialId}`).then((response) => {
           setNotesReviewer(response.data)
         })
 
     
-        await axios.get(`${SERVER_URL}/studyMaterial/get-material/${materialId}`).then((response) => {
+        await axios.get(`http://localhost:3001/studyMaterial/get-material/${materialId}`).then((response) => {
           setLessonContext(response.data.body);
           setMaterialTitle(response.data.title);
           setUserUploaderId(response.data.UserId)
         })
         
-        const previousSavedData = await axios.get(`${SERVER_URL}/DashForPersonalAndGroup/get-latest-assessment-group/${materialId}/${groupId}`);
+        const previousSavedData = await axios.get(`http://localhost:3001/DashForPersonalAndGroup/get-latest-assessment-group/${materialId}/${groupId}`);
 
 
         console.log(previousSavedData.data);
@@ -308,7 +306,7 @@ export const PreJoinPage = (props) => {
     const confirmed = window.confirm(`Are you sure you want to delete ${title}?`);
   
     if (confirmed) {
-      await axios.delete(`${SERVER_URL}/studyMaterial/delete-material/${id}`)
+      await axios.delete(`http://localhost:3001/studyMaterial/delete-material/${id}`)
 
       setTimeout(() => {
         setIsMaterialDeleted('')
@@ -339,25 +337,13 @@ export const PreJoinPage = (props) => {
 
             {/* modify buttons */}
             <div className='flex items-center gap-3'>
-
-
-              <button className='px-6 py-2 rounded-[5px] text-lg mbg-200 mcolor-800 border-thin-800 font-normal' onClick={() => {
-
-                if (userUploaderId === UserId) {
-                  deleteStudyMaterial(materialId, materialTitle)
-                } else {
-                  setWord('Deleting this material is only allowed by the individual who uploaded this material.')
-                  setShowModal(true)
-                  setShowModifyModal(true)
-                }
-              }}>Delete Material</button>
+              <button className='px-6 py-2 rounded-[5px] text-lg mbg-200 mcolor-800 border-thin-800 font-normal' onClick={() => deleteStudyMaterial(materialId, materialTitle)}>Delete Material</button>
 
               {!takeAssessment && (
                 <button className='px-6 py-2 rounded-[5px] text-lg mbg-200 mcolor-800 border-thin-800 font-normal' onClick={() => {
                   if (userUploaderId === UserId) {
                     navigate(`/main/group/study-area/update-material/${groupId}/${materialId}`)
                   } else {
-                    setWord('Modifications are only allowed by the individual who uploaded this material.')
                     setShowModal(true)
                     setShowModifyModal(true)
                   }
@@ -402,8 +388,8 @@ export const PreJoinPage = (props) => {
                 </div>
                 {notesReviewer.map((item, index) => {
                   return <div key={index} className='flex gap-3'>
-                    <p className='text-start w-full m-3 mcolor-700 font-medium mbg-200 border-thin-800 py-4 px-5 rounded'>{item.question}</p>
-                    <p className='text-start w-full m-3 mcolor-800 font-medium mbg-200 border-thin-800 py-4 px-5 rounded'>{item.answer}</p>
+                    <p className='text-start w-full m-3 p-2 mcolor-700 font-medium'>{item.question}</p>
+                    <p className='text-start w-full m-3 p-2 mcolor-900 font-medium'>{item.answer}</p>
                   </div>
                 })}
               </div>
@@ -431,7 +417,7 @@ export const PreJoinPage = (props) => {
                     {showModifyModal ? (
                       <div>
                         <p className='mcolor-900 text-2xl font-medium text-center'>Reminder</p>
-                        <p className='text-center text-lg font-medium mcolor-800 mt-5'><PushPinIcon className='text-red-dark' />{word}</p>     
+                        <p className='text-center text-lg font-medium mcolor-800 mt-5'><PushPinIcon className='text-red-dark' />Modifications are only allowed by the individual who uploaded this material.</p>     
                       </div>
                       ) : (
                       <div>

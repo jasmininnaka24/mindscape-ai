@@ -118,8 +118,8 @@ export const GroupRoom = () => {
           </div>
 
           <div className='mt-16'>
-            <p className={`text-xl font-medium ${groupList.length === 0 ? 'text-center mcolor-500' : 'mcolor-900'}`}>
-              {groupList.length === 0 ? 'You have not joined or created any rooms yet.' : 'Rooms:'}
+            <p className={`text-xl font-medium ${(groupList.length === 0 && memberGroupList.length === 0) ? 'text-center mcolor-500' : 'mcolor-900'}`}>
+              {(groupList.length === 0 && memberGroupList.length === 0) ? 'You have not joined or created any rooms yet.' : 'Rooms:'}
             </p>
           </div>
             

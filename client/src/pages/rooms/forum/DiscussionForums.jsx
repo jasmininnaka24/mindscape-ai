@@ -3,25 +3,22 @@ import { Navbar } from '../../../components/navbar/logged_navbar/navbar'
 import ScrollToBottom from "react-scroll-to-bottom";
 import { useUser } from '../../../UserContext';
 import { fetchUserData } from '../../../userAPI';
-import PersonIcon from '@mui/icons-material/Person';
+
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import GroupsIcon from '@mui/icons-material/Groups';import SupervisorAccountIcon from '@mui/icons-material/SupervisorAccount';
 import SensorDoorIcon from '@mui/icons-material/SensorDoor';
 import ClearAllIcon from '@mui/icons-material/ClearAll';
 
 import io from 'socket.io-client';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
+const socket = io.connect("http://localhost:3001");
 
 
 export const DiscussionForums = () => {
-  
-  const { user, SERVER_URL } = useUser();
-  const navigate = useNavigate()
-  
+
+  const { user } = useUser();
+
   const userId = user?.id;
-
-
-  const socket = io.connect(SERVER_URL);
   
   // user data
   const [userData, setUserData] = useState({
@@ -90,13 +87,7 @@ export const DiscussionForums = () => {
     return randomString;
   }
 
-  const handleLogout = () => {
-    // Clear session storage
-    sessionStorage.clear();
-    navigate('/')
-  };
-
-
+  
   const joinDiscussionRoom = async () => {
 
     const userData = await fetchUserData(userId);
@@ -335,9 +326,7 @@ export const DiscussionForums = () => {
               </ul>
             </div>
 
-            <button onClick={() => {
-              handleLogout()
-            }} className='py-6 px-6 mcolor-900 font-medium text-lg w-full'><SensorDoorIcon /> Log out</button>
+            <div className='py-6 px-6 mcolor-900 font-medium text-lg w-full'><SensorDoorIcon /> Log out</div>
           </div>
 
       
@@ -361,12 +350,12 @@ export const DiscussionForums = () => {
                   />         
                 </div>
                 <div className='flex items-center justify-center w-full gap-1 my-5'>
-                  <button className='btn-800 px-5 py-2 rounded w-full' onClick={() => {
+                  <button className='mbg-700 mcolor-100 px-5 py-2 rounded w-full' onClick={() => {
                     setShowCreateRoomModal(true)
                   }}>Create a room</button>
                 </div>
                 <div className='flex items-center justify-center w-full gap-1 my-5'>
-                  <button className='btn-150 border-thin-800 px-5 py-2 rounded w-full' onClick={() => {
+                  <button className='mbg-300 mcolor-900 border-thin-800 px-5 py-2 rounded w-full' onClick={() => {
                     setShowCategories(true)
                   }}>View Categories</button>
                 </div>
@@ -429,7 +418,7 @@ export const DiscussionForums = () => {
                     </div>
 
                     <br />
-                    <button className='btn-800 px-5 py-2 rounded w-full' onClick={createRoom}>Create a room</button>
+                    <button className='mbg-700 mcolor-100 px-5 py-2 rounded w-full' onClick={createRoom}>Create a room</button>
 
 
 
@@ -522,7 +511,7 @@ export const DiscussionForums = () => {
                             </button>
                           ) : (
                             <button
-                              className='btn-800 px-5 py-2 rounded'
+                              className='mbg-700 mcolor-100 px-5 py-2 rounded'
                               onClick={() => {
                                 setCurrentRoom(room?.room)
                                 setCurrentMessageRoom(room?.roomName)
@@ -562,7 +551,7 @@ export const DiscussionForums = () => {
 
               <ul className='mcolor-900 w-full'>
                 <li className='px-6 my-1 py-2 text-lg'>
-                  <Link to={{pathname:"/main"}} onClick={refreshPage}>
+                  <Link to={'/main'}>
                     <ArrowBackIcon className='mr-3' />Back to main
                   </Link>
                 </li>
@@ -625,28 +614,31 @@ export const DiscussionForums = () => {
                               <p>Users: {room?.users ? room?.users.length : 0}</p>
 
 
-         
-                              {
-                                (roomList && roomList[currentIndex]?.roomName !== room?.roomName) && (
-                                  <div>
-                                    <button
-                                      className='mbg-700 mcolor-100 px-5 py-2 rounded text-sm'
-                                      onClick={() => {
-                                        setCurrentRoom(room?.room);
-                                        setCurrentMessageRoom(room?.roomName);
-                                        setCurrentIndex(index);
-                                      }}
-                                    >
-                                      View Chat Room
-                                    </button>
- 
-                                  </div>
-                                )
-                              }
 
-                              <button className='btn-red px-5 text-sm py-2 rounded' onClick={() => leaveDiscussionForumRoom(room?.room)}>
-                                Leave Room
-                              </button>
+                              <div className='flex items-center gap-3'>
+                                {
+                                  (roomList && roomList[currentIndex]?.roomName !== room?.roomName) && (
+                                    <div>
+                                      <button
+                                        className='mbg-700 mcolor-100 px-5 py-2 rounded text-sm'
+                                        onClick={() => {
+                                          setCurrentRoom(room?.room);
+                                          setCurrentMessageRoom(room?.roomName);
+                                          setCurrentIndex(index);
+                                        }}
+                                      >
+                                        View Chat Room
+                                      </button>
+  
+                                    </div>
+                                  )
+                                }
+
+                                <button className='bg-red mcolor-100 px-5 text-sm py-2 rounded' onClick={() => leaveDiscussionForumRoom(room?.room)}>
+                                  Leave Room
+                                </button>
+                              </div>
+         
 
                           </div>
                         </>
@@ -664,7 +656,7 @@ export const DiscussionForums = () => {
                   {(roomList && roomList[currentIndex]?.users?.some((userr) => userr.userId === userId)) && (
                     <div className='chat-header flex items-center justify-between px-5 w-full'>
                       <p>{roomList[currentIndex]?.roomName}</p>
-                      <button className='btn-reversed-150 px-4 py-1 my-2 rounded' onClick={() => setShowActiveUsers(true)}>Active Users</button>
+                      <button className='mcolor-900 mbg-300 px-4 py-1 my-2 rounded' onClick={() => setShowActiveUsers(true)}>Active Users</button>
                     </div>
                   )}
                 </div>
@@ -738,9 +730,9 @@ export const DiscussionForums = () => {
                       roomList[currentIndex].users.map((user) => (
                         <div
                           key={user.userId} 
-                          className='text-center'
+                          className='text-center my-2 py-2 shadows rounded'
                         >
-                          <p className='mbg-200 shadows w-full mcolor-900 rounded py-2 my-2'><PersonIcon />{user.username}</p>
+                          <p>{user.username}</p>
                         </div>
                       ))
                     ) : (

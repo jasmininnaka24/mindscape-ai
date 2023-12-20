@@ -946,13 +946,14 @@ export const VirtualLibraryMain = () => {
 
   // Use Promise.all with map for asynchronous operations
   let sortedDataBookmarksCounts = await Promise.all(
-    sortedDataUsers.map(async (user) => {
+    matchingMaterials.map(async (user) => {
       const response = await axios.get(`${SERVER_URL}/studyMaterial/bookmark-counts/${user.code}`);
       return response.data;
     })
   );  
 
   setCurrentFilteredCategoryBookmarks(sortedDataBookmarksCounts);
+  console.log(sortedDataBookmarksCounts.length)
 
 
   setCurrentFilteredCategory(categoryTitle)
@@ -1028,7 +1029,7 @@ export const VirtualLibraryMain = () => {
 
     // Use Promise.all with map for asynchronous operations
     let sortedDataBookmarksCounts = await Promise.all(
-      fetchedSharedStudyMaterialCategory.map(async (user) => {
+      matchingMaterials.map(async (user) => {
         const response = await axios.get(`${SERVER_URL}/studyMaterial/bookmark-counts/${user.code}`);
         return response.data;
       })

@@ -138,53 +138,10 @@ export const ProfileComponent = () => {
         userImage: userData.userImage
       });
 
-      const isFollowingResponse = await axios.get(`${SERVER_URL}/followers/following/${userId === undefined ? UserId : userId}`);
       
-      let isFollowing = isFollowingResponse.data;
-
-      console.log(isFollowing);
-      
-      if (isFollowing === null) {
-        setFollowing(false)
-      } else {
-        setFollowing(true)
-      }
-      
-      const followerResponse = await axios.get(`${SERVER_URL}/followers/get-follower-list/${userId === undefined ? UserId : userId}`);
-      
-      const followingResponse = await axios.get(`${SERVER_URL}/followers/get-following-list/${userId === undefined ? UserId : userId}`);
+   
 
 
-      setFollowingUsers(followingResponse.data);
-      setFollowerUsers(followerResponse.data);
-
-
-      // Create an array of promises for each axios request
-      const userDetailsFollower = followerResponse.data.map(async (user) => {
-        const userIdToUse = user.FollowerId;
-        const userDetailsResponse = await axios.get(`${SERVER_URL}/users/get-user/${userIdToUse}`);
-        return userDetailsResponse.data;
-      });
-
-      // Wait for all promises to resolve using Promise.all
-      const followerListData = await Promise.all(userDetailsFollower);
-
-      // Now, followerListData contains the results of all the asynchronous requests
-      console.log(followerListData);
-
-      // Create an array of promises for each axios request
-      const userDetailsFollowing = followingResponse.data.map(async (user) => {
-        const userIdToUse = user.FollowingId;
-        const userDetailsResponse = await axios.get(`${SERVER_URL}/users/get-user/${userIdToUse}`);
-        return userDetailsResponse.data;
-      });
-
-      // Wait for all promises to resolve using Promise.all
-      const followingListData = await Promise.all(userDetailsFollowing);
-
-      // Now, followerListData contains the results of all the asynchronous requests
-      setFollowerUsersList(followerListData);
-      setFollowingUsersList(followingListData);
     } catch (error) {
       console.error(error.message);
     }
@@ -1458,29 +1415,7 @@ export const ProfileComponent = () => {
                     
                     <li className='w-full'>
                       <p className='text-md'>Study Target</p>
-                      <select
-                        name=""
-                        id=""
-                        className='border-medium-800 w-full py-2 rounded px-5'
-                        value={userData.studyProfTarget || 0}
-                        onChange={(event) => setUserData({...userData, studyProfTarget: parseInt(event.target.value, 10) || 0})}
-                        >
-                        {/* Dynamic default option based on updatedStudyTarget */}
-                        {userData.studyProfTarget && (
-                          <option key={userData.studyProfTarget} value={userData.studyProfTarget}>
-                            {userData.studyProfTarget}%
-                          </option>
-                        )}
-
-                        {/* Other options */}
-                        {[100, 95, 90, 85, 80, 75].map((option) => (
-                          option !== userData.studyProfTarget && (
-                            <option key={option} value={option}>
-                              {option}%
-                            </option>
-                          )
-                        ))}
-                      </select>
+                      <input type="text" disabled className='border-medium-800 w-full py-2 rounded mbg-300 px-5' value={userData.studyProfTarget} />
                     </li>
 
 

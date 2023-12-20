@@ -81,7 +81,7 @@ export const DropZoneComponent = (props) => {
     event.preventDefault();
 
     if (numInp === 0) {
-      alert('Maximum items of to be generated cannot be 0.');
+      alert('Maximum number of items to generate cannot be 0.');
     } else {
       const animationDurationInSeconds = numInp * 2 + 5;
       setLoading(true);
@@ -177,7 +177,7 @@ export const DropZoneComponent = (props) => {
     </div>
 
         <div className="form-group">
-          <p className='mb-1 mt-10'>Maximum number of times to generate:</p>
+          <p className='mb-1 mt-10'>Maximum number of items to generate:</p>
           <input
             required
             type="number"

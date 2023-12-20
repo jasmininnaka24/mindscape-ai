@@ -10,6 +10,7 @@ import BorderColorIcon from '@mui/icons-material/BorderColor';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 import { SearchFunctionality } from '../search/SearchFunctionality';
 
+
 import { useUser } from '../../UserContext';
 import { fetchUserData } from '../../userAPI';
 
@@ -572,30 +573,39 @@ export const StudyAreaGP = (props) => {
   };
 
 
-  const deleteStudyMaterial = async (id, title) => {
+  const deleteStudyMaterial = async (id, title, code) => {
     // Show a confirmation dialog
-    const confirmed = window.confirm(`Are you sure you want to delete ${title}?`);
+    
+    let response = await axios.get(`${SERVER_URL}/studyMaterial/bookmark-counts/${code}`);
+    console.log(response.data.length)
+
+    if (response.data.length === 0) {
+      const confirmed = window.confirm(`Are you sure you want to delete ${title}?`);
+
+      if (confirmed) {
+        await axios.delete(`${SERVER_URL}/studyMaterial/delete-material/${id}`).then(() => {
+          const updatedMaterials = studyMaterialsCategory.filter((material) => material.id !== id);  
+          setSudyMaterialsCategory(updatedMaterials);
+          }
+        );
   
-    if (confirmed) {
-      await axios.delete(`${SERVER_URL}/studyMaterial/delete-material/${id}`).then(() => {
-        const updatedMaterials = studyMaterialsCategory.filter((material) => material.id !== id);  
-        setSudyMaterialsCategory(updatedMaterials);
-        }
-      );
-
-
-      setTimeout(() => {
-        setIsMaterialDeleted('')
-        setRecentlyDeletedMaterial(title)
-      }, 100);
-
-      setTimeout(() => {
-        setIsMaterialDeleted('hidden')
-        setRecentlyDeletedMaterial('')
-
-        fetchData()
-      }, 1500);
+  
+        setTimeout(() => {
+          setIsMaterialDeleted('')
+          setRecentlyDeletedMaterial(title)
+        }, 100);
+  
+        setTimeout(() => {
+          setIsMaterialDeleted('hidden')
+          setRecentlyDeletedMaterial('')
+  
+          fetchData()
+        }, 1500);
+      }
+    } else {
+      alert(`Cannot be deleted. This study material is shared in the virtual library room.`);
     }
+  
   }
 
 
@@ -1130,7 +1140,7 @@ export const StudyAreaGP = (props) => {
 
                             <div>
                               <button 
-                                onClick={() => deleteStudyMaterial(material.id, material.title)}
+                                onClick={() => deleteStudyMaterial(material.id, material.title, material.code)}
                                 >
                                   <DeleteIcon sx={{fontSize: '20px'}} />
                               </button>
@@ -1221,7 +1231,7 @@ export const StudyAreaGP = (props) => {
                                   </p>
                                   <div>
                                     <button
-                                      onClick={() => deleteStudyMaterial(material.id, material.title)}
+                                      onClick={() => deleteStudyMaterial(material.id, material.title, material.code)}
                                     >
                                       <DeleteIcon sx={{ fontSize: '20px' }} />
                                     </button>
@@ -1341,12 +1351,13 @@ export const StudyAreaGP = (props) => {
 
                   {showRev && materialRev && (
                     <div>
-                      {materialRev.map((material) => (
-                        <div className='mb-10 p-5 mbg-200 border-thin-800 rounded'>
+                      {materialRev && Array.isArray(materialRev) && materialRev.map((material) => (
+                        <div className='mb-10 p-5 mbg-200 border-thin-800 rounded' key={material.question}>
                           <p className='my-1 mcolor-900 font-medium'>{material.question}</p>
                           <p className='font-medium mcolor-700'>Answer: <span className='mcolor-900 font-medium'>{material.answer}</span></p>
                         </div>
                       ))}
+
                       <div className='mb-[-1.5rem]'></div>
                     </div>
                   )}

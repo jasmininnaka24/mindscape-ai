@@ -8,7 +8,8 @@ import jwt_decode from 'jwt-decode';
 import { CustomModal } from '../../components/CustomModal';
 import { Link } from 'react-router-dom';
 import MindScapeLogo from '../../assets/mindscape_logo.png';
-
+import VisibilityIcon from '@mui/icons-material/Visibility';
+import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
 
 export const Login = () => {
   
@@ -22,6 +23,7 @@ export const Login = () => {
   const [emailLogVal, setEmailLogVal] = useState('')
   const [msg, setMsg] = useState('');
   const [error, setError] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
 
   const openModal = () => {
@@ -33,7 +35,9 @@ export const Login = () => {
   };
 
 
-
+  const togglePasswordVisibility = () => {
+    setShowPassword(!showPassword);
+  };
 
 
   const loginAccount = async (e) => {
@@ -163,10 +167,29 @@ export const Login = () => {
               <input required autoComplete='no' placeholder='Enter your email...' type="email" className='bg-transparent w-full border-bottom-thin py-1 rounded-[5px] input-login' value={emailLogVal !== '' ? emailLogVal : ''} onChange={(event) => setEmailLogVal(event.target.value)} />
             </div>
 
-            <div className='mb-4 mt-8'>
-              <p className='font-medium'>Password<span className='text-red'>*</span></p>
-              <input required autoComplete='no' placeholder='Enter your password...' type="password" className='bg-transparent w-full border-bottom-thin py-1 rounded-[5px] input-login' value={passwordLogVal !== '' ? passwordLogVal : ''} onChange={(event) => setPasswordLogVal(event.target.value)} />
+            <div className='mb-4 mt-8 flex relative flex-relative'>
+              <input
+                required
+                autoComplete='new-password' // 'no' may not be the best choice for accessibility
+                placeholder='Enter your password...'
+                type={showPassword ? 'text' : 'password'}
+                className='bg-transparent w-full border-bottom-thin py-1 rounded-[5px] input-login'
+                value={passwordLogVal}
+                onChange={(event) => setPasswordLogVal(event.target.value)}
+              />
+
+              <button
+                type="button"
+                className='ml-2 focus:outline-none absolute right-0 mcolor-800'
+                onClick={togglePasswordVisibility}
+              >
+                {showPassword ? <VisibilityOffIcon /> : <VisibilityIcon />}
+              </button>
             </div>
+
+
+
+
 
               
             <div className='w-full mb-5 font-medium mcolor-700'>

@@ -957,6 +957,8 @@ export const QAGenerator = (props) => {
                         </tr>
                       </thead>
                       {generatedQA.true_or_false_sentences.map((item, index) => (
+
+                        item.distractors.length > 0 &&
                         <tr key={index}>
                           <td className='pr-5'>{index+1}</td>
                           <td>
