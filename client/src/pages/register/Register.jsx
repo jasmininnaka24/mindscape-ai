@@ -43,7 +43,7 @@ export const Register = () => {
     setEnableDisabled(true)
 
     try {
-       await axios.post(`${'http://localhost:3001'}/users/`, data).then((response) => {
+       await axios.post(`${SERVER_URL}/users/`, data).then((response) => {
         
         if (response.data.error) {
           setMsg(response.data.message);

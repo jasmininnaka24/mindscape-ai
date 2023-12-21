@@ -64,7 +64,7 @@ export const TopicPage = ({categoryFor}) => {
 
   useEffect(() => {
     const fetchData = async () => {
-      const extractedData = await axios.get(`${'http://localhost:3001'}/DashForPersonalAndGroup/get-assessments/${materialID}`);
+      const extractedData = await axios.get(`${SERVER_URL}/DashForPersonalAndGroup/get-assessments/${materialID}`);
 
       setStudyMaterials(extractedData.data)
       const fetchedData = extractedData.data;
@@ -144,7 +144,7 @@ export const TopicPage = ({categoryFor}) => {
     console.log(response.data);
     let generatedAnalysisResponse = (response.data.generated_analysis).replace('\n\n\n\n\n', '');
 
-    await axios.put(`${'http://localhost:3001'}/DashForPersonalAndGroup/set-update-analysis/${id}`, {analysis: generatedAnalysisResponse});
+    await axios.put(`${SERVER_URL}/DashForPersonalAndGroup/set-update-analysis/${id}`, {analysis: generatedAnalysisResponse});
 
     setShowModal(false)
     setShowFirstText(false)

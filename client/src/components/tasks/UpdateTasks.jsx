@@ -20,7 +20,7 @@ export const UpdateTasks = (props) => {
       completedTask: "Uncompleted",
     }
 
-    await axios.put(`${'http://localhost:3001'}/tasks/${taskID}`, data).then((response) => {
+    await axios.put(`${SERVER_URL}/tasks/${taskID}`, data).then((response) => {
 
       const updatedTask = response.data;
 

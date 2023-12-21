@@ -10,6 +10,7 @@ import BorderColorIcon from '@mui/icons-material/BorderColor';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 import { SearchFunctionality } from '../search/SearchFunctionality';
 
+
 import { useUser } from '../../UserContext';
 import { fetchUserData } from '../../userAPI';
 
@@ -127,9 +128,9 @@ export const StudyAreaGP = (props) => {
   
       try {
         if (categoryFor === 'Personal') {
-          categoryExists = await axios.get(`${'http://localhost:3001'}/studyMaterialCategory/get-category-value/${UserId}/${currentModalVal}`);
+          categoryExists = await axios.get(`${SERVER_URL}/studyMaterialCategory/get-category-value/${UserId}/${currentModalVal}`);
         } else {
-          categoryExists = await axios.get(`${'http://localhost:3001'}/studyMaterialCategory/get-category-value-group/${groupNameId}/${currentModalVal}`);
+          categoryExists = await axios.get(`${SERVER_URL}/studyMaterialCategory/get-category-value-group/${groupNameId}/${currentModalVal}`);
         }
 
         console.log(categoryExists.data);
@@ -173,7 +174,7 @@ export const StudyAreaGP = (props) => {
   
           try {
             // Use await to wait for the axios.post call to complete
-            const response = await axios.post(`${'http://localhost:3001'}/studyMaterialCategory/`, categoryData);
+            const response = await axios.post(`${SERVER_URL}/studyMaterialCategory/`, categoryData);
   
             if (response.data.error) {
               displayError(response.data.message);
@@ -223,7 +224,7 @@ export const StudyAreaGP = (props) => {
         const updateGroupName = async () => {
           let groupId = groupNameId;
           try {
-            const response = await axios.put(`${'http://localhost:3001'}/studyGroup/update-group/${groupId}`, {
+            const response = await axios.put(`${SERVER_URL}/studyGroup/update-group/${groupId}`, {
               groupName: groupName,
             });
             setGroupName(response.data.groupName); 
@@ -266,7 +267,7 @@ export const StudyAreaGP = (props) => {
     setTempUserList(updatedTempUserList);
     setUserList(updatedUserList);
 
-    await axios.delete(`${'http://localhost:3001'}/studyGroupMembers/remove-member/${groupNameId}/${itemId}`).then(response => {
+    await axios.delete(`${SERVER_URL}/studyGroupMembers/remove-member/${groupNameId}/${itemId}`).then(response => {
       // console.log(response.data); 
     }).catch(error => {
       console.error(error);
@@ -279,7 +280,7 @@ export const StudyAreaGP = (props) => {
 
   const fetchFollowerData = async () => {
     try {
-      const response = await axios.get(`${'http://localhost:3001'}/users`);
+      const response = await axios.get(`${SERVER_URL}/users`);
       let responseData = response.data;
 
       let filteredUsers = responseData.filter(user => user.id !== UserId);
@@ -287,7 +288,7 @@ export const StudyAreaGP = (props) => {
   
       // Create an array to store all the Axios requests
       const axiosRequests = filteredUsers.map(async (item) =>
-        await axios.get(`${'http://localhost:3001'}/users/get-user/${item.id}`)
+        await axios.get(`${SERVER_URL}/users/get-user/${item.id}`)
       );
 
 
@@ -311,7 +312,7 @@ export const StudyAreaGP = (props) => {
 
 
   const fetchGroupMemberList = async () => {
-    const userResponse = await axios.get(`${'http://localhost:3001'}/studyGroupMembers/get-members/${groupNameId}`);
+    const userResponse = await axios.get(`${SERVER_URL}/studyGroupMembers/get-members/${groupNameId}`);
     setGroupMemberIndex(userResponse.data);
 
     const userListResponse = userResponse.data;
@@ -319,7 +320,7 @@ export const StudyAreaGP = (props) => {
 
     for (const user of userListResponse) {
       try {
-        const userDetails = await axios.get(`${'http://localhost:3001'}/users/get-user/${user.UserId}`);
+        const userDetails = await axios.get(`${SERVER_URL}/users/get-user/${user.UserId}`);
         allUserResponses.push(userDetails.data);
 
         if (allUserResponses.length === userListResponse.length) {
@@ -356,23 +357,23 @@ export const StudyAreaGP = (props) => {
     let studyMaterialLink = '';
 
     if (categoryFor === 'Personal') {
-      studyMaterialCategoryLink = `${'http://localhost:3001'}/studyMaterialCategory/personal-study-material/${categoryFor}/${UserId}`;
-      studyMaterialLink = `${'http://localhost:3001'}/studyMaterial/study-material-category/${categoryFor}/${UserId}`;
+      studyMaterialCategoryLink = `${SERVER_URL}/studyMaterialCategory/personal-study-material/${categoryFor}/${UserId}`;
+      studyMaterialLink = `${SERVER_URL}/studyMaterial/study-material-category/${categoryFor}/${UserId}`;
     } else {
-      studyMaterialCategoryLink = `${'http://localhost:3001'}/studyMaterialCategory/${categoryFor}/${groupNameId}`;
-      studyMaterialLink = `${'http://localhost:3001'}/studyMaterial/study-material-group-category/${categoryFor}/${groupNameId}`;
+      studyMaterialCategoryLink = `${SERVER_URL}/studyMaterialCategory/${categoryFor}/${groupNameId}`;
+      studyMaterialLink = `${SERVER_URL}/studyMaterial/study-material-group-category/${categoryFor}/${groupNameId}`;
     }
 
     if (categoryFor === 'Group') {
       try {
-        const groupResponse = await axios.get(`${'http://localhost:3001'}/studyGroup/extract-all-group/${groupNameId}`);
+        const groupResponse = await axios.get(`${SERVER_URL}/studyGroup/extract-all-group/${groupNameId}`);
         setCode(groupResponse.data.code);
         setGroupName(groupResponse.data.groupName);
         setPrevGroupName(groupResponse.data.groupName);
 
         console.log(groupResponse.data.UserId);
 
-        const userHostResponse = await axios.get(`${'http://localhost:3001'}/users/get-user/${groupResponse.data.UserId}`);
+        const userHostResponse = await axios.get(`${SERVER_URL}/users/get-user/${groupResponse.data.UserId}`);
 
         setUserHost(userHostResponse.data.username)
         setUserHostId(userHostResponse.data.id)
@@ -406,7 +407,7 @@ export const StudyAreaGP = (props) => {
 
       const fetchedSharedStudyMaterialCategory = await Promise.all(
         bookmarkedStudyMaterials.map(async (material, index) => {
-          const materialCategoryResponse = await axios.get(`${'http://localhost:3001'}/studyMaterialCategory/get-categoryy/${material.StudyMaterialsCategoryId}`);
+          const materialCategoryResponse = await axios.get(`${SERVER_URL}/studyMaterialCategory/get-categoryy/${material.StudyMaterialsCategoryId}`);
           return materialCategoryResponse.data; // Return the data from each promise
         })
       );
@@ -442,9 +443,9 @@ export const StudyAreaGP = (props) => {
         let studyLastMaterialLink;
 
         if (categoryFor === 'Personal') {
-          studyLastMaterialLink = `${'http://localhost:3001'}/studyMaterialCategory/get-categoryy/${lastMaterial.StudyMaterialsCategoryId}`;
+          studyLastMaterialLink = `${SERVER_URL}/studyMaterialCategory/get-categoryy/${lastMaterial.StudyMaterialsCategoryId}`;
         } else {
-          studyLastMaterialLink = `${'http://localhost:3001'}/studyMaterialCategory/get-categoryy/${lastMaterial.StudyMaterialsCategoryId}`;
+          studyLastMaterialLink = `${SERVER_URL}/studyMaterialCategory/get-categoryy/${lastMaterial.StudyMaterialsCategoryId}`;
         }
 
         try {
@@ -462,13 +463,13 @@ export const StudyAreaGP = (props) => {
 
       if (lastMaterial) {
         try {
-          const mcqResponse = await axios.get(`${'http://localhost:3001'}/quesAns/study-material-mcq/${lastMaterial.id}`);
+          const mcqResponse = await axios.get(`${SERVER_URL}/quesAns/study-material-mcq/${lastMaterial.id}`);
           setMaterialMCQ(mcqResponse.data);
 
           if (Array.isArray(mcqResponse.data)) {
             const materialChoices = mcqResponse.data.map(async (materialChoice) => {
               try {
-                const choiceResponse = await axios.get(`${'http://localhost:3001'}/quesAnsChoices/study-material/${lastMaterial.id}/${materialChoice.id}`);
+                const choiceResponse = await axios.get(`${SERVER_URL}/quesAnsChoices/study-material/${lastMaterial.id}/${materialChoice.id}`);
                 return choiceResponse.data;
               } catch (error) {
                 console.error('Error fetching data:', error);
@@ -484,7 +485,7 @@ export const StudyAreaGP = (props) => {
         }
 
         try {
-          const revResponse = await axios.get(`${'http://localhost:3001'}/quesRev/study-material-rev/${lastMaterial.id}`);
+          const revResponse = await axios.get(`${SERVER_URL}/quesRev/study-material-rev/${lastMaterial.id}`);
           setMaterialRev(revResponse.data);
         } catch (error) {
           console.error('Error fetching study material by ID:', error);
@@ -572,30 +573,39 @@ export const StudyAreaGP = (props) => {
   };
 
 
-  const deleteStudyMaterial = async (id, title) => {
+  const deleteStudyMaterial = async (id, title, code) => {
     // Show a confirmation dialog
-    const confirmed = window.confirm(`Are you sure you want to delete ${title}?`);
+    
+    let response = await axios.get(`${SERVER_URL}/studyMaterial/bookmark-counts/${code}`);
+    console.log(response.data.length)
+
+    if (response.data.length === 0) {
+      const confirmed = window.confirm(`Are you sure you want to delete ${title}?`);
+
+      if (confirmed) {
+        await axios.delete(`${SERVER_URL}/studyMaterial/delete-material/${id}`).then(() => {
+          const updatedMaterials = studyMaterialsCategory.filter((material) => material.id !== id);  
+          setSudyMaterialsCategory(updatedMaterials);
+          }
+        );
   
-    if (confirmed) {
-      await axios.delete(`${'http://localhost:3001'}/studyMaterial/delete-material/${id}`).then(() => {
-        const updatedMaterials = studyMaterialsCategory.filter((material) => material.id !== id);  
-        setSudyMaterialsCategory(updatedMaterials);
-        }
-      );
-
-
-      setTimeout(() => {
-        setIsMaterialDeleted('')
-        setRecentlyDeletedMaterial(title)
-      }, 100);
-
-      setTimeout(() => {
-        setIsMaterialDeleted('hidden')
-        setRecentlyDeletedMaterial('')
-
-        fetchData()
-      }, 1500);
+  
+        setTimeout(() => {
+          setIsMaterialDeleted('')
+          setRecentlyDeletedMaterial(title)
+        }, 100);
+  
+        setTimeout(() => {
+          setIsMaterialDeleted('hidden')
+          setRecentlyDeletedMaterial('')
+  
+          fetchData()
+        }, 1500);
+      }
+    } else {
+      alert(`Cannot be deleted. This study material is shared in the virtual library room.`);
     }
+  
   }
 
 
@@ -618,7 +628,7 @@ export const StudyAreaGP = (props) => {
           UserId: selectedDataId,
         };
 
-        await axios.post(`${'http://localhost:3001'}/studyGroupMembers/add-member`, groupMemberData);
+        await axios.post(`${SERVER_URL}/studyGroupMembers/add-member`, groupMemberData);
         setSearchTermApp('')
         fetchGroupMemberList()
       } 
@@ -634,7 +644,7 @@ export const StudyAreaGP = (props) => {
 
     console.log(groupNameId);
 
-    await axios.delete(`${'http://localhost:3001'}/studyGroup/delete-group/${groupNameId}`).then((response) => {
+    await axios.delete(`${SERVER_URL}/studyGroup/delete-group/${groupNameId}`).then((response) => {
 
       if(response.data.error) {
 
@@ -672,7 +682,7 @@ export const StudyAreaGP = (props) => {
 
     console.log(groupNameId);
 
-    await axios.delete(`${'http://localhost:3001'}/studyGroupMembers/remove-member/${groupNameId}/${UserId}`).then((response) => {
+    await axios.delete(`${SERVER_URL}/studyGroupMembers/remove-member/${groupNameId}/${UserId}`).then((response) => {
 
       if(response.data.error) {
 
@@ -711,7 +721,7 @@ export const StudyAreaGP = (props) => {
         category: currentCategoryToEdit
       }
   
-      const response = await axios.put(`${'http://localhost:3001'}/studyMaterialCategory/update-category/${currentCategoryIdToEdit}`, data);
+      const response = await axios.put(`${SERVER_URL}/studyMaterialCategory/update-category/${currentCategoryIdToEdit}`, data);
   
       setEditCategoryModal(false) 
       
@@ -741,7 +751,7 @@ export const StudyAreaGP = (props) => {
       // Ask for confirmation
   
   
-      const response = await axios.get(`${'http://localhost:3001'}/studyMaterial/get-material-from-categoryId/${categoryId}`);
+      const response = await axios.get(`${SERVER_URL}/studyMaterial/get-material-from-categoryId/${categoryId}`);
   
       let responseData = response.data;
       let filteredData = responseData.filter(item => item.tag === 'Shared');
@@ -768,7 +778,7 @@ export const StudyAreaGP = (props) => {
             window.location.reload()
           }, 2500);
 
-          await axios.delete(`${'http://localhost:3001'}/studyMaterialCategory/delete-category/${categoryId}/${category}`);
+          await axios.delete(`${SERVER_URL}/studyMaterialCategory/delete-category/${categoryId}/${category}`);
 
     
           
@@ -814,8 +824,8 @@ export const StudyAreaGP = (props) => {
   
         // Execute asynchronous operations sequentially using a for...of loop
         for (const item of filteredMaterialsArray) {
-          await axios.delete(`${'http://localhost:3001'}/studyMaterial/delete-material/${item.id}`);
-          await axios.delete(`${'http://localhost:3001'}/DashForPersonalAndGroup/get-dash-data/${item.id}`);
+          await axios.delete(`${SERVER_URL}/studyMaterial/delete-material/${item.id}`);
+          await axios.delete(`${SERVER_URL}/DashForPersonalAndGroup/get-dash-data/${item.id}`);
         }
   
         // Update sharedMaterials by directly modifying the state
@@ -1067,7 +1077,7 @@ export const StudyAreaGP = (props) => {
                       <div>
                         <button onClick={async () => {
 
-                          const response = await axios.get(`${'http://localhost:3001'}/studyMaterial/get-material-from-categoryId/${category.id}`);
+                          const response = await axios.get(`${SERVER_URL}/studyMaterial/get-material-from-categoryId/${category.id}`);
                             
                           let responseData = response.data;
                           let filteredData = responseData.filter(item => item.tag === 'Shared');
@@ -1130,7 +1140,7 @@ export const StudyAreaGP = (props) => {
 
                             <div>
                               <button 
-                                onClick={() => deleteStudyMaterial(material.id, material.title)}
+                                onClick={() => deleteStudyMaterial(material.id, material.title, material.code)}
                                 >
                                   <DeleteIcon sx={{fontSize: '20px'}} />
                               </button>
@@ -1221,7 +1231,7 @@ export const StudyAreaGP = (props) => {
                                   </p>
                                   <div>
                                     <button
-                                      onClick={() => deleteStudyMaterial(material.id, material.title)}
+                                      onClick={() => deleteStudyMaterial(material.id, material.title, material.code)}
                                     >
                                       <DeleteIcon sx={{ fontSize: '20px' }} />
                                     </button>
@@ -1341,12 +1351,13 @@ export const StudyAreaGP = (props) => {
 
                   {showRev && materialRev && (
                     <div>
-                      {materialRev.map((material) => (
-                        <div className='mb-10 p-5 mbg-200 border-thin-800 rounded'>
+                      {materialRev && Array.isArray(materialRev) && materialRev.map((material) => (
+                        <div className='mb-10 p-5 mbg-200 border-thin-800 rounded' key={material.question}>
                           <p className='my-1 mcolor-900 font-medium'>{material.question}</p>
                           <p className='font-medium mcolor-700'>Answer: <span className='mcolor-900 font-medium'>{material.answer}</span></p>
                         </div>
                       ))}
+
                       <div className='mb-[-1.5rem]'></div>
                     </div>
                   )}

@@ -15,7 +15,7 @@ export const EmailVerification = () => {
   useEffect(() => {
     const verify = async () => {
       try {
-        const url = `${'http://localhost:3001'}/users/${param.id}/verify/${param.token}`;
+        const url = `${SERVER_URL}/users/${param.id}/verify/${param.token}`;
 
         const { data } = await axios.get(url);
 

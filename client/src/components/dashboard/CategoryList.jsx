@@ -50,10 +50,10 @@ export const CategoryList = ({categoryFor}) => {
         try {
 
           if (groupId === undefined) {
-            studyMaterialResponse = await axios.get(`${'http://localhost:3001'}/studyMaterial/study-material-category/Personal/${UserId}`);
+            studyMaterialResponse = await axios.get(`${SERVER_URL}/studyMaterial/study-material-category/Personal/${UserId}`);
 
           } else {
-            studyMaterialResponse = await axios.get(`${'http://localhost:3001'}/studyMaterial/study-material-group-category/Group/${groupId}`);
+            studyMaterialResponse = await axios.get(`${SERVER_URL}/studyMaterial/study-material-group-category/Group/${groupId}`);
           }
 
           const allStudyMaterials = studyMaterialResponse.data;
@@ -77,7 +77,7 @@ export const CategoryList = ({categoryFor}) => {
           if (ownRecordMaterials.length > 0) {
             fetchedStudyMaterialsCategory = await Promise.all(
               ownRecordMaterials.map(async (material, index) => {
-                const materialCategoryResponse = await axios.get(`${'http://localhost:3001'}/studyMaterialCategory/get-categoryy/${material.StudyMaterialsCategoryId}`);
+                const materialCategoryResponse = await axios.get(`${SERVER_URL}/studyMaterialCategory/get-categoryy/${material.StudyMaterialsCategoryId}`);
                 return materialCategoryResponse.data; // Return the data from each promise
               })
             );
@@ -129,7 +129,7 @@ export const CategoryList = ({categoryFor}) => {
           if (bookmarkedMaterials.length > 0) {
             fetchedStudyMaterialsCategory = await Promise.all(
               bookmarkedMaterials.map(async (material, index) => {
-                const materialCategoryResponse = await axios.get(`${'http://localhost:3001'}/studyMaterialCategory/get-categoryy/${material.StudyMaterialsCategoryId}`);
+                const materialCategoryResponse = await axios.get(`${SERVER_URL}/studyMaterialCategory/get-categoryy/${material.StudyMaterialsCategoryId}`);
                 return materialCategoryResponse.data; 
                 })
               );

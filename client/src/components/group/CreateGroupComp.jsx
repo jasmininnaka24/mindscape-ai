@@ -45,7 +45,7 @@ export const CreateGroupComp = (props) => {
   const removeSelectedUser = async (itemId) => {
   const updatedChosenData = chosenData.filter((id) => id !== itemId);  
   setChosenData(updatedChosenData);
-  await axios.get(`${'http://localhost:3001'}/users/get-user/${itemId}`).then((response) => {
+  await axios.get(`${SERVER_URL}/users/get-user/${itemId}`).then((response) => {
     setData([...data, response.data])
   })
   }
@@ -78,14 +78,14 @@ export const CreateGroupComp = (props) => {
 
   const fetchFollowerData = async () => {
     try {
-      const response = await axios.get(`${'http://localhost:3001'}/users`);
+      const response = await axios.get(`${SERVER_URL}/users`);
       let responseData = response.data;
 
       let filteredUsers = responseData.filter(user => user.id !== UserId);
   
       // Create an array to store all the Axios requests
       const axiosRequests = filteredUsers.map(async (item) =>
-        await axios.get(`${'http://localhost:3001'}/users/get-user/${item.id}`)
+        await axios.get(`${SERVER_URL}/users/get-user/${item.id}`)
       );
 
       Promise.all(axiosRequests)
@@ -114,7 +114,7 @@ export const CreateGroupComp = (props) => {
           UserId: UserId,
         };
     
-        const groupResponse = await axios.post(`${'http://localhost:3001'}/studyGroup/create-group`, groupData);
+        const groupResponse = await axios.post(`${SERVER_URL}/studyGroup/create-group`, groupData);
         const { id } = groupResponse.data;
     
         const groupMemberPromises = chosenData.map(async (item) => {
@@ -124,7 +124,7 @@ export const CreateGroupComp = (props) => {
             UserId: item,
           };
     
-          const response = await axios.post(`${'http://localhost:3001'}/studyGroupMembers/add-member`, groupMemberData);
+          const response = await axios.post(`${SERVER_URL}/studyGroupMembers/add-member`, groupMemberData);
           console.log('Saved!', response);
         });
     
@@ -134,7 +134,7 @@ export const CreateGroupComp = (props) => {
         setHidden('hidden');
         setGroupNameInp('');
     
-        await axios.get(`${'http://localhost:3001'}/studyGroup/extract-group-through-user/${UserId}`);
+        await axios.get(`${SERVER_URL}/studyGroup/extract-group-through-user/${UserId}`);
         // setGroupList(groupListResponse.data);
   
     
@@ -166,7 +166,7 @@ export const CreateGroupComp = (props) => {
       setErrorMessage('The field is empty.')
     } else {
       
-      const groupData = await axios.get(`${'http://localhost:3001'}/studyGroup/find-room-id/${enteredCodeRoom}`);
+      const groupData = await axios.get(`${SERVER_URL}/studyGroup/find-room-id/${enteredCodeRoom}`);
   
       if (groupData.data !== null) {
         const groupDataId = groupData.data.id;
@@ -175,7 +175,7 @@ export const CreateGroupComp = (props) => {
         if (groupDataUserId === UserId) {
           setErrorMessage('You are already in this group.');
         } else {
-          const userIdPost = await axios.get(`${'http://localhost:3001'}/studyGroupMembers/find-userId/${groupDataId}/${UserId}`);
+          const userIdPost = await axios.get(`${SERVER_URL}/studyGroupMembers/find-userId/${groupDataId}/${UserId}`);
       
           if (userIdPost.data !== null && userIdPost.data.UserId === UserId) {
             setErrorMessage('You are already in this group.');
@@ -186,7 +186,7 @@ export const CreateGroupComp = (props) => {
               UserId: UserId
             }
       
-            await axios.post(`${'http://localhost:3001'}/studyGroupMembers/add-member`, data);
+            await axios.post(`${SERVER_URL}/studyGroupMembers/add-member`, data);
       
             setTimeout(() => {
               setSuccessfullyJoinedMessage('Successfully joined!')

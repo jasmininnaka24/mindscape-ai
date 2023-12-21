@@ -7,6 +7,10 @@ import './studyArea.css';
 pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.js`;
 
 export const DropZoneComponent = (props) => {
+
+  const mammoth = require('mammoth');
+
+
   const { pdfDetails, setPDFDetails } = props;
   const { setGeneratedQA } = useContext(GeneratedQAResult);
   const { setNumInp, numInp } = props;
@@ -36,15 +40,70 @@ export const DropZoneComponent = (props) => {
   const handleFileChange = async (file) => {
     if (file) {
       try {
-        const pdfContent = await extractPdfText(file);
-        setData((prevData) => ({ ...prevData, text: pdfContent }));
-        setPDFDetails(pdfContent);
+        let fileContent;
+  
+        if (file.type === 'application/pdf') {
+          fileContent = await extractPdfText(file);
+          // Check the number of pages
+          const pageCount = await getPdfPageCount(file);
+          if (pageCount > 2) {
+            alert('Page limitation exceeded. Maximum allowed pages is 50.');
+            return;
+          }
+        } else if (file.type === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document') {
+          fileContent = await extractDocxText(file);
+        } else {
+          alert("Unsupported file type")
+          return;
+        }
+  
+        setData((prevData) => ({ ...prevData, text: fileContent }));
+        setPDFDetails(fileContent);
       } catch (error) {
-        console.error('Error processing PDF file:', error);
+        console.error('Error processing file:', error);
         // Handle the error, e.g., display an error message to the user
       }
     }
   };
+  
+  const getPdfPageCount = async (file) => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = async function (e) {
+        try {
+          const doc = await pdfjs.getDocument(e.target.result).promise;
+          resolve(doc.numPages);
+        } catch (error) {
+          reject(error);
+        }
+      };
+      reader.onerror = (error) => reject(error);
+      reader.readAsArrayBuffer(file);
+    });
+  };
+  
+
+  const extractDocxText = async (file) => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = function (e) {
+        const arrayBuffer = e.target.result;
+        const blob = new Blob([arrayBuffer], { type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' });
+
+        // Use the mammoth library to extract text from DOCX
+        mammoth.extractRawText({ arrayBuffer: blob })
+          .then((result) => {
+            resolve(result.value);
+          })
+          .catch((error) => {
+            reject(error);
+          });
+      };
+      reader.onerror = (error) => reject(error);
+      reader.readAsArrayBuffer(file);
+    });
+  };
+
 
   const extractPdfText = async (file) => {
     return new Promise((resolve, reject) => {
@@ -81,7 +140,7 @@ export const DropZoneComponent = (props) => {
     event.preventDefault();
 
     if (numInp === 0) {
-      alert('Maximum items of to be generated cannot be 0.');
+      alert('Maximum number of items to generate cannot be 0.');
     } else {
       const animationDurationInSeconds = numInp * 2 + 5;
       setLoading(true);
@@ -146,38 +205,38 @@ export const DropZoneComponent = (props) => {
   return (
     <div className='w-full '>
       <form className="pdf-form px-16">
-      <div className="form-group">
-      <div
-        id="drop-area"
-        className="drop-area"
-        onDragOver={(event) => {
-          event.preventDefault();
-          event.stopPropagation();
-          event.currentTarget.classList.add('active');
-        }}
-        onDrop={(event) => {
-          event.preventDefault();
-          event.stopPropagation();
-          event.currentTarget.classList.remove('active');
-          const file = event.dataTransfer.files[0];
-          handleFileChange(file);
-        }}
-        onClick={() => document.getElementById('pdf_upload').click()}
-      >
-        <p>Drag and drop a PDF file here, or click to select one.</p>
-      </div>
-      <input
-        type="file"
-        accept=".pdf"
-        onChange={(e) => handleFileChange(e.target.files[0])}
-        id="pdf_upload"
-        style={{ display: 'none' }}
-        required
-      />
-    </div>
-
         <div className="form-group">
-          <p className='mb-1 mt-10'>Maximum number of times to generate:</p>
+          <div
+            id="drop-area"
+            className="drop-area"
+            onDragOver={(event) => {
+              event.preventDefault();
+              event.stopPropagation();
+              event.currentTarget.classList.add('active');
+            }}
+            onDrop={(event) => {
+              event.preventDefault();
+              event.stopPropagation();
+              event.currentTarget.classList.remove('active');
+              const file = event.dataTransfer.files[0];
+              handleFileChange(file);
+            }}
+            onClick={() => document.getElementById('file_upload').click()}
+          >
+            <p>Drag and drop a file (PDF or DOCX) here, or click to select one.</p>
+          </div>
+          <input
+          type="file"
+          accept=".pdf, .docx, .ppt, .pptx"
+          onChange={(e) => handleFileChange(e.target.files[0])}
+          id="file_upload"
+          style={{ display: 'none' }}
+          required
+        />
+
+        </div>
+        <div className="form-group">
+          <p className='mb-1 mt-10'>Maximum number of items to generate:</p>
           <input
             required
             type="number"
