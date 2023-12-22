@@ -5,7 +5,8 @@ import { useUser } from '../../../UserContext';
 import { fetchUserData } from '../../../userAPI';
 
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
-import GroupsIcon from '@mui/icons-material/Groups';import SupervisorAccountIcon from '@mui/icons-material/SupervisorAccount';
+import GroupsIcon from '@mui/icons-material/Groups';
+import SupervisorAccountIcon from '@mui/icons-material/SupervisorAccount';
 import SensorDoorIcon from '@mui/icons-material/SensorDoor';
 import ClearAllIcon from '@mui/icons-material/ClearAll';
 
