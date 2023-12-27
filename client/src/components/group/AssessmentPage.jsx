@@ -4,22 +4,21 @@ import { Link } from 'react-router-dom';
 import CheckIcon from '@mui/icons-material/Check';
 import io from 'socket.io-client';
 import ScrollToBottom from "react-scroll-to-bottom";
+import { useUser } from '../../UserContext';
 
 
 // chart
 import { BarChartForAnalysis } from '../charts/BarChartForAnalysis';
-import { useUser } from '../../UserContext';
 
 
+const socket = io.connect("https://mindscapeserver.jassywaaa.repl.co");
 
 
 export const AssessmentPage = (props) => {
-  
+
   const { SERVER_URL } = useUser();
-  const socket = io.connect(SERVER_URL);
 
-
-  const { groupId, materialId, username, userId, userListAssessment, setUserListAssessment, selectedAssessmentAnswer, setSelectedAssessmentAnswer, assessementRoom, isRunning, setIsRunning, seconds, setSeconds, setQA, extractedQA, shuffledChoices, setShuffledChoices, isSubmittedButtonClicked, setIsSubmittedButtonClicked, idOfWhoSubmitted, setIdOfWhoSubmitted, usernameOfWhoSubmitted, setUsernameOfWhoSubmitted, score, setScore, isSubmitted, setIsSubmitted, isAssessmentDone, setIsAssessmentDone, showSubmittedAnswerModal, setShowSubmittedAnswerModal, showTexts, setShowTexts, showAnalysis, setShowAnalysis, showAssessment, setShowAssessment, overAllItems, setOverAllItems, preAssessmentScore, setPreAssessmentScore, assessmentScore, setAssessmentScore, assessmentImp, setAssessmentImp, assessmentScorePerf, setAssessmentScorePerf, completionTime, setCompletionTime, confidenceLevel, setConfidenceLevel, overAllPerformance, setOverAllPerformance, assessmentCountMoreThanOne, setAssessmentCountMoreThanOne, generatedAnalysis, setGeneratedAnalysis, shuffledChoicesAssessment, setShuffledChoicesAssessment, extractedQAAssessment, setQAAssessment, assessmentUsersChoices, setAssessmentUsersChoices, message, setMessage, messageList, setMessageList,isStartAssessmentButtonStarted, setIsStartAssessmentButtonStarted, setShowPreJoin, setIsJoined, setShowAssessmentPage } = props;
+  const { groupId, materialId, username, userId, userListAssessment, setUserListAssessment, selectedAssessmentAnswer, setSelectedAssessmentAnswer, assessementRoom, isRunning, setIsRunning, seconds, setSeconds, setQA, extractedQA, shuffledChoices, setShuffledChoices, isSubmittedButtonClicked, setIsSubmittedButtonClicked, idOfWhoSubmitted, setIdOfWhoSubmitted, usernameOfWhoSubmitted, setUsernameOfWhoSubmitted, score, setScore, isSubmitted, setIsSubmitted, isAssessmentDone, setIsAssessmentDone, showSubmittedAnswerModal, setShowSubmittedAnswerModal, showTexts, setShowTexts, showAnalysis, setShowAnalysis, showAssessment, setShowAssessment, overAllItems, setOverAllItems, preAssessmentScore, setPreAssessmentScore, assessmentScore, setAssessmentScore, assessmentImp, setAssessmentImp, assessmentScorePerf, setAssessmentScorePerf, completionTime, setCompletionTime, confidenceLevel, setConfidenceLevel, overAllPerformance, setOverAllPerformance, assessmentCountMoreThanOne, setAssessmentCountMoreThanOne, generatedAnalysis, setGeneratedAnalysis, shuffledChoicesAssessment, setShuffledChoicesAssessment, extractedQAAssessment, setQAAssessment, assessmentUsersChoices, setAssessmentUsersChoices, message, setMessage, messageList, setMessageList,isStartAssessmentButtonStarted, setIsStartAssessmentButtonStarted, setShowPreJoin, setIsJoined, setShowAssessmentPage, inviteMembers, successfullyInvited, successfullyInviting } = props;
 
   let studyProfeciencyTarget = 90;
 
@@ -657,6 +656,11 @@ export const AssessmentPage = (props) => {
 
 
 
+
+
+
+
+
   return (
     <div className='poppins mbg-100 mcolor-900 min-h-[100vh]' id='currSec'>
 
@@ -765,8 +769,10 @@ export const AssessmentPage = (props) => {
             </div>
 
             {!isStartAssessmentButtonStarted ? (
-              <div className='w-full mt-8'>
-                <div className='flex items-center justify-between'>
+              <div className='w-full'>
+                <button className='mt-5 px-5 py-2 rounded border-thin-800 mbg-100 shadows' disabled={successfullyInviting || successfullyInvited} onClick={() => inviteMembers("assessment")} >{successfullyInviting ? `Sending an invitation link...` : successfullyInvited ? `Successfully sent an invitation link` : `Invite other members to join`}</button>
+
+                <div className='flex items-center justify-between mt-8'>
                   <p className='text-xl text-center mcolor-800 py-3'>Waiting for other users to join...</p>
                     <div className='flex justify-center'>
                       {userListAssessment && userListAssessment.length > 1 && userListAssessment[0] && userListAssessment[0].userId === userId && (

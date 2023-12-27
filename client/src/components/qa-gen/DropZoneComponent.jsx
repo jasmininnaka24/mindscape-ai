@@ -46,10 +46,7 @@ export const DropZoneComponent = (props) => {
           fileContent = await extractPdfText(file);
           // Check the number of pages
           const pageCount = await getPdfPageCount(file);
-          if (pageCount > 2) {
-            alert('Page limitation exceeded. Maximum allowed pages is 50.');
-            return;
-          }
+          
         } else if (file.type === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document') {
           fileContent = await extractDocxText(file);
         } else {

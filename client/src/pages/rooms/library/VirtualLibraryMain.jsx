@@ -77,6 +77,7 @@ export const VirtualLibraryMain = () => {
   const [filteredCategoryCounts, setFilteredCategoryCounts] = useState(0);
   const [msg, setMsg] = useState('');
   const [error, setError] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   const { user, SERVER_URL } = useUser()
   const UserId = user?.id;
@@ -239,7 +240,7 @@ export const VirtualLibraryMain = () => {
 
 
 
-
+      setLoading(false)
     
   }
 
@@ -551,10 +552,6 @@ export const VirtualLibraryMain = () => {
     }
   };
   
-
-
-
-
 
   function generateRandomString() {
     const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
@@ -1155,192 +1152,138 @@ export const VirtualLibraryMain = () => {
     }
   };
   
-
-  return (
-    <div>
-      <div className='poppins mcolor-900 container py-10'>
-        <Navbar linkBack={'/main/'} linkBackName={'Main'} currentPageName={'Virtual Library Room'} username={'Jennie Kim'}/>
-
-        <div className='my-10'>        
-
-          <div className='flex mt-8 gap-8'>
-
-          <div className='w-1/3 min-h-[70vh]' style={{ borderRight: '2px solid #999' }}>
-
-
-              <p className='font-medium text-lg'>Search for Categories: </p>
-              <div className='mr-5 my-3 border-thin-800 rounded'>
-                <input type="text" placeholder='Search for a category...' className='w-full py-2 rounded text-center' value={searchCategoryValue !== '' ? searchCategoryValue : ''} onChange={(event) => {
-                  handleCategorySearch(event.target.value)
-                  setSearchCategoryValue(event.target.value)
-                }} />
+  if (loading) {
+    return <div className='h-[100vh] w-full flex items-center justify-center'>
+      <div class="loader">
+        <div class="spinner"></div>
+      </div>
+    </div>
+  } else {
+    return (
+      <div>
+        <div className='poppins mcolor-900 container py-10'>
+          <Navbar linkBack={'/main/'} linkBackName={'Main'} currentPageName={'Virtual Library Room'} username={'Jennie Kim'}/>
+  
+          <div className='my-10'>        
+  
+            <div className='flex mt-8 gap-8'>
+  
+            <div className='w-1/3 min-h-[70vh]' style={{ borderRight: '2px solid #999' }}>
+  
+  
+                <p className='font-medium text-lg'>Search for Categories: </p>
+                <div className='mr-5 my-3 border-thin-800 rounded'>
+                  <input type="text" placeholder='Search for a category...' className='w-full py-2 rounded text-center' value={searchCategoryValue !== '' ? searchCategoryValue : ''} onChange={(event) => {
+                    handleCategorySearch(event.target.value)
+                    setSearchCategoryValue(event.target.value)
+                  }} />
+                </div>
+  
+  
+                <p className='font-medium text-lg'>Categories: </p>
+                <div className='grid grid-result gap-3 mr-5 my-5'>
+  
+                
+                {searchCategoryValue === '' && (
+                  filteredSharedCategories.map((material, index) => {
+                    return <div key={index} className='mbg-200 border-thin-800 py-2 rounded flex items-center justify-center'>
+                        <button onClick={() => {
+                          filterMaterial(material.category)
+                          setSearchValue('')
+                          setCurrentMaterialCategory(material.category)
+                        }}>{material.category}</button>
+                      </div>
+                  })
+                )}
+  
+                {searchCategoryValue !== '' && (
+                  searchedCategories.map((material, index) => {
+                    return <div key={index} className='mbg-200 border-thin-800 py-2 rounded flex items-center justify-center'>
+                        <button onClick={() => {
+                          filterMaterial(material.category)
+                          setSearchValue('')
+                          setCurrentMaterialCategory(material.category)
+                        }}>{material.category}</button>
+                      </div>
+                  })
+                )}
+                </div>
               </div>
-
-
-              <p className='font-medium text-lg'>Categories: </p>
-              <div className='grid grid-result gap-3 mr-5 my-5'>
-
-              
-              {searchCategoryValue === '' && (
-                filteredSharedCategories.map((material, index) => {
-                  return <div key={index} className='mbg-200 border-thin-800 py-2 rounded flex items-center justify-center'>
-                      <button onClick={() => {
-                        filterMaterial(material.category)
-                        setSearchValue('')
-                        setCurrentMaterialCategory(material.category)
-                      }}>{material.category}</button>
-                    </div>
-                })
-              )}
-
-              {searchCategoryValue !== '' && (
-                searchedCategories.map((material, index) => {
-                  return <div key={index} className='mbg-200 border-thin-800 py-2 rounded flex items-center justify-center'>
-                      <button onClick={() => {
-                        filterMaterial(material.category)
-                        setSearchValue('')
-                        setCurrentMaterialCategory(material.category)
-                      }}>{material.category}</button>
-                    </div>
-                })
-              )}
+              <div className='w-3/4'>
+  
+              <div className='flex items-center justify-between mb-14 gap-5'>
+                <div className='border-thin-800 w-1/2 rounded'>
+                  <input type="text" placeholder='Search for title/category/anything...' className='w-full py-2 rounded text-center' value={searchValue !== '' ? searchValue : ''} onChange={(event) => {
+                    handleSearchChange(event.target.value)
+                    setSearchValue(event.target.value)
+                  }} />
+                </div>
+                <div className='flex items-center justify-center w-1/2'>
+  
+                  <button className='btn-100 px-5 py-2 rounded w-full' onClick={() => {
+                    setShowModal(true);
+                    setShowPresentStudyMaterials(true);
+  
+                    }}>Share a Study Material</button>
+                </div>
               </div>
-            </div>
-            <div className='w-3/4'>
-
-            <div className='flex items-center justify-between mb-14 gap-5'>
-              <div className='border-thin-800 w-1/2 rounded'>
-                <input type="text" placeholder='Search for title/category/anything...' className='w-full py-2 rounded text-center' value={searchValue !== '' ? searchValue : ''} onChange={(event) => {
-                  handleSearchChange(event.target.value)
-                  setSearchValue(event.target.value)
-                }} />
-              </div>
-              <div className='flex items-center justify-center w-1/2'>
-
-                <button className='btn-100 px-5 py-2 rounded w-full' onClick={() => {
-                  setShowModal(true);
-                  setShowPresentStudyMaterials(true);
-
-                  }}>Share a Study Material</button>
-              </div>
-            </div>
-
-
-              <div className='flex items-center justify-between'>
-                <p className='font-medium text-lg mb-2'>Latest Shared Study Materials:</p>
-                <button className='btn-300 rounded px-4 py-1' onClick={() => {
-                  setFilteredStudyMaterialsByCategory([])
-                  setSearchValue('')
-                  }}>Clear Filter</button>
-              </div>
-              <div className='grid grid-result gap-3'>
-
-              
-
-
-              {/* delete modal */}
-              {deleteModal && (
-                <div className={`absolute top-0 modal-bg left-0 w-full h-full`}>
-                  <div className='flex items-center justify-center h-full'>
-                    <div className='relative mbg-100 min-h-[30vh] w-1/3 z-10 relative py-5 px-5 rounded-[5px]' style={{overflowY: 'auto'}}>
-
-                      <button className='absolute right-5 top-5 font-medium text-xl' onClick={(e) => {
-                        e.preventDefault()
-                        setDeleteModal(false)
-                      }}>&#10006;</button>
-
-                      <div className='flex items-center justify-center h-full'>
-                        <div className='w-full'>
-                          <div>
-                            <div className='flex flex-col gap-4'>
-                              <br />
-                              <button className='mbg-300 py-4 rounded text-md font-medium' onClick={removeFromLibraryOnly}>Remove From Library Only</button>
-                              <button className='mbg-300 py-4 rounded text-md font-medium' onClick={() => {
-                                deleteInAllRecords()
-                              }}>Delete in All Records</button>
+  
+  
+                <div className='flex items-center justify-between'>
+                  <p className='font-medium text-lg mb-2'>Latest Shared Study Materials:</p>
+                  <button className='btn-300 rounded px-4 py-1' onClick={() => {
+                    setFilteredStudyMaterialsByCategory([])
+                    setSearchValue('')
+                    }}>Clear Filter</button>
+                </div>
+                <div className='grid grid-result gap-3'>
+  
+                
+  
+  
+                {/* delete modal */}
+                {deleteModal && (
+                  <div className={`absolute top-0 modal-bg left-0 w-full h-full`}>
+                    <div className='flex items-center justify-center h-full'>
+                      <div className='relative mbg-100 min-h-[30vh] w-1/3 z-10 relative py-5 px-5 rounded-[5px]' style={{overflowY: 'auto'}}>
+  
+                        <button className='absolute right-5 top-5 font-medium text-xl' onClick={(e) => {
+                          e.preventDefault()
+                          setDeleteModal(false)
+                        }}>&#10006;</button>
+  
+                        <div className='flex items-center justify-center h-full'>
+                          <div className='w-full'>
+                            <div>
+                              <div className='flex flex-col gap-4'>
+                                <br />
+                                <button className='mbg-300 py-4 rounded text-md font-medium' onClick={removeFromLibraryOnly}>Remove From Library Only</button>
+                                <button className='mbg-300 py-4 rounded text-md font-medium' onClick={() => {
+                                  deleteInAllRecords()
+                                }}>Delete in All Records</button>
+                              </div>
                             </div>
                           </div>
                         </div>
+  
+  
+  
                       </div>
-
-
-
                     </div>
                   </div>
-                </div>
-              )}
-
-
-          {((filteredStudyMaterialsByCategory && filteredStudyMaterialsByCategory.length === 0) && searchValue === '') && (
-            // Create an array of objects with material information and timestamp of the latest bookmark
-            sharedMaterials.map((material, index) => {
-              const category = sharedMaterialsCategory[index]?.category || 'Category not available';
-              const user = sharedMaterialsCategoryUsers[index]?.username || 'Deleted user';
-              const bookmarks = sharedMaterialsCategoryBookmarks[index] || [];
-
-              // Find the latest bookmark timestamp or default to 0 if no bookmarks
-              const latestBookmarkTimestamp = Math.max(...bookmarks.map(bookmark => bookmark.timestamp), 0);
-
-              return {
-                index,
-                material,
-                category,
-                user,
-                bookmarksCount: bookmarks.length,
-                latestBookmarkTimestamp
-              };
-            })
-            // Sort the array by the latest bookmark timestamp in descending order
-            .sort((a, b) => b.latestBookmarkTimestamp - a.latestBookmarkTimestamp)
-            .map(({ index, material, category, user, bookmarksCount }) => (
-              <div key={index} className='my-3 mbg-200 border-thin-800 p-4 rounded flex justify-between items-center'>
-                <div>
-                  <p className='font-medium text-lg'>Title: {material.title}</p>
-                  <p className='text-sm mt-1'>Category: {category}</p>
-                  <p className='text-sm mt-1'>Uploader: {user}</p>
-                  <p className='text-sm mt-1'>Bookmarked by {bookmarksCount} user{bookmarksCount > 1 ? 's' : ''}</p>
-                </div>
-
-                <div className='gap-3 mt-5'>
-                  {user === userData?.username && (
-                    <div className='flex justify-end'>
-                      <button onClick={() => {
-                        if (bookmarksCount > 0) {
-                          alert('This material has been bookmarked by others. You can no longer remove nor delete it.')
-                        } else {
-                          setDeleteModal(true)
-                          setMaterialIdToRemove(material.id)
-                          setMaterialIdToRemoveBookmarkCounts(bookmarksCount)
-                        }
-                      }}><DeleteIcon className='text-red'/></button>
-                    </div>
-                  )}
-
-                  <button className='mbg-100 w-full my-1 mcolor-900 border-thin-800 px-5 py-2 rounded' onClick={() => viewStudyMaterialDetails(index, 'shared', 'not filtered', category)}>View</button>
-                  <button className='mbg-700 w-full my-1 mcolor-100 px-5 py-2 rounded' onClick={() => {
-                    setShowBookmarkModal(true);
-                    setChooseRoom(true);
-                    setCurrentSharedMaterialIndex(index);
-                  }}>Bookmark</button>
-                </div>
-              </div>
-            ))
-          )}
-
-
-
-
-
-          {
-            (filteredStudyMaterialsByCategory && filteredStudyMaterialsByCategory.length > 0 && searchValue === '') &&
-              filteredStudyMaterialsByCategory.map((material, index) => {
-                const category = currentFilteredCategory;
-                const user = currentFilteredCategoryUsers[index]?.username || 'Deleted user';
-                const bookmarks = currentFilteredCategoryBookmarks[index] || []; // Ensure bookmarks is an array
-
+                )}
+  
+  
+            {((filteredStudyMaterialsByCategory && filteredStudyMaterialsByCategory.length === 0) && searchValue === '') && (
+              // Create an array of objects with material information and timestamp of the latest bookmark
+              sharedMaterials.map((material, index) => {
+                const category = sharedMaterialsCategory[index]?.category || 'Category not available';
+                const user = sharedMaterialsCategoryUsers[index]?.username || 'Deleted user';
+                const bookmarks = sharedMaterialsCategoryBookmarks[index] || [];
+  
                 // Find the latest bookmark timestamp or default to 0 if no bookmarks
                 const latestBookmarkTimestamp = Math.max(...bookmarks.map(bookmark => bookmark.timestamp), 0);
-
+  
                 return {
                   index,
                   material,
@@ -1353,15 +1296,15 @@ export const VirtualLibraryMain = () => {
               // Sort the array by the latest bookmark timestamp in descending order
               .sort((a, b) => b.latestBookmarkTimestamp - a.latestBookmarkTimestamp)
               .map(({ index, material, category, user, bookmarksCount }) => (
-                <div key={index} className='my-3 mbg-200 border-thin-800 p-4 rounded flex items-center justify-between'>
+                <div key={index} className='my-3 mbg-200 border-thin-800 p-4 rounded flex justify-between items-center'>
                   <div>
                     <p className='font-medium text-lg'>Title: {material.title}</p>
                     <p className='text-sm mt-1'>Category: {category}</p>
                     <p className='text-sm mt-1'>Uploader: {user}</p>
                     <p className='text-sm mt-1'>Bookmarked by {bookmarksCount} user{bookmarksCount > 1 ? 's' : ''}</p>
                   </div>
-
-                  <div className='gap-3'>
+  
+                  <div className='gap-3 mt-5'>
                     {user === userData?.username && (
                       <div className='flex justify-end'>
                         <button onClick={() => {
@@ -1371,58 +1314,57 @@ export const VirtualLibraryMain = () => {
                             setDeleteModal(true)
                             setMaterialIdToRemove(material.id)
                             setMaterialIdToRemoveBookmarkCounts(bookmarksCount)
-                            setFilteredCategoryCounts(filteredStudyMaterialsByCategory.length)
-                            
                           }
                         }}><DeleteIcon className='text-red'/></button>
                       </div>
                     )}
-                    <button className='mbg-100 w-full my-1 mcolor-900 border-thin-800 px-5 py-2 rounded' onClick={() => viewStudyMaterialDetails(index, 'shared', 'filtered', category)}>View</button>
+  
+                    <button className='mbg-100 w-full my-1 mcolor-900 border-thin-800 px-5 py-2 rounded' onClick={() => viewStudyMaterialDetails(index, 'shared', 'not filtered', category)}>View</button>
                     <button className='mbg-700 w-full my-1 mcolor-100 px-5 py-2 rounded' onClick={() => {
-                      setShowBookmarkModal(true)
-                      setChooseRoom(true)
-                      setCurrentSharedMaterialIndex(index)
+                      setShowBookmarkModal(true);
+                      setChooseRoom(true);
+                      setCurrentSharedMaterialIndex(index);
                     }}>Bookmark</button>
                   </div>
                 </div>
               ))
-          }
-
-
-
-
-
-              {
-                searchValue !== '' &&
-                searchedMaterials
-                  .map((material, index) => {
-                    const category = searchCategory[index]?.category || 'Category not available';
-                    const user = searchCategoryUsers[index]?.username || 'Deleted user';
-                    const bookmarks = searchCategoryBookmarks[index] || [];
-
-                    return {
-                      index,
-                      material,
-                      category,
-                      user,
-                      bookmarksCount: bookmarks.length,
-                    };
-                  })
-                  .filter(({ material, category, user, bookmarksCount }) =>
-                    material.title.toLowerCase().includes(searchValue.toLowerCase()) ||
-                    category.toLowerCase().includes(searchValue.toLowerCase()) ||
-                    user.toLowerCase().includes(searchValue.toLowerCase())
-                  )
-                  .map(({ index, material, category, user, bookmarksCount }) => (
-                    <div key={index} className='my-3 mbg-200 border-thin-800 p-4 rounded flex items-center justify-between'>
+            )}
+  
+  
+  
+  
+  
+            {
+              (filteredStudyMaterialsByCategory && filteredStudyMaterialsByCategory.length > 0 && searchValue === '') &&
+                filteredStudyMaterialsByCategory.map((material, index) => {
+                  const category = currentFilteredCategory;
+                  const user = currentFilteredCategoryUsers[index]?.username || 'Deleted user';
+                  const bookmarks = currentFilteredCategoryBookmarks[index] || []; // Ensure bookmarks is an array
+  
+                  // Find the latest bookmark timestamp or default to 0 if no bookmarks
+                  const latestBookmarkTimestamp = Math.max(...bookmarks.map(bookmark => bookmark.timestamp), 0);
+  
+                  return {
+                    index,
+                    material,
+                    category,
+                    user,
+                    bookmarksCount: bookmarks.length,
+                    latestBookmarkTimestamp
+                  };
+                })
+                // Sort the array by the latest bookmark timestamp in descending order
+                .sort((a, b) => b.latestBookmarkTimestamp - a.latestBookmarkTimestamp)
+                .map(({ index, material, category, user, bookmarksCount }) => (
+                  <div key={index} className='my-3 mbg-200 border-thin-800 p-4 rounded flex items-center justify-between'>
                     <div>
-                        <p className='font-medium text-lg'>Title: {material.title}</p>
-                        <p className='text-sm mt-1'>Category: {category}</p>
-                        <p className='text-sm mt-1'>Uploader: {user}</p>
-                        <p className='text-sm mt-1'>Bookmarked by {bookmarksCount} user{bookmarksCount !== 1 ? 's' : ''}</p>
-                      </div>
-
-                      <div className='gap-3'>
+                      <p className='font-medium text-lg'>Title: {material.title}</p>
+                      <p className='text-sm mt-1'>Category: {category}</p>
+                      <p className='text-sm mt-1'>Uploader: {user}</p>
+                      <p className='text-sm mt-1'>Bookmarked by {bookmarksCount} user{bookmarksCount > 1 ? 's' : ''}</p>
+                    </div>
+  
+                    <div className='gap-3'>
                       {user === userData?.username && (
                         <div className='flex justify-end'>
                           <button onClick={() => {
@@ -1438,342 +1380,404 @@ export const VirtualLibraryMain = () => {
                           }}><DeleteIcon className='text-red'/></button>
                         </div>
                       )}
-                        <button className='mbg-100 w-full my-1 mcolor-900 border-thin-800 px-5 py-2 rounded' onClick={() => viewStudyMaterialDetails(index, 'shared', 'filtered', category)}>View</button>
-                        <button className='mbg-700 w-full my-1 mcolor-100 px-5 py-2 rounded' onClick={() => {
-                          setShowBookmarkModal(true)
-                          setChooseRoom(true)
-                          setCurrentSharedMaterialIndex(index)
-                        }}>Bookmark</button>
-                      </div>
+                      <button className='mbg-100 w-full my-1 mcolor-900 border-thin-800 px-5 py-2 rounded' onClick={() => viewStudyMaterialDetails(index, 'shared', 'filtered', category)}>View</button>
+                      <button className='mbg-700 w-full my-1 mcolor-100 px-5 py-2 rounded' onClick={() => {
+                        setShowBookmarkModal(true)
+                        setChooseRoom(true)
+                        setCurrentSharedMaterialIndex(index)
+                      }}>Bookmark</button>
                     </div>
-                  ))
-              }
-
-
-
-              {searchValue !== '' && (
-                // Check if searchedMaterials and searchCategoryMaterials have the same array of objects
-                searchedMaterials.length !== searchCategoryMaterials.length &&
-                searchedMaterials.every((material, index) => material.title && searchCategoryMaterials[index]?.title) && (
-                  searchCategoryMaterials.map((material, index) => {
-                    const category = searchedMaterialsCategories[0]?.category || 'Category not available';
-                    const title = searchCategoryMaterials[index].title;
-
-                    return (
-                      <div key={index} className='my-3 mbg-200 border-thin-800 p-4 rounded '>
-                        <div>
-                          <p className='font-medium text-lg'>Title: {title}</p>
+                  </div>
+                ))
+            }
+  
+  
+  
+  
+  
+                {
+                  searchValue !== '' &&
+                  searchedMaterials
+                    .map((material, index) => {
+                      const category = searchCategory[index]?.category || 'Category not available';
+                      const user = searchCategoryUsers[index]?.username || 'Deleted user';
+                      const bookmarks = searchCategoryBookmarks[index] || [];
+  
+                      return {
+                        index,
+                        material,
+                        category,
+                        user,
+                        bookmarksCount: bookmarks.length,
+                      };
+                    })
+                    .filter(({ material, category, user, bookmarksCount }) =>
+                      material.title.toLowerCase().includes(searchValue.toLowerCase()) ||
+                      category.toLowerCase().includes(searchValue.toLowerCase()) ||
+                      user.toLowerCase().includes(searchValue.toLowerCase())
+                    )
+                    .map(({ index, material, category, user, bookmarksCount }) => (
+                      <div key={index} className='my-3 mbg-200 border-thin-800 p-4 rounded flex items-center justify-between'>
+                      <div>
+                          <p className='font-medium text-lg'>Title: {material.title}</p>
                           <p className='text-sm mt-1'>Category: {category}</p>
+                          <p className='text-sm mt-1'>Uploader: {user}</p>
+                          <p className='text-sm mt-1'>Bookmarked by {bookmarksCount} user{bookmarksCount !== 1 ? 's' : ''}</p>
                         </div>
-
-                        <div className='flex items-center gap-3'>
-                          <button className='mbg-100 mcolor-900 border-thin-800 px-5 py-2 rounded' onClick={() => viewStudyMaterialDetails(index, 'shared', 'searched-category', category)}>View</button>
-                          <button className='mbg-700 mcolor-100 px-5 py-2 rounded' onClick={() => {
+  
+                        <div className='gap-3'>
+                        {user === userData?.username && (
+                          <div className='flex justify-end'>
+                            <button onClick={() => {
+                              if (bookmarksCount > 0) {
+                                alert('This material has been bookmarked by others. You can no longer remove nor delete it.')
+                              } else {
+                                setDeleteModal(true)
+                                setMaterialIdToRemove(material.id)
+                                setMaterialIdToRemoveBookmarkCounts(bookmarksCount)
+                                setFilteredCategoryCounts(filteredStudyMaterialsByCategory.length)
+                                
+                              }
+                            }}><DeleteIcon className='text-red'/></button>
+                          </div>
+                        )}
+                          <button className='mbg-100 w-full my-1 mcolor-900 border-thin-800 px-5 py-2 rounded' onClick={() => viewStudyMaterialDetails(index, 'shared', 'filtered', category)}>View</button>
+                          <button className='mbg-700 w-full my-1 mcolor-100 px-5 py-2 rounded' onClick={() => {
                             setShowBookmarkModal(true)
                             setChooseRoom(true)
                             setCurrentSharedMaterialIndex(index)
                           }}>Bookmark</button>
                         </div>
                       </div>
-                    );
-                  })
-                )
-              )}
-
-              </div>
-            </div>
-          </div>
-
-          
-
-
-          {/* user choosing to bookmark */}
-          {showBookmarkModal && (
-            <div className={`absolute top-0 modal-bg left-0 w-full h-full`}>
-              <div className='flex items-center justify-center h-full'>
-                <div className='relative mbg-100 h-[60vh] w-1/3 z-10 relative py-5 px-5 rounded-[5px]' style={{overflowY: 'auto'}}>
-
-                  <button className='absolute right-5 top-5 font-medium text-xl' onClick={() => {
-                    setShowBookmarkModal(false)
-                    setChooseGroupRoom(false)
-                    setChooseRoom(false)
-                    setShowCreateGroupInput(false);
-                  }}>&#10006;</button>
-
-                {chooseRoom && (
-                  <div className='flex items-center justify-center h-full'>
-                    <div className='w-full'>
-                      <div>
-                        <p className='text-lg mb-5'>Bookmark to: </p>
-
-                        {!error && msg !== '' && (
-                          <div className='green-bg text-center mt-5 rounded py-3 w-full mb-5'>
-                            {msg}
-                          </div>
-                        )}
-
-                        <div className='flex flex-col gap-4'>
-                          <button className='mbg-300 py-4 rounded text-md font-medium' onClick={() => bookmarkMaterial(currentSharedMaterialIndex, null, 'Personal')}>Personal Study Room</button>
-                          <button className='mbg-300 py-4 rounded text-md font-medium' onClick={() => {
-                            setChooseRoom(false)
-                            setChooseGroupRoom(true)
-                          }}>Group Study Room</button>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                {chooseGroupRoom && (
-                  <div>
-                    <button className='mbg-200 mcolor-900 rounded px-4 py-1 rounded border-thin-800' onClick={() => {
-                      setChooseGroupRoom(false)
-                      setChooseRoom(true)
-                    }}>Back</button>
-
-                    <div className='mt-5 flex items-center justify-center'>
-                      {/* back here */}
-
-                      {showCreateGroupInput === false ? (
-                        <button className='px-4 py-2 rounded mbg-700 mcolor-100' onClick={() => {
-                          setShowCreateGroupInput(true)
-                        }}>Create a group</button>
-                      ) : (
-                        <div className='flex items-center gap-3'>
-                          <div className='my-3 border-thin-800 rounded'>
-                            <input type="text" placeholder='Group name...' className='w-full py-2 rounded text-center' value={groupNameValue !== '' ? groupNameValue : ''} onChange={(event) => {
-                              setGroupNameValue(event.target.value)
-                            }} />
-                          </div>
-                          <button className='px-4 py-2 rounded mbg-700 mcolor-100' onClick={createGroupBtn}>Create</button>
-                          <button className='px-4 py-2 rounded mbg-100 mcolor-900 border-thin-800' onClick={() => setShowCreateGroupInput(false)}>Cancel</button>
-                        </div>
-                      )}
-
-                      
-                    </div>
-
-                    {!error && msg !== '' && (
-                      <div className='green-bg text-center mt-5 rounded py-3 w-full mb-5'>
-                        {msg}
-                      </div>
-                    )}
-                    {showCreateGroupInput === false && (
-                      groupList.slice().sort((a, b) => b.id - a.id).map(({ id, groupName}) => (
-                        <div key={id} className='shadows mcolor-900 rounded-[5px] p-5 my-6 mbg-100 flex items-center justify-between relative'>
-
-
-
-                          <p className='px-1'>{groupName}</p>
-                        <button  className='px-2 py-2 mbg-700 mcolor-100 rounded text-sm' onClick={() => bookmarkMaterial(currentSharedMaterialIndex, id, 'Group')}>Bookmark here</button>
-
-                          {/* {expandedGroupId === id && (
-
-                            <div className='absolute right-0 bottom-0 px-7 mb-[-114px] mbg-700 mcolor-100 rounded pt-3 pb-4 opacity-80'>
-                              <Link to={`/main/group/study-area/${id}`}>
-                                <p className='pt-1'>Study Area</p>
-                              </Link>
-                              <Link to={`/main/group/tasks/${id}`}>
-                                <p className='pt-1'>Tasks</p>
-                              </Link>
-                              <Link to={`/main/group/dashboard/${id}`}>
-                                <p className='pt-1'>Dashboard</p>
-                              </Link>
-                            </div>
-                          )}  */}
-
-                        </div>
-                      ))
-                    )}
-                    
-                  </div>
-                )}
-                      
-
-
-
-                </div>
-              </div>
-            </div>
-          )}
-          
-          
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-          {/* user sharing */}
-          {showModal && (
-            <div className={`absolute top-0 modal-bg left-0 w-full h-full`}>
-              <div className='flex items-center justify-center h-full'>
-                <div className='relative mbg-100 h-[75vh] w-1/2 z-10 relative py-5 px-10 rounded-[5px]' style={{overflowY: 'auto'}}>
-                  
-                  <button className='absolute right-5 top-5 font-medium text-xl' onClick={() => {
-                    setShowMaterialDetails(false)
-                    setShowPresentStudyMaterials(false)
-                    setShowModal(false)
-                  }}>&#10006;</button>
-
-                  {showPresentStudyMaterials && (
-                    <div>
-                      <p class='text-lg text-color-900 font-medium mb-5 mt-10 mcolor-900 text-center'>Materials that are present in your personal room and those you contributed within collaborative workspaces:</p>
-
-                      <br />
-                      <div className='flex items-center justify-center mb-2'>
-                        <Link to={'/main/library/generate-quiz'}>
-                          <button className='btn-800 px-5 py-2 rounded border-thin-800'>Generate a new Study Material</button>
-                        </Link>
-                      </div>
-                      <br />
-
-
-                      {personalStudyMaterials.length > 0 && <p>Personal: </p>}
-                    
-                      {personalStudyMaterials.map((material, index) => {
-                        const category = personalStudyMaterialsCategory[index]?.category || 'Category not available';
-
-                        return <div key={index} className='flex justify-between my-3 mbg-200 border-thin-800 p-4 rounded '>
-                            <div>
-                              <p className='font-medium text-lg'>Title: {material.title}</p>
-                              <p className='text-sm mt-1'>Category: {category}</p>
-                              
-                            </div>
-
-                            <div className='flex items-center gap-3'>
-                              <button className='mbg-100 mcolor-900 border-thin-800 px-5 py-2 rounded' onClick={() => viewStudyMaterialDetails(index, 'personal', 'not filtered', category)} >View</button>
-                              <button className='mbg-700 mcolor-100 px-5 py-2 rounded' onClick={() => shareMaterial(index, 'personal')}>Share</button>
-                            </div>
-                          </div>
-                      })}
-
-                      <br />
-
-                      {groupStudyMaterials.length > 0 && <p>Group: </p>}
-
-                      {groupStudyMaterials.map((material, index) => {
-                        const category = groupStudyMaterialsCategory[index]?.category || 'Category not available';
-
-                        return <div key={index} className='my-3 mbg-200 border-thin-800 p-4 rounded flex items-center justify-between'>
-                            <div>
-                              <p className='font-medium text-lg'>Title: {material.title}</p>
-                              <p className='text-sm mt-1'>Category: {category}</p>
-
-                            </div>
-
-                            <div className='flex items-center gap-3'>
-                              <button className='mbg-100 mcolor-900 border-thin-800 px-5 py-2 rounded' onClick={() => viewStudyMaterialDetails(index, 'group', 'not filtered', category)}>View</button>
-                              <button className='mbg-700 mcolor-100 px-5 py-2 rounded' onClick={() => shareMaterial(index, 'Group')}>Share</button>
-                            </div>
-                          </div>
-                      })}
-                    </div>
-                  )}
-
-
-
-                  {showMaterialDetails && (
-                    <div>
-
-                      {enableBackButton && (
-                        <button className='mbg-200 mcolor-900 rounded px-4 py-1 rounded border-thin-800' onClick={() => {
-                          setShowMaterialDetails(false)
-                          setShowPresentStudyMaterials(true)
-                        }}>Back</button>
-                      )}
-
-
-
-                      <div className='my-6'>
-                        <p className='mcolor-900 text-center text-xl font-medium'>{currentMaterialTitle} from {currentMaterialCategory}</p>
-                        
-                        <div className='flex items-center justify-between my-5 gap-1'>
-                          <button className='border-thin-800 w-full rounded py-2' onClick={() => {
-                            setShowQuiz(false)
-                            setShowNotes(false)
-                            setShowContext(true)
-                          }}>Context</button>
-                          <button className='border-thin-800 w-full rounded py-2 mbg-700 mcolor-100' onClick={() => {
-                            setShowContext(false)
-                            setShowQuiz(false)
-                            setShowNotes(true)
-                          }}>Notes</button>
-                          <button className='border-thin-800 w-full rounded py-2 mbg-700 mcolor-100' onClick={() => {
-                          setShowContext(false)
-                          setShowNotes(false)
-                          setShowQuiz(true)
-                          }}>Quiz</button>
-                        </div>
-
-
-                        {showContext && (
-                          <p className='text-justify my-5'>{context}</p>
-                        )}
-
-                        {showNotes && (
+                    ))
+                }
+  
+  
+  
+                {searchValue !== '' && (
+                  // Check if searchedMaterials and searchCategoryMaterials have the same array of objects
+                  searchedMaterials.length !== searchCategoryMaterials.length &&
+                  searchedMaterials.every((material, index) => material.title && searchCategoryMaterials[index]?.title) && (
+                    searchCategoryMaterials.map((material, index) => {
+                      const category = searchedMaterialsCategories[0]?.category || 'Category not available';
+                      const title = searchCategoryMaterials[index].title;
+  
+                      return (
+                        <div key={index} className='my-3 mbg-200 border-thin-800 p-4 rounded '>
                           <div>
-                            {materialNotes.map((material) => (
-                              <div className='my-10'>
-                                <p className='font-medium mcolor-700'>Question: <span className='mcolor-900 font-medium'>{material.question}</span></p>
-                                <p className='font-medium mcolor-700 mt-1'>Answer: <span className='mcolor-900 font-medium'>{material.answer}</span></p>
-                              </div>
-                            ))}
-                            <div className='mb-[-1.5rem]'></div>
+                            <p className='font-medium text-lg'>Title: {title}</p>
+                            <p className='text-sm mt-1'>Category: {category}</p>
                           </div>
-                        )}
-
-                        {showQuiz && (
-                          <div className='mt-5'>
-                            <br />
-                            {materialMCQ.map((material, quesIndex) => (
-                              <div className={(material.quizType === 'MCQA' || material.quizType === 'Identification') ? 'mb-14' : material.quizType !== 'ToF' ? 'mt-10' : 'mb-5'} key={material.id}>
-                                <p className='mt-2 mcolor-900'>{quesIndex + 1}. {material.question} - <span className='mcolor-800 font-bold'>{material.answer}</span></p>
-
-                                {material.quizType === 'MCQA' && (
-                                  <p className='mt-2 mb-1'>Choices: </p>
-                                )}
-
-                                <ul className='grid-result gap-3' style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)' }}>
-                                  {materialMCQChoices
-                                    .filter((choice) => (choice.QuesAnId === material.id && material.quizType === 'MCQA'))
-                                    .map((choice, index) => (
-                                      <li key={index} className='mbg-300 text-center py-1 rounded'>{choice.choice}</li>
-                                    ))}
-                                </ul>
-
-                              </div>
-                            ))}
+  
+                          <div className='flex items-center gap-3'>
+                            <button className='mbg-100 mcolor-900 border-thin-800 px-5 py-2 rounded' onClick={() => viewStudyMaterialDetails(index, 'shared', 'searched-category', category)}>View</button>
+                            <button className='mbg-700 mcolor-100 px-5 py-2 rounded' onClick={() => {
+                              setShowBookmarkModal(true)
+                              setChooseRoom(true)
+                              setCurrentSharedMaterialIndex(index)
+                            }}>Bookmark</button>
                           </div>
-                        )}
-
-                      </div>
-                    </div>
-                  )}
-                
+                        </div>
+                      );
+                    })
+                  )
+                )}
+  
                 </div>
               </div>
             </div>
-          )}
-
+  
+            
+  
+  
+            {/* user choosing to bookmark */}
+            {showBookmarkModal && (
+              <div className={`absolute top-0 modal-bg left-0 w-full h-full`}>
+                <div className='flex items-center justify-center h-full'>
+                  <div className='relative mbg-100 h-[60vh] w-1/3 z-10 relative py-5 px-5 rounded-[5px]' style={{overflowY: 'auto'}}>
+  
+                    <button className='absolute right-5 top-5 font-medium text-xl' onClick={() => {
+                      setShowBookmarkModal(false)
+                      setChooseGroupRoom(false)
+                      setChooseRoom(false)
+                      setShowCreateGroupInput(false);
+                    }}>&#10006;</button>
+  
+                  {chooseRoom && (
+                    <div className='flex items-center justify-center h-full'>
+                      <div className='w-full'>
+                        <div>
+                          <p className='text-lg mb-5'>Bookmark to: </p>
+  
+                          {!error && msg !== '' && (
+                            <div className='green-bg text-center mt-5 rounded py-3 w-full mb-5'>
+                              {msg}
+                            </div>
+                          )}
+  
+                          <div className='flex flex-col gap-4'>
+                            <button className='mbg-300 py-4 rounded text-md font-medium' onClick={() => bookmarkMaterial(currentSharedMaterialIndex, null, 'Personal')}>Personal Study Room</button>
+                            <button className='mbg-300 py-4 rounded text-md font-medium' onClick={() => {
+                              setChooseRoom(false)
+                              setChooseGroupRoom(true)
+                            }}>Group Study Room</button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+  
+                  {chooseGroupRoom && (
+                    <div>
+                      <button className='mbg-200 mcolor-900 rounded px-4 py-1 rounded border-thin-800' onClick={() => {
+                        setChooseGroupRoom(false)
+                        setChooseRoom(true)
+                      }}>Back</button>
+  
+                      <div className='mt-5 flex items-center justify-center'>
+                        {/* back here */}
+  
+                        {showCreateGroupInput === false ? (
+                          <button className='px-4 py-2 rounded mbg-700 mcolor-100' onClick={() => {
+                            setShowCreateGroupInput(true)
+                          }}>Create a group</button>
+                        ) : (
+                          <div className='flex items-center gap-3'>
+                            <div className='my-3 border-thin-800 rounded'>
+                              <input type="text" placeholder='Group name...' className='w-full py-2 rounded text-center' value={groupNameValue !== '' ? groupNameValue : ''} onChange={(event) => {
+                                setGroupNameValue(event.target.value)
+                              }} />
+                            </div>
+                            <button className='px-4 py-2 rounded mbg-700 mcolor-100' onClick={createGroupBtn}>Create</button>
+                            <button className='px-4 py-2 rounded mbg-100 mcolor-900 border-thin-800' onClick={() => setShowCreateGroupInput(false)}>Cancel</button>
+                          </div>
+                        )}
+  
+                        
+                      </div>
+  
+                      {!error && msg !== '' && (
+                        <div className='green-bg text-center mt-5 rounded py-3 w-full mb-5'>
+                          {msg}
+                        </div>
+                      )}
+                      {showCreateGroupInput === false && (
+                        groupList.slice().sort((a, b) => b.id - a.id).map(({ id, groupName}) => (
+                          <div key={id} className='shadows mcolor-900 rounded-[5px] p-5 my-6 mbg-100 flex items-center justify-between relative'>
+  
+  
+  
+                            <p className='px-1'>{groupName}</p>
+                          <button  className='px-2 py-2 mbg-700 mcolor-100 rounded text-sm' onClick={() => bookmarkMaterial(currentSharedMaterialIndex, id, 'Group')}>Bookmark here</button>
+  
+                            {/* {expandedGroupId === id && (
+  
+                              <div className='absolute right-0 bottom-0 px-7 mb-[-114px] mbg-700 mcolor-100 rounded pt-3 pb-4 opacity-80'>
+                                <Link to={`/main/group/study-area/${id}`}>
+                                  <p className='pt-1'>Study Area</p>
+                                </Link>
+                                <Link to={`/main/group/tasks/${id}`}>
+                                  <p className='pt-1'>Tasks</p>
+                                </Link>
+                                <Link to={`/main/group/dashboard/${id}`}>
+                                  <p className='pt-1'>Dashboard</p>
+                                </Link>
+                              </div>
+                            )}  */}
+  
+                          </div>
+                        ))
+                      )}
+                      
+                    </div>
+                  )}
+                        
+  
+  
+  
+                  </div>
+                </div>
+              </div>
+            )}
+            
+            
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+            {/* user sharing */}
+            {showModal && (
+              <div className={`absolute top-0 modal-bg left-0 w-full h-full`}>
+                <div className='flex items-center justify-center h-full'>
+                  <div className='relative mbg-100 h-[75vh] w-1/2 z-10 relative py-5 px-10 rounded-[5px]' style={{overflowY: 'auto'}}>
+                    
+                    <button className='absolute right-5 top-5 font-medium text-xl' onClick={() => {
+                      setShowMaterialDetails(false)
+                      setShowPresentStudyMaterials(false)
+                      setShowModal(false)
+                    }}>&#10006;</button>
+  
+                    {showPresentStudyMaterials && (
+                      <div>
+                        <p class='text-lg text-color-900 font-medium mb-5 mt-10 mcolor-900 text-center'>Materials that are present in your personal room and those you contributed within collaborative workspaces:</p>
+  
+                        <br />
+                        <div className='flex items-center justify-center mb-2'>
+                          <Link to={'/main/library/generate-quiz'}>
+                            <button className='btn-800 px-5 py-2 rounded border-thin-800'>Generate a new Study Material</button>
+                          </Link>
+                        </div>
+                        <br />
+  
+  
+                        {personalStudyMaterials.length > 0 && <p>Personal: </p>}
+                      
+                        {personalStudyMaterials.map((material, index) => {
+                          const category = personalStudyMaterialsCategory[index]?.category || 'Category not available';
+  
+                          return <div key={index} className='flex justify-between my-3 mbg-200 border-thin-800 p-4 rounded '>
+                              <div>
+                                <p className='font-medium text-lg'>Title: {material.title}</p>
+                                <p className='text-sm mt-1'>Category: {category}</p>
+                                
+                              </div>
+  
+                              <div className='flex items-center gap-3'>
+                                <button className='mbg-100 mcolor-900 border-thin-800 px-5 py-2 rounded' onClick={() => viewStudyMaterialDetails(index, 'personal', 'not filtered', category)} >View</button>
+                                <button className='mbg-700 mcolor-100 px-5 py-2 rounded' onClick={() => shareMaterial(index, 'personal')}>Share</button>
+                              </div>
+                            </div>
+                        })}
+  
+                        <br />
+  
+                        {groupStudyMaterials.length > 0 && <p>Group: </p>}
+  
+                        {groupStudyMaterials.map((material, index) => {
+                          const category = groupStudyMaterialsCategory[index]?.category || 'Category not available';
+  
+                          return <div key={index} className='my-3 mbg-200 border-thin-800 p-4 rounded flex items-center justify-between'>
+                              <div>
+                                <p className='font-medium text-lg'>Title: {material.title}</p>
+                                <p className='text-sm mt-1'>Category: {category}</p>
+  
+                              </div>
+  
+                              <div className='flex items-center gap-3'>
+                                <button className='mbg-100 mcolor-900 border-thin-800 px-5 py-2 rounded' onClick={() => viewStudyMaterialDetails(index, 'group', 'not filtered', category)}>View</button>
+                                <button className='mbg-700 mcolor-100 px-5 py-2 rounded' onClick={() => shareMaterial(index, 'Group')}>Share</button>
+                              </div>
+                            </div>
+                        })}
+                      </div>
+                    )}
+  
+  
+  
+                    {showMaterialDetails && (
+                      <div>
+  
+                        {enableBackButton && (
+                          <button className='mbg-200 mcolor-900 rounded px-4 py-1 rounded border-thin-800' onClick={() => {
+                            setShowMaterialDetails(false)
+                            setShowPresentStudyMaterials(true)
+                          }}>Back</button>
+                        )}
+  
+  
+  
+                        <div className='my-6'>
+                          <p className='mcolor-900 text-center text-xl font-medium'>{currentMaterialTitle} from {currentMaterialCategory}</p>
+                          
+                          <div className='flex items-center justify-between my-5 gap-1'>
+                            <button className='border-thin-800 w-full rounded py-2' onClick={() => {
+                              setShowQuiz(false)
+                              setShowNotes(false)
+                              setShowContext(true)
+                            }}>Context</button>
+                            <button className='border-thin-800 w-full rounded py-2 mbg-700 mcolor-100' onClick={() => {
+                              setShowContext(false)
+                              setShowQuiz(false)
+                              setShowNotes(true)
+                            }}>Notes</button>
+                            <button className='border-thin-800 w-full rounded py-2 mbg-700 mcolor-100' onClick={() => {
+                            setShowContext(false)
+                            setShowNotes(false)
+                            setShowQuiz(true)
+                            }}>Quiz</button>
+                          </div>
+  
+  
+                          {showContext && (
+                            <p className='text-justify my-5'>{context}</p>
+                          )}
+  
+                          {showNotes && (
+                            <div>
+                              {materialNotes.map((material) => (
+                                <div className='my-10'>
+                                  <p className='font-medium mcolor-700'>Question: <span className='mcolor-900 font-medium'>{material.question}</span></p>
+                                  <p className='font-medium mcolor-700 mt-1'>Answer: <span className='mcolor-900 font-medium'>{material.answer}</span></p>
+                                </div>
+                              ))}
+                              <div className='mb-[-1.5rem]'></div>
+                            </div>
+                          )}
+  
+                          {showQuiz && (
+                            <div className='mt-5'>
+                              <br />
+                              {materialMCQ.map((material, quesIndex) => (
+                                <div className={(material.quizType === 'MCQA' || material.quizType === 'Identification') ? 'mb-14' : material.quizType !== 'ToF' ? 'mt-10' : 'mb-5'} key={material.id}>
+                                  <p className='mt-2 mcolor-900'>{quesIndex + 1}. {material.question} - <span className='mcolor-800 font-bold'>{material.answer}</span></p>
+  
+                                  {material.quizType === 'MCQA' && (
+                                    <p className='mt-2 mb-1'>Choices: </p>
+                                  )}
+  
+                                  <ul className='grid-result gap-3' style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)' }}>
+                                    {materialMCQChoices
+                                      .filter((choice) => (choice.QuesAnId === material.id && material.quizType === 'MCQA'))
+                                      .map((choice, index) => (
+                                        <li key={index} className='mbg-300 text-center py-1 rounded'>{choice.choice}</li>
+                                      ))}
+                                  </ul>
+  
+                                </div>
+                              ))}
+                            </div>
+                          )}
+  
+                        </div>
+                      </div>
+                    )}
+                  
+                  </div>
+                </div>
+              </div>
+            )}
+  
+          </div>
+  
         </div>
-
       </div>
-    </div>
-  )
+    )
+  }
 }

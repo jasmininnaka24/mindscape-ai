@@ -1,23 +1,21 @@
 import React, { useEffect, useId, useState } from 'react'
-import { Navbar } from '../../../components/navbar/logged_navbar/navbar'
 import ScrollToBottom from "react-scroll-to-bottom";
 import { useUser } from '../../../UserContext';
 import { fetchUserData } from '../../../userAPI';
 
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import GroupsIcon from '@mui/icons-material/Groups';
-import SupervisorAccountIcon from '@mui/icons-material/SupervisorAccount';
 import SensorDoorIcon from '@mui/icons-material/SensorDoor';
 import ClearAllIcon from '@mui/icons-material/ClearAll';
 
 import io from 'socket.io-client';
 import { Link } from 'react-router-dom';
+const socket = io.connect("https://mindscapeserver.jassywaaa.repl.co");
 
 
 export const DiscussionForums = () => {
-  
-  const { user, SERVER_URL } = useUser();
-  const socket = io.connect(SERVER_URL);
+
+  const { user } = useUser();
 
   const userId = user?.id;
   
@@ -473,8 +471,13 @@ export const DiscussionForums = () => {
   
 
     
+            {filteredRooms.length > 0 ? (
+              <p className='mcolor-900 font-medium my-4 text-lg'>Rooms: </p>
+              ) : (
+              <p className='mcolor-500 text-center font-medium my-8 text-lg'>No available discussion room to join.</p>
+            )}
 
-            <p className='mcolor-900 font-medium my-4 text-lg'>Rooms: </p>
+
             <div className='grid grid-cols-3 gap-3'>
 
             {filteredRooms

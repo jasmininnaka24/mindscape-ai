@@ -4,30 +4,29 @@ import axios from 'axios';
 import io from 'socket.io-client';
 import { useUser } from '../../UserContext';
 import { fetchUserData } from '../../userAPI';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import PushPinIcon from '@mui/icons-material/PushPin';
 
 
 
+const socket = io.connect("https://mindscapeserver.jassywaaa.repl.co");
 
 
 
 export const PreJoinPage = (props) => {
-  
+
   const { user, SERVER_URL } = useUser();
-  const socket = io.connect(SERVER_URL);
-
-
-
-
+  const { groupId, materialId } = useParams();
   const navigate = useNavigate()
 
-  const { joinRoom, materialId, groupId, setShowPreJoin, setShowAssessmentPage, userId, assessementRoom, setUserListAssessment, selectedAssessmentAnswer, setSelectedAssessmentAnswer,  isRunning, setIsRunning, setSeconds, itemCount, setQA, extractedQA, shuffledChoices, setShuffledChoices, isSubmittedButtonClicked, setIsSubmittedButtonClicked, idOfWhoSubmitted, setIdOfWhoSubmitted, usernameOfWhoSubmitted, setUsernameOfWhoSubmitted, score, setScore, isSubmitted, setIsSubmitted, isAssessmentDone, setIsAssessmentDone, showSubmittedAnswerModal, setShowSubmittedAnswerModal, showTexts, setShowTexts, showAnalysis, setShowAnalysis, showAssessment, setShowAssessment, overAllItems, setOverAllItems, preAssessmentScore, setPreAssessmentScore, assessmentScore, setAssessmentScore, assessmentImp, setAssessmentImp, assessmentScorePerf, setAssessmentScorePerf, completionTime, setCompletionTime, confidenceLevel, setConfidenceLevel, overAllPerformance, setOverAllPerformance, assessmentCountMoreThanOne, setAssessmentCountMoreThanOne, generatedAnalysis, setGeneratedAnalysis, shuffledChoicesAssessment, setShuffledChoicesAssessment, extractedQAAssessment, setQAAssessment, assessmentUsersChoices, setAssessmentUsersChoices, message, setMessage, messageList, setMessageList, isStartAssessmentButtonStarted, setIsStartAssessmentButtonStarted } = props;
+  const { joinRoom, setShowPreJoin, setShowAssessmentPage, userId, assessementRoom, setUserListAssessment, selectedAssessmentAnswer, setSelectedAssessmentAnswer,  isRunning, setIsRunning, setSeconds, itemCount, setQA, extractedQA, shuffledChoices, setShuffledChoices, isSubmittedButtonClicked, setIsSubmittedButtonClicked, idOfWhoSubmitted, setIdOfWhoSubmitted, usernameOfWhoSubmitted, setUsernameOfWhoSubmitted, score, setScore, isSubmitted, setIsSubmitted, isAssessmentDone, setIsAssessmentDone, showSubmittedAnswerModal, setShowSubmittedAnswerModal, showTexts, setShowTexts, showAnalysis, setShowAnalysis, showAssessment, setShowAssessment, overAllItems, setOverAllItems, preAssessmentScore, setPreAssessmentScore, assessmentScore, setAssessmentScore, assessmentImp, setAssessmentImp, assessmentScorePerf, setAssessmentScorePerf, completionTime, setCompletionTime, confidenceLevel, setConfidenceLevel, overAllPerformance, setOverAllPerformance, assessmentCountMoreThanOne, setAssessmentCountMoreThanOne, generatedAnalysis, setGeneratedAnalysis, shuffledChoicesAssessment, setShuffledChoicesAssessment, extractedQAAssessment, setQAAssessment, assessmentUsersChoices, setAssessmentUsersChoices, message, setMessage, messageList, setMessageList, isStartAssessmentButtonStarted, setIsStartAssessmentButtonStarted } = props;
 
 
 
 
   const UserId = user?.id;
+
+
   
   // user data
   const [userData, setUserData] = useState({
@@ -39,7 +38,9 @@ export const PreJoinPage = (props) => {
   })
   
 
-
+  if (UserId === undefined) {
+    navigate(`/login?group_session&groupId=${groupId}&materialId=${materialId}`);
+  }
 
 
 
@@ -61,16 +62,18 @@ export const PreJoinPage = (props) => {
   const [isMaterialDeleted, setIsMaterialDeleted] = useState('hidden');
   const [materialTitle, setMaterialTitle] = useState('');
   const [isDone, setIsDone] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   
   const getUserData = async () => {
+    
     const userData = await fetchUserData(UserId);
     setUserData({
-      username: userData.username,
-      email: userData.email,
-      studyProfTarget: userData.studyProfTarget,
-      typeOfLearner: userData.typeOfLearner,
-      userImage: userData.userImage
+      username: userData?.username,
+      email: userData?.email,
+      studyProfTarget: userData?.studyProfTarget,
+      typeOfLearner: userData?.typeOfLearner,
+      userImage: userData?.userImage
     });
   }
 
@@ -124,13 +127,15 @@ export const PreJoinPage = (props) => {
       } catch (error) {
         console.error('Error fetching assessment data:', error);
       }
+
+      setLoading(false)
     }
     
+    fetchData(); 
 
-    fetchData();
 
 
-  },[UserId, groupId, materialId])
+  },[SERVER_URL, UserId, groupId, materialId])
 
 
   const startStudySession = async () => {
@@ -149,7 +154,7 @@ export const PreJoinPage = (props) => {
   
     let data = {
       room: assessementRoom,
-      username: userData.username,
+      username: userData?.username,
       userId: userId,
       selectedAssessmentAnswer: selectedAssessmentAnswer,
       timeDurationVal: itemCount,
@@ -330,116 +335,123 @@ export const PreJoinPage = (props) => {
 
 
 
-
-  return (
-    <div className='container py-8 poppins'>
-      <Navbar linkBack={`/main/group/study-area/${groupId}`} linkBackName={`Study Area`} currentPageName={'Reviewer Page Preview'} username={userData.username}/>
-      <div>
-
-          <div className='flex justify-between items-center my-5 py-3'>
-
-
-            {/* modify buttons */}
-            <div className='flex items-center gap-3'>
-              <button className='px-6 py-2 rounded-[5px] text-lg mbg-200 mcolor-800 border-thin-800 font-normal' onClick={() => deleteStudyMaterial(materialId, materialTitle)}>Delete Material</button>
-
-              {!takeAssessment && (
-                <button className='px-6 py-2 rounded-[5px] text-lg mbg-200 mcolor-800 border-thin-800 font-normal' onClick={() => {
-                  if (userUploaderId === UserId) {
-                    navigate(`/main/group/study-area/update-material/${groupId}/${materialId}`)
-                  } else {
-                    setShowModal(true)
-                    setShowModifyModal(true)
-                  }
-                }}>Modify Material</button>
+  if (loading) {
+    return <div className='h-[100vh] w-full flex items-center justify-center'>
+      <div class="loader">
+        <div class="spinner"></div>
+      </div>
+    </div>
+  } else {
+    return (
+      <div className='container py-8 poppins'>
+        <Navbar linkBack={`/main/group/study-area/${groupId}`} linkBackName={`Study Area`} currentPageName={'Reviewer Page Preview'} username={userData?.username}/>
+        <div>
+  
+            <div className='flex justify-between items-center my-5 py-3'>
+  
+  
+              {/* modify buttons */}
+              <div className='flex items-center gap-3'>
+                <button className='px-6 py-2 rounded-[5px] text-lg mbg-200 mcolor-800 border-thin-800 font-normal' onClick={() => deleteStudyMaterial(materialId, materialTitle)}>Delete Material</button>
+  
+                {!takeAssessment && (
+                  <button className='px-6 py-2 rounded-[5px] text-lg mbg-200 mcolor-800 border-thin-800 font-normal' onClick={() => {
+                    if (userUploaderId === UserId) {
+                      navigate(`/main/group/study-area/update-material/${groupId}/${materialId}`)
+                    } else {
+                      setShowModal(true)
+                      setShowModifyModal(true)
+                    }
+                  }}>Modify Material</button>
+                )}
+              </div>
+  
+  
+  
+              <div className='flex justify-between items-center gap-4'>
+                <div className='flex items-center gap-2'>
+  
+                
+                  <button className='px-6 py-2 rounded-[5px] text-lg mbg-200 mcolor-800 border-thin-800 font-normal' onClick={startStudySession}>Join Study Room</button>
+                </div>
+  
+  
+                <button className='px-6 py-2 rounded-[5px] text-lg mbg-800 mcolor-100 font-normal' onClick={takeAssessmentBtn}>
+                  Take {takeAssessment ? 'Assessment' : 'Pre-Assessment'}
+                </button>
+  
+              </div>
+            </div>
+  
+            <div className='border-medium-800 scroll-box max-h-[70vh] min-h-[70vh] rounded-[5px]'>
+              <div className='flex items-center gap-1'>
+                <button className={`w-full py-4 rounded-[8px] text-lg font-medium mcolor-800 ${showNotesReviewer === false ? 'mbg-300' : ''}`} onClick={() => {
+                  SetShowLessonContext(false)
+                  SetShowNotesReviewer(true)
+                }}>Notes Reviewer</button>
+                <button className={`w-full py-4 rounded-[8px] text-lg font-medium mcolor-800 ${showLessonContext === false ? 'mbg-300' : ''}`} onClick={() => {
+                  SetShowLessonContext(true)
+                  SetShowNotesReviewer(false)
+                }}>Lesson Context</button>
+              </div>
+  
+              {showNotesReviewer && (
+                <div className='mt-6 mb-5'>
+                  <div className='flex items-center'>
+                    <p className='w-full text-lg mcolor-800 font-bold px-5'>Question: </p>
+                    <p className='w-full text-lg mcolor-800 font-bold px-7'>Answer: </p>
+                  </div>
+                  {notesReviewer.map((item, index) => {
+                    return <div key={index} className='flex gap-3'>
+                      <p className='text-start w-full m-3 p-2 mcolor-700 font-medium'>{item.question}</p>
+                      <p className='text-start w-full m-3 p-2 mcolor-900 font-medium'>{item.answer}</p>
+                    </div>
+                  })}
+                </div>
               )}
-            </div>
-
-
-
-            <div className='flex justify-between items-center gap-4'>
-              <div className='flex items-center gap-2'>
-
-              
-                <button className='px-6 py-2 rounded-[5px] text-lg mbg-200 mcolor-800 border-thin-800 font-normal' onClick={startStudySession}>Join Study Room</button>
-              </div>
-
-
-              <button className='px-6 py-2 rounded-[5px] text-lg mbg-800 mcolor-100 font-normal' onClick={takeAssessmentBtn}>
-                Take {takeAssessment ? 'Assessment' : 'Pre-Assessment'}
-              </button>
-
-            </div>
-          </div>
-
-          <div className='border-medium-800 scroll-box max-h-[70vh] min-h-[70vh] rounded-[5px]'>
-            <div className='flex items-center gap-1'>
-              <button className={`w-full py-4 rounded-[8px] text-lg font-medium mcolor-800 ${showNotesReviewer === false ? 'mbg-300' : ''}`} onClick={() => {
-                SetShowLessonContext(false)
-                SetShowNotesReviewer(true)
-              }}>Notes Reviewer</button>
-              <button className={`w-full py-4 rounded-[8px] text-lg font-medium mcolor-800 ${showLessonContext === false ? 'mbg-300' : ''}`} onClick={() => {
-                SetShowLessonContext(true)
-                SetShowNotesReviewer(false)
-              }}>Lesson Context</button>
-            </div>
-
-            {showNotesReviewer && (
-              <div className='mt-6 mb-5'>
-                <div className='flex items-center'>
-                  <p className='w-full text-lg mcolor-800 font-bold px-5'>Question: </p>
-                  <p className='w-full text-lg mcolor-800 font-bold px-7'>Answer: </p>
+  
+              {showLessonContext && (
+                <div className='px-10 py-8 mcolor-900'>
+                  {lessonContext}
                 </div>
-                {notesReviewer.map((item, index) => {
-                  return <div key={index} className='flex gap-3'>
-                    <p className='text-start w-full m-3 p-2 mcolor-700 font-medium'>{item.question}</p>
-                    <p className='text-start w-full m-3 p-2 mcolor-900 font-medium'>{item.answer}</p>
-                  </div>
-                })}
-              </div>
-            )}
-
-            {showLessonContext && (
-              <div className='px-10 py-8 mcolor-900'>
-                {lessonContext}
-              </div>
-            )}
-
-
-            {showModal && (
-              <div style={{ zIndex: 1000 }} className={`absolute flex flex-col items-center justify-center modal-bg w-full h-full`}>
-                <div className='flex justify-center'>
-                  <div className='mbg-100 min-h-[45vh] w-[30vw] w-1/3 z-10 relative p-10 rounded-[5px]'>
-
-                  <button className='absolute right-4 top-3 text-xl' onClick={() => {
-                    setShowModal(false);
-                  }}>
-                    ✖
-                  </button>
-                  
-                  <div className='h-full flex justify-center items-center'>
-                    {showModifyModal ? (
-                      <div>
-                        <p className='mcolor-900 text-2xl font-medium text-center'>Reminder</p>
-                        <p className='text-center text-lg font-medium mcolor-800 mt-5'><PushPinIcon className='text-red-dark' />Modifications are only allowed by the individual who uploaded this material.</p>     
-                      </div>
-                      ) : (
-                      <div>
-                        <p className='mcolor-900 text-2xl font-medium text-center'>Reminder</p>
-                        <p className='text-center text-lg font-medium mcolor-800 mt-8'><PushPinIcon className='text-red-dark' />You need to take the pre-assessment page first.</p>     
-                        <p className='text-center text-lg font-medium mcolor-800 mt-5'><PushPinIcon className='text-red-dark' />Once you start the study session, you won't be able to update the study material anymore.</p>     
-                      </div>
-                      )}
-                  </div>
-
+              )}
+  
+  
+              {showModal && (
+                <div style={{ zIndex: 1000 }} className={`absolute flex flex-col items-center justify-center modal-bg w-full h-full`}>
+                  <div className='flex justify-center'>
+                    <div className='mbg-100 min-h-[45vh] w-[30vw] w-1/3 z-10 relative p-10 rounded-[5px]'>
+  
+                    <button className='absolute right-4 top-3 text-xl' onClick={() => {
+                      setShowModal(false);
+                    }}>
+                      ✖
+                    </button>
+                    
+                    <div className='h-full flex justify-center items-center'>
+                      {showModifyModal ? (
+                        <div>
+                          <p className='mcolor-900 text-2xl font-medium text-center'>Reminder</p>
+                          <p className='text-center text-lg font-medium mcolor-800 mt-5'><PushPinIcon className='text-red-dark' />Modifications are only allowed by the individual who uploaded this material.</p>     
+                        </div>
+                        ) : (
+                        <div>
+                          <p className='mcolor-900 text-2xl font-medium text-center'>Reminder</p>
+                          <p className='text-center text-lg font-medium mcolor-800 mt-8'><PushPinIcon className='text-red-dark' />You need to take the pre-assessment page first.</p>     
+                          <p className='text-center text-lg font-medium mcolor-800 mt-5'><PushPinIcon className='text-red-dark' />Once you start the study session, you won't be able to update the study material anymore.</p>     
+                        </div>
+                        )}
+                    </div>
+  
+                    </div>
                   </div>
                 </div>
-              </div>
-            )}
-
-
+              )}
+  
+  
+            </div>
           </div>
-        </div>
-    </div>  
-  )
+      </div>  
+    )
+  }
 }

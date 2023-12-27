@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import { LogReg } from '../../components/login_reg/LogReg';
 import axios from 'axios'
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { useUser } from '../../UserContext';
 import jwt_decode from 'jwt-decode';
 import { CustomModal } from '../../components/CustomModal';
@@ -13,7 +13,12 @@ import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
 
 export const Login = () => {
   
-  
+  const location = useLocation();
+  const searchParams = new URLSearchParams(location.search);
+  const isGroupSession = searchParams.has('group_session');
+  const groupId = searchParams.get('groupId');
+  const materialId = searchParams.get('materialId');
+
   const navigate = useNavigate();
   const { setUserInformation, SERVER_URL } = useUser();
   
@@ -24,6 +29,7 @@ export const Login = () => {
   const [msg, setMsg] = useState('');
   const [error, setError] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [signInBtnClicked, setSignInBtnClicked] = useState(false);
 
 
   const openModal = () => {
@@ -41,6 +47,8 @@ export const Login = () => {
 
 
   const loginAccount = async (e) => {
+
+    setSignInBtnClicked(true)
 
     e.preventDefault(); 
 
@@ -64,7 +72,14 @@ export const Login = () => {
         }, 100);
 
         setTimeout(() => {
-          navigate('/main');
+
+          if (isGroupSession) {
+
+            navigate(`/main/group/study-area/group-review/${groupId}/${materialId}`);
+          } else {
+            navigate('/main');
+          }
+
         }, 2000);
       }
     });
@@ -81,6 +96,7 @@ export const Login = () => {
     };
   
     await axios.post(`${SERVER_URL}/users/login`, data).then((response) => {
+      
       if (response.data.error) {
         setMsg(response.data.message);
         setError(true)
@@ -94,7 +110,12 @@ export const Login = () => {
         }, 100);
 
         setTimeout(() => {
-          navigate('/main');
+          if (isGroupSession) {
+    
+            navigate(`/main/group/study-area/group-review/${groupId}/${materialId}`);
+          } else {
+            navigate('/main');
+          }
         }, 2000);
       }
     });
@@ -198,7 +219,7 @@ export const Login = () => {
 
             <p className={`text-center ${(msg !== '' && error) && 'text-red my-3'}`} style={{ whiteSpace: 'pre-wrap' }}>{(msg !== '' && error) && msg}</p>
             
-            <button className={`font-medium input-btn py-2 rounded-[20px] ${(msg !== '' && !error) ? 'mbg-200 border-thin-800 mcolor-900' : 'btn-800'}`} onClick={(e) => loginAccount(e)}>{(msg !== '' && !error) ? msg : 'Sign In'}</button>
+            <button className={`font-medium input-btn py-2 rounded-[20px] ${((msg !== '' && !error) || signInBtnClicked) ? 'mbg-200 border-thin-800 mcolor-900' : 'btn-800'}`} onClick={(e) => loginAccount(e)}>{(msg !== '' && !error) ? msg : signInBtnClicked ? 'Logging In...' : 'Sign In'}</button>
           </div>
 
         </div>

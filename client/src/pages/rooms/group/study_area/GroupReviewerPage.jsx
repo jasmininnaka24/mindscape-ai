@@ -11,15 +11,15 @@ import axios from 'axios';
 import { useUser } from '../../../../UserContext';
 import { fetchUserData } from '../../../../userAPI';
 
+const socket = io.connect("https://mindscapeserver.jassywaaa.repl.co");
 
 
 
 
 export const GroupReviewerPage = () => {
-  
-  
+
+
   const { user, SERVER_URL } = useUser();
-  const socket = io.connect(SERVER_URL);
 
 
   const { groupId, materialId } = useParams();
@@ -41,6 +41,10 @@ export const GroupReviewerPage = () => {
   
   
   const [room, setRoom] = useState("");
+  const [groupHost, setGroupHost] = useState("");
+  const [groupHostId, setGroupHostId] = useState("");
+  const [materialTitle, setMaterialTitle] = useState("");
+  const [groupName, setGroupName] = useState("");
   const [userList, setUserList] = useState([]);
   const [userTurn, setUserTurn] = useState(0);
   const [isJoined, setIsJoined] = useState(false);
@@ -121,17 +125,20 @@ export const GroupReviewerPage = () => {
   const [messageList, setMessageList] = useState([])
   const [isStartAssessmentButtonStarted, setIsStartAssessmentButtonStarted] = useState(false)
 
+  const [successfullyInvited, setSuccessfullyInvited] = useState(false);
+  const [successfullyInviting, setSuccessfullyInviting] = useState(false);
+
   const [isDone, setIsDone] = useState(false);
 
 
   const getUserData = async () => {
     const userData = await fetchUserData(userId);
     setUserData({
-      username: userData.username,
-      email: userData.email,
-      studyProfTarget: userData.studyProfTarget,
-      typeOfLearner: userData.typeOfLearner,
-      userImage: userData.userImage
+      username: userData?.username,
+      email: userData?.email,
+      studyProfTarget: userData?.studyProfTarget,
+      typeOfLearner: userData?.typeOfLearner,
+      userImage: userData?.userImage
     });
   }
 
@@ -189,28 +196,18 @@ export const GroupReviewerPage = () => {
 
 
   
-  const handleUserActivity = () => {
-    clearTimeout(userActivity.current);
-    userActivity.current = setTimeout(() => {
-      setSessionExpired(true);
-    }, 10 * 60 * 1000); 
-    socket.on('disconnect', (newUserTurn) => {
-      setUserList(prevUsers => prevUsers.filter(user => user.userId !== userId));
-      setUserTurn(newUserTurn); 
-    });
-  };
-
-  
-  function handleDragStart(e, choice) {
-    setSelectedChoice(e.dataTransfer.setData("text/plain", choice));
-    let selectedChoiceVal = e.dataTransfer.setData("text/plain", choice);
-    socket.emit("selected_choice", {room, selectedChoiceVal})
-  }
+  // const handleUserActivity = () => {
+  //   clearTimeout(userActivity.current);
+  //   userActivity.current = setTimeout(() => {
+  //     setSessionExpired(true);
+  //   }, 10 * 60 * 1000); 
+  //   socket.on('disconnect', (newUserTurn) => {
+  //     setUserList(prevUsers => prevUsers.filter(user => user.userId !== userId));
+  //     setUserTurn(newUserTurn); 
+  //   });
+  // };
 
 
-  function handleDragEnd(e) {
-    // Handle any cleanup or additional logic after dragging ends
-  }
   
   const handleDragOver = (e) => {
     e.preventDefault();
@@ -223,31 +220,30 @@ export const GroupReviewerPage = () => {
     setDraggedBG('mbg-100')
   };
 
-  const handleDropKinesthetic = (e, index) => {
-    e.preventDefault();
 
-    const droppedChoiceText = e.dataTransfer.getData('text/plain');
-
-    if (extractedQA[questionIndex].quizType !== 'ToF') {
-      const draggedAnswers = [...kinesthethicAnswers];
-      draggedAnswers[index] = droppedChoiceText;
-      setKinesthethicAnswers(draggedAnswers);
-      setSelectedChoice(draggedAnswers.join('').toLowerCase());
-    } else {
-      setSelectedChoice(droppedChoiceText)
-    }
-    setLastDraggedCharacter(droppedChoiceText)
-  }
   
 
   useEffect(() => {
     async function fetchData() {
       try {
+        const groupDataResponse = await axios.get(`${SERVER_URL}/studyGroup/extract-all-group/${groupId}`);
+        setGroupName(groupDataResponse.data.groupName);
+        setGroupHostId(groupDataResponse.data.UserId);
+
+
         const groupResponse = await axios.get(`${SERVER_URL}/studyMaterial/study-code/${groupId}/${materialId}`);
         const materialResponse = await axios.get(`${SERVER_URL}/quesAns/study-material-mcq/${materialId}`);
         const fetchedQA = materialResponse.data;
-
+        
         setRoom(groupResponse.data.code);
+        setMaterialTitle(groupResponse.data.title);
+        
+        
+        
+        const userHostResponse = await axios.get(`${SERVER_URL}/users/get-user/${groupResponse.data.UserId}`);
+        
+        setGroupHost(userHostResponse.data.email)
+
         setAssessmentRoom(`assessment-room-${groupResponse.data.code}`)
 
 
@@ -391,8 +387,8 @@ export const GroupReviewerPage = () => {
 
 
 
-    window.addEventListener('mousemove', handleUserActivity);
-    window.addEventListener('keypress', handleUserActivity);
+    // window.addEventListener('mousemove', handleUserActivity);
+    // window.addEventListener('keypress', handleUserActivity);
 
 
     return () => {
@@ -404,25 +400,78 @@ export const GroupReviewerPage = () => {
       socket.off('study_session_started');
       socket.off('items_done');
       
-      window.removeEventListener('mousemove', handleUserActivity);
-      window.removeEventListener('keypress', handleUserActivity);
+      // window.removeEventListener('mousemove', handleUserActivity);
+      // window.removeEventListener('keypress', handleUserActivity);
     };
   }, [groupId, userTurn, materialId, questionIndex, room, userId, userList.length, alreadyFetched, userList, extractedQA.length, isStartStudyButtonStarted, itemsDone, itemsLength, userScores, doneCheckingScores, messageListReview, setMessageListReview]);
 
 
+
+
+  // invite members to join study session or assessment
+  const inviteMembers = async (sentence) => {
+
+    let updatedSentence = '';
+
+    setSuccessfullyInviting(true)
+
+
+    const groupMembers = await axios.get(`${SERVER_URL}/studyGroupMembers/get-members/${groupId}`);
+    
+    const groupMembersData = groupMembers.data;
+
+    for (const member of groupMembersData) {
+      // Your code to handle each member
+      const groupMembersDetails = await axios.get(`${SERVER_URL}/users/get-user/${member.UserId}`);
+      if (groupMembersDetails.data !== null) {
+
+        let invitationData = {
+          email: groupMembersDetails.data.email,
+          groupName: groupName,
+          title: materialTitle,
+          sentence: updatedSentence,
+        }
+
+        if (member.UserId !== userId) {
+          await axios.post(`${SERVER_URL}/studyGroupMembers/invite-members`, invitationData);
+        }
+      }
+    } 
+
+    
+    if (groupHostId !== userId) {
+      let invitationData = {
+        email: groupHost,
+        groupName: groupName,
+        title: materialTitle,
+        sentence: updatedSentence,
+      }
+      
+      if (invitationData) {
+        await axios.post(`${SERVER_URL}/studyGroupMembers/invite-members`, invitationData);
+      }
+    }
+    
+    setSuccessfullyInviting(false)
+    setSuccessfullyInvited(true);
+    
+  }
+
   
 
-  const joinRoom = () => {
+  const joinRoom = async () => {
     let points = 0;
     setFailCount(2)
-    // setInCall(true)
 
-    let username = userData.username;
+    let username = userData?.username;
 
     socket.emit("join_room", { room, username, userId, points, questionIndex, shuffledChoices, userList, failCount, lostPoints, gainedPoints, isRunningReview: true, timeDurationValReview: currentCount, extractedQA, isStudyStarted: false, itemsDone: itemsDone });
 
-    setShowPreJoin(false);
-    setIsJoined(true);
+    let showPreJoinSaved = false;
+    let isJoinedSaved = true;
+
+    setShowPreJoin(showPreJoinSaved);
+    setIsJoined(isJoinedSaved);
     
 
     socket.on("received_next_user_join", (userTurnSer) => setUserTurn(userTurnSer));    
@@ -444,7 +493,8 @@ export const GroupReviewerPage = () => {
         setMessageListReview(message)
       }
     });
-  
+
+    
 
   };
 
@@ -811,7 +861,7 @@ export const GroupReviewerPage = () => {
     let data = {
       room: room,
       userId: userId,
-      author: userData.username,
+      author: userData?.username,
       message: messageReview,
       time: new Date(Date.now()).getHours() + ':' + new Date(Date.now()).getMinutes()
     }
@@ -828,13 +878,15 @@ export const GroupReviewerPage = () => {
     const userIndex = userList.findIndex(user => user.userId === userId);
     const userSocketId = userList[userIndex].socketId;
 
-    console.log(userSocketId);
 
     // Emit socket event indicating user is leaving
     socket.emit('leave-reviewer-page-room', { room, socketId: userSocketId });
     setShowPreJoin(true)
     setIsJoined(false)
     setShowAssessmentPage(false)
+
+    setSuccessfullyInviting(false)
+    setSuccessfullyInvited(false)
   };
 
 
@@ -850,11 +902,11 @@ export const GroupReviewerPage = () => {
               <div>
 
                 {showPreJoin && (
-                  <PreJoinPage joinRoom={joinRoom} materialId={materialId} groupId={groupId} setShowPreJoin={setShowPreJoin} setShowAssessmentPage={setShowAssessmentPage} room={room} assessementRoom={assessementRoom} username={userData.username} userId={userId} userListAssessment={userListAssessment} setUserListAssessment={setUserListAssessment} selectedAssessmentAnswer={selectedAssessmentAnswer} setSelectedAssessmentAnswer={setSelectedAssessmentAnswer} isRunning={isRunning} setIsRunning={setIsRunning} seconds={seconds} setSeconds={setSeconds} itemCount={itemCount} setQA={setQA} extractedQA={extractedQA} shuffledChoices={shuffledChoices} setShuffledChoices={setShuffledChoices} isSubmittedButtonClicked={isSubmittedButtonClicked} setIsSubmittedButtonClicked={setIsSubmittedButtonClicked} idOfWhoSubmitted={idOfWhoSubmitted} setIdOfWhoSubmitted={setIdOfWhoSubmitted} usernameOfWhoSubmitted={usernameOfWhoSubmitted} setUsernameOfWhoSubmitted={setUsernameOfWhoSubmitted} score={score} setScore={setScore} isSubmitted={isSubmitted} setIsSubmitted={setIsSubmitted} isAssessmentDone={isAssessmentDone} setIsAssessmentDone={setIsAssessmentDone} showSubmittedAnswerModal={showSubmittedAnswerModal} setShowSubmittedAnswerModal={setShowSubmittedAnswerModal} showTexts={showTexts} setShowTexts={setShowTexts} showAnalysis={showAnalysis} setShowAnalysis={setShowAnalysis} showAssessment={showAssessment} setShowAssessment={setShowAssessment} overAllItems={overAllItems} setOverAllItems={setOverAllItems} preAssessmentScore={preAssessmentScore} setPreAssessmentScore={setPreAssessmentScore} assessmentScore={assessmentScore} setAssessmentScore={setAssessmentScore} assessmentImp={assessmentImp} setAssessmentImp={setAssessmentImp} assessmentScorePerf={assessmentScorePerf} setAssessmentScorePerf={setAssessmentScorePerf} completionTime={completionTime} setCompletionTime={setCompletionTime} confidenceLevel={confidenceLevel} setConfidenceLevel={setConfidenceLevel} overAllPerformance={overAllPerformance} setOverAllPerformance={setOverAllPerformance} assessmentCountMoreThanOne={assessmentCountMoreThanOne} setAssessmentCountMoreThanOne={setAssessmentCountMoreThanOne} generatedAnalysis={generatedAnalysis} setGeneratedAnalysis={setGeneratedAnalysis} extractedQAAssessment={extractedQAAssessment} setQAAssessment={setQAAssessment} shuffledChoicesAssessment={shuffledChoicesAssessment} setShuffledChoicesAssessment={setShuffledChoicesAssessment} assessmentUsersChoices={assessmentUsersChoices} setAssessmentUsersChoices={setAssessmentUsersChoices} message={message} setMessage={setMessage} messageList={messageList} setMessageList={setMessageList} isStartAssessmentButtonStarted={isStartAssessmentButtonStarted} setIsStartAssessmentButtonStarted={setIsStartAssessmentButtonStarted} />
+                  <PreJoinPage joinRoom={joinRoom} materialId={materialId} groupId={groupId} setShowPreJoin={setShowPreJoin} setShowAssessmentPage={setShowAssessmentPage} room={room} assessementRoom={assessementRoom} username={userData?.username} userId={userId} userListAssessment={userListAssessment} setUserListAssessment={setUserListAssessment} selectedAssessmentAnswer={selectedAssessmentAnswer} setSelectedAssessmentAnswer={setSelectedAssessmentAnswer} isRunning={isRunning} setIsRunning={setIsRunning} seconds={seconds} setSeconds={setSeconds} itemCount={itemCount} setQA={setQA} extractedQA={extractedQA} shuffledChoices={shuffledChoices} setShuffledChoices={setShuffledChoices} isSubmittedButtonClicked={isSubmittedButtonClicked} setIsSubmittedButtonClicked={setIsSubmittedButtonClicked} idOfWhoSubmitted={idOfWhoSubmitted} setIdOfWhoSubmitted={setIdOfWhoSubmitted} usernameOfWhoSubmitted={usernameOfWhoSubmitted} setUsernameOfWhoSubmitted={setUsernameOfWhoSubmitted} score={score} setScore={setScore} isSubmitted={isSubmitted} setIsSubmitted={setIsSubmitted} isAssessmentDone={isAssessmentDone} setIsAssessmentDone={setIsAssessmentDone} showSubmittedAnswerModal={showSubmittedAnswerModal} setShowSubmittedAnswerModal={setShowSubmittedAnswerModal} showTexts={showTexts} setShowTexts={setShowTexts} showAnalysis={showAnalysis} setShowAnalysis={setShowAnalysis} showAssessment={showAssessment} setShowAssessment={setShowAssessment} overAllItems={overAllItems} setOverAllItems={setOverAllItems} preAssessmentScore={preAssessmentScore} setPreAssessmentScore={setPreAssessmentScore} assessmentScore={assessmentScore} setAssessmentScore={setAssessmentScore} assessmentImp={assessmentImp} setAssessmentImp={setAssessmentImp} assessmentScorePerf={assessmentScorePerf} setAssessmentScorePerf={setAssessmentScorePerf} completionTime={completionTime} setCompletionTime={setCompletionTime} confidenceLevel={confidenceLevel} setConfidenceLevel={setConfidenceLevel} overAllPerformance={overAllPerformance} setOverAllPerformance={setOverAllPerformance} assessmentCountMoreThanOne={assessmentCountMoreThanOne} setAssessmentCountMoreThanOne={setAssessmentCountMoreThanOne} generatedAnalysis={generatedAnalysis} setGeneratedAnalysis={setGeneratedAnalysis} extractedQAAssessment={extractedQAAssessment} setQAAssessment={setQAAssessment} shuffledChoicesAssessment={shuffledChoicesAssessment} setShuffledChoicesAssessment={setShuffledChoicesAssessment} assessmentUsersChoices={assessmentUsersChoices} setAssessmentUsersChoices={setAssessmentUsersChoices} message={message} setMessage={setMessage} messageList={messageList} setMessageList={setMessageList} isStartAssessmentButtonStarted={isStartAssessmentButtonStarted} setIsStartAssessmentButtonStarted={setIsStartAssessmentButtonStarted} />
                 )}
  
                 {showAssessmentPage && (
-                  <AssessmentPage groupId={groupId} materialId={materialId} setShowAssessmentPage={setShowAssessmentPage} userListAssessment={userListAssessment} setUserListAssessment={setUserListAssessment} room={room} assessementRoom={assessementRoom} username={userData.username} userId={userId} selectedAssessmentAnswer={selectedAssessmentAnswer} setSelectedAssessmentAnswer={setSelectedAssessmentAnswer} isRunning={isRunning} setIsRunning={setIsRunning} seconds={seconds} setSeconds={setSeconds} setQA={setQA} extractedQA={extractedQA} shuffledChoices={shuffledChoices} setShuffledChoices={setShuffledChoices} isSubmittedButtonClicked={isSubmittedButtonClicked} setIsSubmittedButtonClicked={setIsSubmittedButtonClicked} idOfWhoSubmitted={idOfWhoSubmitted} setIdOfWhoSubmitted={setIdOfWhoSubmitted} usernameOfWhoSubmitted={usernameOfWhoSubmitted} setUsernameOfWhoSubmitted={setUsernameOfWhoSubmitted} score={score} setScore={setScore} isSubmitted={isSubmitted} setIsSubmitted={setIsSubmitted} isAssessmentDone={isAssessmentDone} setIsAssessmentDone={setIsAssessmentDone} showSubmittedAnswerModal={showSubmittedAnswerModal} setShowSubmittedAnswerModal={setShowSubmittedAnswerModal} showTexts={showTexts} setShowTexts={setShowTexts} showAnalysis={showAnalysis} setShowAnalysis={setShowAnalysis} showAssessment={showAssessment} setShowAssessment={setShowAssessment} overAllItems={overAllItems} setOverAllItems={setOverAllItems} preAssessmentScore={preAssessmentScore} setPreAssessmentScore={setPreAssessmentScore} assessmentScore={assessmentScore} setAssessmentScore={setAssessmentScore} assessmentImp={assessmentImp} setAssessmentImp={setAssessmentImp} assessmentScorePerf={assessmentScorePerf} setAssessmentScorePerf={setAssessmentScorePerf} completionTime={completionTime} setCompletionTime={setCompletionTime} confidenceLevel={confidenceLevel} setConfidenceLevel={setConfidenceLevel} overAllPerformance={overAllPerformance} setOverAllPerformance={setOverAllPerformance} assessmentCountMoreThanOne={assessmentCountMoreThanOne} setAssessmentCountMoreThanOne={setAssessmentCountMoreThanOne} generatedAnalysis={generatedAnalysis} setGeneratedAnalysis={setGeneratedAnalysis} extractedQAAssessment={extractedQAAssessment} setQAAssessment={setQAAssessment} shuffledChoicesAssessment={shuffledChoicesAssessment} setShuffledChoicesAssessment={setShuffledChoicesAssessment} assessmentUsersChoices={assessmentUsersChoices} setAssessmentUsersChoices={setAssessmentUsersChoices} message={message} setMessage={setMessage} messageList={messageList} setMessageList={setMessageList} isStartAssessmentButtonStarted={isStartAssessmentButtonStarted} setIsStartAssessmentButtonStarted={setIsStartAssessmentButtonStarted} setShowPreJoin={setShowPreJoin} setIsJoined={setIsJoined}  />
+                  <AssessmentPage groupId={groupId} materialId={materialId} setShowAssessmentPage={setShowAssessmentPage} userListAssessment={userListAssessment} setUserListAssessment={setUserListAssessment} room={room} assessementRoom={assessementRoom} username={userData?.username} userId={userId} selectedAssessmentAnswer={selectedAssessmentAnswer} setSelectedAssessmentAnswer={setSelectedAssessmentAnswer} isRunning={isRunning} setIsRunning={setIsRunning} seconds={seconds} setSeconds={setSeconds} setQA={setQA} extractedQA={extractedQA} shuffledChoices={shuffledChoices} setShuffledChoices={setShuffledChoices} isSubmittedButtonClicked={isSubmittedButtonClicked} setIsSubmittedButtonClicked={setIsSubmittedButtonClicked} idOfWhoSubmitted={idOfWhoSubmitted} setIdOfWhoSubmitted={setIdOfWhoSubmitted} usernameOfWhoSubmitted={usernameOfWhoSubmitted} setUsernameOfWhoSubmitted={setUsernameOfWhoSubmitted} score={score} setScore={setScore} isSubmitted={isSubmitted} setIsSubmitted={setIsSubmitted} isAssessmentDone={isAssessmentDone} setIsAssessmentDone={setIsAssessmentDone} showSubmittedAnswerModal={showSubmittedAnswerModal} setShowSubmittedAnswerModal={setShowSubmittedAnswerModal} showTexts={showTexts} setShowTexts={setShowTexts} showAnalysis={showAnalysis} setShowAnalysis={setShowAnalysis} showAssessment={showAssessment} setShowAssessment={setShowAssessment} overAllItems={overAllItems} setOverAllItems={setOverAllItems} preAssessmentScore={preAssessmentScore} setPreAssessmentScore={setPreAssessmentScore} assessmentScore={assessmentScore} setAssessmentScore={setAssessmentScore} assessmentImp={assessmentImp} setAssessmentImp={setAssessmentImp} assessmentScorePerf={assessmentScorePerf} setAssessmentScorePerf={setAssessmentScorePerf} completionTime={completionTime} setCompletionTime={setCompletionTime} confidenceLevel={confidenceLevel} setConfidenceLevel={setConfidenceLevel} overAllPerformance={overAllPerformance} setOverAllPerformance={setOverAllPerformance} assessmentCountMoreThanOne={assessmentCountMoreThanOne} setAssessmentCountMoreThanOne={setAssessmentCountMoreThanOne} generatedAnalysis={generatedAnalysis} setGeneratedAnalysis={setGeneratedAnalysis} extractedQAAssessment={extractedQAAssessment} setQAAssessment={setQAAssessment} shuffledChoicesAssessment={shuffledChoicesAssessment} setShuffledChoicesAssessment={setShuffledChoicesAssessment} assessmentUsersChoices={assessmentUsersChoices} setAssessmentUsersChoices={setAssessmentUsersChoices} message={message} setMessage={setMessage} messageList={messageList} setMessageList={setMessageList} isStartAssessmentButtonStarted={isStartAssessmentButtonStarted} setIsStartAssessmentButtonStarted={setIsStartAssessmentButtonStarted} setShowPreJoin={setShowPreJoin} setIsJoined={setIsJoined} inviteMembers={inviteMembers} successfullyInvited={successfullyInvited} successfullyInviting={successfullyInviting} />
                 )}
 
                 
@@ -919,7 +971,7 @@ export const GroupReviewerPage = () => {
                                   return (
                                     <div
                                       className="message"
-                                      id={userData.username === messageContent.author ? "you" : "other"}
+                                      id={userData?.username === messageContent.author ? "you" : "other"}
                                     >
                                       <div>
                                         <div className="message-content">
@@ -1383,28 +1435,36 @@ export const GroupReviewerPage = () => {
 
                           ) : (
 
-                            <div className='w-full mt-8'>
-                            <div className='flex items-center justify-between'>
-                              <p className='text-xl text-center mcolor-800 py-3'>Waiting for other users to join...</p>
-                              <div className='flex justify-center'>
-                              {userList && userList.length > 1 && userList[0] && userList[0].userId === userId && (
-                                <button className='mbg-700 mcolor-100 px-4 py-2 rounded' onClick={startStudySessionBtn}>Start Assessment</button>
-                                )}
-                                {!isStartStudyButtonStarted && (
-                                  <button className='bg-red mcolor-100 px-4 py-2 rounded ml-3' onClick={leaveReviewerPageRoom}>Leave Room</button>
-                                )}
+                            <div className='w-full'>
+                              <button className='mt-5 px-5 py-2 rounded border-thin-800 mbg-100 shadows' disabled={successfullyInviting || successfullyInvited} onClick={() => inviteMembers("study session")} >{successfullyInviting ? `Sending an invitation link...` : successfullyInvited ? `Successfully sent an invitation link` : `Invite other members to join`}</button>
+                          
+
+                              <div className='flex items-center justify-between mt-8'>
+                                
+
+                                <p className='text-xl text-center mcolor-800 py-3'>Waiting for other users to join...</p>
+
+
+
+                                <div className='flex justify-center'>
+                                {userList && userList.length > 1 && userList[0] && userList[0].userId === userId && (
+                                  <button className='mbg-700 mcolor-100 px-4 py-2 rounded' onClick={startStudySessionBtn}>Start Assessment</button>
+                                  )}
+                                  {!isStartStudyButtonStarted && (
+                                    <button className='bg-red mcolor-100 px-4 py-2 rounded ml-3' onClick={leaveReviewerPageRoom}>Leave Room</button>
+                                  )}
+                                </div>
                               </div>
-                            </div>
-                            <div className='my-5'>
-                              <ul className='grid grid-cols-3 gap-5'>
-                                {userList && userList.map(user => (
-                                  <li key={user?.userId} className={`text-xl text-center ${user?.userId === userList[0]?.userId ? 'mbg-700 mcolor-100' : 'mcolor-900 '} shadows p-5 rounded`}>
-                                    <i className={`fa-solid fa-user ${user?.userId === userList[0]?.userId ? 'mbg-700 mcolor-100' : 'mcolor-700'}`} style={{ fontSize: '35px' }}></i> 
-                                    <p>{user?.username.charAt(0).toUpperCase() + user?.username.slice(1)}</p>
-                                  </li>
-                                ))}
-                              </ul>
-                            </div>
+                              <div className='my-5'>
+                                <ul className='grid grid-cols-3 gap-5'>
+                                  {userList && userList.map(user => (
+                                    <li key={user?.userId} className={`text-xl text-center ${user?.userId === userList[0]?.userId ? 'mbg-700 mcolor-100' : 'mcolor-900 '} shadows p-5 rounded`}>
+                                      <i className={`fa-solid fa-user ${user?.userId === userList[0]?.userId ? 'mbg-700 mcolor-100' : 'mcolor-700'}`} style={{ fontSize: '35px' }}></i> 
+                                      <p>{user?.username.charAt(0).toUpperCase() + user?.username.slice(1)}</p>
+                                    </li>
+                                  ))}
+                                </ul>
+                              </div>
                           </div>
                           )
                         }

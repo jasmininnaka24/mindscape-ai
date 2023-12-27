@@ -97,6 +97,8 @@ export const PersonalReviewerStart = () => {
   const [hidePomodoroModalBreak, setHidePomodoroModalBreak] = useState('hidden');
   
   const [isDone, setIsDone] = useState(false);
+  const [loading, setLoading] = useState(true);
+
 
   const getUserData = async () => {
     const userData = await fetchUserData(UserId);
@@ -540,6 +542,8 @@ export const PersonalReviewerStart = () => {
       } catch (error) {
         console.error("Error fetching data: ", error);
       }
+
+      setLoading(false)
     }
 
   
@@ -564,7 +568,7 @@ export const PersonalReviewerStart = () => {
   
   useEffect(() => {
 
-    if (isRunning) {
+    if (isRunning && !loading) {
       const interval = setInterval(() => {
         setSeconds((prevSeconds) => {
           if (prevSeconds > 0) {
@@ -589,7 +593,7 @@ export const PersonalReviewerStart = () => {
     }
     
   
-  }, [isRunning, timeForPomodoro]);
+  }, [isRunning, loading, timeForPomodoro]);
   
 
 
@@ -953,408 +957,420 @@ export const PersonalReviewerStart = () => {
     return `${String(minutes).padStart(2, '0')}:${String(remainingSeconds).padStart(2, '0')}`;
   };
 
-  return (
-    <div className='poppins flex mcolor-900'>
 
 
-      <div className={`${hidePomodoroModalBreak} absolute top-0 left-0 modal-bg w-full h-full`}>
-        <div className='flex items-center justify-center h-full'>
-          <div className='mbg-100 min-h-[50vh] w-1/3 z-10 relative p-10 rounded-[5px] flex items-center justify-center relative' style={{ overflowY: 'auto' }}>
 
-            <div className={`w-full`}>
-              <p className='mcolor-900 text-2xl text-center mb-5'><span className='font-bold'>{timeForBreak ? formatTime(seconds) : '00:00'}</span></p>
-
-              <p className='text-center text-xl font-medium mcolor-800 mb-12'>The 25-minute Pomodoro session has ended. If you'd like to continue, you can do so by clicking the "Continue" button below.</p>
+  if (loading) {
+    return <div className='h-[100vh] w-full flex items-center justify-center'>
+      <div class="loader">
+        <div class="spinner"></div>
+      </div>
+    </div>
+  } else {
+    return (
+      <div className='poppins flex mcolor-900'>
+  
+  
+        <div className={`${hidePomodoroModalBreak} absolute top-0 left-0 modal-bg w-full h-full`}>
+          <div className='flex items-center justify-center h-full'>
+            <div className='mbg-100 min-h-[50vh] w-1/3 z-10 relative p-10 rounded-[5px] flex items-center justify-center relative' style={{ overflowY: 'auto' }}>
+  
+              <div className={`w-full`}>
+                <p className='mcolor-900 text-2xl text-center mb-5'><span className='font-bold'>{timeForBreak ? formatTime(seconds) : '00:00'}</span></p>
+  
+                <p className='text-center text-xl font-medium mcolor-800 mb-12'>The 25-minute Pomodoro session has ended. If you'd like to continue, you can do so by clicking the "Continue" button below.</p>
+                
+                <div className='absolute bottom-5 flex items-center justify-between w-full left-0 px-5'>
+                  <button className='mbg-300 mcolor-900 px-5 py-2 rounded'>Previous Page</button>
+                  <button className='mbg-700 mcolor-100 px-5 py-2 rounded' onClick={() => {
+                    setHidePomodoroModalBreak('hidden')
+                    setTimeForBreak(false)
+                    setTimeForPomodoro(true)
+                    setSeconds(300); 
+                  }}>Resume</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+  
+        <div className='w-1/6 mbg-300 h-[100vh] flex justify-between flex-col' style={{ borderRight: '1px solid #999' }}>
+  
+          <div>
+            <div className='px-5 py-5 font-bold mbg-200 mcolor-800 text-center text-xl'>{typeOfLearner} Learner</div>
+  
+            {/* pomodoro time */}
+            <div className='mt-10 px-5'>
+              <div className='mcolor-900 text-lg'>Time Left: <span className='font-bold'>{timeForPomodoro ? formatTime(seconds) : '00:00'}</span></div>
               
-              <div className='absolute bottom-5 flex items-center justify-between w-full left-0 px-5'>
-                <button className='mbg-300 mcolor-900 px-5 py-2 rounded'>Previous Page</button>
-                <button className='mbg-700 mcolor-100 px-5 py-2 rounded' onClick={() => {
-                  setHidePomodoroModalBreak('hidden')
-                  setTimeForBreak(false)
-                  setTimeForPomodoro(true)
-                  setSeconds(300); 
-                }}>Resume</button>
+  
+              {timeForPomodoro && (
+                <button 
+                  className='mbg-200 w-full py-2 rounded mt-2 font-medium'
+                  onClick={() => {
+                    if (isRunning) {
+                      setIsRunning(false)
+                    } else {
+                      setIsRunning(true)
+                    }
+                  }}>{isRunning ? <>Pause <PauseIcon /></> : <>Resume <PlayArrowIcon /></>}</button>
+              )}
+  
+            </div>
+  
+            <div className='mt-8 px-5'>
+              <div className='flex items-center mcolor-900'>
+                <p><FilterListIcon /> Filter: </p>
+  
+  
+  
               </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div className='w-1/6 mbg-300 h-[100vh] flex justify-between flex-col' style={{ borderRight: '1px solid #999' }}>
-
-        <div>
-          <div className='px-5 py-5 font-bold mbg-200 mcolor-800 text-center text-xl'>{typeOfLearner} Learner</div>
-
-          {/* pomodoro time */}
-          <div className='mt-10 px-5'>
-            <div className='mcolor-900 text-lg'>Time Left: <span className='font-bold'>{timeForPomodoro ? formatTime(seconds) : '00:00'}</span></div>
-            
-
-            {timeForPomodoro && (
-              <button 
-                className='mbg-200 w-full py-2 rounded mt-2 font-medium'
-                onClick={() => {
-                  if (isRunning) {
-                    setIsRunning(false)
-                  } else {
-                    setIsRunning(true)
+  
+              {/* all filters */}
+              <div className='mt-2'>
+                <select
+                  className="border-thin-800 px-3 py-1 rounded-[5px] outline-none border-none mcolor-900"
+                  value={filteredDataValue}
+                  onChange={(e) => {
+                    setFilteredDataValue(e.target.value)
+                    setSelectedChoice('')
+                    setDraggedBG('mbg-100')
+                    setChanceLeft(3)
+                    setKinestheticAnswer('')
+                    setRemainingHints(3)
+                    setAnsweredWrongVal('')
+                    setAnsweredWrongVal2('')
+                    }
                   }
-                }}>{isRunning ? <>Pause <PauseIcon /></> : <>Resume <PlayArrowIcon /></>}</button>
-            )}
-
-          </div>
-
-          <div className='mt-8 px-5'>
-            <div className='flex items-center mcolor-900'>
-              <p><FilterListIcon /> Filter: </p>
-
-
-
-            </div>
-
-            {/* all filters */}
-            <div className='mt-2'>
-              <select
-                className="border-thin-800 px-3 py-1 rounded-[5px] outline-none border-none mcolor-900"
-                value={filteredDataValue}
-                onChange={(e) => {
-                  setFilteredDataValue(e.target.value)
-                  setSelectedChoice('')
-                  setDraggedBG('mbg-100')
-                  setChanceLeft(3)
-                  setKinestheticAnswer('')
-                  setRemainingHints(3)
-                  setAnsweredWrongVal('')
-                  setAnsweredWrongVal2('')
-                  }
-                }
-              >
-                <option value="">All Items</option>
-                <option value="Correct">Correct Answers</option>
-                <option value="Wrong">Wrong Answers</option>
-                <option value="Unattempted">Unattempted Items</option>
-              </select>
-            </div>
-            
-
-            {filteredDataValue === '' && (
+                >
+                  <option value="">All Items</option>
+                  <option value="Correct">Correct Answers</option>
+                  <option value="Wrong">Wrong Answers</option>
+                  <option value="Unattempted">Unattempted Items</option>
+                </select>
+              </div>
+              
+  
+              {filteredDataValue === '' && (
+                <div className='mt-3 px-1'>
+                  <div className='mcolor-900 mbg-200 rounded mb-2 px-3 text-md py-2'>Unattempted: <span className='font-bold'>{unattemptedCounts}</span></div>
+                  <div className='mcolor-900 mbg-200 rounded mb-2 px-3 text-md py-2'>Correct Answer: <span className='font-bold'>{correctAnswerCounts}</span></div>
+                  <div className='mcolor-900 mbg-200 rounded mb-2 px-3 text-md py-2'>Wrong Answer: <span className='font-bold'>{wrongAnswerCounts}</span></div>
+                </div>
+              )}
+  
+              {/* response statements counts */}
               <div className='mt-3 px-1'>
-                <div className='mcolor-900 mbg-200 rounded mb-2 px-3 text-md py-2'>Unattempted: <span className='font-bold'>{unattemptedCounts}</span></div>
-                <div className='mcolor-900 mbg-200 rounded mb-2 px-3 text-md py-2'>Correct Answer: <span className='font-bold'>{correctAnswerCounts}</span></div>
-                <div className='mcolor-900 mbg-200 rounded mb-2 px-3 text-md py-2'>Wrong Answer: <span className='font-bold'>{wrongAnswerCounts}</span></div>
+                {filteredDataValue === 'Unattempted' && (
+                  <div className='mcolor-900 mbg-200 rounded mb-2 px-3 text-md py-2'>Unattempted: <span className='font-bold'>{unattemptedCounts}</span></div>
+                  )}
+                {filteredDataValue === 'Correct' && (
+                  <div className='mcolor-900 mbg-200 rounded mb-2 px-3 text-md py-2'>Correct Answer: <span className='font-bold'>{correctAnswerCounts}</span></div>
+                  )}
+                {filteredDataValue === 'Wrong' && (
+                  <div className='mcolor-900 mbg-200 rounded mb-2 px-3 text-md py-2'>Wrong Answer: <span className='font-bold'>{wrongAnswerCounts}</span></div>
+                  )}
               </div>
-            )}
-
-            {/* response statements counts */}
-            <div className='mt-3 px-1'>
-              {filteredDataValue === 'Unattempted' && (
-                <div className='mcolor-900 mbg-200 rounded mb-2 px-3 text-md py-2'>Unattempted: <span className='font-bold'>{unattemptedCounts}</span></div>
-                )}
-              {filteredDataValue === 'Correct' && (
-                <div className='mcolor-900 mbg-200 rounded mb-2 px-3 text-md py-2'>Correct Answer: <span className='font-bold'>{correctAnswerCounts}</span></div>
-                )}
-              {filteredDataValue === 'Wrong' && (
-                <div className='mcolor-900 mbg-200 rounded mb-2 px-3 text-md py-2'>Wrong Answer: <span className='font-bold'>{wrongAnswerCounts}</span></div>
-                )}
+  
+  
+  
+  
+  
             </div>
-
-
-
-
-
+          </div>
+  
+  
+          <div className='text-xl mcolor-900 text-center py-4 mbg-200'>
+            <PersonIcon className='mr-1' />{userData.username}
           </div>
         </div>
-
-
-        <div className='text-xl mcolor-900 text-center py-4 mbg-200'>
-          <PersonIcon className='mr-1' />{userData.username}
-        </div>
-      </div>
-
-      <div className='flex-1'>
-
-        <div className='flex justify-between'>
-          <div className='w-1/2 px-5 py-8 h-[100vh]' style={{ borderLeft: '2px solid #e0dfdc', overflowY: 'auto' }}>
-            <p className='text-center mcolor-800 text-3xl opacity-75 mb-10'>Generated Notes</p>
-            
-
-            {typeOfLearner !== 'Auditory' ?
-              (answersItems.map((item, index) => (
-                <div key={index} className={`${typeOfLearner === 'Visual' ? `${item.bgColor}-bg` : 'mbg-200 border-thin-800'} rounded mb-5 p-5`}>
-
-                  <div className='mb-6'>
-                    <span className='mbg-100 shadows px-5 py-2 rounded'>{capitalizeFirstLetter(item.answer)}</span>
+  
+        <div className='flex-1'>
+  
+          <div className='flex justify-between'>
+            <div className='w-1/2 px-5 py-8 h-[100vh]' style={{ borderLeft: '2px solid #e0dfdc', overflowY: 'auto' }}>
+              <p className='text-center mcolor-800 text-3xl opacity-75 mb-10'>Generated Notes</p>
+              
+  
+              {typeOfLearner !== 'Auditory' ?
+                (answersItems.map((item, index) => (
+                  <div key={index} className={`${typeOfLearner === 'Visual' ? `${item.bgColor}-bg` : 'mbg-200 border-thin-800'} rounded mb-5 p-5`}>
+  
+                    <div className='mb-6'>
+                      <span className='mbg-100 shadows px-5 py-2 rounded'>{capitalizeFirstLetter(item.answer)}</span>
+                    </div>
+  
+                    {mcqaItems
+                      .filter(mcqa => mcqa.answer.toLowerCase() === item.answer.toLowerCase())
+                      .map((filteredItem, index) => (
+                        <div key={index}>
+                          <p><EmojiObjectsIcon className='text-red' /> {replaceWords(filteredItem.question, item.answer)}</p>
+                        </div>
+                      ))}
+                      
+                    {fitbItems
+                      .filter(fitb => fitb.answer.toLowerCase() === item.answer.toLowerCase())
+                      .map((filteredItem, index) => (
+                        <div key={index}>
+                          <p><EmojiObjectsIcon className='text-red' /> {replaceWords(filteredItem.question, item.answer)}</p>
+                        </div>
+                      ))}
+  
+                    {identificationItems
+                      .filter(identification => identification.answer.toLowerCase() === item.answer.toLowerCase())
+                      .map((filteredItem, index) => (
+                        <div key={index}>
+                          <p><EmojiObjectsIcon className='text-red' /> {replaceWords(filteredItem.question, item.answer)}</p>
+                        </div>
+                      ))}
                   </div>
-
-                  {mcqaItems
-                    .filter(mcqa => mcqa.answer.toLowerCase() === item.answer.toLowerCase())
-                    .map((filteredItem, index) => (
-                      <div key={index}>
-                        <p><EmojiObjectsIcon className='text-red' /> {replaceWords(filteredItem.question, item.answer)}</p>
-                      </div>
-                    ))}
-                    
-                  {fitbItems
-                    .filter(fitb => fitb.answer.toLowerCase() === item.answer.toLowerCase())
-                    .map((filteredItem, index) => (
-                      <div key={index}>
-                        <p><EmojiObjectsIcon className='text-red' /> {replaceWords(filteredItem.question, item.answer)}</p>
-                      </div>
-                    ))}
-
-                  {identificationItems
-                    .filter(identification => identification.answer.toLowerCase() === item.answer.toLowerCase())
-                    .map((filteredItem, index) => (
-                      <div key={index}>
-                        <p><EmojiObjectsIcon className='text-red' /> {replaceWords(filteredItem.question, item.answer)}</p>
-                      </div>
-                    ))}
-                </div>
-              ))) : (
-                answersItems.map((item, index) => (
-                <div key={index} className={`${typeOfLearner === 'Visual' ? `${item.bgColor}-bg` : 'mbg-200 border-thin-800'} rounded mb-5 p-5`}>
-
-                  <div className='mb-6'>
-                    <span className='mbg-100 shadows px-5 py-2 rounded'>{capitalizeFirstLetter(item.answer)}</span>
+                ))) : (
+                  answersItems.map((item, index) => (
+                  <div key={index} className={`${typeOfLearner === 'Visual' ? `${item.bgColor}-bg` : 'mbg-200 border-thin-800'} rounded mb-5 p-5`}>
+  
+                    <div className='mb-6'>
+                      <span className='mbg-100 shadows px-5 py-2 rounded'>{capitalizeFirstLetter(item.answer)}</span>
+                    </div>
+  
+                    {mcqaItems
+                      .filter(mcqa => mcqa.answer && mcqa.answer.toLowerCase() === item.answer.toLowerCase())
+                      .map((filteredItem, index) => (
+                        <div key={index} className='flex items-start justify-between w-full'>
+                          {hiddenItems.includes(replaceWords(filteredItem.question, item.answer)) ? (
+                            <p className='w-3/4 text-justify'  style={{ whiteSpace: 'pre-wrap' }}><EmojiObjectsIcon className='text-red' /> {replaceWords(filteredItem.question, item.answer)}</p>
+                            ) : (
+                            <p className='w-3/4'  style={{ whiteSpace: 'pre-wrap' }}><GraphicEqIcon className='mcolor-900 mr-1' />Listen...</p>
+                          )}
+  
+  
+                          <div className='mt-1 flex justify-end w-1/4 gap-3'>
+                            <button onClick={() => choiceSpeak(replaceWords(filteredItem.question, item.answer))}><CampaignIcon /></button>
+                            <button onClick={() => toggleMcqVisibility(replaceWords(filteredItem.question, item.answer))}>
+                              {hiddenItems.includes(replaceWords(filteredItem.question, item.answer)) ? <VisibilityIcon /> : <VisibilityOffIcon />}
+                            </button>
+                          </div>
+                        </div>
+                      ))
+                    }
+  
+  
+  
+                    {fitbItems
+                      .filter(fitb => fitb.answer.toLowerCase() === item.answer.toLowerCase())
+                      .map((filteredItem, index) => (
+                        <div key={index} className='flex items-start justify-between w-full'>
+                          {hiddenItems.includes(replaceWords(filteredItem.question, item.answer)) ? (
+                            <p className='w-3/4 text-justify'  style={{ whiteSpace: 'pre-wrap' }}><EmojiObjectsIcon className='text-red' /> {replaceWords(filteredItem.question, item.answer)}</p>
+                            ) : (
+                            <p className='w-3/4'  style={{ whiteSpace: 'pre-wrap' }}><GraphicEqIcon className='mcolor-900 mr-1' />Listen...</p>
+                          )}
+  
+  
+                          <div className='mt-1 flex justify-end w-1/4 gap-3'>
+                            <button onClick={() => choiceSpeak(replaceWords(filteredItem.question, item.answer))}><CampaignIcon /></button>
+                            <button onClick={() => toggleMcqVisibility(replaceWords(filteredItem.question, item.answer))}>
+                              {hiddenItems.includes(replaceWords(filteredItem.question, item.answer)) ? <VisibilityIcon /> : <VisibilityOffIcon />}
+                            </button>
+                          </div>
+                        </div>
+                      ))
+                    }
+  
+  
+  
+                    {identificationItems
+                      .filter(identification => identification.answer.toLowerCase() === item.answer.toLowerCase())
+                      .map((filteredItem, index) => (
+                        <div key={index} className='flex items-start justify-between w-full'>
+                          {hiddenItems.includes(replaceWords(filteredItem.question, item.answer)) ? (
+                            <p className='w-3/4 text-justify'  style={{ whiteSpace: 'pre-wrap' }}><EmojiObjectsIcon className='text-red' /> {replaceWords(filteredItem.question, item.answer)}</p>
+                            ) : (
+                            <p className='w-3/4'  style={{ whiteSpace: 'pre-wrap' }}><GraphicEqIcon className='mcolor-900 mr-1' />Listen...</p>
+                          )}
+  
+  
+                          <div className='mt-1 flex justify-end w-1/4 gap-3'>
+                            <button onClick={() => choiceSpeak(replaceWords(filteredItem.question, item.answer))}><CampaignIcon /></button>
+                            <button onClick={() => toggleMcqVisibility(replaceWords(filteredItem.question, item.answer))}>
+                              {hiddenItems.includes(replaceWords(filteredItem.question, item.answer)) ? <VisibilityIcon /> : <VisibilityOffIcon />}
+                            </button>
+                          </div>
+                        </div>
+                      ))
+                    }
+  
+     
                   </div>
-
-                  {mcqaItems
-                    .filter(mcqa => mcqa.answer && mcqa.answer.toLowerCase() === item.answer.toLowerCase())
-                    .map((filteredItem, index) => (
-                      <div key={index} className='flex items-start justify-between w-full'>
-                        {hiddenItems.includes(replaceWords(filteredItem.question, item.answer)) ? (
-                          <p className='w-3/4 text-justify'  style={{ whiteSpace: 'pre-wrap' }}><EmojiObjectsIcon className='text-red' /> {replaceWords(filteredItem.question, item.answer)}</p>
-                          ) : (
-                          <p className='w-3/4'  style={{ whiteSpace: 'pre-wrap' }}><GraphicEqIcon className='mcolor-900 mr-1' />Listen...</p>
-                        )}
-
-
-                        <div className='mt-1 flex justify-end w-1/4 gap-3'>
-                          <button onClick={() => choiceSpeak(replaceWords(filteredItem.question, item.answer))}><CampaignIcon /></button>
-                          <button onClick={() => toggleMcqVisibility(replaceWords(filteredItem.question, item.answer))}>
-                            {hiddenItems.includes(replaceWords(filteredItem.question, item.answer)) ? <VisibilityIcon /> : <VisibilityOffIcon />}
-                          </button>
-                        </div>
-                      </div>
-                    ))
-                  }
-
-
-
-                  {fitbItems
-                    .filter(fitb => fitb.answer.toLowerCase() === item.answer.toLowerCase())
-                    .map((filteredItem, index) => (
-                      <div key={index} className='flex items-start justify-between w-full'>
-                        {hiddenItems.includes(replaceWords(filteredItem.question, item.answer)) ? (
-                          <p className='w-3/4 text-justify'  style={{ whiteSpace: 'pre-wrap' }}><EmojiObjectsIcon className='text-red' /> {replaceWords(filteredItem.question, item.answer)}</p>
-                          ) : (
-                          <p className='w-3/4'  style={{ whiteSpace: 'pre-wrap' }}><GraphicEqIcon className='mcolor-900 mr-1' />Listen...</p>
-                        )}
-
-
-                        <div className='mt-1 flex justify-end w-1/4 gap-3'>
-                          <button onClick={() => choiceSpeak(replaceWords(filteredItem.question, item.answer))}><CampaignIcon /></button>
-                          <button onClick={() => toggleMcqVisibility(replaceWords(filteredItem.question, item.answer))}>
-                            {hiddenItems.includes(replaceWords(filteredItem.question, item.answer)) ? <VisibilityIcon /> : <VisibilityOffIcon />}
-                          </button>
-                        </div>
-                      </div>
-                    ))
-                  }
-
-
-
-                  {identificationItems
-                    .filter(identification => identification.answer.toLowerCase() === item.answer.toLowerCase())
-                    .map((filteredItem, index) => (
-                      <div key={index} className='flex items-start justify-between w-full'>
-                        {hiddenItems.includes(replaceWords(filteredItem.question, item.answer)) ? (
-                          <p className='w-3/4 text-justify'  style={{ whiteSpace: 'pre-wrap' }}><EmojiObjectsIcon className='text-red' /> {replaceWords(filteredItem.question, item.answer)}</p>
-                          ) : (
-                          <p className='w-3/4'  style={{ whiteSpace: 'pre-wrap' }}><GraphicEqIcon className='mcolor-900 mr-1' />Listen...</p>
-                        )}
-
-
-                        <div className='mt-1 flex justify-end w-1/4 gap-3'>
-                          <button onClick={() => choiceSpeak(replaceWords(filteredItem.question, item.answer))}><CampaignIcon /></button>
-                          <button onClick={() => toggleMcqVisibility(replaceWords(filteredItem.question, item.answer))}>
-                            {hiddenItems.includes(replaceWords(filteredItem.question, item.answer)) ? <VisibilityIcon /> : <VisibilityOffIcon />}
-                          </button>
-                        </div>
-                      </div>
-                    ))
-                  }
-
-   
-                </div>
-              )))}
-
-
-
-            <p className='text-center mcolor-800 text-3xl opacity-75 my-10'>Summarized Highlighted Notes</p>
-            
-            {typeOfLearner !== 'Auditory' ?
-              (quesRev.map((filteredItem, index) => {
-              const color = getRandomColor(backgroundColors, lastColor);
-              lastColor = color; // Update lastColor for the next iteration
-
-              return (
-                <div key={index} className={`${typeOfLearner === 'Visual' ? `${color}-bg` : 'mbg-200 border-thin-800'} rounded mb-5 p-5`}>
-                <p><EditNoteIcon className='mcolor-900' />{filteredItem.answer}</p>
-                </div>
-              );
-            })) : (
-              quesRev.map((filteredItem, index) => {
+                )))}
+  
+  
+  
+              <p className='text-center mcolor-800 text-3xl opacity-75 my-10'>Summarized Highlighted Notes</p>
+              
+              {typeOfLearner !== 'Auditory' ?
+                (quesRev.map((filteredItem, index) => {
                 const color = getRandomColor(backgroundColors, lastColor);
                 lastColor = color; // Update lastColor for the next iteration
   
                 return (
-                  <div key={index} className={`${typeOfLearner === 'Visual' ? `${color}-bg` : 'mbg-200 border-thin-800'} rounded mb-5 p-5 flex items-start justify-between w-full`}>
-                    {hiddenItems.includes(filteredItem.answer) ? (
-                      <p className='w-3/4'  style={{ whiteSpace: 'pre-wrap' }}><EmojiObjectsIcon className='text-red' /> {filteredItem.answer}</p>
-                      ) : (
-                      <p className='w-3/4'  style={{ whiteSpace: 'pre-wrap' }}><GraphicEqIcon className='mcolor-900 mr-1' />Listen...</p>
-                    )}
-
-
-                    <div className='mt-1 flex justify-end w-1/4 gap-3'>
-                      <button onClick={() => choiceSpeak(filteredItem.answer)}><CampaignIcon /></button>
-                      <button onClick={() => toggleMcqVisibility(filteredItem.answer)}>
-                        {hiddenItems.includes(filteredItem.answer) ? <VisibilityIcon /> : <VisibilityOffIcon />}
-                      </button>
-                    </div>
+                  <div key={index} className={`${typeOfLearner === 'Visual' ? `${color}-bg` : 'mbg-200 border-thin-800'} rounded mb-5 p-5`}>
+                  <p><EditNoteIcon className='mcolor-900' />{filteredItem.answer}</p>
                   </div>
                 );
-              })
-            )}
-
-          </div>
-
-          <div className='w-1/2 px-5 py-8 h-[100vh]' style={{ borderLeft: '2px solid #e0dfdc', overflowY: 'auto' }}>
-
-
-            <p className='text-center mcolor-800 text-3xl opacity-75 mb-10'>Practice</p>
-
-            {/* how many chances are left? */}
-            <div className='flex w-full justify-end'>
-              {chanceLeft === 3 && (
-                <div className='flex w-full text-red'>
-                  <span className='font-medium text-lg'>Chance Left: </span>
-                  <div><FavoriteIcon /></div>
-                  <div><FavoriteIcon /></div>
-                  <div><FavoriteIcon /></div>
-                </div>
+              })) : (
+                quesRev.map((filteredItem, index) => {
+                  const color = getRandomColor(backgroundColors, lastColor);
+                  lastColor = color; // Update lastColor for the next iteration
+    
+                  return (
+                    <div key={index} className={`${typeOfLearner === 'Visual' ? `${color}-bg` : 'mbg-200 border-thin-800'} rounded mb-5 p-5 flex items-start justify-between w-full`}>
+                      {hiddenItems.includes(filteredItem.answer) ? (
+                        <p className='w-3/4'  style={{ whiteSpace: 'pre-wrap' }}><EmojiObjectsIcon className='text-red' /> {filteredItem.answer}</p>
+                        ) : (
+                        <p className='w-3/4'  style={{ whiteSpace: 'pre-wrap' }}><GraphicEqIcon className='mcolor-900 mr-1' />Listen...</p>
+                      )}
+  
+  
+                      <div className='mt-1 flex justify-end w-1/4 gap-3'>
+                        <button onClick={() => choiceSpeak(filteredItem.answer)}><CampaignIcon /></button>
+                        <button onClick={() => toggleMcqVisibility(filteredItem.answer)}>
+                          {hiddenItems.includes(filteredItem.answer) ? <VisibilityIcon /> : <VisibilityOffIcon />}
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })
               )}
-              {chanceLeft === 2 && (
-                <div className='w-full text-red'>
-                  <span className='font-medium text-lg'>Chance Left: </span>
-                  <span><FavoriteIcon /></span>
-                  <span><FavoriteIcon /></span>
-                </div>
-              )}
-              {chanceLeft === 1 && (
-                <div className='flex w-full text-red'>
-                  <span className='font-medium text-lg'>Chance Left: </span>
-                  <div className='shake-animation pl-1'><FavoriteIcon /></div>
-                </div>
-              )}
+  
             </div>
-
-
-
-            {
-              typeOfLearner === 'Auditory' && (
-                <AuditoryLearner
+  
+            <div className='w-1/2 px-5 py-8 h-[100vh]' style={{ borderLeft: '2px solid #e0dfdc', overflowY: 'auto' }}>
+  
+  
+              <p className='text-center mcolor-800 text-3xl opacity-75 mb-10'>Practice</p>
+  
+              {/* how many chances are left? */}
+              <div className='flex w-full justify-end'>
+                {chanceLeft === 3 && (
+                  <div className='flex w-full text-red'>
+                    <span className='font-medium text-lg'>Chance Left: </span>
+                    <div><FavoriteIcon /></div>
+                    <div><FavoriteIcon /></div>
+                    <div><FavoriteIcon /></div>
+                  </div>
+                )}
+                {chanceLeft === 2 && (
+                  <div className='w-full text-red'>
+                    <span className='font-medium text-lg'>Chance Left: </span>
+                    <span><FavoriteIcon /></span>
+                    <span><FavoriteIcon /></span>
+                  </div>
+                )}
+                {chanceLeft === 1 && (
+                  <div className='flex w-full text-red'>
+                    <span className='font-medium text-lg'>Chance Left: </span>
+                    <div className='shake-animation pl-1'><FavoriteIcon /></div>
+                  </div>
+                )}
+              </div>
+  
+  
+  
+              {
+                typeOfLearner === 'Auditory' && (
+                  <AuditoryLearner
+                    extractedQA={extractedQA}
+                    hideQuestion={hideQuestion}
+                    questionIndex={questionIndex}
+                    stateQuestion={stateQuestion}
+                    hideQuestionBtn={hideQuestionBtn}
+                    unhideQuestion={unhideQuestion}
+                    unhideQuestionBtn={unhideQuestionBtn}
+                    unhideAll={unhideAll}
+                    unhideAllBtn={unhideAllBtn}
+                    hideAll={hideAll}
+                    hideAllBtn={hideAllBtn}
+                    unhideAllChoice={unhideAllChoice}
+                    unhideAllChoicesBtn={unhideAllChoicesBtn}
+                    hideAllChoice={hideAllChoice}
+                    hideAllChoicesBtn={hideAllChoicesBtn}
+                    shuffledChoices={shuffledChoices}
+                    answerSubmitted={answerSubmitted}
+                    wrongAnswer={wrongAnswer}
+                    answeredWrongVal={answeredWrongVal}
+                    wrongAnswer2={wrongAnswer2}
+                    answeredWrongVal2={answeredWrongVal2}
+                    handleRadioChange={handleRadioChange}
+                    selectedChoice={selectedChoice}
+                    unhiddenChoice={unhiddenChoice}
+                    hideChoiceBtn={hideChoiceBtn}
+                    choiceSpeak={choiceSpeak}
+                    enabledSubmitBtn={enabledSubmitBtn}
+                    submitAnswer={submitAnswer}
+                    setSelectedChoice={setSelectedChoice}
+                    giveHint={giveHint}
+                    remainingHints={remainingHints}
+                  />
+                )
+              }
+  
+              {typeOfLearner === 'Kinesthetic' && (
+                <KinestheticLearner
                   extractedQA={extractedQA}
-                  hideQuestion={hideQuestion}
                   questionIndex={questionIndex}
-                  stateQuestion={stateQuestion}
-                  hideQuestionBtn={hideQuestionBtn}
-                  unhideQuestion={unhideQuestion}
-                  unhideQuestionBtn={unhideQuestionBtn}
-                  unhideAll={unhideAll}
-                  unhideAllBtn={unhideAllBtn}
-                  hideAll={hideAll}
-                  hideAllBtn={hideAllBtn}
-                  unhideAllChoice={unhideAllChoice}
-                  unhideAllChoicesBtn={unhideAllChoicesBtn}
-                  hideAllChoice={hideAllChoice}
-                  hideAllChoicesBtn={hideAllChoicesBtn}
-                  shuffledChoices={shuffledChoices}
-                  answerSubmitted={answerSubmitted}
-                  wrongAnswer={wrongAnswer}
-                  answeredWrongVal={answeredWrongVal}
-                  wrongAnswer2={wrongAnswer2}
-                  answeredWrongVal2={answeredWrongVal2}
-                  handleRadioChange={handleRadioChange}
+                  remainingHints={remainingHints}
+                  giveHint={giveHint}
+                  kinesthethicAnswers={kinesthethicAnswers}
+                  borderMedium={borderMedium}
+                  handleDragOver={handleDragOver}
+                  removeValueOfIndex={removeValueOfIndex}
                   selectedChoice={selectedChoice}
-                  unhiddenChoice={unhiddenChoice}
-                  hideChoiceBtn={hideChoiceBtn}
-                  choiceSpeak={choiceSpeak}
+                  typeOfLearner={typeOfLearner}
+                  handleDragStart={handleDragStart}
+                  handleDragEnd={handleDragEnd}
+                  lastDraggedCharacter={lastDraggedCharacter}
+                  enabledSubmitBtn={enabledSubmitBtn}
+                  submitAnswer={submitAnswer}
+                  chanceLeft={chanceLeft}
+                  setLastDraggedCharacter={setLastDraggedCharacter}
+                  setKinesthethicAnswers={setKinesthethicAnswers}
+                  setSelectedChoice={setSelectedChoice}
+                  kinestheticAnswer={kinestheticAnswer}
+                  handleDrop={handleDrop}
+                />
+              )}
+  
+              {typeOfLearner === 'Visual' && (
+                <VisualLearner
+                  extractedQA={extractedQA}
+                  questionIndex={questionIndex}
+                  shuffledChoices={shuffledChoices}
+                  selectedChoice={selectedChoice}
                   enabledSubmitBtn={enabledSubmitBtn}
                   submitAnswer={submitAnswer}
                   setSelectedChoice={setSelectedChoice}
                   giveHint={giveHint}
                   remainingHints={remainingHints}
+                  draggedBG={draggedBG}
+                  borderMedium={borderMedium}
+                  handleDrop={handleDrop}
+                  handleDragOver={handleDragOver}
+                  handleDragStart={handleDragStart}
+                  handleDragEnd={handleDragEnd}
                 />
-              )
-            }
-
-            {typeOfLearner === 'Kinesthetic' && (
-              <KinestheticLearner
-                extractedQA={extractedQA}
-                questionIndex={questionIndex}
-                remainingHints={remainingHints}
-                giveHint={giveHint}
-                kinesthethicAnswers={kinesthethicAnswers}
-                borderMedium={borderMedium}
-                handleDragOver={handleDragOver}
-                removeValueOfIndex={removeValueOfIndex}
-                selectedChoice={selectedChoice}
-                typeOfLearner={typeOfLearner}
-                handleDragStart={handleDragStart}
-                handleDragEnd={handleDragEnd}
-                lastDraggedCharacter={lastDraggedCharacter}
-                enabledSubmitBtn={enabledSubmitBtn}
-                submitAnswer={submitAnswer}
-                chanceLeft={chanceLeft}
-                setLastDraggedCharacter={setLastDraggedCharacter}
-                setKinesthethicAnswers={setKinesthethicAnswers}
-                setSelectedChoice={setSelectedChoice}
-                kinestheticAnswer={kinestheticAnswer}
-                handleDrop={handleDrop}
-              />
-            )}
-
-            {typeOfLearner === 'Visual' && (
-              <VisualLearner
-                extractedQA={extractedQA}
-                questionIndex={questionIndex}
-                shuffledChoices={shuffledChoices}
-                selectedChoice={selectedChoice}
-                enabledSubmitBtn={enabledSubmitBtn}
-                submitAnswer={submitAnswer}
-                setSelectedChoice={setSelectedChoice}
-                giveHint={giveHint}
-                remainingHints={remainingHints}
-                draggedBG={draggedBG}
-                borderMedium={borderMedium}
-                handleDrop={handleDrop}
-                handleDragOver={handleDragOver}
-                handleDragStart={handleDragStart}
-                handleDragEnd={handleDragEnd}
-              />
-            )}
+              )}
+            </div>
           </div>
+          
+  
+  
+  
+  
+  
+  
         </div>
-        
-
-
-
-
-
-
       </div>
-    </div>
-  )
+    )
+  }
+
 }

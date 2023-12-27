@@ -94,8 +94,15 @@ router.post('/', async (req, res) => {
 
     const url = `http://localhost:3000/users/${savedUserData.id}/verify/${token.token}`;
     // Use the correct frontend URL, adjust the port if needed
-
-    await sendEmail(savedUserData.email, 'Verify Email', url);
+    
+    const verificationMessage = `
+    Kindly verify your account by clicking the link below:
+    
+    ${url}
+    `;
+    
+    await sendEmail(savedUserData.email, 'Verify Email', verificationMessage);
+    
 
     res.status(201).send({ message: "An email has been sent to your gmail account. Kindly check for verification." });
 

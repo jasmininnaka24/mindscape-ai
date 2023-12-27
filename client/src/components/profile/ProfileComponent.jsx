@@ -98,6 +98,9 @@ export const ProfileComponent = () => {
   const [showFollowingList, setShowFollowingList] = useState(false);
 
 
+  const [loading, setLoading] = useState(true);
+
+
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
   };
@@ -149,34 +152,9 @@ export const ProfileComponent = () => {
 
 
 
-  const followUser = async (e) => {
-    e.preventDefault();
-
-    let data = {
-      FollowingId: userId,
-      FollowerId: UserId,
-      UserId: UserId
-    }
-
-    await axios.post(`${SERVER_URL}/followers/follow`, data);
-    fetchUserDataFrontend();
-  }
-
-  const unfollowUser = async (e) => {
-    e.preventDefault();
-
-    await axios.delete(`${SERVER_URL}/followers/unfollow/${userId}/${UserId}`);
-    
-    fetchUserDataFrontend();
-  }
-
-
-
-  // for image upload
-
-
   const fetchData = async () => {
 
+    setLoading(true)
 
     let totalGroups = 0
     const groupListLengthResponse = await axios.get(`${SERVER_URL}/studyGroup/extract-group-through-user/${userId === undefined ? UserId : userId}`)
@@ -310,7 +288,8 @@ export const ProfileComponent = () => {
 
 
 
-    
+    setLoading(false)
+
   }
     
   useEffect(() => {
@@ -978,584 +957,592 @@ export const ProfileComponent = () => {
   
 
 
+  if (loading) {
+    return <div className='h-[100vh] w-full flex items-center justify-center'>
+      <div class="loader">
+        <div class="spinner"></div>
+      </div>
+    </div>
+  } else {
 
-  return (
-    <div className='poppins flex w-full mcolor-900 mbg-200 mbg- min-h-[100vh]'>
-
-      <div className='container py-10'>
-
-      <Navbar linkBack={`/main`} linkBackName={`Main`} currentPageName={'Study Area'} username={userData.username}/>
-        
-        <div className='flex items-center justify-between mt-8 gap-2'>
-
-          <div className={`${showMainProfile ? userId === undefined ? 'mbg-700 mcolor-100' : 'mcolor-100 mbg-400 border-thin-800' : 'mbg-100 mcolor-900 border-thin-800'} py-2 text-center rounded  w-full cursor-pointer`} onClick={() => {
-            setShowPasswordSecurity(false)
-            setShowAccountSettings(false)
-            setShowAccountDeletion(false)
-            setShowMainProfile(true)
-          }}>
-            <p className='text-xl'>Main Profile</p>
+    return (
+      <div className='poppins flex w-full mcolor-900 mbg-200 mbg- min-h-[100vh]'>
+  
+        <div className='container py-10'>
+  
+        <Navbar linkBack={`/main`} linkBackName={`Main`} currentPageName={'Study Area'} username={userData.username}/>
+          
+          <div className='flex items-center justify-between mt-8 gap-2'>
+  
+            <div className={`${showMainProfile ? userId === undefined ? 'mbg-700 mcolor-100' : 'mcolor-100 mbg-400 border-thin-800' : 'mbg-100 mcolor-900 border-thin-800'} py-2 text-center rounded  w-full cursor-pointer`} onClick={() => {
+              setShowPasswordSecurity(false)
+              setShowAccountSettings(false)
+              setShowAccountDeletion(false)
+              setShowMainProfile(true)
+            }}>
+              <p className='text-xl'>Main Profile</p>
+            </div>
+  
+            {(!userId || UserId === parseInt(userId, 10)) && (
+                <div className={`${showAccountSettings ? 'mbg-700 mcolor-100' : 'mbg-100 mcolor-900 border-thin-800'} py-2 text-center rounded  w-full cursor-pointer`} onClick={() => {
+                  setShowMainProfile(false)
+                  setShowPasswordSecurity(false)
+                  setShowAccountDeletion(false)
+                  setShowAccountSettings(true)
+                }}>
+                  <p className='text-xl'>Account Settings</p>
+                </div>
+              )}
+  
+  
+              {(!userId || UserId === parseInt(userId, 10)) && (
+                <div className={`${showPasswordSecurity ? 'mbg-700 mcolor-100' : 'mbg-100 mcolor-900 border-thin-800'} py-2 text-center rounded  w-full cursor-pointer`} onClick={() => {
+                  setShowAccountSettings(false)
+                  setShowMainProfile(false)
+                  setShowAccountDeletion(false)
+                  setShowPasswordSecurity(true)
+                }}>
+                  <p className='text-xl'>Password & Security</p>
+                </div>
+              )}
+  
+  
+              {(!userId || UserId === parseInt(userId, 10)) && (
+  
+                <div className={`${showAccountDeletion ? 'mbg-700 mcolor-100' : 'mbg-100 mcolor-900 border-thin-800'} py-2 text-center rounded  w-full cursor-pointer`} onClick={() => {
+                  setShowAccountSettings(false)
+                  setShowMainProfile(false)
+                  setShowPasswordSecurity(false)
+                  setShowAccountDeletion(true)
+                }}>
+                  <p className='text-xl'>Account Deletion</p>
+                </div>
+              )}
+  
           </div>
-
-          {(!userId || UserId === parseInt(userId, 10)) && (
-              <div className={`${showAccountSettings ? 'mbg-700 mcolor-100' : 'mbg-100 mcolor-900 border-thin-800'} py-2 text-center rounded  w-full cursor-pointer`} onClick={() => {
-                setShowMainProfile(false)
-                setShowPasswordSecurity(false)
-                setShowAccountDeletion(false)
-                setShowAccountSettings(true)
-              }}>
-                <p className='text-xl'>Account Settings</p>
-              </div>
-            )}
-
-
-            {(!userId || UserId === parseInt(userId, 10)) && (
-              <div className={`${showPasswordSecurity ? 'mbg-700 mcolor-100' : 'mbg-100 mcolor-900 border-thin-800'} py-2 text-center rounded  w-full cursor-pointer`} onClick={() => {
-                setShowAccountSettings(false)
-                setShowMainProfile(false)
-                setShowAccountDeletion(false)
-                setShowPasswordSecurity(true)
-              }}>
-                <p className='text-xl'>Password & Security</p>
-              </div>
-            )}
-
-
-            {(!userId || UserId === parseInt(userId, 10)) && (
-
-              <div className={`${showAccountDeletion ? 'mbg-700 mcolor-100' : 'mbg-100 mcolor-900 border-thin-800'} py-2 text-center rounded  w-full cursor-pointer`} onClick={() => {
-                setShowAccountSettings(false)
-                setShowMainProfile(false)
-                setShowPasswordSecurity(false)
-                setShowAccountDeletion(true)
-              }}>
-                <p className='text-xl'>Account Deletion</p>
-              </div>
-            )}
-
-        </div>
-
-
-        <div className='flex items-center justify-center'>
-          <div className='w-3/4 p-5'>
-
-            {showMainProfile && (
-              <div>
-                <div className='shadows p-5 mbg-100 rounded'>
-
-                  <div className='flex items-center justify-center gap-8 pt-3'>
-                    <div style={{ width: '200px' }}>
-                    <img src={`${SERVER_URL}/images/${userData.userImage}`} className='rounded-full' style={{ width: '200px', objectFit: 'cover', height: '200px' }} alt="" />
+  
+  
+          <div className='flex items-center justify-center'>
+            <div className='w-3/4 p-5'>
+  
+              {showMainProfile && (
+                <div>
+                  <div className='shadows p-5 mbg-100 rounded'>
+  
+                    <div className='flex items-center justify-center gap-8 pt-3'>
+                      <div style={{ width: '200px' }}>
+                      <img src={`${SERVER_URL}/images/${userData.userImage}`} className='rounded-full' style={{ width: '200px', objectFit: 'cover', height: '200px' }} alt="" />
+                      </div>
+  
+                      <div className=''>
+                        <p className='text-2xl mb-1 font-medium text-2xl mb-1 mcolor-800 mb-5'>{userData.username}</p>
+  
+                        <p className='opacity-80 text-md font-medium'>
+                          {userData.typeOfLearner} Learner
+                        </p>
+  
+                        <p className='opacity-75 text-md'>{groupListLength} Group Study Rooms</p>
+                        <p className='opacity-75 text-md'>{contributedMaterialsLength} Study Materials Contributes</p>
+  
+  
+  
+  
+  
+  
+                      </div>
                     </div>
-
-                    <div className=''>
-                      <p className='text-2xl mb-1 font-medium text-2xl mb-1 mcolor-800 mb-5'>{userData.username}</p>
-
-                      <p className='opacity-80 text-md font-medium'>
-                        {userData.typeOfLearner} Learner
-                      </p>
-
-                      <p className='opacity-75 text-md'>{groupListLength} Group Study Rooms</p>
-                      <p className='opacity-75 text-md'>{contributedMaterialsLength} Study Materials Contributes</p>
-
-
-
-
-
-
-                    </div>
-                  </div>
-
-                  <br />
-                  {contributedMaterialsLength > 0 ? (
-                    <p className='mt-8 mb-3 text-lg'>Contributed Materials</p>
-                    ): (
-                    <p className='mt-8 mb-3 text-lg text-center mcolor-500'>No Contributed Materials</p>
-                  )}
-
-                  <ul className='grid grid-cols-1 gap-5'>
-                    {sharedMaterials.map((material, index) => {
-                      const category = sharedMaterialsCategory[index]?.category || 'Category not available';
-
-                      return <div key={index} className='my-3 mbg-200 border-thin-800 p-4 rounded flex items-center justify-between'>
-                        <div>
-                          <p className='font-medium text-lg'>Title: {material.title}</p>
-                          <p className='text-sm mt-1'>Category: {category}</p>
+  
+                    <br />
+                    {contributedMaterialsLength > 0 ? (
+                      <p className='mt-8 mb-3 text-lg'>Contributed Materials</p>
+                      ): (
+                      <p className='mt-8 mb-3 text-lg text-center mcolor-500'>No Contributed Materials</p>
+                    )}
+  
+                    <ul className='grid grid-cols-1 gap-5'>
+                      {sharedMaterials.map((material, index) => {
+                        const category = sharedMaterialsCategory[index]?.category || 'Category not available';
+  
+                        return <div key={index} className='my-3 mbg-200 border-thin-800 p-4 rounded flex items-center justify-between'>
+                          <div>
+                            <p className='font-medium text-lg'>Title: {material.title}</p>
+                            <p className='text-sm mt-1'>Category: {category}</p>
+                          </div>
+  
+                          <div className='flex items-center gap-3'>
+                            <button className='mbg-100 mcolor-900 border-thin-800 px-5 py-2 rounded' onClick={() => viewStudyMaterialDetails(index, 'shared', 'not filtered', category)}>View</button>
+                            <button className='mbg-700 mcolor-100 px-5 py-2 rounded' onClick={() => {
+                              setShowBookmarkModal(true)
+                              
+                              userId !== undefined ? setChooseRoom(true) : setChooseGroupRoom(true);
+                              
+                              setCurrentSharedMaterialIndex(index)
+                              
+                            }}>Bookmark</button>
+                          </div>
                         </div>
-
-                        <div className='flex items-center gap-3'>
-                          <button className='mbg-100 mcolor-900 border-thin-800 px-5 py-2 rounded' onClick={() => viewStudyMaterialDetails(index, 'shared', 'not filtered', category)}>View</button>
-                          <button className='mbg-700 mcolor-100 px-5 py-2 rounded' onClick={() => {
-                            setShowBookmarkModal(true)
-                            
-                            userId !== undefined ? setChooseRoom(true) : setChooseGroupRoom(true);
-                            
-                            setCurrentSharedMaterialIndex(index)
-                            
-                          }}>Bookmark</button>
+                        })
+                      }
+                    </ul>
+                  </div>
+  
+  
+                  {/* user sharing */}
+                  {showModal && (
+                    <div className={`absolute top-0 modal-bg left-0 w-full h-full`}>
+                      <div className='flex items-center justify-center h-full'>
+                        <div className='relative mbg-100 h-[75vh] w-1/2 z-10 relative py-5 px-10 rounded-[5px]' style={{overflowY: 'auto'}}>
+                          
+                          <button className='absolute right-5 top-5 font-medium text-xl' onClick={() => {
+                            setShowMaterialDetails(false)
+                            setShowPresentStudyMaterials(false)
+                            setShowModal(false)
+                          }}>&#10006;</button>
+  
+                          {showPresentStudyMaterials && (
+                            <div>
+                              <p class='text-lg text-color-900 font-medium mb-5 mt-10 mcolor-900 text-center'>Materials that are present in your personal room and those you contributed within collaborative workspaces:</p>
+  
+                              <br />
+                              <div className='flex items-center justify-center mb-2'>
+                                <Link to={'/main/library/generate-quiz'}>
+                                  <button className='mbg-700 mcolor-100 px-5 py-2 rounded border-thin-800'>Generate a new Study Material</button>
+                                </Link>
+                              </div>
+                              <br />
+  
+  
+                              <p>Personal: </p>
+                              {personalStudyMaterials.map((material, index) => {
+                                const category = personalStudyMaterialsCategory[index]?.category || 'Category not available';
+  
+                                return <div key={index} className='my-3 mbg-200 border-thin-800 p-4 rounded flex items-center justify-between'>
+                                    <div>
+                                      <p className='font-medium text-lg'>Title: {material.title}</p>
+                                      <p className='text-sm mt-1'>Category: {category}</p>
+                                      
+                                    </div>
+  
+                                    <div className='flex items-center gap-3'>
+                                      <button className='mbg-100 mcolor-900 border-thin-800 px-5 py-2 rounded' onClick={() => viewStudyMaterialDetails(index, 'personal', 'not filtered', category)} >View</button>
+                                      {/* <button className='mbg-700 mcolor-100 px-5 py-2 rounded' onClick={() => shareMaterial(index, 'personal')}>Share</button> */}
+                                    </div>
+                                  </div>
+                              })}
+  
+                              <br />
+  
+  
+                              <p>Group: </p>
+                              {groupStudyMaterials.map((material, index) => {
+                                const category = groupStudyMaterialsCategory[index]?.category || 'Category not available';
+  
+                                return <div key={index} className='my-3 mbg-200 border-thin-800 p-4 rounded flex items-center justify-between'>
+                                    <div>
+                                      <p className='font-medium text-lg'>Title: {material.title}</p>
+                                      <p className='text-sm mt-1'>Category: {category}</p>
+  
+                                    </div>
+  
+                                    <div className='flex items-center gap-3'>
+                                      <button className='mbg-100 mcolor-900 border-thin-800 px-5 py-2 rounded' onClick={() => viewStudyMaterialDetails(index, 'group', 'not filtered', category)}>View</button>
+                                      {/* <button className='mbg-700 mcolor-100 px-5 py-2 rounded' onClick={() => shareMaterial(index, 'Group')}>Share</button> */}
+                                    </div>
+                                  </div>
+                              })}
+                            </div>
+                          )}
+  
+  
+  
+                          {showMaterialDetails && (
+                            <div>
+  
+                              {enableBackButton && (
+                                <button className='mbg-200 mcolor-900 rounded px-4 py-1 rounded border-thin-800' onClick={() => {
+                                  setShowMaterialDetails(false)
+                                  setShowPresentStudyMaterials(true)
+                                }}>Back</button>
+                              )}
+  
+  
+  
+                              <div className='my-6'>
+                                <p className='mcolor-900 text-center text-xl font-medium'>{currentMaterialTitle} from {currentMaterialCategory}</p>
+                                
+                                <div className='flex items-center justify-between my-5 gap-1'>
+                                  <button className='border-thin-800 w-full rounded py-2' onClick={() => {
+                                    setShowQuiz(false)
+                                    setShowNotes(false)
+                                    setShowContext(true)
+                                  }}>Context</button>
+                                  <button className='border-thin-800 w-full rounded py-2 mbg-700 mcolor-100' onClick={() => {
+                                    setShowContext(false)
+                                    setShowQuiz(false)
+                                    setShowNotes(true)
+                                  }}>Notes</button>
+                                  <button className='border-thin-800 w-full rounded py-2 mbg-700 mcolor-100' onClick={() => {
+                                  setShowContext(false)
+                                  setShowNotes(false)
+                                  setShowQuiz(true)
+                                  }}>Quiz</button>
+                                </div>
+  
+  
+                                {showContext && (
+                                  <p className='text-justify my-5'>{context}</p>
+                                )}
+  
+                                {showNotes && (
+                                  <div>
+                                    {materialNotes.map((material) => (
+                                      <div className='my-10'>
+                                        <p className='font-medium mcolor-700'>Question: <span className='mcolor-900 font-medium'>{material.question}</span></p>
+                                        <p className='font-medium mcolor-700 mt-1'>Answer: <span className='mcolor-900 font-medium'>{material.answer}</span></p>
+                                      </div>
+                                    ))}
+                                    <div className='mb-[-1.5rem]'></div>
+                                  </div>
+                                )}
+  
+                                {showQuiz && (
+                                  <div className='mt-5'>
+                                    <br />
+                                    {materialMCQ.map((material, quesIndex) => (
+                                      <div className={(material.quizType === 'MCQA' || material.quizType === 'Identification') ? 'mb-14' : material.quizType !== 'ToF' ? 'mt-10' : 'mb-5'} key={material.id}>
+                                        <p className='mt-2 mcolor-900'>{quesIndex + 1}. {material.question} - <span className='mcolor-800 font-bold'>{material.answer}</span></p>
+  
+                                        {material.quizType === 'MCQA' && (
+                                          <p className='mt-2 mb-1'>Choices: </p>
+                                        )}
+  
+                                        <ul className='grid-result gap-3' style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)' }}>
+                                          {materialMCQChoices
+                                            .filter((choice) => (choice.QuesAnId === material.id && material.quizType === 'MCQA'))
+                                            .map((choice, index) => (
+                                              <li key={index} className='mbg-300 text-center py-1 rounded'>{choice.choice}</li>
+                                            ))}
+                                        </ul>
+  
+                                      </div>
+                                    ))}
+                                  </div>
+                                )}
+  
+                              </div>
+                            </div>
+                          )}
+                        
                         </div>
                       </div>
-                      })
-                    }
-                  </ul>
-                </div>
-
-
-                {/* user sharing */}
-                {showModal && (
-                  <div className={`absolute top-0 modal-bg left-0 w-full h-full`}>
-                    <div className='flex items-center justify-center h-full'>
-                      <div className='relative mbg-100 h-[75vh] w-1/2 z-10 relative py-5 px-10 rounded-[5px]' style={{overflowY: 'auto'}}>
-                        
-                        <button className='absolute right-5 top-5 font-medium text-xl' onClick={() => {
-                          setShowMaterialDetails(false)
-                          setShowPresentStudyMaterials(false)
-                          setShowModal(false)
-                        }}>&#10006;</button>
-
-                        {showPresentStudyMaterials && (
-                          <div>
-                            <p class='text-lg text-color-900 font-medium mb-5 mt-10 mcolor-900 text-center'>Materials that are present in your personal room and those you contributed within collaborative workspaces:</p>
-
-                            <br />
-                            <div className='flex items-center justify-center mb-2'>
-                              <Link to={'/main/library/generate-quiz'}>
-                                <button className='mbg-700 mcolor-100 px-5 py-2 rounded border-thin-800'>Generate a new Study Material</button>
-                              </Link>
+                    </div>
+                  )}
+  
+  
+  
+                  {/* user choosing to bookmark */}
+                  {showBookmarkModal && (
+                    <div className={`absolute top-0 modal-bg left-0 w-full h-full`}>
+                      <div className='flex items-center justify-center h-full'>
+                        <div className='relative mbg-100 h-[60vh] w-1/3 z-10 relative py-5 px-5 rounded-[5px]' style={{overflowY: 'auto'}}>
+  
+                          <button className='absolute right-5 top-5 font-medium text-xl' onClick={() => {
+                            setShowBookmarkModal(false)
+                            setChooseGroupRoom(false)
+                            setChooseRoom(false)
+                            setShowCreateGroupInput(false);
+                          }}>&#10006;</button>
+  
+                        {chooseRoom && userId !== undefined && (
+                          <div className='flex h-full py-10'>
+                            <div className='w-full'>
+                              <div>
+                                <p className='text-lg mb-5'>Bookmark to: </p>
+                                <div className='flex flex-col gap-4'>
+  
+                                  <button className='mbg-300 py-4 rounded text-md font-medium' onClick={() => bookmarkMaterial(currentSharedMaterialIndex, null, 'Personal')}>Personal Study Room</button>
+                                  <button className='mbg-300 py-4 rounded text-md font-medium' onClick={() => {
+                                    setChooseRoom(false)
+                                    setChooseGroupRoom(true)
+                                  }}>Group Study Room</button>
+                                </div>
+                              </div>
                             </div>
-                            <br />
-
-
-                            <p>Personal: </p>
-                            {personalStudyMaterials.map((material, index) => {
-                              const category = personalStudyMaterialsCategory[index]?.category || 'Category not available';
-
-                              return <div key={index} className='my-3 mbg-200 border-thin-800 p-4 rounded flex items-center justify-between'>
-                                  <div>
-                                    <p className='font-medium text-lg'>Title: {material.title}</p>
-                                    <p className='text-sm mt-1'>Category: {category}</p>
-                                    
-                                  </div>
-
-                                  <div className='flex items-center gap-3'>
-                                    <button className='mbg-100 mcolor-900 border-thin-800 px-5 py-2 rounded' onClick={() => viewStudyMaterialDetails(index, 'personal', 'not filtered', category)} >View</button>
-                                    {/* <button className='mbg-700 mcolor-100 px-5 py-2 rounded' onClick={() => shareMaterial(index, 'personal')}>Share</button> */}
-                                  </div>
-                                </div>
-                            })}
-
-                            <br />
-
-
-                            <p>Group: </p>
-                            {groupStudyMaterials.map((material, index) => {
-                              const category = groupStudyMaterialsCategory[index]?.category || 'Category not available';
-
-                              return <div key={index} className='my-3 mbg-200 border-thin-800 p-4 rounded flex items-center justify-between'>
-                                  <div>
-                                    <p className='font-medium text-lg'>Title: {material.title}</p>
-                                    <p className='text-sm mt-1'>Category: {category}</p>
-
-                                  </div>
-
-                                  <div className='flex items-center gap-3'>
-                                    <button className='mbg-100 mcolor-900 border-thin-800 px-5 py-2 rounded' onClick={() => viewStudyMaterialDetails(index, 'group', 'not filtered', category)}>View</button>
-                                    {/* <button className='mbg-700 mcolor-100 px-5 py-2 rounded' onClick={() => shareMaterial(index, 'Group')}>Share</button> */}
-                                  </div>
-                                </div>
-                            })}
                           </div>
                         )}
-
-
-
-                        {showMaterialDetails && (
+  
+                        {chooseGroupRoom && (
                           <div>
-
-                            {enableBackButton && (
+  
+                            {userId !== undefined && (
                               <button className='mbg-200 mcolor-900 rounded px-4 py-1 rounded border-thin-800' onClick={() => {
-                                setShowMaterialDetails(false)
-                                setShowPresentStudyMaterials(true)
+                                setChooseGroupRoom(false)
+                                setChooseRoom(true)
                               }}>Back</button>
                             )}
-
-
-
-                            <div className='my-6'>
-                              <p className='mcolor-900 text-center text-xl font-medium'>{currentMaterialTitle} from {currentMaterialCategory}</p>
-                              
-                              <div className='flex items-center justify-between my-5 gap-1'>
-                                <button className='border-thin-800 w-full rounded py-2' onClick={() => {
-                                  setShowQuiz(false)
-                                  setShowNotes(false)
-                                  setShowContext(true)
-                                }}>Context</button>
-                                <button className='border-thin-800 w-full rounded py-2 mbg-700 mcolor-100' onClick={() => {
-                                  setShowContext(false)
-                                  setShowQuiz(false)
-                                  setShowNotes(true)
-                                }}>Notes</button>
-                                <button className='border-thin-800 w-full rounded py-2 mbg-700 mcolor-100' onClick={() => {
-                                setShowContext(false)
-                                setShowNotes(false)
-                                setShowQuiz(true)
-                                }}>Quiz</button>
-                              </div>
-
-
-                              {showContext && (
-                                <p className='text-justify my-5'>{context}</p>
-                              )}
-
-                              {showNotes && (
-                                <div>
-                                  {materialNotes.map((material) => (
-                                    <div className='my-10'>
-                                      <p className='font-medium mcolor-700'>Question: <span className='mcolor-900 font-medium'>{material.question}</span></p>
-                                      <p className='font-medium mcolor-700 mt-1'>Answer: <span className='mcolor-900 font-medium'>{material.answer}</span></p>
-                                    </div>
-                                  ))}
-                                  <div className='mb-[-1.5rem]'></div>
-                                </div>
-                              )}
-
-                              {showQuiz && (
-                                <div className='mt-5'>
-                                  <br />
-                                  {materialMCQ.map((material, quesIndex) => (
-                                    <div className={(material.quizType === 'MCQA' || material.quizType === 'Identification') ? 'mb-14' : material.quizType !== 'ToF' ? 'mt-10' : 'mb-5'} key={material.id}>
-                                      <p className='mt-2 mcolor-900'>{quesIndex + 1}. {material.question} - <span className='mcolor-800 font-bold'>{material.answer}</span></p>
-
-                                      {material.quizType === 'MCQA' && (
-                                        <p className='mt-2 mb-1'>Choices: </p>
-                                      )}
-
-                                      <ul className='grid-result gap-3' style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)' }}>
-                                        {materialMCQChoices
-                                          .filter((choice) => (choice.QuesAnId === material.id && material.quizType === 'MCQA'))
-                                          .map((choice, index) => (
-                                            <li key={index} className='mbg-300 text-center py-1 rounded'>{choice.choice}</li>
-                                          ))}
-                                      </ul>
-
-                                    </div>
-                                  ))}
-                                </div>
-                              )}
-
-                            </div>
-                          </div>
-                        )}
-                      
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-
-
-                {/* user choosing to bookmark */}
-                {showBookmarkModal && (
-                  <div className={`absolute top-0 modal-bg left-0 w-full h-full`}>
-                    <div className='flex items-center justify-center h-full'>
-                      <div className='relative mbg-100 h-[60vh] w-1/3 z-10 relative py-5 px-5 rounded-[5px]' style={{overflowY: 'auto'}}>
-
-                        <button className='absolute right-5 top-5 font-medium text-xl' onClick={() => {
-                          setShowBookmarkModal(false)
-                          setChooseGroupRoom(false)
-                          setChooseRoom(false)
-                          setShowCreateGroupInput(false);
-                        }}>&#10006;</button>
-
-                      {chooseRoom && userId !== undefined && (
-                        <div className='flex h-full py-10'>
-                          <div className='w-full'>
-                            <div>
-                              <p className='text-lg mb-5'>Bookmark to: </p>
-                              <div className='flex flex-col gap-4'>
-
-                                <button className='mbg-300 py-4 rounded text-md font-medium' onClick={() => bookmarkMaterial(currentSharedMaterialIndex, null, 'Personal')}>Personal Study Room</button>
-                                <button className='mbg-300 py-4 rounded text-md font-medium' onClick={() => {
-                                  setChooseRoom(false)
-                                  setChooseGroupRoom(true)
-                                }}>Group Study Room</button>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      )}
-
-                      {chooseGroupRoom && (
-                        <div>
-
-                          {userId !== undefined && (
-                            <button className='mbg-200 mcolor-900 rounded px-4 py-1 rounded border-thin-800' onClick={() => {
-                              setChooseGroupRoom(false)
-                              setChooseRoom(true)
-                            }}>Back</button>
-                          )}
-
-                          <div className='mt-5 flex items-center justify-center'>
-                            {/* back here */}
-
-                            {showCreateGroupInput === false ? (
-                              <button className={`px-4 py-2 rounded mbg-700 mcolor-100 ${userId === undefined && 'mt-5'}`} onClick={() => {
-                                setShowCreateGroupInput(true)
-                              }}>Create a group</button>
-                            ) : (
-                              <div className='flex items-center gap-3'>
-                                <div className='my-3 border-thin-800 rounded'>
-                                  <input type="text" placeholder='Group name...' className='w-full py-2 rounded text-center' value={groupNameValue !== '' ? groupNameValue : ''} onChange={(event) => {
-                                    setGroupNameValue(event.target.value)
-                                  }} />
-                                </div>
-                                <button className='px-4 py-2 rounded mbg-700 mcolor-100' onClick={createGroupBtn}>Create</button>
-                                <button className='px-4 py-2 rounded mbg-100 mcolor-900 border-thin-800' onClick={() => setShowCreateGroupInput(false)}>Cancel</button>
-                              </div>
-                            )}
-
-                            
-                          </div>
-
-                          {showCreateGroupInput === false && (
-                            groupList.slice().sort((a, b) => b.id - a.id).map(({ id, groupName}) => (
-                              <div key={id} className='shadows mcolor-900 rounded-[5px] p-5 my-6 mbg-100 flex items-center justify-between relative'>
-
-
-                                <p className='px-1'>{groupName}</p>
-                              <button  className='px-2 py-2 mbg-700 mcolor-100 rounded text-sm' onClick={() => bookmarkMaterial(currentSharedMaterialIndex, id, 'Group')}>Bookmark here</button>
-
-                                {/* {expandedGroupId === id && (
-
-                                  <div className='absolute right-0 bottom-0 px-7 mb-[-114px] mbg-700 mcolor-100 rounded pt-3 pb-4 opacity-80'>
-                                    <Link to={`/main/group/study-area/${id}`}>
-                                      <p className='pt-1'>Study Area</p>
-                                    </Link>
-                                    <Link to={`/main/group/tasks/${id}`}>
-                                      <p className='pt-1'>Tasks</p>
-                                    </Link>
-                                    <Link to={`/main/group/dashboard/${id}`}>
-                                      <p className='pt-1'>Dashboard</p>
-                                    </Link>
+  
+                            <div className='mt-5 flex items-center justify-center'>
+                              {/* back here */}
+  
+                              {showCreateGroupInput === false ? (
+                                <button className={`px-4 py-2 rounded mbg-700 mcolor-100 ${userId === undefined && 'mt-5'}`} onClick={() => {
+                                  setShowCreateGroupInput(true)
+                                }}>Create a group</button>
+                              ) : (
+                                <div className='flex items-center gap-3'>
+                                  <div className='my-3 border-thin-800 rounded'>
+                                    <input type="text" placeholder='Group name...' className='w-full py-2 rounded text-center' value={groupNameValue !== '' ? groupNameValue : ''} onChange={(event) => {
+                                      setGroupNameValue(event.target.value)
+                                    }} />
                                   </div>
-                                )}  */}
-
-                              </div>
-                            ))
-                          )}
-                          
-                        </div>
-                      )}
+                                  <button className='px-4 py-2 rounded mbg-700 mcolor-100' onClick={createGroupBtn}>Create</button>
+                                  <button className='px-4 py-2 rounded mbg-100 mcolor-900 border-thin-800' onClick={() => setShowCreateGroupInput(false)}>Cancel</button>
+                                </div>
+                              )}
+  
+                              
+                            </div>
+  
+                            {showCreateGroupInput === false && (
+                              groupList.slice().sort((a, b) => b.id - a.id).map(({ id, groupName}) => (
+                                <div key={id} className='shadows mcolor-900 rounded-[5px] p-5 my-6 mbg-100 flex items-center justify-between relative'>
+  
+  
+                                  <p className='px-1'>{groupName}</p>
+                                <button  className='px-2 py-2 mbg-700 mcolor-100 rounded text-sm' onClick={() => bookmarkMaterial(currentSharedMaterialIndex, id, 'Group')}>Bookmark here</button>
+  
+                                  {/* {expandedGroupId === id && (
+  
+                                    <div className='absolute right-0 bottom-0 px-7 mb-[-114px] mbg-700 mcolor-100 rounded pt-3 pb-4 opacity-80'>
+                                      <Link to={`/main/group/study-area/${id}`}>
+                                        <p className='pt-1'>Study Area</p>
+                                      </Link>
+                                      <Link to={`/main/group/tasks/${id}`}>
+                                        <p className='pt-1'>Tasks</p>
+                                      </Link>
+                                      <Link to={`/main/group/dashboard/${id}`}>
+                                        <p className='pt-1'>Dashboard</p>
+                                      </Link>
+                                    </div>
+                                  )}  */}
+  
+                                </div>
+                              ))
+                            )}
                             
-
-
-
-                      </div>
-                    </div>
-                  </div>
-                )}
-              </div>
-            )}
-
-            {showAccountSettings && (
-              <div>
-                <div className='shadows p-5 mbg-100 rounded my-5'>
-                  <form className='flex items-center justify-center px-8 gap-8 pt-5'>
-                  <div className='p-2 rounded-full' {...getRootProps()} style={{ width: '220px', cursor: 'pointer', border: '3px dashed #888' }}>
-                    <input {...getInputProps()} name='image' type='file' />
-                    {acceptedFiles.length === 0 ? (
-                      <img src={`${SERVER_URL}/images/${userData.userImage}`} className='rounded-full' style={{ width: '200px', objectFit: 'cover', height: '200px' }} alt="" />
-                    ) : (
-                      <>
-                        <img src={URL.createObjectURL(acceptedFiles[0])} className='rounded-full' style={{ width: '200px', objectFit: 'cover', height: '200px' }} alt="" />
-                      </>
-                    )}
-                  </div>
-
-                    <div className=''>
-                      <p className='text-2xl mb-1 font-medium mcolor-800 mb-1'>Upload a new photo</p>
-                      <p className='text-sm opacity-70 mb-4'>Drag and drop an image to the photo or click to select one.</p>
-                      <button className='mbg-700 mcolor-100 px-10 py-2 rounded' onClick={(e) => updateUserImage(e)}>Update</button>
-                    </div>
-                  </form>  
-                  
-                  {!error && msg !== '' && (
-                    <div className='green-bg text-center mt-5 rounded py-3 w-full'>
-                      {msg}
-                    </div>
-                  )}
-
-                  {error && msg !== '' && (
-                    <div className='bg-red mcolor-100 text-center mt-5 rounded py-3 w-full'>
-                      {msg}
-                    </div>
-                  )}
-
-
-                  {/* Changing information */}
-                  <br /><br /><br />
-                  <p className='text-xl mcolor-800 font-medium'>Change your information here: </p>
-
-                  <ul className='grid grid-cols-2 gap-5 my-5'>
-                    <li className='w-full'>
-                      <p className='text-md'>Username</p>
-                      <input
-                        type="text"
-                        className='border-medium-800 w-full py-2 rounded px-5'
-                        value={userData.username || ''}
-                        onChange={(event) => setUserData({...userData, username: event.target.value})}
-                      />
-
-
-                    </li>
-                    <li className='w-full'>
-                      <p className='text-md'>Email</p>
-                      <input type="text" disabled className='border-medium-800 w-full py-2 rounded mbg-300 px-5' value={userData.email} />
-                    </li>
-                    
-                    <li className='w-full'>
-                      <p className='text-md'>Study Target</p>
-                      <input type="text" disabled className='border-medium-800 w-full py-2 rounded mbg-300 px-5' value={userData.studyProfTarget} />
-                    </li>
-
-
-                    <li className='w-full'>
-                      <p className='text-md'>Type of Learner</p>
-                      <select
-                        name=""
-                        id=""
-                        className='border-medium-800 w-full py-2 rounded px-5'
-                        value={userData.typeOfLearner || ''}
-                        onChange={(event) => setUserData({...userData, typeOfLearner: event.target.value}) || ''}
-                      >
-                        {/* Dynamic default option based on typeOfLearner */}
-                        {userData.typeOfLearner && (
-                          <option key={userData.typeOfLearner} value={userData.typeOfLearner}>
-                            {userData.typeOfLearner}
-                          </option>
+                          </div>
                         )}
-
-                        {/* Other options excluding the default value */}
-                        {['Auditory', 'Visual', 'Kinesthetic'].map((option) => (
-                          option !== userData.typeOfLearner && (
-                            <option key={option} value={option}>
-                              {option}
+                              
+  
+  
+  
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+  
+              {showAccountSettings && (
+                <div>
+                  <div className='shadows p-5 mbg-100 rounded my-5'>
+                    <form className='flex items-center justify-center px-8 gap-8 pt-5'>
+                    <div className='p-2 rounded-full' {...getRootProps()} style={{ width: '220px', cursor: 'pointer', border: '3px dashed #888' }}>
+                      <input {...getInputProps()} name='image' type='file' />
+                      {acceptedFiles.length === 0 ? (
+                        <img src={`${SERVER_URL}/images/${userData.userImage}`} className='rounded-full' style={{ width: '200px', objectFit: 'cover', height: '200px' }} alt="" />
+                      ) : (
+                        <>
+                          <img src={URL.createObjectURL(acceptedFiles[0])} className='rounded-full' style={{ width: '200px', objectFit: 'cover', height: '200px' }} alt="" />
+                        </>
+                      )}
+                    </div>
+  
+                      <div className=''>
+                        <p className='text-2xl mb-1 font-medium mcolor-800 mb-1'>Upload a new photo</p>
+                        <p className='text-sm opacity-70 mb-4'>Drag and drop an image to the photo or click to select one.</p>
+                        <button className='mbg-700 mcolor-100 px-10 py-2 rounded' onClick={(e) => updateUserImage(e)}>Update</button>
+                      </div>
+                    </form>  
+                    
+                    {!error && msg !== '' && (
+                      <div className='green-bg text-center mt-5 rounded py-3 w-full'>
+                        {msg}
+                      </div>
+                    )}
+  
+                    {error && msg !== '' && (
+                      <div className='bg-red mcolor-100 text-center mt-5 rounded py-3 w-full'>
+                        {msg}
+                      </div>
+                    )}
+  
+  
+                    {/* Changing information */}
+                    <br /><br /><br />
+                    <p className='text-xl mcolor-800 font-medium'>Change your information here: </p>
+  
+                    <ul className='grid grid-cols-2 gap-5 my-5'>
+                      <li className='w-full'>
+                        <p className='text-md'>Username</p>
+                        <input
+                          type="text"
+                          className='border-medium-800 w-full py-2 rounded px-5'
+                          value={userData.username || ''}
+                          onChange={(event) => setUserData({...userData, username: event.target.value})}
+                        />
+  
+  
+                      </li>
+                      <li className='w-full'>
+                        <p className='text-md'>Email</p>
+                        <input type="text" disabled className='border-medium-800 w-full py-2 rounded mbg-300 px-5' value={userData.email} />
+                      </li>
+                      
+                      <li className='w-full'>
+                        <p className='text-md'>Study Target</p>
+                        <input type="text" disabled className='border-medium-800 w-full py-2 rounded mbg-300 px-5' value={userData.studyProfTarget} />
+                      </li>
+  
+  
+                      <li className='w-full'>
+                        <p className='text-md'>Type of Learner</p>
+                        <select
+                          name=""
+                          id=""
+                          className='border-medium-800 w-full py-2 rounded px-5'
+                          value={userData.typeOfLearner || ''}
+                          onChange={(event) => setUserData({...userData, typeOfLearner: event.target.value}) || ''}
+                        >
+                          {/* Dynamic default option based on typeOfLearner */}
+                          {userData.typeOfLearner && (
+                            <option key={userData.typeOfLearner} value={userData.typeOfLearner}>
+                              {userData.typeOfLearner}
                             </option>
-                          )
-                        ))}
-                      </select>
-                    </li>
-
-
-
-
-                  </ul>
-
-                  <div className='flex items-center justify-end w-full mt-10'>
-                    <button className='mbg-700 mcolor-100 py-2 px-5 rounded' onClick={updateUserInformation}>Update Information Details</button>
+                          )}
+  
+                          {/* Other options excluding the default value */}
+                          {['Auditory', 'Visual', 'Kinesthetic'].map((option) => (
+                            option !== userData.typeOfLearner && (
+                              <option key={option} value={option}>
+                                {option}
+                              </option>
+                            )
+                          ))}
+                        </select>
+                      </li>
+  
+  
+  
+  
+                    </ul>
+  
+                    <div className='flex items-center justify-end w-full mt-10'>
+                      <button className='mbg-700 mcolor-100 py-2 px-5 rounded' onClick={updateUserInformation}>Update Information Details</button>
+                    </div>
                   </div>
                 </div>
-              </div>
-            )}
-
-            {showPasswordSecurity && (
-              <div>
-                <div className='shadows p-5 mbg-100 rounded my-5'>
-
-                    <form className='px-8 gap-8 py-5'>
-                      <p className='text-2xl mcolor-800 font-medium mb-5'>Resetting Password</p>
-                      <p className='mcolor-800'>
-                        Begin the password reset process by entering your email address below. Our system will quickly initiate the necessary steps to secure your account. Once submitted, a confirmation email will be sent to the provided address, containing instructions on how to efficiently reset your password.
-                      </p>
-
-                      <div className='flex items-center justify-end mt-5'>
-                        <Link to={'/verify-email'} className=' py-2 px-5 mbg-700 mcolor-100 rounded'>
-                          Reset Password
-                        </Link>
-                      </div>
-                    </form>
-          
-                </div>
-              </div>
-            )}
-
-            {showAccountDeletion && (
-              <div>
-                <div className='shadows p-5 mbg-100 rounded my-5'>
-
-                  <form className='px-8 gap-8 py-5'>
-                    <p className='text-2xl mcolor-800 font-medium mb-5'>Account Deletion</p>
-                    <p className='mcolor-800'>
-                      Keep in mind that this action is irreversible and will result in the removal of all your information from our system.
-                    </p>
-
-                    <div className='flex items-center justify-end mt-5'>
-                      <button
-                        className='mbg-700 mcolor-100 px-8 py-2 rounded'
-                        onClick={(e) => {
-                        e.preventDefault()
-                        setShowAccountDeletionInputPass(true)}
-                        }>
-                        Proceed
-                      </button>
-                    </div>
-                  </form>
-
-                  {!error && msg !== '' && (
-                    <div className='green-bg text-center mt-5 rounded py-3 w-full'>
-                      {msg}
-                    </div>
-                  )}
-
-                  {error && msg !== '' && (
-                    <div className='bg-red mcolor-100 text-center mt-5 rounded py-3 w-full'>
-                      {msg}
-                    </div>
-                  )}
-
-                  {showAccountDeletionInputPass && (
-                    <div className='w-full rounded flex items-center justify-center my-5'>
-                      <div className='w-1/2 border-thin-800 rounded p-5 mbg-200'>
-                        <p className='text-center font-medium text-xl mt-2'>Password Confirmation</p>
-
-                        <div className='flex relative mt-6'>
-                          <input
-                            autoComplete='no'
-                            placeholder='Enter password...'
-                            type={showPassword ? 'text' : 'password'}
-                            className='w-full border-thin-800 rounded px-5 py-2'
-                            value={passwordVal !== '' ? passwordVal : ''}
-                            onChange={(event) => setPasswordVal(event.target.value)}
-                          />
-                          <button
-                            type="button"
-                            className='ml-2 focus:outline-none absolute right-2 bottom-2 mcolor-800'
-                            onClick={togglePasswordVisibility}
-                          >
-                            {showPassword ? <VisibilityOffIcon /> : <VisibilityIcon />}
-                          </button>
+              )}
+  
+              {showPasswordSecurity && (
+                <div>
+                  <div className='shadows p-5 mbg-100 rounded my-5'>
+  
+                      <form className='px-8 gap-8 py-5'>
+                        <p className='text-2xl mcolor-800 font-medium mb-5'>Resetting Password</p>
+                        <p className='mcolor-800'>
+                          Begin the password reset process by entering your email address below. Our system will quickly initiate the necessary steps to secure your account. Once submitted, a confirmation email will be sent to the provided address, containing instructions on how to efficiently reset your password.
+                        </p>
+  
+                        <div className='flex items-center justify-end mt-5'>
+                          <Link to={'/verify-email'} className=' py-2 px-5 mbg-700 mcolor-100 rounded'>
+                            Reset Password
+                          </Link>
                         </div>
-
-
-                        <button className='w-full mbg-700 mcolor-100 rounded py-2 my-4' onClick={(e) => deleteAccount(e)}>
-                          Confirm
+                      </form>
+            
+                  </div>
+                </div>
+              )}
+  
+              {showAccountDeletion && (
+                <div>
+                  <div className='shadows p-5 mbg-100 rounded my-5'>
+  
+                    <form className='px-8 gap-8 py-5'>
+                      <p className='text-2xl mcolor-800 font-medium mb-5'>Account Deletion</p>
+                      <p className='mcolor-800'>
+                        Keep in mind that this action is irreversible and will result in the removal of all your information from our system.
+                      </p>
+  
+                      <div className='flex items-center justify-end mt-5'>
+                        <button
+                          className='mbg-700 mcolor-100 px-8 py-2 rounded'
+                          onClick={(e) => {
+                          e.preventDefault()
+                          setShowAccountDeletionInputPass(true)}
+                          }>
+                          Proceed
                         </button>
                       </div>
-                    </div>
-                  )}
-                  <br />
+                    </form>
+  
+                    {!error && msg !== '' && (
+                      <div className='green-bg text-center mt-5 rounded py-3 w-full'>
+                        {msg}
+                      </div>
+                    )}
+  
+                    {error && msg !== '' && (
+                      <div className='bg-red mcolor-100 text-center mt-5 rounded py-3 w-full'>
+                        {msg}
+                      </div>
+                    )}
+  
+                    {showAccountDeletionInputPass && (
+                      <div className='w-full rounded flex items-center justify-center my-5'>
+                        <div className='w-1/2 border-thin-800 rounded p-5 mbg-200'>
+                          <p className='text-center font-medium text-xl mt-2'>Password Confirmation</p>
+  
+                          <div className='flex relative mt-6'>
+                            <input
+                              autoComplete='no'
+                              placeholder='Enter password...'
+                              type={showPassword ? 'text' : 'password'}
+                              className='w-full border-thin-800 rounded px-5 py-2'
+                              value={passwordVal !== '' ? passwordVal : ''}
+                              onChange={(event) => setPasswordVal(event.target.value)}
+                            />
+                            <button
+                              type="button"
+                              className='ml-2 focus:outline-none absolute right-2 bottom-2 mcolor-800'
+                              onClick={togglePasswordVisibility}
+                            >
+                              {showPassword ? <VisibilityOffIcon /> : <VisibilityIcon />}
+                            </button>
+                          </div>
+  
+  
+                          <button className='w-full mbg-700 mcolor-100 rounded py-2 my-4' onClick={(e) => deleteAccount(e)}>
+                            Confirm
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                    <br />
+                  </div>
                 </div>
-              </div>
-            )}
-
+              )}
+  
+            </div>
           </div>
+  
+  
+  
+      
         </div>
-
-
-
-    
+  
       </div>
-
-    </div>
-  )
+    )
+  }
 }

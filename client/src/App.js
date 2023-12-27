@@ -86,6 +86,7 @@ function App() {
               <Route path='/data-submission' element={<DataSubmission/>} />
               <Route path='/data-result' element={<VAKResult/>} />
 
+
               {/* Main Page Route */}
               <Route path='/main' element={<MainPage/>} />
               <Route path='/users/:id/verify/:token' element={<EmailVerification/>} />
