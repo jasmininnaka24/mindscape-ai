@@ -10,7 +10,12 @@ import ClearAllIcon from '@mui/icons-material/ClearAll';
 
 import io from 'socket.io-client';
 import { Link } from 'react-router-dom';
-const socket = io.connect("https://mindscapeserver.jassywaaa.repl.co");
+
+const socket = io("https://mindscapeserver.jassywaaa.repl.co", {
+  credentials: true,
+  transports: ['websocket'],
+});
+
 
 
 export const DiscussionForums = () => {
@@ -267,13 +272,6 @@ export const DiscussionForums = () => {
     socket.emit('leave-discussion-forum-room', { room: discussionForumRoom, roomList: updatedRoomList });
 
   };
-  
-  function refreshPage() {
-    setTimeout(()=>{
-        window.location.reload(false);
-    }, 0);
-    console.log('page to reload')
-}
 
   
 
@@ -293,7 +291,7 @@ export const DiscussionForums = () => {
 
               <ul className='mcolor-900 w-full'>
                 <li className='px-6 my-1 py-2 text-lg'>
-                  <Link to={{pathname:"/main"}} onClick={refreshPage}>
+                  <Link to={'/main'}>
                     <ArrowBackIcon className='mr-3' />Back to main
                   </Link>
                 </li>

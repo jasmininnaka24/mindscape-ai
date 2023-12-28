@@ -15,10 +15,13 @@ app.use(express.json());
 const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
-    origin: "http://localhost:3000",
+    origin: "https://ffe7-110-54-158-204.ngrok-free.app",
     methods: ["GET", "POST"],
-  }
+    credentials: true
+  },
 });
+
+
 
 app.use(express.static(path.join(__dirname, 'client/build')));
 app.use('/images', express.static(path.join(__dirname, 'public/images')));

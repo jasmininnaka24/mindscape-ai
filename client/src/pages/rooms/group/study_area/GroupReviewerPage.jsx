@@ -11,8 +11,10 @@ import axios from 'axios';
 import { useUser } from '../../../../UserContext';
 import { fetchUserData } from '../../../../userAPI';
 
-const socket = io.connect("https://mindscapeserver.jassywaaa.repl.co");
-
+const socket = io("https://mindscapeserver.jassywaaa.repl.co", {
+  credentials: true,
+  transports: ['websocket'],
+});
 
 
 

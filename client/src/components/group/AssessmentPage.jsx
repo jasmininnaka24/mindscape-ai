@@ -11,7 +11,10 @@ import { useUser } from '../../UserContext';
 import { BarChartForAnalysis } from '../charts/BarChartForAnalysis';
 
 
-const socket = io.connect("https://mindscapeserver.jassywaaa.repl.co");
+const socket = io("https://mindscapeserver.jassywaaa.repl.co", {
+  credentials: true,
+  transports: ['websocket'],
+});
 
 
 export const AssessmentPage = (props) => {
