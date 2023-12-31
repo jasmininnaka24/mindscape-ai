@@ -1,14 +1,12 @@
 import axios from 'axios';
 import React from 'react'
 import DoneIcon from '@mui/icons-material/Done';
-import { useUser } from '../../UserContext';
+import { SERVER_URL } from '../../urlConfig';
 
 
 export const CompletedTask = (props) => {
 
   const { taskId, listOfTasks, setListOfTasks, setTask, setDueDate, setTaskID } = props;
-
-  const { SERVER_URL } = useUser()
 
   const taskCompleted = async (taskId) => {
       

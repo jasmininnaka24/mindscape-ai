@@ -1,16 +1,17 @@
 import React, { useEffect, useState } from 'react'
 import { Navbar } from '../../../../components/navbar/logged_navbar/navbar'
-import { Navigate, useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import axios from 'axios';
 import { Link } from 'react-router-dom';
 import { useUser } from '../../../../UserContext';
 import PushPinIcon from '@mui/icons-material/PushPin';
+import { SERVER_URL } from '../../../../urlConfig';
 
 
 export const PersonalReviewerPage = () => {
 
   const { materialId } = useParams();
-  const { user, SERVER_URL } = useUser()
+  const { user } = useUser()
   const UserId = user?.id;
 
   const navigate = useNavigate()

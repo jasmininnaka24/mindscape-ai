@@ -4,22 +4,20 @@ import { Link } from 'react-router-dom';
 import CheckIcon from '@mui/icons-material/Check';
 import io from 'socket.io-client';
 import ScrollToBottom from "react-scroll-to-bottom";
-import { useUser } from '../../UserContext';
+import { SERVER_URL } from '../../urlConfig';
 
 
 // chart
 import { BarChartForAnalysis } from '../charts/BarChartForAnalysis';
 
 
-const socket = io("https://mindscapeserver.jassywaaa.repl.co", {
+const socket = io(SERVER_URL, {
   credentials: true,
   transports: ['websocket'],
 });
 
 
 export const AssessmentPage = (props) => {
-
-  const { SERVER_URL } = useUser();
 
   const { groupId, materialId, username, userId, userListAssessment, setUserListAssessment, selectedAssessmentAnswer, setSelectedAssessmentAnswer, assessementRoom, isRunning, setIsRunning, seconds, setSeconds, setQA, extractedQA, shuffledChoices, setShuffledChoices, isSubmittedButtonClicked, setIsSubmittedButtonClicked, idOfWhoSubmitted, setIdOfWhoSubmitted, usernameOfWhoSubmitted, setUsernameOfWhoSubmitted, score, setScore, isSubmitted, setIsSubmitted, isAssessmentDone, setIsAssessmentDone, showSubmittedAnswerModal, setShowSubmittedAnswerModal, showTexts, setShowTexts, showAnalysis, setShowAnalysis, showAssessment, setShowAssessment, overAllItems, setOverAllItems, preAssessmentScore, setPreAssessmentScore, assessmentScore, setAssessmentScore, assessmentImp, setAssessmentImp, assessmentScorePerf, setAssessmentScorePerf, completionTime, setCompletionTime, confidenceLevel, setConfidenceLevel, overAllPerformance, setOverAllPerformance, assessmentCountMoreThanOne, setAssessmentCountMoreThanOne, generatedAnalysis, setGeneratedAnalysis, shuffledChoicesAssessment, setShuffledChoicesAssessment, extractedQAAssessment, setQAAssessment, assessmentUsersChoices, setAssessmentUsersChoices, message, setMessage, messageList, setMessageList,isStartAssessmentButtonStarted, setIsStartAssessmentButtonStarted, setShowPreJoin, setIsJoined, setShowAssessmentPage, inviteMembers, successfullyInvited, successfullyInviting } = props;
 

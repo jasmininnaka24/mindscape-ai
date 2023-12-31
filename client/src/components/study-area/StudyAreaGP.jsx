@@ -9,6 +9,7 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import BorderColorIcon from '@mui/icons-material/BorderColor';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 import { SearchFunctionality } from '../search/SearchFunctionality';
+import { SERVER_URL } from '../../urlConfig';
 
 
 import { useUser } from '../../UserContext';
@@ -24,7 +25,7 @@ export const StudyAreaGP = (props) => {
   const groupNameId = id;
 
 
-  const { user, SERVER_URL } = useUser();
+  const { user } = useUser();
 
   const UserId = user?.id;
 

@@ -6,10 +6,11 @@ import { useUser } from '../../UserContext';
 import { fetchUserData } from '../../userAPI';
 import { useNavigate, useParams } from 'react-router-dom';
 import PushPinIcon from '@mui/icons-material/PushPin';
+import { SERVER_URL } from '../../urlConfig';
 
 
 
-const socket = io("https://mindscapeserver.jassywaaa.repl.co", {
+const socket = io(SERVER_URL, {
   credentials: true,
   transports: ['websocket'],
 });
@@ -18,7 +19,7 @@ const socket = io("https://mindscapeserver.jassywaaa.repl.co", {
 
 export const PreJoinPage = (props) => {
 
-  const { user, SERVER_URL } = useUser();
+  const { user } = useUser();
   const { groupId, materialId } = useParams();
   const navigate = useNavigate()
 

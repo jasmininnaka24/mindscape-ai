@@ -5,6 +5,7 @@ import { Link } from 'react-router-dom'
 import { useUser } from '../../../UserContext'
 import DeleteIcon from '@mui/icons-material/Delete';
 import { fetchUserData } from '../../../userAPI'
+import { SERVER_URL } from '../../../urlConfig';
 
 
 export const VirtualLibraryMain = () => {
@@ -36,7 +37,6 @@ export const VirtualLibraryMain = () => {
   const [currentFilteredCategoryUsers, setCurrentFilteredCategoryUsers] = useState('');
   const [currentFilteredCategoryBookmarks, setCurrentFilteredCategoryBookmarks] = useState('');
 
-  const [filteredStudyMaterialsByCategoryUsers, setFilteredStudyMaterialsByCategoryUsers] = useState([]);
 
   const [groupNameValue, setGroupNameValue] = useState('');
 
@@ -79,7 +79,7 @@ export const VirtualLibraryMain = () => {
   const [error, setError] = useState(false);
   const [loading, setLoading] = useState(true);
 
-  const { user, SERVER_URL } = useUser()
+  const { user } = useUser()
   const UserId = user?.id;
 
 

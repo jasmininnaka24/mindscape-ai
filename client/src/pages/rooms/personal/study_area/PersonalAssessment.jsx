@@ -6,12 +6,13 @@ import { useUser } from '../../../../UserContext';
 // chart
 import { BarChartForAnalysis } from '../../../../components/charts/BarChartForAnalysis';
 import { fetchUserData } from '../../../../userAPI';
+import { SERVER_URL } from '../../../../urlConfig';
 
 
 export const PersonalAssessment = () => {
 
   const { materialId } = useParams();
-  const { user, SERVER_URL } = useUser()
+  const { user } = useUser()
 
 
   // hooks

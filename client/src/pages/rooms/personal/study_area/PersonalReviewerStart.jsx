@@ -20,6 +20,7 @@ import PlayArrowIcon from '@mui/icons-material/PlayArrow';
 import { AuditoryLearner } from '../../../../components/practices/AuditoryLearner';
 import { KinestheticLearner } from '../../../../components/practices/KinestheticLearner';
 import { VisualLearner } from '../../../../components/practices/VisualLearner';
+import { SERVER_URL } from '../../../../urlConfig';
 
 
 
@@ -29,7 +30,7 @@ export const PersonalReviewerStart = () => {
 
 
   const { materialId } = useParams();
-  const { user, SERVER_URL } = useUser()
+  const { user } = useUser()
 
   const UserId = user?.id;
   

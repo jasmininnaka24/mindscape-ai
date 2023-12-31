@@ -1,15 +1,13 @@
 import axios from 'axios';
 import React from 'react'
-import { DateTime, Interval } from 'luxon';
-import { useUser } from '../../UserContext';
+import { DateTime } from 'luxon';
+import { SERVER_URL } from '../../urlConfig';
 
 
 export const UpdateTasks = (props) => {
 
   const { task, dueDate, room, taskID, listOfTasks, setListOfTasks, setTask, setDueDate, setTaskID, hideModal, closeModal, setIsButtonClicked } = props;
 
-
-  const { SERVER_URL } = useUser()
 
 
   const updateTask = async (event) => {

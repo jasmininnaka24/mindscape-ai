@@ -2,6 +2,8 @@ import React, { useEffect, useState } from 'react'
 import { Navbar } from '../navbar/logged_navbar/navbar';
 import { DateTime, Interval } from 'luxon';
 import { useUser } from '../../UserContext';
+import { SERVER_URL } from '../../urlConfig';
+
 
 // Component imports
 import { AddingTask } from './AddingTask';
@@ -25,7 +27,7 @@ export const Tasks = ({room, groupId}) => {
   const [showAddTaskModal, setShowAddTaskModal] = useState(false)
   const [loading, setLoading] = useState(true);
 
-  const { user, SERVER_URL } = useUser()
+  const { user } = useUser()
   const UserId = user?.id;
 
   // Modals Functionalities

@@ -10,8 +10,10 @@ import { AssessmentPage } from '../../../../components/group/AssessmentPage';
 import axios from 'axios';
 import { useUser } from '../../../../UserContext';
 import { fetchUserData } from '../../../../userAPI';
+import { SERVER_URL } from '../../../../urlConfig';
 
-const socket = io("https://mindscapeserver.jassywaaa.repl.co", {
+
+const socket = io(SERVER_URL, {
   credentials: true,
   transports: ['websocket'],
 });
@@ -21,7 +23,7 @@ const socket = io("https://mindscapeserver.jassywaaa.repl.co", {
 export const GroupReviewerPage = () => {
 
 
-  const { user, SERVER_URL } = useUser();
+  const { user } = useUser();
 
 
   const { groupId, materialId } = useParams();

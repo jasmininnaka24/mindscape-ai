@@ -2,14 +2,14 @@ import axios from 'axios';
 import React, { useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom';
 import InboxIcon from '../../assets/mail.png'
-import { useUser } from '../../UserContext';
 import { useNavigate } from 'react-router-dom';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
+import { SERVER_URL, CLIENT_URL } from '../../urlConfig';
+
 
 export const ResetPassword = () => {
 
-  const { SERVER_URL } = useUser();
   const navigate = useNavigate();
 
 
@@ -46,7 +46,8 @@ export const ResetPassword = () => {
     e.preventDefault();
 
     let data = {
-      password: password
+      password: password,
+      url_host: CLIENT_URL
     }
 
     await axios.post(`${SERVER_URL}/users/reset-password/${id}/${token}`, data).then(response => {

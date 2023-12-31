@@ -1,14 +1,12 @@
 import axios from 'axios';
 import React from 'react'
 import DeleteIcon from '@mui/icons-material/Delete';
-import { useUser } from '../../UserContext';
+import { SERVER_URL } from '../../urlConfig';
 
 
 export const DeleteTask = (props) => {
 
   const { taskId, listOfTasks, setListOfTasks } = props;
-
-  const { SERVER_URL } = useUser()
 
   const deleteTask = async () => {
     console.log(taskId, listOfTasks);

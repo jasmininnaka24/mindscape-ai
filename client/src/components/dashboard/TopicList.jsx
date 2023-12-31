@@ -7,6 +7,7 @@ import Category from '@mui/icons-material/Category';
 import { useUser } from '../../UserContext';
 import { useLocation } from 'react-router-dom';
 import { fetchUserData } from '../../userAPI';
+import { SERVER_URL } from '../../urlConfig';
 
 
 export const TopicList = ({categoryFor}) => {
@@ -19,7 +20,7 @@ export const TopicList = ({categoryFor}) => {
   const location = useLocation();
 
   const { groupId, categoryID } = useParams()
-  const { user, SERVER_URL } = useUser()
+  const { user } = useUser()
   const { filter, performanceStatus, tag } = location.state;
 
   const navigate = useNavigate()

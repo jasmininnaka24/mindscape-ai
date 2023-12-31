@@ -4,12 +4,13 @@ import { useNavigate, useParams } from 'react-router-dom'
 import RemoveRedEyeIcon from '@mui/icons-material/RemoveRedEye';
 import { useUser } from '../../UserContext';
 import { useLocation } from 'react-router-dom';
+import { SERVER_URL } from '../../urlConfig';
 
 
 export const CategoryList = ({categoryFor}) => {
 
   const { groupId } = useParams()
-  const { user, SERVER_URL } = useUser();
+  const { user } = useUser();
   const location = useLocation();
   const { tag } = location.state;
 

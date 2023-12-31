@@ -3,14 +3,13 @@ import axios from 'axios';
 import React, { Fragment, useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { useUser } from '../../UserContext';
+import { SERVER_URL } from '../../urlConfig';
 
 
 export const EmailVerification = () => {
   const [validUrl, setValidUrl] = useState(false);
   const [userId, setUserId] = useState(0)
   const param = useParams();
-
-  const { SERVER_URL } = useUser();
 
   useEffect(() => {
     const verify = async () => {

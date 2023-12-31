@@ -1,4 +1,4 @@
-import React, { useEffect, useId, useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import ScrollToBottom from "react-scroll-to-bottom";
 import { useUser } from '../../../UserContext';
 import { fetchUserData } from '../../../userAPI';
@@ -11,7 +11,10 @@ import ClearAllIcon from '@mui/icons-material/ClearAll';
 import io from 'socket.io-client';
 import { Link } from 'react-router-dom';
 
-const socket = io("https://mindscapeserver.jassywaaa.repl.co", {
+import { SERVER_URL } from '../../../urlConfig';
+
+
+const socket = io(SERVER_URL, {
   credentials: true,
   transports: ['websocket'],
 });

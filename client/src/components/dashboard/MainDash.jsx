@@ -6,8 +6,7 @@ import { DateTime, Interval } from 'luxon';
 import PushPinIcon from '@mui/icons-material/PushPin';
 import WatchLaterIcon from '@mui/icons-material/WatchLater';
 import PendingActionsIcon from '@mui/icons-material/PendingActions';
-import EditIcon from '@mui/icons-material/Edit';
-import DoneIcon from '@mui/icons-material/Done';
+import { SERVER_URL } from '../../urlConfig';
 
 
 export const MainDash = ({categoryFor}) => {
@@ -35,7 +34,7 @@ export const MainDash = ({categoryFor}) => {
 
 
   const { groupId } = useParams()
-  const { user, SERVER_URL } = useUser()
+  const { user } = useUser()
   const navigate = useNavigate()
 
   const UserId = user?.id;

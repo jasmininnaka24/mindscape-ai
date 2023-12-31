@@ -3,6 +3,7 @@ import { useLocation } from 'react-router-dom';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { useUser } from '../../UserContext';
+import { AI_APIs_URL } from '../../urlConfig';
 
 
 export const DataSubmission = () => {
@@ -28,8 +29,7 @@ export const DataSubmission = () => {
   
   async function classifyLearnerType() {
 
-
-    const url = 'http://127.0.0.1:8000/ls-classification';
+    const url = `${AI_APIs_URL}/ls-classification`;
 
     const response = await axios.post(url, {
       text: sentence,

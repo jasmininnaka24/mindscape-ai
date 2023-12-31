@@ -1,13 +1,12 @@
 import axios from 'axios';
 import React, { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
-import RemoveRedEyeIcon from '@mui/icons-material/RemoveRedEye';
-import { Link } from 'react-router-dom';
 import { BarChart } from '../charts/BarChart';
 import { PieChart } from '../charts/PieChart';
 import { useUser } from '../../UserContext';
 import { useLocation } from 'react-router-dom';
 import { fetchUserData } from '../../userAPI';
+import { SERVER_URL } from '../../urlConfig';
 
 
 export const TopicPage = ({categoryFor}) => {
@@ -15,7 +14,7 @@ export const TopicPage = ({categoryFor}) => {
   const { categoryID, materialID, groupId } = useParams();
   const navigate = useNavigate();
 
-  const { user, SERVER_URL } = useUser();
+  const { user } = useUser();
   const UserId = user?.id;
 
   // user data

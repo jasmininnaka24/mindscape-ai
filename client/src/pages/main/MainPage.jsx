@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import './mainpage.css';
-import { Link, Navigate, useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import personalStudyRoomImg from '../../assets/personal_study.jpg';
 import groupStudyRoomImg from '../../assets/group_study.jpg';
 import virtualLibraryRoomImg from '../../assets/library.jpg';
@@ -11,20 +11,17 @@ import { useUser } from '../../UserContext';
 import axios from 'axios';
 import PersonIcon from '@mui/icons-material/Person';
 import MindScapeLogo from '../../assets/mindscape_logo.png';
-
+import { SERVER_URL } from '../../urlConfig';
 
 export const MainPage = () => {
 
-  const { user, SERVER_URL } = useUser();
+  const { user } = useUser();
   const navigate = useNavigate();
 
   const [dropDownPersonalLinks, setdropDownPersonalLinks] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
-  const [data, setData] = useState([])
   const [users, setUsers] = useState([]);
   const [searchResults, setSearchResults] = useState([]);
-  const [isOpen, setIsOpen] = useState(false);
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [loading, setLoading] = useState(true);
 
   const UserId = user?.id;
@@ -64,18 +61,18 @@ export const MainPage = () => {
 
   const handleSearch = async (event) => {
     setSearchTerm(event)
-
+  
     const response = await axios.get(`${SERVER_URL}/users`);
     let responseData = response.data;
-
-    let filteredUsers = responseData.filter(user => user.id !== UserId);
-    // Filter users based on the search term
-    // const filteredUsers = users.filter((user) =>
-    //   user.username.toLowerCase().includes(term.toLowerCase())
-    // );
-
-    setSearchResults(responseData);
+  
+    // Assuming you want to filter users based on the username field
+    let filteredUsers = responseData.filter(user => 
+      user.username.toLowerCase().includes(event.toLowerCase())
+    );
+  
+    setSearchResults(filteredUsers);
   };
+  
 
 
   if (loading) {

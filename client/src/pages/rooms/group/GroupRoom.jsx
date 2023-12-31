@@ -6,11 +6,12 @@ import { CreateGroupComp } from '../../../components/group/CreateGroupComp';
 import axios from 'axios';
 import { useUser } from '../../../UserContext';
 import { fetchUserData } from '../../../userAPI';
+import { SERVER_URL } from '../../../urlConfig';
 
 
 export const GroupRoom = () => {
   
-  const { user, SERVER_URL } = useUser();
+  const { user } = useUser();
 
   const [savedGroupNotif, setSavedGroupNotif] = useState(false);
   const [groupList, setGroupList] = useState([]);

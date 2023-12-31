@@ -2,13 +2,15 @@ import axios from 'axios';
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useUser } from '../../UserContext';
+import { SERVER_URL } from '../../urlConfig';
+
 
 export const SavedGeneratedData = (props) => {
 
   const [studyMaterialTitle, setStudyMaterialTitle] = useState("");
   const [isLoading, setIsLoading] = useState(false); 
 
-  const { user, SERVER_URL } = useUser();
+  const { user } = useUser();
 
   const userId = user?.id;
 

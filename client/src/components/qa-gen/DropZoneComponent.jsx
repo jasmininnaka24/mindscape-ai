@@ -4,6 +4,9 @@ import Axios from 'axios';
 import { PDFDetails, GeneratedQAResult } from './QAGenerator';
 import './studyArea.css';
 
+import { AI_APIs_URL } from '../../urlConfig';
+
+
 pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.js`;
 
 export const DropZoneComponent = (props) => {
@@ -22,7 +25,7 @@ export const DropZoneComponent = (props) => {
 
 
   // link here
-  const url = 'http://127.0.0.1:8000/qa-generation';
+  const url = `${AI_APIs_URL}/qa-generation`;
 
   const [data, setData] = useState({
     text: PDFDetails,
@@ -43,12 +46,13 @@ export const DropZoneComponent = (props) => {
         let fileContent;
   
         if (file.type === 'application/pdf') {
+
           fileContent = await extractPdfText(file);
-          // Check the number of pages
-          const pageCount = await getPdfPageCount(file);
-          
+                    
         } else if (file.type === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document') {
+
           fileContent = await extractDocxText(file);
+
         } else {
           alert("Unsupported file type")
           return;
@@ -62,22 +66,7 @@ export const DropZoneComponent = (props) => {
       }
     }
   };
-  
-  const getPdfPageCount = async (file) => {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = async function (e) {
-        try {
-          const doc = await pdfjs.getDocument(e.target.result).promise;
-          resolve(doc.numPages);
-        } catch (error) {
-          reject(error);
-        }
-      };
-      reader.onerror = (error) => reject(error);
-      reader.readAsArrayBuffer(file);
-    });
-  };
+
   
 
   const extractDocxText = async (file) => {

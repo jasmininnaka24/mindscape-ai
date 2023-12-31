@@ -8,6 +8,7 @@ import { SavedGeneratedData } from './SavedGeneratedData';
 import axios from 'axios';
 
 import { useUser } from '../../UserContext';
+import { SERVER_URL } from '../../urlConfig';
 
 
 export const PDFDetails = createContext();
@@ -43,7 +44,7 @@ export const QAGenerator = (props) => {
   const [studyMaterialCategories, setStudyMaterialCategories] = useState([]);
   const [studyMaterialCategoryId, setStudyMaterialCategoryId] = useState("");
 
-  const { user, SERVER_URL } = useUser();
+  const { user } = useUser();
 
   const UserId = user?.id;
   

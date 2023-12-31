@@ -2,10 +2,12 @@ import React, { useEffect, useState } from 'react';
 import { SearchFunctionality } from '../search/SearchFunctionality';
 import axios from 'axios';
 import { useUser } from '../../UserContext';
+import { SERVER_URL } from '../../urlConfig';
+
 
 export const CreateGroupComp = (props) => {
 
-  const { user, SERVER_URL } = useUser();
+  const { user } = useUser();
 
 
   const { setSavedGroupNotif, fetchGroupListData } = props;

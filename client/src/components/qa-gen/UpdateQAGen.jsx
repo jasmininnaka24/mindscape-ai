@@ -1,28 +1,26 @@
-import React, { useEffect, useRef, useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { useUser } from '../../UserContext';
 import axios from 'axios';
 import { useNavigate, useParams } from 'react-router-dom';
-import { debounce } from 'lodash'; // or any other debounce implementation
+import { SERVER_URL } from '../../urlConfig';
 
 
 
 export const UpdateQAGen = ({ groupId, categoryFor }) => {
 
-  const textAreaRef = useRef(null);
-
-  const { user, SERVER_URL } = useUser()
+  const { user } = useUser()
   const UserId = user?.id;
 
   const { materialID } = useParams();
   const navigate = useNavigate()
-  const [materialCategory, setMaterialCategory] = useState([]); 
+  const [, setMaterialCategory] = useState([]); 
   const [materialCategoryId, setMaterialCategoryId] = useState([]); 
-  const [studyMaterial, setStudyMaterial] = useState([]);
+  const [, setStudyMaterial] = useState([]);
   const [studyMaterialCategories, setStudyMaterialCategories] = useState([]);
   const [pdfDetails, setPDFDetails] = useState('')
   const [materialMCQ, setMaterialMCQ] = useState([])
   const [materialMCQChoices, setMaterialMCQChoices] = useState([])
-  const [materialMCQChoicesUnflat, setMaterialMCQChoicesUnflat] = useState([])
+  const [, setMaterialMCQChoicesUnflat] = useState([])
   const [materialTitle, setMaterialTitle] = useState('')
   const [isLoading, setIsLoading] = useState(false); 
 
@@ -33,7 +31,6 @@ export const UpdateQAGen = ({ groupId, categoryFor }) => {
   const [showFillInTheBlanks, setShowFillInTheBlanks] = useState(false);
   const [showIdentification, setShowIdentification] = useState(false)
 
-  const [isChanged, setIsChanged] = useState();
 
   // MCQA
   const [activeBtnMCQAs, setActiveBtnMCQAs] = useState(true); 
@@ -455,34 +452,6 @@ export const UpdateQAGen = ({ groupId, categoryFor }) => {
   
   
 
-  const addItem = async (type) => {
-    if (revQues !== '' && revAns !== '') {
-
-
-      randomIndex = Math.floor(Math.random() * backgroundColors.length);
-      randomColor = backgroundColors[randomIndex];
-
-
-      const qaData = {
-        question: addedQuestionStr,
-        answer: addedAnswerStr,
-        bgColor: randomColor,
-        quizType: type === 'FITB' ? 'FITB' : 'Identification',
-        StudyMaterialId: materialID,
-      };
-
-      await axios.post(`${SERVER_URL}/quesAns`, qaData);
-
-      
-      fetchData()
-
-      setRevQues("");
-      setRevAns("");
-    } else {
-      alert('Field cannot be empty');
-    }
-  
-  };
   
 
 

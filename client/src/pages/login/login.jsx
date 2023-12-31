@@ -10,6 +10,8 @@ import { Link } from 'react-router-dom';
 import MindScapeLogo from '../../assets/mindscape_logo.png';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
+import { SERVER_URL, CLIENT_URL, CLIENT_ID } from '../../urlConfig';
+
 
 export const Login = () => {
   
@@ -20,7 +22,7 @@ export const Login = () => {
   const materialId = searchParams.get('materialId');
 
   const navigate = useNavigate();
-  const { setUserInformation, SERVER_URL } = useUser();
+  const { setUserInformation } = useUser();
   
   const [modalIsOpen, setModalIsOpen] = useState(false);
 
@@ -55,6 +57,7 @@ export const Login = () => {
     const data = {
       email: emailLogVal,
       password: passwordLogVal,
+      url_host: CLIENT_URL
     };
     
     console.log(data);
@@ -93,7 +96,10 @@ export const Login = () => {
   
     const data = {
       email: userObject.email,
+      url_host: CLIENT_URL
     };
+
+    console.log(data);
   
     await axios.post(`${SERVER_URL}/users/login`, data).then((response) => {
       
@@ -126,7 +132,7 @@ export const Login = () => {
   useEffect(() => {
     // global google
     google.accounts.id.initialize({
-      client_id: "18641853465-5fifaj11js27u2friocstqne8kt6977q.apps.googleusercontent.com",
+      client_id: CLIENT_ID,
       callback: handleCallBackResponse
     });
     

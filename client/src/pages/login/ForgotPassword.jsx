@@ -2,11 +2,11 @@ import axios from 'axios';
 import React, { useState } from 'react'
 import InboxIcon from '../../assets/mail.png'
 import { useUser } from '../../UserContext';
+import { SERVER_URL, CLIENT_URL } from '../../urlConfig';
 
 
 export const ForgotPassword = () => {
 
-  const { SERVER_URL } = useUser();
 
   const [email, setEmail] = useState('');
   const [showResetPasswordUI, setShowResetPasswordUI] = useState(true)
@@ -15,7 +15,8 @@ export const ForgotPassword = () => {
     e.preventDefault();
 
     let data = {
-      email: email
+      email: email,
+      url_host: CLIENT_URL
     }
 
     setShowResetPasswordUI(false)

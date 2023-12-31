@@ -1,14 +1,11 @@
 import axios from 'axios';
 import React from 'react';
 import { DateTime } from 'luxon';  // Import Luxon DateTime for date manipulation
-import { useUser } from '../../UserContext';
+import { SERVER_URL } from '../../urlConfig';
 
 
 export const AddingTask = (props) => {
   const { task, dueDate, room, listOfTasks, setListOfTasks, setTask, setDueDate, unhideModal, UserId, groupId } = props;
-
-
-  const { SERVER_URL } = useUser();
 
 
   // Adding task to the database

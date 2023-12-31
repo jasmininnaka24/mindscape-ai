@@ -1,7 +1,5 @@
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { LogReg } from '../../components/login_reg/LogReg';
-import GoogleImg from '../../assets/google.png';
+import { Link } from 'react-router-dom';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
 import axios from 'axios'
@@ -9,7 +7,7 @@ import InboxIcon from '../../assets/mail.png';
 import MindScapeLogo from '../../assets/mindscape_logo.png';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import DangerousIcon from '@mui/icons-material/Dangerous';
-import { useUser } from '../../UserContext';
+import { SERVER_URL, CLIENT_URL } from '../../urlConfig';
 
 
 export const Register = () => {
@@ -23,13 +21,10 @@ export const Register = () => {
   const [showResetPasswordUI, setShowResetPasswordUI] = useState(true)
   const [enableDisabled, setEnableDisabled] = useState(false)
 
-  const { SERVER_URL } = useUser();
-
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
   };
 
-  const navigate = useNavigate()
 
   const registerAccount = async (e) => {
     e.preventDefault();
@@ -38,6 +33,7 @@ export const Register = () => {
       username: usernameRegVal,
       password: passwordRegVal,
       email: emailRegVal,
+      url_host: CLIENT_URL
     };
 
     setEnableDisabled(true)

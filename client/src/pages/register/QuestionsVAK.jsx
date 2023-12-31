@@ -1,15 +1,12 @@
 import React from 'react';
 import './qavak.css';
-import { useLocation, useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 
 export const ClassificationQuestions = () => {
 
   const navigate = useNavigate();
-  const location = useLocation();
 
   const { id } = useParams();
-
-
 
 
   const radioButtons = document.querySelectorAll('.form__radio-input');

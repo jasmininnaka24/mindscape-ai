@@ -1,14 +1,13 @@
 import React, { useEffect, useState } from 'react'
 import { useUser } from '../../UserContext'
 import { fetchUserData } from '../../userAPI';
-import PersonIcon from '@mui/icons-material/Person';
 import axios from 'axios';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { useDropzone } from 'react-dropzone';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
-import LaunchIcon from '@mui/icons-material/Launch';
 import { Navbar } from '../navbar/logged_navbar/navbar';
+import { SERVER_URL, CLIENT_URL } from '../../urlConfig';
 
 
 export const ProfileComponent = () => {
@@ -116,7 +115,7 @@ export const ProfileComponent = () => {
 
 
 
-  const { user, SERVER_URL } = useUser();
+  const { user } = useUser();
   const navigate = useNavigate();
   const { userId } = useParams();
 
@@ -1031,7 +1030,7 @@ export const ProfileComponent = () => {
   
                     <div className='flex items-center justify-center gap-8 pt-3'>
                       <div style={{ width: '200px' }}>
-                      <img src={`${SERVER_URL}/images/${userData.userImage}`} className='rounded-full' style={{ width: '200px', objectFit: 'cover', height: '200px' }} alt="" />
+                      <img src={`${CLIENT_URL}/uploaded_images/${userData.userImage}`} className='rounded-full' style={{ width: '200px', objectFit: 'cover', height: '200px' }} alt="" />
                       </div>
   
                       <div className=''>
@@ -1350,7 +1349,7 @@ export const ProfileComponent = () => {
                     <div className='p-2 rounded-full' {...getRootProps()} style={{ width: '220px', cursor: 'pointer', border: '3px dashed #888' }}>
                       <input {...getInputProps()} name='image' type='file' />
                       {acceptedFiles.length === 0 ? (
-                        <img src={`${SERVER_URL}/images/${userData.userImage}`} className='rounded-full' style={{ width: '200px', objectFit: 'cover', height: '200px' }} alt="" />
+                        <img src={`${CLIENT_URL}/uploaded_images/${userData.userImage}`} className='rounded-full' style={{ width: '200px', objectFit: 'cover', height: '200px' }} alt="" />
                       ) : (
                         <>
                           <img src={URL.createObjectURL(acceptedFiles[0])} className='rounded-full' style={{ width: '200px', objectFit: 'cover', height: '200px' }} alt="" />

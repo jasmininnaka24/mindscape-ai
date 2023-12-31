@@ -22,7 +22,7 @@ const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 // registration
 router.post('/', async (req, res) => {
-  const { username, password, email, name } = req.body;
+  const { username, password, email, name, url_host } = req.body;
   
   try {
 
@@ -92,7 +92,7 @@ router.post('/', async (req, res) => {
       token: crypto.randomBytes(32).toString('hex'),
     });
 
-    const url = `http://localhost:3000/users/${savedUserData.id}/verify/${token.token}`;
+    const url = `${url_host}/users/${savedUserData.id}/verify/${token.token}`;
     // Use the correct frontend URL, adjust the port if needed
     
     const verificationMessage = `
@@ -154,7 +154,7 @@ router.get('/:id/verify/:token', async (req, res) => {
 
 // log in
 router.post('/login', async (req, res) => {
-  const { password, email } = req.body;
+  const { password, email, url_host } = req.body;
 
   try {
 
@@ -183,7 +183,7 @@ router.post('/login', async (req, res) => {
           token: crypto.randomBytes(32).toString('hex'),
         });
 
-        const url = `${FRONTEND_URL}/users/${user.id}/verify/${token.token}`;
+        const url = `${url_host}/users/${user.id}/verify/${token.token}`;
         
         await sendEmail(user.email, 'Verify Email', url);
   
@@ -346,7 +346,7 @@ router.put('/update-user-image/:id', async (req, res) => {
 
 
 router.post('/verify-email', async (req, res) => {
-  const {email} = req.body;
+  const { email, url_host} = req.body;
 
   try {
     const oldUser = await User.findOne({
@@ -363,12 +363,10 @@ router.post('/verify-email', async (req, res) => {
     const secret = jwtSecret + oldUser.password;
     const token =  sign({ email: oldUser.email, id: oldUser.id }, secret, {expiresIn: '5m'});
 
-    // const link = `http://localhost:3000/reset-password/${oldUser.id}/${token}`;
-    // console.log(link);
 
 
     // Construct the verification URL with the new token
-    const url = `http://localhost:3000/reset-password/${oldUser.id}/${token}`;
+    const url = `${url_host}/reset-password/${oldUser.id}/${token}`;
   
     // Use the correct frontend URL, adjust the port if needed
     await sendEmail(email, 'Verify Email', url);

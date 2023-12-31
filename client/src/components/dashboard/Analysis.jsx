@@ -5,18 +5,16 @@ import { useParams } from 'react-router-dom';
 import CheckIcon from '@mui/icons-material/Check';
 import { BarChartForAnalysis } from '../charts/BarChartForAnalysis';
 
-import { useUser } from '../../UserContext';
+import { SERVER_URL } from '../../urlConfig';
 
 export const Analysis = () => {
-
-  const { SERVER_URL } = useUser();
 
   const { groupId, categoryID, materialID, dashID } = useParams();
 
   let studyProfeciencyTarget = 90;
 
   // hooks
-  const [fetchedData, setFetchedData] = useState([])
+  const [, setFetchedData] = useState([])
   const [overAllItems, setOverAllItems] = useState(0);
   const [preAssessmentScore, setPreAssessmentScore] = useState(0);
   const [assessmentScore, setAssessmentScore] = useState(0);
@@ -25,12 +23,11 @@ export const Analysis = () => {
   const [completionTime, setCompletionTime] = useState(0);
   const [confidenceLevel, setConfidenceLevel] = useState(0);
   const [overAllPerformance, setOverAllPerformance] = useState(0);
-  const [assessmentCountMoreThanOne, setAssessmentCountMoreThanOne] = useState(false);
+  const [, setAssessmentCountMoreThanOne] = useState(false);
   const [lastAssessmentScore, setLastAssessmentScore] = useState(0);
   const [generatedAnalysis, setGeneratedAnalysis] = useState('');
 
   const [fetchedID, setFetchedID] = useState(0)
-  const UserId = 1;
 
   useEffect(() => {
     const fetchData = async () => {
