@@ -10,7 +10,7 @@ import { AssessmentPage } from '../../../../components/group/AssessmentPage';
 import axios from 'axios';
 import { useUser } from '../../../../UserContext';
 import { fetchUserData } from '../../../../userAPI';
-import { SERVER_URL } from '../../../../urlConfig';
+import { CLIENT_URL, SERVER_URL } from '../../../../urlConfig';
 
 
 const socket = io(SERVER_URL, {
@@ -416,24 +416,34 @@ export const GroupReviewerPage = () => {
   const inviteMembers = async (sentence) => {
 
     let updatedSentence = '';
-
     setSuccessfullyInviting(true)
+    
+    if (sentence === 'study session') {
+      updatedSentence = 'the study session';
+    } else {
+      updatedSentence = 'and team up with your co-members to take the assessment';
+    }
 
 
     const groupMembers = await axios.get(`${SERVER_URL}/studyGroupMembers/get-members/${groupId}`);
     
     const groupMembersData = groupMembers.data;
 
+    let url = `${CLIENT_URL}/main/group/study-area/group-review/${groupId}/${materialId}`
+
+
     for (const member of groupMembersData) {
       // Your code to handle each member
       const groupMembersDetails = await axios.get(`${SERVER_URL}/users/get-user/${member.UserId}`);
       if (groupMembersDetails.data !== null) {
+
 
         let invitationData = {
           email: groupMembersDetails.data.email,
           groupName: groupName,
           title: materialTitle,
           sentence: updatedSentence,
+          url: url
         }
 
         if (member.UserId !== userId) {
@@ -449,6 +459,7 @@ export const GroupReviewerPage = () => {
         groupName: groupName,
         title: materialTitle,
         sentence: updatedSentence,
+        url: url
       }
       
       if (invitationData) {

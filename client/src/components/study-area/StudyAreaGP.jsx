@@ -126,28 +126,37 @@ export const StudyAreaGP = (props) => {
 
   const addToModalList = async () => {
     if (currentModalVal !== '') {
-      let categoryExists = '';
-  
-      try {
-        if (categoryFor === 'Personal') {
-          categoryExists = await axios.get(`${SERVER_URL}/studyMaterialCategory/get-category-value/${UserId}/${currentModalVal}`);
-        } else {
-          categoryExists = await axios.get(`${SERVER_URL}/studyMaterialCategory/get-category-value-group/${groupNameId}/${currentModalVal}`);
-        }
 
-        console.log(categoryExists.data);
+      const onholdModalList = modalList.filter(value => value.trim().toLowerCase() === currentModalVal.trim().toLowerCase());
+
+
+      if (onholdModalList.length > 0) {
+        alert(`${currentModalVal} is already in the list.`);
+      } else {
+        let categoryExists = '';
+        
+        try {
+          if (categoryFor === 'Personal') {
+            categoryExists = await axios.get(`${SERVER_URL}/studyMaterialCategory/get-category-value/${UserId}/${currentModalVal}`);
+          } else {
+            categoryExists = await axios.get(`${SERVER_URL}/studyMaterialCategory/get-category-value-group/${groupNameId}/${currentModalVal}`);
+          }
   
-        // Check if categoryExists.data is truthy before accessing its length
-        if (categoryExists.data === null) {
-          setModalList([...modalList, currentModalVal]);
-          setCurrentModalVal('');
-        } else {
-          alert(`${currentModalVal} already exists in your shelf.`);
+          console.log(categoryExists.data);
+    
+          // Check if categoryExists.data is truthy before accessing its length
+          if (categoryExists.data === null) {
+            setModalList([...modalList, currentModalVal]);
+            setCurrentModalVal('');
+          } else {
+            alert(`${currentModalVal} already exists in your shelf.`);
+          }
+        } catch (error) {
+          console.error('Error checking category existence:', error);
+          // Handle error, e.g., show an alert or log it
         }
-      } catch (error) {
-        console.error('Error checking category existence:', error);
-        // Handle error, e.g., show an alert or log it
       }
+
     } else {
       alert('Does not accept an empty field.');
     }
@@ -194,6 +203,9 @@ export const StudyAreaGP = (props) => {
         }));
         
         fetchData();
+
+        setCurrentModalVal('')
+        setModalList([])
       } else {
         displayError("Cannot save empty field.");
       }
@@ -201,6 +213,8 @@ export const StudyAreaGP = (props) => {
       // Handle general error if needed
       console.error("Error saving categories:", error);
     }
+
+
   };
   
 
@@ -347,7 +361,6 @@ export const StudyAreaGP = (props) => {
     const reloadParamExists = searchParams.has('reload');
 
     if (reloadParamExists) {
-      window.location.reload();
       if (categoryFor === 'Personal') {
         navigate(`/main/personal/study-area/`);
       } else {
@@ -575,13 +588,14 @@ export const StudyAreaGP = (props) => {
   };
 
 
-  const deleteStudyMaterial = async (id, title, code) => {
+  const deleteStudyMaterial = async (id, title, code, tag) => {
     // Show a confirmation dialog
+    
     
     let response = await axios.get(`${SERVER_URL}/studyMaterial/bookmark-counts/${code}`);
     console.log(response.data.length)
 
-    if (response.data.length === 0) {
+    if (response.data.length === 0 || tag === 'Bookmarked') {
       const confirmed = window.confirm(`Are you sure you want to delete ${title}?`);
 
       if (confirmed) {
@@ -771,19 +785,23 @@ export const StudyAreaGP = (props) => {
           // Reset message after a delay or any other desired logic
           setTimeout(() => {
             setError(false);
-            setMsg(`All materials under ${category} have been removed.`);
+            setMsg(`${category} has been successfully removed.`);
           }, 100);
     
           setTimeout(() => {
             setError(false);
             setMsg('');
-            window.location.reload()
+              if (categoryFor === 'Personal') {
+                navigate(`/main/personal/study-area/`);
+              } else {
+                navigate(`/main/group/study-area/${groupNameId}`);
+              }
           }, 2500);
 
           await axios.delete(`${SERVER_URL}/studyMaterialCategory/delete-category/${categoryId}/${category}`);
 
     
-          
+          fetchData();
         }
       }
     } catch (error) {
@@ -813,13 +831,17 @@ export const StudyAreaGP = (props) => {
         // Reset message after a delay or any other desired logic
         setTimeout(() => {
           setError(false);
-          setMsg(`All materials under ${categoryName} have been removed.`);
+          setMsg(`${categoryName} has been successfully removed.`);
         }, 100);
   
         setTimeout(() => {
           setError(false);
           setMsg('');
-          window.location.reload()
+          if (categoryFor === 'Personal') {
+            navigate(`/main/personal/study-area`)
+          } else {
+            navigate(`/main/personal/study-area/${groupNameId}`)
+          }
         }, 2500);
 
 
@@ -865,6 +887,8 @@ export const StudyAreaGP = (props) => {
               setHidden("hidden");
               setCategoryModal("hidden");
               setGroupMemberModal("hidden");
+              setCurrentModalVal('')
+              setModalList([])
               }}>
               ✖
             </button>
@@ -1149,7 +1173,7 @@ export const StudyAreaGP = (props) => {
   
                               <div>
                                 <button 
-                                  onClick={() => deleteStudyMaterial(material.id, material.title, material.code)}
+                                  onClick={() => deleteStudyMaterial(material.id, material.title, material.code, material.tag)}
                                   >
                                     <DeleteIcon sx={{fontSize: '20px'}} />
                                 </button>
@@ -1240,7 +1264,7 @@ export const StudyAreaGP = (props) => {
                                     </p>
                                     <div>
                                       <button
-                                        onClick={() => deleteStudyMaterial(material.id, material.title, material.code)}
+                                        onClick={() => deleteStudyMaterial(material.id, material.title, material.code, material.tag)}
                                       >
                                         <DeleteIcon sx={{ fontSize: '20px' }} />
                                       </button>

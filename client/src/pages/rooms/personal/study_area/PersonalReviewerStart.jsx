@@ -639,7 +639,9 @@ export const PersonalReviewerStart = () => {
     
     await axios.put(`${SERVER_URL}/quesAns/update-response-state/${materialId}/${choice}`, data);
     
-    setUnattemptedCounts(unattemptedCounts - 1)
+    if (unattemptedCounts !== 0) {
+      setUnattemptedCounts(unattemptedCounts - 1)
+    }
 
     if(responseStateInp === "Correct") {
       setCorrectAnswerCounts(correctAnswerCounts + 1)

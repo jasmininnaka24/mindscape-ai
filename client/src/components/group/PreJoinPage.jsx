@@ -42,12 +42,6 @@ export const PreJoinPage = (props) => {
   })
   
 
-  if (UserId === undefined) {
-    navigate(`/login?group_session&groupId=${groupId}&materialId=${materialId}`);
-  }
-
-
-
 
 
 
@@ -69,17 +63,28 @@ export const PreJoinPage = (props) => {
   const [loading, setLoading] = useState(true);
 
   
+
   const getUserData = async () => {
-    
-    const userData = await fetchUserData(UserId);
-    setUserData({
-      username: userData?.username,
-      email: userData?.email,
-      studyProfTarget: userData?.studyProfTarget,
-      typeOfLearner: userData?.typeOfLearner,
-      userImage: userData?.userImage
-    });
-  }
+    if (UserId === undefined) {
+      navigate(`/login?group_session&groupId=${groupId}&materialId=${materialId}`);
+      return; // Exit early if UserId is undefined
+    }
+
+    try {
+      const userData = await fetchUserData(UserId);
+      setUserData({
+        username: userData?.username,
+        email: userData?.email,
+        studyProfTarget: userData?.studyProfTarget,
+        typeOfLearner: userData?.typeOfLearner,
+        userImage: userData?.userImage
+      });
+
+      setLoading(false);
+    } catch (error) {
+      console.error('Error fetching user data:', error);
+    }
+  };
 
   useEffect(() => {
     

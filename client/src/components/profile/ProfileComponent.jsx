@@ -7,15 +7,10 @@ import { useDropzone } from 'react-dropzone';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
 import { Navbar } from '../navbar/logged_navbar/navbar';
-import { SERVER_URL, CLIENT_URL } from '../../urlConfig';
+import { SERVER_URL } from '../../urlConfig';
 
 
 export const ProfileComponent = () => {
-
-  const handleImage = (e) => {
-    setImage(e.target.files[0]);
-  };
-
 
   const { getRootProps, getInputProps, acceptedFiles } = useDropzone({
     onDrop: (acceptedFiles) => {
@@ -98,6 +93,10 @@ export const ProfileComponent = () => {
 
 
   const [loading, setLoading] = useState(true);
+  const [buttonLoading, setButtonLoading] = useState(false);
+  const [buttonLoader, setButtonLoader] = useState(false);
+  const [buttonClickedNumber, setButtonClickedNumber] = useState(0);
+  const [loadOnce, setLoadOnce] = useState(false);
 
 
   const togglePasswordVisibility = () => {
@@ -153,7 +152,10 @@ export const ProfileComponent = () => {
 
   const fetchData = async () => {
 
-    setLoading(true)
+    if (loadOnce) {
+      setLoading(true)
+      setLoadOnce(false)
+    }
 
     let totalGroups = 0
     const groupListLengthResponse = await axios.get(`${SERVER_URL}/studyGroup/extract-group-through-user/${userId === undefined ? UserId : userId}`)
@@ -284,9 +286,7 @@ export const ProfileComponent = () => {
       }
 
 
-
-
-
+    setLoadOnce(false)
     setLoading(false)
 
   }
@@ -312,7 +312,7 @@ export const ProfileComponent = () => {
 
 
   const viewStudyMaterialDetails = async (index, materialFor, filter, category) => {
-
+    setButtonLoader(true)
     setShowPresentStudyMaterials(false)
 
     if (filter === 'not filtered') {
@@ -403,13 +403,19 @@ export const ProfileComponent = () => {
       }
       setShowMaterialDetails(true)
     } 
+
+    setButtonLoader(false)
   }
 
 
 
 
 
-  const bookmarkMaterial = async (index, id, materialFor) => {
+  const bookmarkMaterial = async (index, id, materialFor, buttonclickedNum) => {
+
+    setButtonLoading(true)
+    setButtonClickedNumber(buttonclickedNum)
+
 
     const groupID = id;
     
@@ -667,14 +673,19 @@ export const ProfileComponent = () => {
      } catch (error) {
        console.error('Error saving study material:', error);
      }
- 
+     
  
  
      fetchData()
+
+     setButtonLoading(false)
+     setButtonClickedNumber(0)
     }
  
  
     if (materialFor === 'Personal') {
+
+      
  
      const personalStudyMaterial = await axios.get(`${SERVER_URL}/studyMaterial/study-material-category/Personal/${UserId}`)
  
@@ -684,9 +695,12 @@ export const ProfileComponent = () => {
       const filteredMaterialResult = bookmarkedPersonalMaterial.filter(material => (material.code === materialCode && material.materialFor === materialFor && material.UserId === UserId));
  
       if (filteredMaterialResult.length === 0) {
+
         savedFunctionality()
        } else {
        alert('Already exists.')
+       setButtonLoading(false)
+       setButtonClickedNumber(0)
       }
  
  
@@ -701,12 +715,15 @@ export const ProfileComponent = () => {
  
  
        if (filteredMaterialResult.length === 0) {
-         savedFunctionality()
+          savedFunctionality()
          } else {
          alert('Already exists.')
+         setButtonLoading(false)
+         setButtonClickedNumber(0)
        }
      }
- 
+     
+
    }
 
 
@@ -766,7 +783,10 @@ export const ProfileComponent = () => {
   };
 
 
-  const updateUserInformation = async () => {
+  const updateUserInformation = async (e, buttonclickedNum) => {
+
+    setButtonLoading(true)
+    setButtonClickedNumber(buttonclickedNum)
 
     let data = {
       username: userData.username,
@@ -800,13 +820,18 @@ export const ProfileComponent = () => {
         setMsg('')
       }, 2500);
     }
+
+    setButtonLoading(false)
+    setButtonClickedNumber(0)
   })
 
     fetchUserDataFrontend()
   }
 
 
-  const updateUserImage = async (e) => {
+  const updateUserImage = async (e, buttonclickedNum) => {
+    setButtonLoading(true)
+    setButtonClickedNumber(buttonclickedNum)
     e.preventDefault();
   
   
@@ -861,7 +886,7 @@ export const ProfileComponent = () => {
             }, 2500);
           }
         })
-
+        
         fetchUserDataFrontend()
       } catch (error) {
         console.error('Error:', error);
@@ -869,11 +894,16 @@ export const ProfileComponent = () => {
     } else {
       alert('No image selected!');
     }
+    
+    setButtonLoading(false)
+    setButtonClickedNumber(0)
+
   };
 
 
-  const deleteAccount = async (e) => {
+  const deleteAccount = async (e, buttonclickedNum) => {
     e.preventDefault()
+    setButtonClickedNumber(3)
     const confirmDeletion = async () => {
 
       let data = {
@@ -936,6 +966,7 @@ export const ProfileComponent = () => {
       }, 2500);
     }
 
+    setButtonClickedNumber(0)
   }
   
 
@@ -973,7 +1004,7 @@ export const ProfileComponent = () => {
           
           <div className='flex items-center justify-between mt-8 gap-2'>
   
-            <div className={`${showMainProfile ? userId === undefined ? 'mbg-700 mcolor-100' : 'mcolor-100 mbg-400 border-thin-800' : 'mbg-100 mcolor-900 border-thin-800'} py-2 text-center rounded  w-full cursor-pointer`} onClick={() => {
+            <div className={`${showMainProfile ? 'mbg-100 mcolor-900 border-thin-800': 'btn-700 mcolor-100'} py-2 text-center rounded  w-full cursor-pointer`} onClick={() => {
               setShowPasswordSecurity(false)
               setShowAccountSettings(false)
               setShowAccountDeletion(false)
@@ -983,7 +1014,7 @@ export const ProfileComponent = () => {
             </div>
   
             {(!userId || UserId === parseInt(userId, 10)) && (
-                <div className={`${showAccountSettings ? 'mbg-700 mcolor-100' : 'mbg-100 mcolor-900 border-thin-800'} py-2 text-center rounded  w-full cursor-pointer`} onClick={() => {
+                <div className={`${showAccountSettings ? 'mbg-100 mcolor-900 border-thin-800': 'btn-700 mcolor-100'} py-2 text-center rounded  w-full cursor-pointer`} onClick={() => {
                   setShowMainProfile(false)
                   setShowPasswordSecurity(false)
                   setShowAccountDeletion(false)
@@ -995,7 +1026,7 @@ export const ProfileComponent = () => {
   
   
               {(!userId || UserId === parseInt(userId, 10)) && (
-                <div className={`${showPasswordSecurity ? 'mbg-700 mcolor-100' : 'mbg-100 mcolor-900 border-thin-800'} py-2 text-center rounded  w-full cursor-pointer`} onClick={() => {
+                <div className={`${showPasswordSecurity ? 'mbg-100 mcolor-900 border-thin-800': 'btn-700 mcolor-100'} py-2 text-center rounded  w-full cursor-pointer`} onClick={() => {
                   setShowAccountSettings(false)
                   setShowMainProfile(false)
                   setShowAccountDeletion(false)
@@ -1008,7 +1039,7 @@ export const ProfileComponent = () => {
   
               {(!userId || UserId === parseInt(userId, 10)) && (
   
-                <div className={`${showAccountDeletion ? 'mbg-700 mcolor-100' : 'mbg-100 mcolor-900 border-thin-800'} py-2 text-center rounded  w-full cursor-pointer`} onClick={() => {
+                <div className={`${showAccountDeletion ? 'mbg-100 mcolor-900 border-thin-800' : 'btn-700 mcolor-100'} py-2 text-center rounded  w-full cursor-pointer`} onClick={() => {
                   setShowAccountSettings(false)
                   setShowMainProfile(false)
                   setShowPasswordSecurity(false)
@@ -1030,7 +1061,7 @@ export const ProfileComponent = () => {
   
                     <div className='flex items-center justify-center gap-8 pt-3'>
                       <div style={{ width: '200px' }}>
-                      <img src={`${CLIENT_URL}/uploaded_images/${userData.userImage}`} className='rounded-full' style={{ width: '200px', objectFit: 'cover', height: '200px' }} alt="" />
+                      <img src={`${SERVER_URL}/images/${userData.userImage}`} className='rounded-full' style={{ width: '200px', objectFit: 'cover', height: '200px' }} alt="" />
                       </div>
   
                       <div className=''>
@@ -1069,11 +1100,20 @@ export const ProfileComponent = () => {
                           </div>
   
                           <div className='flex items-center gap-3'>
-                            <button className='mbg-100 mcolor-900 border-thin-800 px-5 py-2 rounded' onClick={() => viewStudyMaterialDetails(index, 'shared', 'not filtered', category)}>View</button>
-                            <button className='mbg-700 mcolor-100 px-5 py-2 rounded' onClick={() => {
+                            <button className='mbg-100 mcolor-900 border-thin-800 px-5 py-2 rounded' disabled={buttonLoader} onClick={() => viewStudyMaterialDetails(index, 'shared', 'not filtered', category)}>
+                              {
+                                buttonLoader ? (
+                                  <div class="btn-spinner"></div>
+                                  ) : (
+                                  <div>View</div>
+                                )
+                              }
+                            </button>
+                            <button className='btn-700 mcolor-100 px-5 py-2 rounded' onClick={() => {
                               setShowBookmarkModal(true)
                               
-                              userId !== undefined ? setChooseRoom(true) : setChooseGroupRoom(true);
+                              setChooseRoom(true)
+                              // setChooseGroupRoom(true);
                               
                               setCurrentSharedMaterialIndex(index)
                               
@@ -1090,7 +1130,7 @@ export const ProfileComponent = () => {
                   {showModal && (
                     <div className={`absolute top-0 modal-bg left-0 w-full h-full`}>
                       <div className='flex items-center justify-center h-full'>
-                        <div className='relative mbg-100 h-[75vh] w-1/2 z-10 relative py-5 px-10 rounded-[5px]' style={{overflowY: 'auto'}}>
+                        <div className='relative mbg-100 min-h-[30vh] w-1/2 z-10 relative py-5 px-10 rounded-[5px]' style={{overflowY: 'auto'}}>
                           
                           <button className='absolute right-5 top-5 font-medium text-xl' onClick={() => {
                             setShowMaterialDetails(false)
@@ -1105,7 +1145,7 @@ export const ProfileComponent = () => {
                               <br />
                               <div className='flex items-center justify-center mb-2'>
                                 <Link to={'/main/library/generate-quiz'}>
-                                  <button className='mbg-700 mcolor-100 px-5 py-2 rounded border-thin-800'>Generate a new Study Material</button>
+                                  <button className='btn-700 mcolor-100 px-5 py-2 rounded border-thin-800'>Generate a new Study Material</button>
                                 </Link>
                               </div>
                               <br />
@@ -1124,7 +1164,7 @@ export const ProfileComponent = () => {
   
                                     <div className='flex items-center gap-3'>
                                       <button className='mbg-100 mcolor-900 border-thin-800 px-5 py-2 rounded' onClick={() => viewStudyMaterialDetails(index, 'personal', 'not filtered', category)} >View</button>
-                                      {/* <button className='mbg-700 mcolor-100 px-5 py-2 rounded' onClick={() => shareMaterial(index, 'personal')}>Share</button> */}
+                                      {/* <button className='btn-700 mcolor-100 px-5 py-2 rounded' onClick={() => shareMaterial(index, 'personal')}>Share</button> */}
                                     </div>
                                   </div>
                               })}
@@ -1145,7 +1185,7 @@ export const ProfileComponent = () => {
   
                                     <div className='flex items-center gap-3'>
                                       <button className='mbg-100 mcolor-900 border-thin-800 px-5 py-2 rounded' onClick={() => viewStudyMaterialDetails(index, 'group', 'not filtered', category)}>View</button>
-                                      {/* <button className='mbg-700 mcolor-100 px-5 py-2 rounded' onClick={() => shareMaterial(index, 'Group')}>Share</button> */}
+                                      {/* <button className='btn-700 mcolor-100 px-5 py-2 rounded' onClick={() => shareMaterial(index, 'Group')}>Share</button> */}
                                     </div>
                                   </div>
                               })}
@@ -1170,17 +1210,17 @@ export const ProfileComponent = () => {
                                 <p className='mcolor-900 text-center text-xl font-medium'>{currentMaterialTitle} from {currentMaterialCategory}</p>
                                 
                                 <div className='flex items-center justify-between my-5 gap-1'>
-                                  <button className='border-thin-800 w-full rounded py-2' onClick={() => {
+                                  <button className={`border-thin-800 w-full rounded py-2 ${showContext ? '' : 'btn-700 mcolor-100'}`} onClick={() => {
                                     setShowQuiz(false)
                                     setShowNotes(false)
                                     setShowContext(true)
                                   }}>Context</button>
-                                  <button className='border-thin-800 w-full rounded py-2 mbg-700 mcolor-100' onClick={() => {
+                                  <button className={`border-thin-800 w-full rounded py-2 ${showNotes ? '' : 'btn-700 mcolor-100'}`} onClick={() => {
                                     setShowContext(false)
                                     setShowQuiz(false)
                                     setShowNotes(true)
                                   }}>Notes</button>
-                                  <button className='border-thin-800 w-full rounded py-2 mbg-700 mcolor-100' onClick={() => {
+                                  <button className={`border-thin-800 w-full rounded py-2 ${showQuiz ? '' : 'btn-700 mcolor-100'}`} onClick={() => {
                                   setShowContext(false)
                                   setShowNotes(false)
                                   setShowQuiz(true)
@@ -1243,7 +1283,7 @@ export const ProfileComponent = () => {
                   {showBookmarkModal && (
                     <div className={`absolute top-0 modal-bg left-0 w-full h-full`}>
                       <div className='flex items-center justify-center h-full'>
-                        <div className='relative mbg-100 h-[60vh] w-1/3 z-10 relative py-5 px-5 rounded-[5px]' style={{overflowY: 'auto'}}>
+                        <div className='relative mbg-100 min-h-[30vh] w-1/3 z-10 relative py-5 px-5 rounded-[5px]' style={{overflowY: 'auto'}}>
   
                           <button className='absolute right-5 top-5 font-medium text-xl' onClick={() => {
                             setShowBookmarkModal(false)
@@ -1252,14 +1292,21 @@ export const ProfileComponent = () => {
                             setShowCreateGroupInput(false);
                           }}>&#10006;</button>
   
-                        {chooseRoom && userId !== undefined && (
+                        {chooseRoom && (
                           <div className='flex h-full py-10'>
                             <div className='w-full'>
                               <div>
                                 <p className='text-lg mb-5'>Bookmark to: </p>
                                 <div className='flex flex-col gap-4'>
   
-                                  <button className='mbg-300 py-4 rounded text-md font-medium' onClick={() => bookmarkMaterial(currentSharedMaterialIndex, null, 'Personal')}>Personal Study Room</button>
+                                  <button className={`${(buttonLoading && buttonClickedNumber === 4) ? 'mbg-300 py-4 rounded text-md font-medium' : 'mbg-300 py-4 rounded text-md font-medium'} px-10 py-2 rounded`} disabled={(buttonLoading && buttonClickedNumber === 4)} onClick={() => bookmarkMaterial(currentSharedMaterialIndex, null, 'Personal', 4)}>
+                                    {(buttonLoading && buttonClickedNumber === 4) ? (
+                                      <div>Bookmarking to Personal Study Room...</div>
+                                    ) : (
+                                      <div>Personal Study Room</div>
+                                    )}
+                                  </button>
+
                                   <button className='mbg-300 py-4 rounded text-md font-medium' onClick={() => {
                                     setChooseRoom(false)
                                     setChooseGroupRoom(true)
@@ -1273,29 +1320,30 @@ export const ProfileComponent = () => {
                         {chooseGroupRoom && (
                           <div>
   
-                            {userId !== undefined && (
                               <button className='mbg-200 mcolor-900 rounded px-4 py-1 rounded border-thin-800' onClick={() => {
                                 setChooseGroupRoom(false)
                                 setChooseRoom(true)
                               }}>Back</button>
-                            )}
+                            
   
                             <div className='mt-5 flex items-center justify-center'>
                               {/* back here */}
   
                               {showCreateGroupInput === false ? (
-                                <button className={`px-4 py-2 rounded mbg-700 mcolor-100 ${userId === undefined && 'mt-5'}`} onClick={() => {
+                                <button className={`px-4 py-2 rounded btn-700 mcolor-100 ${userId === undefined && 'mt-5'}`} onClick={() => {
                                   setShowCreateGroupInput(true)
                                 }}>Create a group</button>
                               ) : (
-                                <div className='flex items-center gap-3'>
+                                <div className='w-full'>
                                   <div className='my-3 border-thin-800 rounded'>
                                     <input type="text" placeholder='Group name...' className='w-full py-2 rounded text-center' value={groupNameValue !== '' ? groupNameValue : ''} onChange={(event) => {
                                       setGroupNameValue(event.target.value)
                                     }} />
                                   </div>
-                                  <button className='px-4 py-2 rounded mbg-700 mcolor-100' onClick={createGroupBtn}>Create</button>
-                                  <button className='px-4 py-2 rounded mbg-100 mcolor-900 border-thin-800' onClick={() => setShowCreateGroupInput(false)}>Cancel</button>
+                                  <div className='flex items-center justify-center gap-3'>
+                                    <button className='px-4 w-full py-2 rounded btn-700 mcolor-100' onClick={createGroupBtn}>Create</button>
+                                    <button className='px-4 w-full py-2 rounded mbg-100 mcolor-900 border-thin-800' onClick={() => setShowCreateGroupInput(false)}>Cancel</button>
+                                  </div>
                                 </div>
                               )}
   
@@ -1308,11 +1356,19 @@ export const ProfileComponent = () => {
   
   
                                   <p className='px-1'>{groupName}</p>
-                                <button  className='px-2 py-2 mbg-700 mcolor-100 rounded text-sm' onClick={() => bookmarkMaterial(currentSharedMaterialIndex, id, 'Group')}>Bookmark here</button>
+                    
+
+                                  <button className={`${(buttonLoading && buttonClickedNumber === (id+'1')) ? 'mbg-200 mcolor-900 border-thin-800' : 'btn-700 mcolor-100'} px-5 py-2 rounded`} disabled={(buttonLoading && buttonClickedNumber === (id+'1'))} onClick={() => bookmarkMaterial(currentSharedMaterialIndex, id, 'Group', (id+'1'))}>
+                                    {(buttonLoading && buttonClickedNumber === (id+'1')) ? (
+                                      <div>Bookmarking...</div>
+                                    ) : (
+                                      <div>Bookmark</div>
+                                    )}
+                                  </button>
   
                                   {/* {expandedGroupId === id && (
   
-                                    <div className='absolute right-0 bottom-0 px-7 mb-[-114px] mbg-700 mcolor-100 rounded pt-3 pb-4 opacity-80'>
+                                    <div className='absolute right-0 bottom-0 px-7 mb-[-114px] btn-700 mcolor-100 rounded pt-3 pb-4 opacity-80'>
                                       <Link to={`/main/group/study-area/${id}`}>
                                         <p className='pt-1'>Study Area</p>
                                       </Link>
@@ -1349,7 +1405,7 @@ export const ProfileComponent = () => {
                     <div className='p-2 rounded-full' {...getRootProps()} style={{ width: '220px', cursor: 'pointer', border: '3px dashed #888' }}>
                       <input {...getInputProps()} name='image' type='file' />
                       {acceptedFiles.length === 0 ? (
-                        <img src={`${CLIENT_URL}/uploaded_images/${userData.userImage}`} className='rounded-full' style={{ width: '200px', objectFit: 'cover', height: '200px' }} alt="" />
+                        <img src={`${SERVER_URL}/images/${userData.userImage}`} className='rounded-full' style={{ width: '200px', objectFit: 'cover', height: '200px' }} alt="" />
                       ) : (
                         <>
                           <img src={URL.createObjectURL(acceptedFiles[0])} className='rounded-full' style={{ width: '200px', objectFit: 'cover', height: '200px' }} alt="" />
@@ -1360,7 +1416,14 @@ export const ProfileComponent = () => {
                       <div className=''>
                         <p className='text-2xl mb-1 font-medium mcolor-800 mb-1'>Upload a new photo</p>
                         <p className='text-sm opacity-70 mb-4'>Drag and drop an image to the photo or click to select one.</p>
-                        <button className='mbg-700 mcolor-100 px-10 py-2 rounded' onClick={(e) => updateUserImage(e)}>Update</button>
+
+                        <button className={`${(buttonLoading && buttonClickedNumber === 1) ? 'mbg-200 mcolor-900 border-thin-800' : 'btn-700 mcolor-100'} px-10 py-2 rounded`} disabled={(buttonLoading && buttonClickedNumber === 1)} onClick={(e) => updateUserImage(e, 1)}>
+                          {(buttonLoading && buttonClickedNumber === 1) ? (
+                            <div>Updating...</div>
+                          ) : (
+                            <div>Update</div>
+                          )}
+                        </button>
                       </div>
                     </form>  
                     
@@ -1400,7 +1463,30 @@ export const ProfileComponent = () => {
                       
                       <li className='w-full'>
                         <p className='text-md'>Study Target</p>
-                        <input type="text" disabled className='border-medium-800 w-full py-2 rounded mbg-300 px-5' value={userData.studyProfTarget} />
+
+                        <select
+                          name=""
+                          id=""
+                          className='border-medium-800 w-full py-2 rounded px-5'
+                          value={userData.studyProfTarget || ''}
+                          onChange={(event) => setUserData({...userData, studyProfTarget: event.target.value}) || ''}
+                        >
+                          {/* Dynamic default option based on studyProfTarget */}
+                          {userData.studyProfTarget && (
+                            <option key={userData.studyProfTarget} value={userData.studyProfTarget}>
+                              {userData.studyProfTarget}
+                            </option>
+                          )}
+  
+                          {/* Other options excluding the default value */}
+                          {[100, 95, 90, 85, 80, 75].map((option) => (
+                            option !== userData.studyProfTarget && (
+                              <option key={option} value={option}>
+                                {option}
+                              </option>
+                            )
+                          ))}
+                        </select>
                       </li>
   
   
@@ -1437,7 +1523,13 @@ export const ProfileComponent = () => {
                     </ul>
   
                     <div className='flex items-center justify-end w-full mt-10'>
-                      <button className='mbg-700 mcolor-100 py-2 px-5 rounded' onClick={updateUserInformation}>Update Information Details</button>
+                      <button className={`${(buttonLoading && buttonClickedNumber === 2) ? 'mbg-200 mcolor-900 border-thin-800' : 'btn-700 mcolor-100'} px-5 py-2 rounded`} disabled={(buttonLoading && buttonClickedNumber === 2)} onClick={(e) => updateUserInformation(e, 2)}>
+                          {(buttonLoading && buttonClickedNumber === 2) ? (
+                            <div>Updating...</div>
+                          ) : (
+                            <div>Update Information Details</div>
+                          )}
+                        </button>
                     </div>
                   </div>
                 </div>
@@ -1454,7 +1546,7 @@ export const ProfileComponent = () => {
                         </p>
   
                         <div className='flex items-center justify-end mt-5'>
-                          <Link to={'/verify-email'} className=' py-2 px-5 mbg-700 mcolor-100 rounded'>
+                          <Link to={'/verify-email'} className=' py-2 px-5 btn-700 mcolor-100 rounded'>
                             Reset Password
                           </Link>
                         </div>
@@ -1476,7 +1568,7 @@ export const ProfileComponent = () => {
   
                       <div className='flex items-center justify-end mt-5'>
                         <button
-                          className='mbg-700 mcolor-100 px-8 py-2 rounded'
+                          className='btn-700 mcolor-100 px-8 py-2 rounded'
                           onClick={(e) => {
                           e.preventDefault()
                           setShowAccountDeletionInputPass(true)}
@@ -1520,11 +1612,15 @@ export const ProfileComponent = () => {
                               {showPassword ? <VisibilityOffIcon /> : <VisibilityIcon />}
                             </button>
                           </div>
-  
-  
-                          <button className='w-full mbg-700 mcolor-100 rounded py-2 my-4' onClick={(e) => deleteAccount(e)}>
-                            Confirm
-                          </button>
+
+
+                          <button className={`${(buttonLoading && buttonClickedNumber === 3) ? 'mbg-200 mcolor-900 border-thin-800' : 'btn-700 mcolor-100'} w-full py-2 my-4 rounded`} disabled={(buttonLoading && buttonClickedNumber === 3)} onClick={(e) => deleteAccount(e, 3)}>
+                          {(buttonLoading && buttonClickedNumber === 3) ? (
+                            <div>Confirming...</div>
+                          ) : (
+                            <div>Confirm</div>
+                          )}
+                        </button>
                         </div>
                       </div>
                     )}

@@ -205,6 +205,15 @@ export const DiscussionForums = () => {
 
     socket.emit('message_joined_created_room', data);
     setMessage('')
+
+    socket.on('discussion_rooms_list', (roomsListData) => {
+      const index = roomsListData.findIndex(roomData => roomData.room === data.room);
+      console.log('Index of the created room:', index);
+
+      setCurrentIndex(index)
+      setCurrentRoom(roomList[index]?.roomName)
+    });
+
   }
 
 
@@ -600,6 +609,8 @@ export const DiscussionForums = () => {
                 <p>Chat Rooms</p>
               </p>
 
+              <p>{currentIndex}</p>
+              <p>{currentRoom}</p>
 
               {filteredRooms
               .filter(room => room !== null)
@@ -611,6 +622,7 @@ export const DiscussionForums = () => {
                     <div key={index} className='mbg-300 py-3 px-5 my-5 rounded'>
                       {room && (
                         <>
+                          <p className='mcolor-800'>Room: <span className='font-medium mcolor-900'>{room?.room}</span></p>
                           <p className='mcolor-800'>Room name: <span className='font-medium mcolor-900'>{room?.roomName}</span></p>
                           <p className='mcolor-800'>Room category: <span className='font-medium mcolor-900'>{room?.roomCategory}</span></p>
                           <p className='mcolor-800'>Room Description: <span className='font-medium mcolor-900'>{room?.roomDescription}</span></p>

@@ -78,7 +78,9 @@ export const VirtualLibraryMain = () => {
   const [msg, setMsg] = useState('');
   const [error, setError] = useState(false);
   const [loading, setLoading] = useState(true);
-
+  const [buttonLoading, setButtonLoading] = useState(false);
+  const [buttonLoader, setButtonLoader] = useState(false);
+  const [buttonClickedNumber, setButtonClickedNumber] = useState(0);
   const { user } = useUser()
   const UserId = user?.id;
 
@@ -266,6 +268,7 @@ export const VirtualLibraryMain = () => {
 
   const viewStudyMaterialDetails = async (index, materialFor, filter, category) => {
 
+    setButtonLoader(true)
     setShowPresentStudyMaterials(false)
 
     if (filter === 'not filtered') {
@@ -509,7 +512,13 @@ export const VirtualLibraryMain = () => {
       // }
       setShowMaterialDetails(true)
     }
+
+
+    setButtonLoader(false)
+
   }
+
+
 
   const shareMaterial = async (index, materialFor) => {
     try {
@@ -583,311 +592,320 @@ export const VirtualLibraryMain = () => {
 
 
 
-  const bookmarkMaterial = async (index, id, materialFor) => {
+  const bookmarkMaterial = async (index, id, materialFor, buttonclickedNum) => {
 
-   const groupID = id;
-   
-   const title = sharedMaterials[index].title;
-   const body = sharedMaterials[index].body;
-   const numInp = sharedMaterials[index].numInp;
-   const materialId = sharedMaterials[index].StudyMaterialsCategoryId;
-   const materialForDb = sharedMaterials[index].materialFor;
-   const materialCode = sharedMaterials[index].code;
-   const materialTag = sharedMaterials[index].tag;
-   
+    setButtonLoading(true)
+    setButtonClickedNumber(buttonclickedNum)
 
 
-   const savedFunctionality = async () => {
+    const groupID = id;
     
-   let genQAData = []
-   
-   let genMCQAData = []
-   let genToF = []
-   let genIdentification = []
-   let genFITB = []
-
-   let mcqaDistractors = []
-   let tofDistractors = []
-   let genQADataRev = []
-
-
-
-
-    const studyMaterialsData = {
-      title: title,
-      body: body,
-      numInp: numInp,
-      materialFor: materialFor,
-      code: materialCode,
-      StudyGroupId: materialFor === 'Group' ? groupID : null,
-      StudyMaterialsCategoryId: materialId,
-      UserId: UserId,
-      bookmarkedBy: UserId,
-      tag: 'Bookmarked'
-    };
-
-
+    const title = sharedMaterials[index].title;
+    const body = sharedMaterials[index].body;
+    const numInp = sharedMaterials[index].numInp;
+    const materialId = sharedMaterials[index].StudyMaterialsCategoryId;
+    const materialForDb = sharedMaterials[index].materialFor;
+    const materialCode = sharedMaterials[index].code;
+    const materialTag = sharedMaterials[index].tag;
     
-    try {
-      let mcqResponse = await axios.get(`${SERVER_URL}/quesAns/study-material-mcq/${sharedMaterials[index].id}`);
-
-      genQAData = mcqResponse.data
-
-      genMCQAData = genQAData.filter(data => data.quizType === 'MCQA')
-      genToF = genQAData.filter(data => data.quizType === 'ToF')
-      genIdentification = genQAData.filter(data => data.quizType === 'Identification')
-      genFITB = genQAData.filter(data => data.quizType === 'FITB')
-
-
-
-    // MCQA Distractors
-    if (Array.isArray(genMCQAData)) {
-      const materialChoices = genMCQAData.map(async (materialChoice) => {
-        try {
-          let choiceResponse = await axios.get(`${SERVER_URL}/quesAnsChoices/study-material/${sharedMaterials[index].id}/${materialChoice.id}`);
-
-            return choiceResponse.data;
-          } catch (error) {
-            console.error('Error fetching data:', error);
-          }
-        });
-        
-        const responses = await Promise.all(materialChoices);
-        const allChoices = responses.flat();
-        mcqaDistractors = responses;
-      }
-    
-
-      // True or False distractors
-
-    if (Array.isArray(genToF)) {
-      const materialChoices = genToF.map(async (materialChoice) => {
-        try {
-          let choiceResponse = await axios.get(`${SERVER_URL}/quesAnsChoices/study-material/${sharedMaterials[index].id}/${materialChoice.id}`);
-
-            return choiceResponse.data;
-          } catch (error) {
-            console.error('Error fetching data:', error);
-          }
-        });
-        
-        const responses = await Promise.all(materialChoices);
-        const allChoices = responses.flat();
-        tofDistractors = responses;
-      }
-
-
-    } catch (error) {
-      console.error('Error fetching study material by ID:', error);
-    }
-
-    try {
-
-      let revResponse = await axios.get(`${SERVER_URL}/quesRev/study-material-rev/${sharedMaterials[index].id}`);
-
-      genQADataRev = revResponse.data;
-      
-    } catch (error) {
-      console.error('Error fetching study material by ID:', error);
-    }
-
-
-
-
-
-
-    try {
-      const smResponse = await axios.post(
-        `${SERVER_URL}/studyMaterial`,
-        studyMaterialsData
-      );
-
-
-      // genMCQAData = genQAData.filter(data => data.quizType === 'MCQA')
-      // genToF = genQAData.filter(data => data.quizType === 'ToF')
-      // genIdentification = genQAData.filter(data => data.quizType === 'Identification')
-      // genFITB = genQAData.filter(data => data.quizType === 'FITB')
-
-      for (let i = 0; i < genMCQAData.length; i++) {      
-
-        const qaData = {
-          question: genMCQAData[i].question,
-          answer: genMCQAData[i].answer,
-          bgColor: genMCQAData[i].bgColor,
-          quizType: 'MCQA',
-          StudyMaterialId: smResponse.data.id,
-          UserId: smResponse.data.UserId,
-        };
-
-        const qaResponse = await axios.post(
-          `${SERVER_URL}/quesAns`,
-          qaData
-        );
-
-        for (let j = 0; j < mcqaDistractors[i].length; j++) {
-          let qacData = {
-              choice: mcqaDistractors[i][j].choice, // Extract the string value from the object
-              QuesAnId: qaResponse.data.id,
-              StudyMaterialId: smResponse.data.id,
-              UserId: smResponse.data.UserId,
-          };
-  
-          try {
-              await axios.post(`${SERVER_URL}/quesAnsChoices`, qacData);
-          } catch (error) {
-              console.error(error);
-          }
-        }
-
-      }
-
-
-      for (let i = 0; i < genQADataRev.length; i++) {      
-
-        const qaDataRev = {
-          question:genQADataRev[i].question,
-          answer: genQADataRev[i].answer,
-          StudyMaterialId: smResponse.data.id,
-          UserId: smResponse.data.UserId,
-        };
-
-        await axios.post(`${SERVER_URL}/quesRev`, qaDataRev);
-
-      }
-
-
-      for (let i = 0; i < genToF.length; i++) {
-
-        const trueSentencesData = {
-          question: genToF[i].question,
-          answer: 'True',
-          quizType: 'ToF',
-          bgColor: genToF[i].bgColor,
-          StudyMaterialId: smResponse.data.id,
-          UserId: smResponse.data.UserId,
-        };
-      
-        try {
-          // Create the question and get the response
-          const qaResponse = await axios.post(`${SERVER_URL}/quesAns`, trueSentencesData);
-      
-          // Iterate through mcqaDistractors and create question choices
-          for (let j = 0; j < tofDistractors[i].length; j++) {
-            let qacData = {
-                choice: tofDistractors[i][j].choice, // Extract the string value from the object
-                QuesAnId: qaResponse.data.id,
-                StudyMaterialId: smResponse.data.id,
-                UserId: smResponse.data.UserId,
-            };
-    
-            try {
-                await axios.post(`${SERVER_URL}/quesAnsChoices`, qacData);
-            } catch (error) {
-                console.error(error);
-            }
-          }
-        } catch (error) {
-          console.error(error);
-        }
-      }
-      
-
-      for (let i = 0; i < genFITB.length; i++) {
-
-        const fillInTheBlankData = {
-          question: genFITB[i].question,
-          answer: genFITB[i].answer,
-          quizType: 'FITB',
-          bgColor: genFITB[i].bgColor,
-          StudyMaterialId: smResponse.data.id,
-          UserId: smResponse.data.UserId,
-        }
-
-        try {
-          await axios.post(
-            `${SERVER_URL}/quesAns`,
-            fillInTheBlankData
-            );
-        } catch (error) {
-          console.error();
-        }
-      }
-      
-
-      for (let i = 0; i < genIdentification.length; i++) {
-
-        const identificationData = {
-          question: genIdentification[i].question,
-          answer: genIdentification[i].answer,
-          quizType: 'FITB',
-          bgColor: genIdentification[i].bgColor,
-          StudyMaterialId: smResponse.data.id,
-          UserId: smResponse.data.UserId,
-        }
-
-        try {
-          await axios.post(
-            `${SERVER_URL}/quesAns`,
-            identificationData
-            );
-        } catch (error) {
-          console.error();
-        }
-      }
-
  
-    } catch (error) {
-      console.error('Error saving study material:', error);
-    }
-
-
-
-    fetchData()
-    setTimeout(() => {
-      setError(false)
-      setMsg("Successfully bookmarked.");
-    }, 100);
+ 
+    const savedFunctionality = async () => {
+     
+    let genQAData = []
     
-    setTimeout(() => {
-      setMsg("");
-    }, 2000);
-   }
-
-
-   if (materialFor === 'Personal') {
-
-    const personalStudyMaterial = await axios.get(`${SERVER_URL}/studyMaterial/study-material-category/Personal/${UserId}`)
-
-    let bookmarkedPersonalMaterial = personalStudyMaterial.data;
-
-
-     const filteredMaterialResult = bookmarkedPersonalMaterial.filter(material => (material.code === materialCode && material.materialFor === materialFor && material.UserId === UserId));
-
-     if (filteredMaterialResult.length === 0) {
-       savedFunctionality()
-      } else {
-      alert('Already exists.')
+    let genMCQAData = []
+    let genToF = []
+    let genIdentification = []
+    let genFITB = []
+ 
+    let mcqaDistractors = []
+    let tofDistractors = []
+    let genQADataRev = []
+ 
+ 
+ 
+ 
+     const studyMaterialsData = {
+       title: title,
+       body: body,
+       numInp: numInp,
+       materialFor: materialFor,
+       code: materialCode,
+       StudyGroupId: materialFor === 'Group' ? groupID : null,
+       StudyMaterialsCategoryId: materialId,
+       UserId: UserId,
+       bookmarkedBy: UserId,
+       tag: 'Bookmarked'
+     };
+ 
+ 
+     
+     try {
+       let mcqResponse = await axios.get(`${SERVER_URL}/quesAns/study-material-mcq/${sharedMaterials[index].id}`);
+ 
+       genQAData = mcqResponse.data
+ 
+       genMCQAData = genQAData.filter(data => data.quizType === 'MCQA')
+       genToF = genQAData.filter(data => data.quizType === 'ToF')
+       genIdentification = genQAData.filter(data => data.quizType === 'Identification')
+       genFITB = genQAData.filter(data => data.quizType === 'FITB')
+ 
+ 
+ 
+     // MCQA Distractors
+     if (Array.isArray(genMCQAData)) {
+       const materialChoices = genMCQAData.map(async (materialChoice) => {
+         try {
+           let choiceResponse = await axios.get(`${SERVER_URL}/quesAnsChoices/study-material/${sharedMaterials[index].id}/${materialChoice.id}`);
+ 
+             return choiceResponse.data;
+           } catch (error) {
+             console.error('Error fetching data:', error);
+           }
+         });
+         
+         const responses = await Promise.all(materialChoices);
+         const allChoices = responses.flat();
+         mcqaDistractors = responses;
+       }
+     
+ 
+       // True or False distractors
+ 
+     if (Array.isArray(genToF)) {
+       const materialChoices = genToF.map(async (materialChoice) => {
+         try {
+           let choiceResponse = await axios.get(`${SERVER_URL}/quesAnsChoices/study-material/${sharedMaterials[index].id}/${materialChoice.id}`);
+ 
+             return choiceResponse.data;
+           } catch (error) {
+             console.error('Error fetching data:', error);
+           }
+         });
+         
+         const responses = await Promise.all(materialChoices);
+         const allChoices = responses.flat();
+         tofDistractors = responses;
+       }
+ 
+ 
+     } catch (error) {
+       console.error('Error fetching study material by ID:', error);
      }
+ 
+     try {
+ 
+       let revResponse = await axios.get(`${SERVER_URL}/quesRev/study-material-rev/${sharedMaterials[index].id}`);
+ 
+       genQADataRev = revResponse.data;
+       
+     } catch (error) {
+       console.error('Error fetching study material by ID:', error);
+     }
+ 
+ 
+ 
+ 
+ 
+ 
+     try {
+       const smResponse = await axios.post(
+         `${SERVER_URL}/studyMaterial`,
+         studyMaterialsData
+       );
+ 
+ 
+       // genMCQAData = genQAData.filter(data => data.quizType === 'MCQA')
+       // genToF = genQAData.filter(data => data.quizType === 'ToF')
+       // genIdentification = genQAData.filter(data => data.quizType === 'Identification')
+       // genFITB = genQAData.filter(data => data.quizType === 'FITB')
+ 
+       for (let i = 0; i < genMCQAData.length; i++) {      
+ 
+         const qaData = {
+           question: genMCQAData[i].question,
+           answer: genMCQAData[i].answer,
+           bgColor: genMCQAData[i].bgColor,
+           quizType: 'MCQA',
+           StudyMaterialId: smResponse.data.id,
+           UserId: smResponse.data.UserId,
+         };
+ 
+         const qaResponse = await axios.post(
+           `${SERVER_URL}/quesAns`,
+           qaData
+         );
+ 
+         for (let j = 0; j < mcqaDistractors[i].length; j++) {
+           let qacData = {
+               choice: mcqaDistractors[i][j].choice, // Extract the string value from the object
+               QuesAnId: qaResponse.data.id,
+               StudyMaterialId: smResponse.data.id,
+               UserId: smResponse.data.UserId,
+           };
+   
+           try {
+               await axios.post(`${SERVER_URL}/quesAnsChoices`, qacData);
+               console.log("Saved! mcq");
+           } catch (error) {
+               console.error(error);
+           }
+         }
+ 
+       }
+ 
+ 
+       for (let i = 0; i < genQADataRev.length; i++) {      
+ 
+         const qaDataRev = {
+           question:genQADataRev[i].question,
+           answer: genQADataRev[i].answer,
+           StudyMaterialId: smResponse.data.id,
+           UserId: smResponse.data.UserId,
+         };
+ 
+         await axios.post(`${SERVER_URL}/quesRev`, qaDataRev);
+ 
+       }
+ 
+ 
+       for (let i = 0; i < genToF.length; i++) {
+ 
+         const trueSentencesData = {
+           question: genToF[i].question,
+           answer: 'True',
+           quizType: 'ToF',
+           bgColor: genToF[i].bgColor,
+           StudyMaterialId: smResponse.data.id,
+           UserId: smResponse.data.UserId,
+         };
+       
+         try {
+           // Create the question and get the response
+           const qaResponse = await axios.post(`${SERVER_URL}/quesAns`, trueSentencesData);
+       
+           // Iterate through mcqaDistractors and create question choices
+           for (let j = 0; j < tofDistractors[i].length; j++) {
+             let qacData = {
+                 choice: tofDistractors[i][j].choice, // Extract the string value from the object
+                 QuesAnId: qaResponse.data.id,
+                 StudyMaterialId: smResponse.data.id,
+                 UserId: smResponse.data.UserId,
+             };
+     
+             try {
+                 await axios.post(`${SERVER_URL}/quesAnsChoices`, qacData);
+                 console.log("Saved! choice");
+             } catch (error) {
+                 console.error(error);
+             }
+           }
+         } catch (error) {
+           console.error(error);
+         }
+       }
+       
+ 
+       for (let i = 0; i < genFITB.length; i++) {
+ 
+         const fillInTheBlankData = {
+           question: genFITB[i].question,
+           answer: genFITB[i].answer,
+           quizType: 'FITB',
+           bgColor: genFITB[i].bgColor,
+           StudyMaterialId: smResponse.data.id,
+           UserId: smResponse.data.UserId,
+         }
+ 
+         try {
+           await axios.post(
+             `${SERVER_URL}/quesAns`,
+             fillInTheBlankData
+             );
+         } catch (error) {
+           console.error();
+         }
+       }
+       
+ 
+       for (let i = 0; i < genIdentification.length; i++) {
+ 
+         const identificationData = {
+           question: genIdentification[i].question,
+           answer: genIdentification[i].answer,
+           quizType: 'FITB',
+           bgColor: genIdentification[i].bgColor,
+           StudyMaterialId: smResponse.data.id,
+           UserId: smResponse.data.UserId,
+         }
+ 
+         try {
+           await axios.post(
+             `${SERVER_URL}/quesAns`,
+             identificationData
+             );
+         } catch (error) {
+           console.error();
+         }
+       }
+ 
+  
+     } catch (error) {
+       console.error('Error saving study material:', error);
+     }
+     
+ 
+ 
+     fetchData()
 
-
-    } else {
-
-      const groupStudyMaterial = await axios.get(`${SERVER_URL}/studyMaterial/study-material-category/Group/${UserId}`)
-
-      let bookmarkedPersonalMaterial = groupStudyMaterial.data;
-
-
-      const filteredMaterialResult = bookmarkedPersonalMaterial.filter(material => (material.code === materialCode && material.materialFor === materialFor && material.StudyGroupId === groupID));
-
-
-      if (filteredMaterialResult.length === 0) {
-        savedFunctionality()
-        } else {
-        alert('Already exists.')
-      }
+     setButtonLoading(false)
+     setButtonClickedNumber(0)
     }
+ 
+ 
+    if (materialFor === 'Personal') {
 
-  }
+      
+ 
+     const personalStudyMaterial = await axios.get(`${SERVER_URL}/studyMaterial/study-material-category/Personal/${UserId}`)
+ 
+     let bookmarkedPersonalMaterial = personalStudyMaterial.data;
+ 
+ 
+      const filteredMaterialResult = bookmarkedPersonalMaterial.filter(material => (material.code === materialCode && material.materialFor === materialFor && material.UserId === UserId));
+ 
+      if (filteredMaterialResult.length === 0) {
+
+        savedFunctionality()
+       } else {
+       alert('Already exists.')
+       setButtonLoading(false)
+       setButtonClickedNumber(0)
+      }
+ 
+ 
+     } else {
+ 
+       const groupStudyMaterial = await axios.get(`${SERVER_URL}/studyMaterial/study-material-category/Group/${UserId}`)
+ 
+       let bookmarkedPersonalMaterial = groupStudyMaterial.data;
+ 
+ 
+       const filteredMaterialResult = bookmarkedPersonalMaterial.filter(material => (material.code === materialCode && material.materialFor === materialFor && material.StudyGroupId === groupID));
+ 
+ 
+       if (filteredMaterialResult.length === 0) {
+          savedFunctionality()
+         } else {
+         alert('Already exists.')
+         setButtonLoading(false)
+         setButtonClickedNumber(0)
+       }
+     }
+     
+
+   }
   
 
   const filterMaterial = async (categoryTitle) => {
@@ -1257,8 +1275,8 @@ export const VirtualLibraryMain = () => {
                             <div>
                               <div className='flex flex-col gap-4'>
                                 <br />
-                                <button className='mbg-300 py-4 rounded text-md font-medium' onClick={removeFromLibraryOnly}>Remove From Library Only</button>
-                                <button className='mbg-300 py-4 rounded text-md font-medium' onClick={() => {
+                                <button className='btn-300 py-4 rounded text-md font-medium' onClick={removeFromLibraryOnly}>Remove From Library Only</button>
+                                <button className='btn-300 py-4 rounded text-md font-medium' onClick={() => {
                                   deleteInAllRecords()
                                 }}>Delete in All Records</button>
                               </div>
@@ -1301,7 +1319,7 @@ export const VirtualLibraryMain = () => {
                     <p className='font-medium text-lg'>Title: {material.title}</p>
                     <p className='text-sm mt-1'>Category: {category}</p>
                     <p className='text-sm mt-1'>Uploader: {user}</p>
-                    <p className='text-sm mt-1'>Bookmarked by {bookmarksCount} user{bookmarksCount > 1 ? 's' : ''}</p>
+                    <p className='text-sm mt-1'>Bookmark Count: {bookmarksCount}</p>
                   </div>
   
                   <div className='gap-3 mt-5'>
@@ -1319,8 +1337,20 @@ export const VirtualLibraryMain = () => {
                       </div>
                     )}
   
-                    <button className='mbg-100 w-full my-1 mcolor-900 border-thin-800 px-5 py-2 rounded' onClick={() => viewStudyMaterialDetails(index, 'shared', 'not filtered', category)}>View</button>
-                    <button className='mbg-700 w-full my-1 mcolor-100 px-5 py-2 rounded' onClick={() => {
+                    <button className='mbg-100 w-full my-1 mcolor-900 border-thin-800 px-5 py-2 rounded' disabled={buttonLoader} onClick={() => viewStudyMaterialDetails(index, 'shared', 'not filtered', category)}>
+                      {
+                        buttonLoader ? (
+                          <div className="w-full flex items-center justify-center">
+                            <div className='btn-spinner'></div>
+                          </div>
+                          ) : (
+                          <div>View</div>
+                        )
+                      }
+                    </button>
+
+                    
+                    <button className='btn-700 w-full my-1 mcolor-100 px-5 py-2 rounded' onClick={() => {
                       setShowBookmarkModal(true);
                       setChooseRoom(true);
                       setCurrentSharedMaterialIndex(index);
@@ -1361,7 +1391,7 @@ export const VirtualLibraryMain = () => {
                       <p className='font-medium text-lg'>Title: {material.title}</p>
                       <p className='text-sm mt-1'>Category: {category}</p>
                       <p className='text-sm mt-1'>Uploader: {user}</p>
-                      <p className='text-sm mt-1'>Bookmarked by {bookmarksCount} user{bookmarksCount > 1 ? 's' : ''}</p>
+                      <p className='text-sm mt-1'>Bookmark Count: {bookmarksCount}</p>
                     </div>
   
                     <div className='gap-3'>
@@ -1380,8 +1410,19 @@ export const VirtualLibraryMain = () => {
                           }}><DeleteIcon className='text-red'/></button>
                         </div>
                       )}
-                      <button className='mbg-100 w-full my-1 mcolor-900 border-thin-800 px-5 py-2 rounded' onClick={() => viewStudyMaterialDetails(index, 'shared', 'filtered', category)}>View</button>
-                      <button className='mbg-700 w-full my-1 mcolor-100 px-5 py-2 rounded' onClick={() => {
+
+                      <button className='mbg-100 w-full my-1 mcolor-900 border-thin-800 px-5 py-2 rounded' disabled={buttonLoader} onClick={() => viewStudyMaterialDetails(index, 'shared', 'filtered', category)}>
+                        {
+                          buttonLoader ? (
+                            <div className="w-full flex items-center justify-center">
+                              <div className='btn-spinner'></div>
+                            </div>
+                            ) : (
+                            <div>View</div>
+                          )
+                        }
+                      </button>
+                      <button className='btn-700 w-full my-1 mcolor-100 px-5 py-2 rounded' onClick={() => {
                         setShowBookmarkModal(true)
                         setChooseRoom(true)
                         setCurrentSharedMaterialIndex(index)
@@ -1441,8 +1482,19 @@ export const VirtualLibraryMain = () => {
                             }}><DeleteIcon className='text-red'/></button>
                           </div>
                         )}
-                          <button className='mbg-100 w-full my-1 mcolor-900 border-thin-800 px-5 py-2 rounded' onClick={() => viewStudyMaterialDetails(index, 'shared', 'filtered', category)}>View</button>
-                          <button className='mbg-700 w-full my-1 mcolor-100 px-5 py-2 rounded' onClick={() => {
+
+                          <button className='mbg-100 w-full my-1 mcolor-900 border-thin-800 px-5 py-2 rounded' disabled={buttonLoader} onClick={() => viewStudyMaterialDetails(index, 'shared', 'filtered', category)}>
+                            {
+                              buttonLoader ? (
+                                <div className="w-full flex items-center justify-center">
+                                  <div className='btn-spinner'></div>
+                                </div>
+                                ) : (
+                                <div>View</div>
+                              )
+                            }
+                          </button>
+                          <button className='btn-700 w-full my-1 mcolor-100 px-5 py-2 rounded' onClick={() => {
                             setShowBookmarkModal(true)
                             setChooseRoom(true)
                             setCurrentSharedMaterialIndex(index)
@@ -1470,8 +1522,20 @@ export const VirtualLibraryMain = () => {
                           </div>
   
                           <div className='flex items-center gap-3'>
-                            <button className='mbg-100 mcolor-900 border-thin-800 px-5 py-2 rounded' onClick={() => viewStudyMaterialDetails(index, 'shared', 'searched-category', category)}>View</button>
-                            <button className='mbg-700 mcolor-100 px-5 py-2 rounded' onClick={() => {
+
+                            <button className='mbg-100 w-full my-1 mcolor-900 border-thin-800 px-5 py-2 rounded' disabled={buttonLoader} onClick={() => viewStudyMaterialDetails(index, 'shared', 'searched-category', category)}>
+                              {
+                                buttonLoader ? (
+                                  <div className="w-full flex items-center justify-center">
+                                    <div className='btn-spinner'></div>
+                                  </div>
+                                  ) : (
+                                  <div>View</div>
+                                )
+                              }
+                            </button>
+
+                            <button className='btn-700 mcolor-100 px-5 py-2 rounded' onClick={() => {
                               setShowBookmarkModal(true)
                               setChooseRoom(true)
                               setCurrentSharedMaterialIndex(index)
@@ -1494,30 +1558,31 @@ export const VirtualLibraryMain = () => {
             {showBookmarkModal && (
               <div className={`absolute top-0 modal-bg left-0 w-full h-full`}>
                 <div className='flex items-center justify-center h-full'>
-                  <div className='relative mbg-100 h-[60vh] w-1/3 z-10 relative py-5 px-5 rounded-[5px]' style={{overflowY: 'auto'}}>
-  
+                  <div className='relative mbg-100 min-h-[30vh] w-1/3 z-10 relative py-5 px-5 rounded-[5px]' style={{overflowY: 'auto'}}>
+
                     <button className='absolute right-5 top-5 font-medium text-xl' onClick={() => {
                       setShowBookmarkModal(false)
                       setChooseGroupRoom(false)
                       setChooseRoom(false)
                       setShowCreateGroupInput(false);
                     }}>&#10006;</button>
-  
+
                   {chooseRoom && (
-                    <div className='flex items-center justify-center h-full'>
+                    <div className='flex h-full py-10'>
                       <div className='w-full'>
                         <div>
                           <p className='text-lg mb-5'>Bookmark to: </p>
-  
-                          {!error && msg !== '' && (
-                            <div className='green-bg text-center mt-5 rounded py-3 w-full mb-5'>
-                              {msg}
-                            </div>
-                          )}
-  
                           <div className='flex flex-col gap-4'>
-                            <button className='mbg-300 py-4 rounded text-md font-medium' onClick={() => bookmarkMaterial(currentSharedMaterialIndex, null, 'Personal')}>Personal Study Room</button>
-                            <button className='mbg-300 py-4 rounded text-md font-medium' onClick={() => {
+
+                            <button className={`${(buttonLoading && buttonClickedNumber === 4) ? 'btn-300 py-4 rounded text-md font-medium' : 'btn-300 py-4 rounded text-md font-medium'} px-10 py-2 rounded`} disabled={(buttonLoading && buttonClickedNumber === 4)} onClick={() => bookmarkMaterial(currentSharedMaterialIndex, null, 'Personal', 4)}>
+                              {(buttonLoading && buttonClickedNumber === 4) ? (
+                                <div>Bookmarking to Personal Study Room...</div>
+                              ) : (
+                                <div>Personal Study Room</div>
+                              )}
+                            </button>
+
+                            <button className='btn-300 py-4 rounded text-md font-medium' onClick={() => {
                               setChooseRoom(false)
                               setChooseGroupRoom(true)
                             }}>Group Study Room</button>
@@ -1526,53 +1591,59 @@ export const VirtualLibraryMain = () => {
                       </div>
                     </div>
                   )}
-  
+
                   {chooseGroupRoom && (
                     <div>
-                      <button className='mbg-200 mcolor-900 rounded px-4 py-1 rounded border-thin-800' onClick={() => {
-                        setChooseGroupRoom(false)
-                        setChooseRoom(true)
-                      }}>Back</button>
-  
+
+                        <button className='mbg-200 mcolor-900 rounded px-4 py-1 rounded border-thin-800' onClick={() => {
+                          setChooseGroupRoom(false)
+                          setChooseRoom(true)
+                        }}>Back</button>
+                      
+
                       <div className='mt-5 flex items-center justify-center'>
                         {/* back here */}
-  
+
                         {showCreateGroupInput === false ? (
-                          <button className='px-4 py-2 rounded mbg-700 mcolor-100' onClick={() => {
+                          <button className={`px-4 py-2 rounded btn-700 mcolor-100 ${UserId === undefined && 'mt-5'}`} onClick={() => {
                             setShowCreateGroupInput(true)
                           }}>Create a group</button>
                         ) : (
-                          <div className='flex items-center gap-3'>
+                          <div className='w-full'>
                             <div className='my-3 border-thin-800 rounded'>
                               <input type="text" placeholder='Group name...' className='w-full py-2 rounded text-center' value={groupNameValue !== '' ? groupNameValue : ''} onChange={(event) => {
                                 setGroupNameValue(event.target.value)
                               }} />
                             </div>
-                            <button className='px-4 py-2 rounded mbg-700 mcolor-100' onClick={createGroupBtn}>Create</button>
-                            <button className='px-4 py-2 rounded mbg-100 mcolor-900 border-thin-800' onClick={() => setShowCreateGroupInput(false)}>Cancel</button>
+                            <div className='flex items-center justify-center gap-3'>
+                              <button className='px-4 w-full py-2 rounded btn-700 mcolor-100' onClick={createGroupBtn}>Create</button>
+                              <button className='px-4 w-full py-2 rounded mbg-100 mcolor-900 border-thin-800' onClick={() => setShowCreateGroupInput(false)}>Cancel</button>
+                            </div>
                           </div>
                         )}
-  
+
                         
                       </div>
-  
-                      {!error && msg !== '' && (
-                        <div className='green-bg text-center mt-5 rounded py-3 w-full mb-5'>
-                          {msg}
-                        </div>
-                      )}
+
                       {showCreateGroupInput === false && (
                         groupList.slice().sort((a, b) => b.id - a.id).map(({ id, groupName}) => (
                           <div key={id} className='shadows mcolor-900 rounded-[5px] p-5 my-6 mbg-100 flex items-center justify-between relative'>
-  
-  
-  
+
+
                             <p className='px-1'>{groupName}</p>
-                          <button  className='px-2 py-2 mbg-700 mcolor-100 rounded text-sm' onClick={() => bookmarkMaterial(currentSharedMaterialIndex, id, 'Group')}>Bookmark here</button>
-  
+              
+
+                            <button className={`${(buttonLoading && buttonClickedNumber === (id+'1')) ? 'mbg-200 mcolor-900 border-thin-800' : 'btn-700 mcolor-100'} px-5 py-2 rounded`} disabled={(buttonLoading && buttonClickedNumber === (id+'1'))} onClick={() => bookmarkMaterial(currentSharedMaterialIndex, id, 'Group', (id+'1'))}>
+                              {(buttonLoading && buttonClickedNumber === (id+'1')) ? (
+                                <div>Bookmarking...</div>
+                              ) : (
+                                <div>Bookmark</div>
+                              )}
+                            </button>
+
                             {/* {expandedGroupId === id && (
-  
-                              <div className='absolute right-0 bottom-0 px-7 mb-[-114px] mbg-700 mcolor-100 rounded pt-3 pb-4 opacity-80'>
+
+                              <div className='absolute right-0 bottom-0 px-7 mb-[-114px] btn-700 mcolor-100 rounded pt-3 pb-4 opacity-80'>
                                 <Link to={`/main/group/study-area/${id}`}>
                                   <p className='pt-1'>Study Area</p>
                                 </Link>
@@ -1584,7 +1655,7 @@ export const VirtualLibraryMain = () => {
                                 </Link>
                               </div>
                             )}  */}
-  
+
                           </div>
                         ))
                       )}
@@ -1592,15 +1663,14 @@ export const VirtualLibraryMain = () => {
                     </div>
                   )}
                         
-  
-  
-  
+
+
+
                   </div>
                 </div>
               </div>
             )}
-            
-            
+      
   
   
   
@@ -1660,8 +1730,21 @@ export const VirtualLibraryMain = () => {
                               </div>
   
                               <div className='flex items-center gap-3'>
-                                <button className='mbg-100 mcolor-900 border-thin-800 px-5 py-2 rounded' onClick={() => viewStudyMaterialDetails(index, 'personal', 'not filtered', category)} >View</button>
-                                <button className='mbg-700 mcolor-100 px-5 py-2 rounded' onClick={() => shareMaterial(index, 'personal')}>Share</button>
+
+                                <button className='mbg-100 w-full my-1 mcolor-900 border-thin-800 px-5 py-2 rounded' disabled={buttonLoader} onClick={() => viewStudyMaterialDetails(index, 'personal', 'not filtered', category)}>
+                                  {
+                                    buttonLoader ? (
+                                      <div className="w-full flex items-center justify-center">
+                                        <div className='btn-spinner'></div>
+                                      </div>
+                                      ) : (
+                                      <div>View</div>
+                                    )
+                                  }
+                                </button>
+
+
+                                <button className='btn-700 mcolor-100 px-5 py-2 rounded' onClick={() => shareMaterial(index, 'personal')}>Share</button>
                               </div>
                             </div>
                         })}
@@ -1681,8 +1764,20 @@ export const VirtualLibraryMain = () => {
                               </div>
   
                               <div className='flex items-center gap-3'>
-                                <button className='mbg-100 mcolor-900 border-thin-800 px-5 py-2 rounded' onClick={() => viewStudyMaterialDetails(index, 'group', 'not filtered', category)}>View</button>
-                                <button className='mbg-700 mcolor-100 px-5 py-2 rounded' onClick={() => shareMaterial(index, 'Group')}>Share</button>
+
+                                <button className='mbg-100 w-full my-1 mcolor-900 border-thin-800 px-5 py-2 rounded' disabled={buttonLoader} onClick={() => viewStudyMaterialDetails(index, 'group', 'not filtered', category)}>
+                                  {
+                                    buttonLoader ? (
+                                      <div className="w-full flex items-center justify-center">
+                                        <div className='btn-spinner'></div>
+                                      </div>
+                                      ) : (
+                                      <div>View</div>
+                                    )
+                                  }
+                                </button>
+                                
+                                <button className='btn-700 mcolor-100 px-5 py-2 rounded' onClick={() => shareMaterial(index, 'Group')}>Share</button>
                               </div>
                             </div>
                         })}
@@ -1693,42 +1788,42 @@ export const VirtualLibraryMain = () => {
   
                     {showMaterialDetails && (
                       <div>
-  
+
                         {enableBackButton && (
                           <button className='mbg-200 mcolor-900 rounded px-4 py-1 rounded border-thin-800' onClick={() => {
                             setShowMaterialDetails(false)
                             setShowPresentStudyMaterials(true)
                           }}>Back</button>
                         )}
-  
-  
-  
+
+
+
                         <div className='my-6'>
                           <p className='mcolor-900 text-center text-xl font-medium'>{currentMaterialTitle} from {currentMaterialCategory}</p>
                           
                           <div className='flex items-center justify-between my-5 gap-1'>
-                            <button className='border-thin-800 w-full rounded py-2' onClick={() => {
+                            <button className={`border-thin-800 w-full rounded py-2 ${showContext ? '' : 'btn-700 mcolor-100'}`} onClick={() => {
                               setShowQuiz(false)
                               setShowNotes(false)
                               setShowContext(true)
                             }}>Context</button>
-                            <button className='border-thin-800 w-full rounded py-2 mbg-700 mcolor-100' onClick={() => {
+                            <button className={`border-thin-800 w-full rounded py-2 ${showNotes ? '' : 'btn-700 mcolor-100'}`} onClick={() => {
                               setShowContext(false)
                               setShowQuiz(false)
                               setShowNotes(true)
                             }}>Notes</button>
-                            <button className='border-thin-800 w-full rounded py-2 mbg-700 mcolor-100' onClick={() => {
+                            <button className={`border-thin-800 w-full rounded py-2 ${showQuiz ? '' : 'btn-700 mcolor-100'}`} onClick={() => {
                             setShowContext(false)
                             setShowNotes(false)
                             setShowQuiz(true)
                             }}>Quiz</button>
                           </div>
-  
-  
+
+
                           {showContext && (
                             <p className='text-justify my-5'>{context}</p>
                           )}
-  
+
                           {showNotes && (
                             <div>
                               {materialNotes.map((material) => (
@@ -1740,31 +1835,31 @@ export const VirtualLibraryMain = () => {
                               <div className='mb-[-1.5rem]'></div>
                             </div>
                           )}
-  
+
                           {showQuiz && (
                             <div className='mt-5'>
                               <br />
                               {materialMCQ.map((material, quesIndex) => (
                                 <div className={(material.quizType === 'MCQA' || material.quizType === 'Identification') ? 'mb-14' : material.quizType !== 'ToF' ? 'mt-10' : 'mb-5'} key={material.id}>
                                   <p className='mt-2 mcolor-900'>{quesIndex + 1}. {material.question} - <span className='mcolor-800 font-bold'>{material.answer}</span></p>
-  
+
                                   {material.quizType === 'MCQA' && (
                                     <p className='mt-2 mb-1'>Choices: </p>
                                   )}
-  
+
                                   <ul className='grid-result gap-3' style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)' }}>
                                     {materialMCQChoices
                                       .filter((choice) => (choice.QuesAnId === material.id && material.quizType === 'MCQA'))
                                       .map((choice, index) => (
-                                        <li key={index} className='mbg-300 text-center py-1 rounded'>{choice.choice}</li>
+                                        <li key={index} className='btn-300 text-center py-1 rounded'>{choice.choice}</li>
                                       ))}
                                   </ul>
-  
+
                                 </div>
                               ))}
                             </div>
                           )}
-  
+
                         </div>
                       </div>
                     )}

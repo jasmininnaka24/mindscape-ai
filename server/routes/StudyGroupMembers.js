@@ -13,10 +13,7 @@ router.post('/add-member', async (req, res) => {
 
 
 router.post('/invite-members', async (req, res) => {
-  const { email, groupName, title, sentence } = req.body;
-  
-  let url = `http://localhost:3000/main/group/study-area/group-review/${groupId}/${materialId}`
-
+  const { email, groupName, title, sentence, url } = req.body;
   
   // Use the correct frontend URL, adjust the port if needed
   

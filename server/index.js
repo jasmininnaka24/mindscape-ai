@@ -15,12 +15,13 @@ app.use(express.json());
 const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
-    origin: "https://ffe7-110-54-158-204.ngrok-free.app",
+    origin: "http://localhost:3000",
     methods: ["GET", "POST"],
     credentials: true
   },
 });
 
+const PORT = process.env.PORT || 3001;
 
 
 app.use(express.static(path.join(__dirname, 'client/build')));
@@ -1422,7 +1423,7 @@ app.get('*', (req, res) => {
 
 // Sync the Sequelize models with the database and start the server
 db.sequelize.sync().then(() => {
-  server.listen(3001, () => {
-    console.log('Server is running on port 3001');
+  server.listen(PORT, () => {
+    console.log(`Server is running on port ${PORT}`);
   });
 });
