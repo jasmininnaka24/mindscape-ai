@@ -10,6 +10,9 @@ import BorderColorIcon from '@mui/icons-material/BorderColor';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 import { SearchFunctionality } from '../search/SearchFunctionality';
 import { SERVER_URL } from '../../urlConfig';
+import LocalLibraryIcon from '@mui/icons-material/LocalLibrary';
+
+import { Sidebar } from '../sidebar/Sidebar';
 
 
 import { useUser } from '../../UserContext';
@@ -83,15 +86,14 @@ export const StudyAreaGP = (props) => {
   const [tempUserList, setTempUserList] = useState([]);
   const [groupMemberIndex, setGroupMemberIndex] = useState("");
 
-  const [isExpanded, setIsExpanded] = useState(true);
-  const [isBookmarkExpanded, setIsBookmarkExpanded] = useState(true);
+  const [isExpanded, setIsExpanded] = useState(false);
+  const [isBookmarkExpanded, setIsBookmarkExpanded] = useState(false);
   const [expandedCategories, setExpandedCategories] = useState({}); 
   const [expandedSharedCategories, setExpandedSharedCategories] = useState({}); 
   const [data, setData] = useState([]);
   const [listedData, setListedData] = useState([]);
   const [searchTermApp, setSearchTermApp] = useState('');
   const [selectedDataId, setSelectedDataId] = useState('');
-  const [chosenData, setChosenData] = useState([]);
   const [filteredData, setFilteredData] = useState([]);
   const [msg, setMsg] = useState('');
   const [error, setError] = useState(false);
@@ -876,535 +878,534 @@ export const StudyAreaGP = (props) => {
     </div>
   } else {
     return (
-      <div className="relative poppins mcolor-900 flex justify-start items-start">
-        
-        {/* modal */}
-        <div style={{ zIndex: 1000 }} className={`${hidden} absolute flex items-center justify-center modal-bg w-full h-full`}>
-          <div className='flex justify-center'>
-            <div className='mbg-100 max-h-[60vh] w-[40vw] w-1/3 z-10 relative p-10 rounded-[5px]' style={{ overflowY: 'auto' }}>
-  
-            <button className='absolute right-4 top-3 text-xl' onClick={() => {
-              setHidden("hidden");
-              setCategoryModal("hidden");
-              setGroupMemberModal("hidden");
-              setCurrentModalVal('')
-              setModalList([])
-              }}>
-              ✖
-            </button>
-  
-            <div className={categoryModal}>
-              <p className='text-center text-2xl font-medium mcolor-800 my-5'>Add a category</p>
-              <div className="groupName flex flex-col">
-  
-                <div className='relative'>
-                  <input type="text" placeholder='Category...' className='border-medium-800-scale px-5 py-2 w-full rounded-[5px] outline-none border-none' onChange={(event) => {setCurrentModalVal(event.target.value)}} value={currentModalVal === '' ? '' : currentModalVal} />
-                  <button onClick={addToModalList} className='absolute right-5 top-1 text-3xl'>+</button>
-                </div>
-  
-                <ul className='mt-3'>
-                  {/* list of members that will be added */}
-                  {
-                    modalList.length > 0 && (
-                      modalList.map((item, index) => {
-                        return (
-                          <div className='relative flex items-center my-2 text-lg' key={index}>
-                            <span>
-                              <CategoryIcon fontSize='small' /> <span className='ml-1'>{item}</span>
-                            </span>
-                            <button
-                              className='absolute right-4 text-xl'
-                              onClick={() => {
-                                const updatedList = modalList.filter((_, i) => i !== index);
-                                setModalList(updatedList);
-                              }}
-                            >
-                              ✖
-                            </button>
-                          </div>
-                        );
-                      })
-                    )
-                  }
-  
-                </ul>
-  
-                <button onClick={saveCategories} className='mt-3 mbg-800 mcolor-100 py-2 rounded-[5px]'>Add</button>
-  
-              </div>
-            </div>
-            
-  
-  
-  
-            {categoryFor === 'Group' && (
-  
-              <div className={`${groupMemberModal} mt-5`}>
-  
-                {!error && msg !== '' && (
-                  <div className='green-bg text-center mt-5 rounded py-3 w-full mb-5'>
-                    {msg}
-                  </div>
-                )}
-  
-                {error && msg !== '' && (
-                  <div className='bg-red mcolor-100 text-center mt-5 rounded py-3 w-full mb-5'>
-                    {msg}
-                  </div>
-                )}
-  
-                <p className='mb-2 text-lg mcolor-900'>Group Code:</p>
-                <div className='w-full flex items-center'>
-                  <input type="text" value={code} disabled className='mbg-200 border-thin-800 text-center w-full py-2 rounded-[3px]' />
-                  <button onClick={copyGroupCode} className='px-7 py-2 mbg-800 mcolor-100 rounded-[3px] border-thin-800'>Copy</button>
-                </div>
-                {isCodeCopied !== '' && (
-                  <p className='text-center mcolor-700 mt-2'>{isCodeCopied}</p>
-                )}
-  
-  
-                <br />
-                <p className='mb-2 text-lg mcolor-900'>Group Name:</p>
-                <div className='flex items-center'>
-                  <input type="text" value={groupName} className={`border-thin-800 text-center w-full py-2 rounded-[3px] ${(msg !== '' || UserId !== userHostId) ? 'mbg-200' :  ''}`} disabled={msg !== '' || UserId !== userHostId} onChange={(event) => setGroupName(event.target.value)} />
-  
-                  <button
-                    onClick={changeGroupName}
-                    className='px-4 py-2 mbg-800 mcolor-100 rounded-[3px] border-thin-800'
-                    disabled={msg !== '' || UserId !== userHostId}
-                  >
-                    Change
-                  </button>
-  
-  
-                </div>
-                {isGroupNameChanged !== '' && (
-                  <p className='text-center mcolor-700 my-3'>{isGroupNameChanged}</p>
-                  )}
-  
-  
-                {msg === '' && (
-                  (UserId === userHostId) ? (
-                    <button className='bg-red mcolor-100 rounded py-2 text-center my-5 w-full' onClick={(e) => deleteGroup(e)}>
-                      Delete Group
-                    </button>
-                  ) : ( 
-                    <button className='bg-red mcolor-100 rounded py-2 text-center my-5 w-full' onClick={(e) => leaveGroup(e)}>
-                      Leave Group
-                    </button>
-                  )
-                )}
-  
-                <br /><br />
-                <p className='mb-2 text-lg mcolor-900'>Group Host:</p>
-                <div className='flex justify-between my-2'>
-                  <span>
-                    <i className="fa-regular fa-user mr-3"></i>{`@${userHost}` || 'Deleted User'}
-                  </span>
-                </div>
-  
-                  <br />
-  
-  
-  
-                  {/* add group member */}
-                  <p className='mb-1'>Add a group member: </p>
+      <div className='poppins mcolor-900 mbg-300 relative flex'>
+
+        <Sidebar currentPage={categoryFor === 'Personal' ? 'personal-study-area' : 'group-study-area'} />
+
+
+        <div className={`lg:w-1/6 h-[100vh] flex flex-col items-center justify-between py-2 lg:mb-0 ${
+        window.innerWidth > 1020 ? '' :
+        window.innerWidth <= 768 ? 'hidden' : 'hidden'
+      } mbg-800`}></div>
+
+
+        <div className='flex-1 mbg-300 w-full pt-5 flex'>
+          {/* modal */}
+          <div style={{ zIndex: 1000 }} className={`${hidden} absolute flex items-center justify-center modal-bg w-full h-full`}>
+            <div className='flex justify-center'>
+              <div className='mbg-100 max-h-[60vh] w-[40vw] w-1/3 z-10 relative p-10 rounded-[5px]' style={{ overflowY: 'auto' }}>
+    
+              <button className='absolute right-4 top-3 text-xl' onClick={() => {
+                setHidden("hidden");
+                setCategoryModal("hidden");
+                setGroupMemberModal("hidden");
+                setCurrentModalVal('')
+                setModalList([])
+                }}>
+                ✖
+              </button>
+    
+              <div className={categoryModal}>
+                <p className='text-center text-2xl font-medium mcolor-800 my-5'>Add a category</p>
+                <div className="groupName flex flex-col">
+    
                   <div className='relative'>
-                    <SearchFunctionality data={data} onSearch={handleSearch} setSearchTermApp={setSearchTermApp} setSelectedDataId={setSelectedDataId} filteredData={filteredData} setFilteredData={setFilteredData} searchTermApp={searchTermApp} searchAssetFor={'search-username-for-group-creation'} />
-                    <button className='absolute right-5 top-1 text-3xl' onClick={addToChosenData}>+</button>
+                    <input type="text" placeholder='Category...' className='border-medium-800-scale px-5 py-2 w-full rounded-[5px] outline-none border-none' onChange={(event) => {setCurrentModalVal(event.target.value)}} value={currentModalVal === '' ? '' : currentModalVal} />
+                    <button onClick={addToModalList} className='absolute right-5 top-1 text-3xl'>+</button>
                   </div>
-  
-  
-  
-                  <br />
-                  <p className='mcolor-900 my-3'>Group Members:</p>
-                  <ul className='mt-5'>
-                  {Array.isArray(groupMemberIndex) &&
-                    groupMemberIndex.map((user, indexGroup) => {
-                      let targetValue = user.UserId;
-                      let filteredData = tempUserList.filter(item => item.id === targetValue);
-  
-                      // Check if the user is found in tempUserList
-                      if (!filteredData[0]) {
-                        // User not found, skip rendering this list item
-                        return null;
-                      }
-  
-                      return (
-                        <li key={indexGroup} className='flex justify-between my-2'>
-                          <span>
-                            <i className="fa-regular fa-user mr-3"></i>@{filteredData[0]?.username}
-                          </span>
-  
-                          {(msg !== '' || UserId === userHostId) && (
-                            <button
-                              onClick={() => {
-                                if (window.confirm('Are you sure you want to delete this user?')) {
-                                  removeSelectedUser(filteredData[0]?.id, groupNameId);
-                                }
-                              }}
-                              className='text-lg'
-                            >
-                              <i className="fa-solid fa-xmark"></i>
-                            </button>
-                          )}
-                        </li>
-                      );
-                    })}
-  
-  
-  
+    
+                  <ul className='mt-3'>
+                    {/* list of members that will be added */}
+                    {
+                      modalList.length > 0 && (
+                        modalList.map((item, index) => {
+                          return (
+                            <div className='relative flex items-center my-2 text-lg' key={index}>
+                              <span>
+                                <CategoryIcon fontSize='small' /> <span className='ml-1'>{item}</span>
+                              </span>
+                              <button
+                                className='absolute right-4 text-xl'
+                                onClick={() => {
+                                  const updatedList = modalList.filter((_, i) => i !== index);
+                                  setModalList(updatedList);
+                                }}
+                              >
+                                ✖
+                              </button>
+                            </div>
+                          );
+                        })
+                      )
+                    }
+    
                   </ul>
-                  {/* {userList !== tempUserList && (
-                    <div>
-                      <button onClick={updateUserList} className='mt-2 mbg-800 mcolor-100 w-full py-2 rounded-[5px]'>Update User List</button>
-  
-                      {isUserListUpdated !== "" && (
-                        <p className='text-center mcolor-700 my-3'>{isUserListUpdated}</p>
-                      )}
-                    </div>
-                  )} */}
+    
+                  <button onClick={saveCategories} className='mt-3 mbg-800 mcolor-100 py-2 rounded-[5px]'>Add</button>
+    
+                </div>
               </div>
-  
-            )}
-      
+              
+    
+    
+    
+              {categoryFor === 'Group' && (
+    
+                <div className={`${groupMemberModal} mt-5`}>
+    
+                  {!error && msg !== '' && (
+                    <div className='green-bg text-center mt-5 rounded py-3 w-full mb-5'>
+                      {msg}
+                    </div>
+                  )}
+    
+                  {error && msg !== '' && (
+                    <div className='bg-red mcolor-100 text-center mt-5 rounded py-3 w-full mb-5'>
+                      {msg}
+                    </div>
+                  )}
+    
+                  <p className='mb-2 text-lg mcolor-900'>Group Code:</p>
+                  <div className='w-full flex items-center'>
+                    <input type="text" value={code} disabled className='mbg-200 border-thin-800 text-center w-full py-2 rounded-[3px]' />
+                    <button onClick={copyGroupCode} className='px-7 py-2 mbg-800 mcolor-100 rounded-[3px] border-thin-800'>Copy</button>
+                  </div>
+                  {isCodeCopied !== '' && (
+                    <p className='text-center mcolor-700 mt-2'>{isCodeCopied}</p>
+                  )}
+    
+    
+                  <br />
+                  <p className='mb-2 text-lg mcolor-900'>Group Name:</p>
+                  <div className='flex items-center'>
+                    <input type="text" value={groupName} className={`border-thin-800 text-center w-full py-2 rounded-[3px] ${(msg !== '' || UserId !== userHostId) ? 'mbg-200' :  ''}`} disabled={msg !== '' || UserId !== userHostId} onChange={(event) => setGroupName(event.target.value)} />
+    
+                    <button
+                      onClick={changeGroupName}
+                      className='px-4 py-2 mbg-800 mcolor-100 rounded-[3px] border-thin-800'
+                      disabled={msg !== '' || UserId !== userHostId}
+                    >
+                      Change
+                    </button>
+    
+    
+                  </div>
+                  {isGroupNameChanged !== '' && (
+                    <p className='text-center mcolor-700 my-3'>{isGroupNameChanged}</p>
+                    )}
+    
+    
+                  {msg === '' && (
+                    (UserId === userHostId) ? (
+                      <button className='bg-red mcolor-100 rounded py-2 text-center my-5 w-full' onClick={(e) => deleteGroup(e)}>
+                        Delete Group
+                      </button>
+                    ) : ( 
+                      <button className='bg-red mcolor-100 rounded py-2 text-center my-5 w-full' onClick={(e) => leaveGroup(e)}>
+                        Leave Group
+                      </button>
+                    )
+                  )}
+    
+                  <br /><br />
+                  <p className='mb-2 text-lg mcolor-900'>Group Host:</p>
+                  <div className='flex justify-between my-2'>
+                    <span>
+                      <i className="fa-regular fa-user mr-3"></i>{`@${userHost}` || 'Deleted User'}
+                    </span>
+                  </div>
+    
+                    <br />
+    
+    
+    
+                    {/* add group member */}
+                    <p className='mb-1'>Add a group member: </p>
+                    <div className='relative'>
+                      <SearchFunctionality data={data} onSearch={handleSearch} setSearchTermApp={setSearchTermApp} setSelectedDataId={setSelectedDataId} filteredData={filteredData} setFilteredData={setFilteredData} searchTermApp={searchTermApp} searchAssetFor={'search-username-for-group-creation'} />
+                      <button className='absolute right-5 top-1 text-3xl' onClick={addToChosenData}>+</button>
+                    </div>
+    
+    
+    
+                    <br />
+                    <p className='mcolor-900 my-3'>Group Members:</p>
+                    <ul className='mt-5'>
+                    {Array.isArray(groupMemberIndex) &&
+                      groupMemberIndex.map((user, indexGroup) => {
+                        let targetValue = user.UserId;
+                        let filteredData = tempUserList.filter(item => item.id === targetValue);
+    
+                        // Check if the user is found in tempUserList
+                        if (!filteredData[0]) {
+                          // User not found, skip rendering this list item
+                          return null;
+                        }
+    
+                        return (
+                          <li key={indexGroup} className='flex justify-between my-2'>
+                            <span>
+                              <i className="fa-regular fa-user mr-3"></i>@{filteredData[0]?.username}
+                            </span>
+    
+                            {(msg !== '' || UserId === userHostId) && (
+                              <button
+                                onClick={() => {
+                                  if (window.confirm('Are you sure you want to delete this user?')) {
+                                    removeSelectedUser(filteredData[0]?.id, groupNameId);
+                                  }
+                                }}
+                                className='text-lg'
+                              >
+                                <i className="fa-solid fa-xmark"></i>
+                              </button>
+                            )}
+                          </li>
+                        );
+                      })}
+    
+    
+    
+                    </ul>
+                    {/* {userList !== tempUserList && (
+                      <div>
+                        <button onClick={updateUserList} className='mt-2 mbg-800 mcolor-100 w-full py-2 rounded-[5px]'>Update User List</button>
+    
+                        {isUserListUpdated !== "" && (
+                          <p className='text-center mcolor-700 my-3'>{isUserListUpdated}</p>
+                        )}
+                      </div>
+                    )} */}
+                </div>
+    
+              )}
+        
+              </div>
             </div>
           </div>
-        </div>
-     
-        {/* Side */}
-        <div className={`flex flex-col justify-between h-[100vh] w-1/4 p-5 sidebar mbg-300 mcolor-900`} style={{ overflowY: 'auto' }}>
-          <div className="my-5 shelf-categories">
-            
-            <p className="text-2xl mb-10 font-bold text-center opacity-90">{categoryFor === 'Group' ? `${groupName.toUpperCase()}'S ` : 'PERSONAL'} SHELF</p>
-            
-            <div>
-              {materialCategories.length > 0 ? (
-                <div>
-                  <span>{categoryFor === 'Personal' ? 'My' : 'Our'} Study Material</span>
-                  <button onClick={toggleExpand} className='ml-2'>{!isExpanded ? <i className="fa-solid fa-chevron-down"></i> : <i className="fa-solid fa-chevron-up"></i>}</button>
-                </div>
-                ) : (
-                  <p className='text-center'>No materials saved.</p>
-                )}
-              <div className={`expandable-container ${isExpanded ? 'expanded' : ''}`}>
-                {materialCategories.length > 0 && (
-                  isExpanded && materialCategories.map((category) => (
-                  <div className="shelf-category my-5" key={category.id}>
-                    <div className="shadows mbg-100 mt-2 mcolor-900 p-4 rounded-[5px]">
-  
-                    <div className='flex items-center justify-between' style={expandedCategories[category.id] ? { borderBottom: 'solid 1px #999', paddingBottom: '1rem', marginBottom: '.5rem' } : {}}>
-  
-                        <div className='flex items-center'>
-                          <div className="text-lg font-medium">{category.category}</div>
-                          <button onClick={() => toggleExpandId(category.id)} className='ml-2'>
-                            {!expandedCategories[category.id] ? (
-                              <i className="fa-solid fa-chevron-down"></i>
-                            ) : (
-                              <i className="fa-solid fa-chevron-up"></i>
-                            )}
-                          </button>
-                        </div>
-  
-                        {/* delete this */}
-                        <div>
-                          <button onClick={async () => {
-  
-                            const response = await axios.get(`${SERVER_URL}/studyMaterial/get-material-from-categoryId/${category.id}`);
-                              
-                            let responseData = response.data;
-                            let filteredData = responseData.filter(item => item.tag === 'Shared');
-  
-                            console.log(responseData);
-  
-                            if (filteredData.length > 0) {
-                              return alert(`${category.category} cannot be edited. Some study materials that ${categoryFor === 'Personal' ? 'you have' : 'your group has'} shared in the virtual library room are found in this category.`);
-                            } else {
-                              setCurrentCategoryIdToEdit(category.id)
-                              setCurrentCategoryToEdit(category.category)
-                              setEditCategoryModal(true)
-                            }
-  
-                            }}><BorderColorIcon className='mcolor-900' sx={{fontSize: '18px'}} /></button>
-                          <button onClick={() => deleteCategoryMaterials(category.id, category.category)}><DeleteIcon className='text-red' sx={{fontSize: '20px'}} /></button>
-                        </div>
-                      </div>
-  
-                      {editCategoryModal && (
-                        <div style={{ zIndex: 1000 }} className={`absolute flex items-center justify-center modal-bg w-full h-full`}>
-                          <div className='flex justify-center'>
-                            <div className='mbg-100 max-h-[60vh] w-[30vw] w-1/3 z-10 relative p-10 rounded-[5px]' style={{ overflowY: 'auto' }}>
-  
-                            <button className='absolute right-4 top-3 text-xl' onClick={() => {
-                              setEditCategoryModal(false);
-                              }}>
-                              ✖
-                            </button>
-  
-                            <p className='text-center text-2xl mcolor-800 font-medium'>Edit Category</p>
-                            
-                            <br />
-  
-  
-                            <div className='w-full'>
-                              <input className='border-thin-800 rounded py-2 text-center w-full' type="text" placeholder='Type category...' onChange={(e) => setCurrentCategoryToEdit(e.target.value)} value={currentCategoryToEdit} />
-                              <br />
-                              <button onClick={editCategory} className='mt-3 w-full mbg-700 mcolor-100 py-2 rounded'>Update</button>
-                            </div>
-  
-                            </div>
-                          </div>
-                        </div>
-                      )}
-  
-  
-  
-                      {/* Check if the category is expanded before rendering the study materials */}
-                
-                      {expandedCategories[category.id] && (
-                        studyMaterialsCategory
-                          .filter((material) => material.StudyMaterialsCategoryId === category.id)
-                          .map((material, index) => (
-                            <div className='flex items-center justify-between'>
-                              <p key={index} className='mt-2'>
-                                <i className="fa-solid fa-book mr-2"></i>
-                                {material.title}
-                              </p>
-  
-                              <div>
-                                <button 
-                                  onClick={() => deleteStudyMaterial(material.id, material.title, material.code, material.tag)}
-                                  >
-                                    <DeleteIcon sx={{fontSize: '20px'}} />
-                                </button>
-  
-                                <Link to={`/main/${categoryForToLower}/study-area/${categoryFor.toLowerCase()}-review/${groupNameId !== undefined ? groupNameId + '/' : ''}${material.id}`}>
-                                  <OpenInNewIcon sx={{fontSize: '20px'}} />
-                                </Link>
-                              </div>
-                            </div>
-                          ))
-                      )}
-  
-  
-                      {expandedCategories[category.id] && studyMaterialsCategory
-                        .filter((material) => material.StudyMaterialsCategoryId === category.id)
-                        .length === 0 && (
-                          <p className='text-center mt-2'>No own record of study material under this category</p>
-                        )}
-  
-  
-  
-  
-                    </div>
-                  </div>
-                  ))
+      
+
+    
+          <div className='py-4 px-10 w-3/4 '>    
+
+    
+            <div className='flex justify-between items-center mb-6'>
+        
+              <h3 className='text-center text-2xl font-medium'><LocalLibraryIcon className='mb-1 mr-1 mcolor-800-opacity' fontSize='large' /> Study Area</h3>
+
+              <div>
+
+                <button className='rounded-[8px] px-6 py-2 font-medium font-lg btn-primary' onClick={() => {
+                  materialCategories.length > 0
+                    ? navigate(`/main/${categoryForToLower}/study-area/qa-gen/${categoryFor === 'Group' ? groupNameId : ''}`, {
+                        state: {
+                          categoryFor: categoryFor,
+                        },
+                      })
+                    : alert('No category saved. Add a category first.');
+                }}>Create Reviewer</button>
+
+
+                <button className='mx-1 mbg-800 mcolor-100 px-6 py-2 rounded-[5px] font-medium text-md' onClick={() => {
+                  setHidden("")
+                  setCategoryModal("")
+                  }}>Add Category</button>
+                {categoryFor === 'Group' && (
+                  <button className='mcolor-800 py-2 rounded-[5px] font-medium font-lg' onClick={() => {
+                    setHidden("")
+                    setGroupMemberModal("")
+                    }}>
+                      <MoreVertIcon fontSize='medium' />
+                  </button>
                 )}
               </div>
             </div>
-  
-            {/* <div>
-              <div>
-                <span>{categoryFor === 'Personal' ? 'My' : 'Our'} Bookmarks</span>
-                <button onClick={toggleExpand} className='ml-2'>{!isExpanded ? <i className="fa-solid fa-chevron-down"></i> : <i className="fa-solid fa-chevron-up"></i>}</button>
+    
+    
+            {!error && msg !== '' && (
+              <div className='green-bg text-center mt-5 rounded py-3 w-full mb-5'>
+                {msg}
               </div>
-            </div> */}
-            
-  
-  
-  
-            <div className='mt-10'>
-              {sharedMaterialsCategories.length > 0 ? (
-                <div>
-                  <span>Bookmarked Materials:</span>
-                  <button onClick={toggleBookmarksExpand} className='ml-2'>
-                    {!isBookmarkExpanded ? <i className="fa-solid fa-chevron-down"></i> : <i className="fa-solid fa-chevron-up"></i>}
-                  </button>
+            )}
+    
+    
+            <p className={`${savedGroupNotif} my-5 py-2 mbg-300 mcolor-800 text-center rounded-[5px] text-lg`}>New categories added!</p>
+    
+            <p className={`${isMaterialDeleted} my-5 py-2 mbg-300 mcolor-800 text-center rounded-[5px] text-lg`}>{recentlyDeletedMaterial} has been deleted.</p>
+    
+            {/* latest added reviewer */}
+            <div className=''>
+              {lastMaterial !== null ? (
+                <div className='mbg-100 shadows px-5 pt-5 pb-8 rounded'>
+                  <div className='relative'>
+                    <p className='text-xl mcolor-900 mb-3'>Last Uploaded Reviewer: {lastMaterial.title} from {materialCategory}</p>
+      
+                    <section className="border scroll-box max-h-[63vh] min-h-[63vh]">
+                      <div className='gap-2 flex justify-between items-start'>
+                        <button
+                          onClick={() => showContent(1)}
+                          className={`w-full py-3 text-lg rounded-[5px] font-medium ${activeButton === 1 ? '' : 'mbg-300'}`}
+                        >
+                          Lesson
+                        </button>
+                        {/* <button
+                          onClick={() => showContent(2)}
+                          className={`w-full py-3 text-lg rounded-[5px] font-medium ${activeButton === 2 ? '' : 'mbg-300'}`}
+                        >
+                          Questions and Answers
+                        </button> */}
+                        <button
+                          onClick={() => showContent(3)}
+                          className={`w-full py-3 text-lg rounded-[5px] font-medium ${activeButton === 3 ? '' : 'mbg-300'}`}
+                        >
+                          Notes Reviewer
+                        </button>
+                      </div>
+                      <div className='p-10'>
+                        {showLesson && lastMaterial && <div>{lastMaterial.body}</div>}
+      
+                        {showRev && materialRev && (
+                          <div>
+                            {materialRev && Array.isArray(materialRev) && materialRev.map((material) => (
+                              <div className='mb-10 p-5 mbg-200 border-thin-800 rounded' key={material.question}>
+                                <p className='my-1 color-primary font-medium'>Question: <span className='mcolor-900 font-medium'>{material.question}</span></p>
+                                <p className='border-hr my-2'></p>
+                                <p className='font-medium color-primary'>Answer: <span className='mcolor-900 font-medium'>{material.answer}</span></p>
+                              </div>
+                            ))}
+      
+                            <div className='mb-[-1.5rem]'></div>
+                          </div>
+                        )}
+                      </div>
+                    </section>
+                    <div className='flex items-center justify-end absolute left-0 bottom-[-.8rem]'>
+                      <Link to={`/main/${categoryForToLower}/study-area/${categoryFor.toLowerCase()}-review/${groupNameId !== undefined ? groupNameId + '/' : ''}${lastMaterial.id}`} className='mbg-800 mcolor-100 rounded-[5px] px-12 py-2'>View Reviewer</Link>
+                    </div>
+                  </div>
                 </div>
               ) : (
-                <p className='text-center'>No bookmarks record.</p>
+                <div className='pt-3 text-center text-xl'>No Uploaded Reviewer Appears.</div>
               )}
-              <div className={`expandable-container ${isBookmarkExpanded ? 'expanded' : ''}`}>
-                {sharedMaterialsCategories.length > 0 && (
-                  isBookmarkExpanded && [...new Set(sharedMaterialsCategories.map(category => category.category))].map((categoryName, index) => (
-                    <div className="shelf-category my-5" key={categoryName}>
-                      <div className="shadows mbg-100 mt-2 mcolor-900 p-4 rounded-[5px]">
-                        <div className='flex items-center justify-between' style={expandedSharedCategories[categoryName] ? { borderBottom: 'solid 1px #999', paddingBottom: '1rem', marginBottom: '.5rem' } : {}}>
+            </div>
+
+
+          </div>
+
+          {/* Side */}
+          <div className={`flex flex-col justify-between w-1/4 h-[95vh] p-5 sidebar mbg-800 mcolor-100 rounded`} style={{ overflowY: 'auto' }}>
+            <div className="my-5 shelf-categories">
+              
+              <p className="text-2xl mb-10 font-bold text-center opacity-90">{categoryFor === 'Group' ? `${groupName.toUpperCase()}'S ` : 'PERSONAL'} SHELF</p>
+              
+              <div>
+                {materialCategories.length > 0 ? (
+                  <div className='mbg-100 mcolor-900 rounded px-4 py-2 mb-2'>
+                    <span>{categoryFor === 'Personal' ? 'My' : 'Our'} Study Material</span>
+                    <button onClick={toggleExpand} className='ml-2'>{!isExpanded ? <i className="fa-solid fa-chevron-down"></i> : <i className="fa-solid fa-chevron-up"></i>}</button>
+                  </div>
+                  ) : (
+                    <p className='text-center mcolor-100 opacity-50'>No materials saved.</p>
+                  )}
+                <div className={`expandable-container ${isExpanded ? 'expanded' : ''}`}>
+                  {materialCategories.length > 0 && (
+                    isExpanded && materialCategories.map((category) => (
+                    <div className="shelf-category my-2" key={category.id}>
+                      <div className="mbg-300 mt-2 mcolor-900 px-4 py-1 rounded-[5px]">
+    
+                      <div className='flex items-center justify-between' style={expandedCategories[category.id] ? { borderBottom: 'solid 1px #999', paddingBottom: '.5rem', marginBottom: '.2rem' } : {}}>
+    
                           <div className='flex items-center'>
-                            <div className="text-lg font-medium">{categoryName}</div>
-                            <button onClick={() => toggleSharedExpandId(categoryName)} className='ml-2'>
-                              {!expandedSharedCategories[categoryName] ? (
+                            <div className="text-md font-medium">{category.category}</div>
+                            <button onClick={() => toggleExpandId(category.id)} className='ml-2'>
+                              {!expandedCategories[category.id] ? (
                                 <i className="fa-solid fa-chevron-down"></i>
                               ) : (
                                 <i className="fa-solid fa-chevron-up"></i>
                               )}
                             </button>
                           </div>
-                          
+    
                           {/* delete this */}
                           <div>
-                            <button onClick={() => deleteCategoryMaterialsShared(categoryName)}><DeleteIcon className='text-red' sx={{fontSize: '20px'}} /></button>
-                          </div>
-                          
-                        </div>
-                        {/* Check if the category is expanded before rendering the study materials */}
-                        {expandedSharedCategories[categoryName] && (
-                          sharedMaterials
-                            .filter((material) => sharedMaterialsCategoriesEach.find(category => category.category === categoryName))
-                            .map((material, index) => {
-                              const matchingCategory = sharedMaterialsCategoriesEach.find(category => category.category === categoryName);
-  
-                              // Check if the material's category matches the current categoryName
-                              if (matchingCategory && sharedMaterialsCategoriesEach[index].category === categoryName) {
-                                return (
-                                  <div key={material.id} className='flex items-center justify-between'>
-                                    <p className='mt-2'>
-                                      <i className="fa-solid fa-book mr-2"></i>
-                                      {material.title}
-                                    </p>
-                                    <div>
-                                      <button
-                                        onClick={() => deleteStudyMaterial(material.id, material.title, material.code, material.tag)}
-                                      >
-                                        <DeleteIcon sx={{ fontSize: '20px' }} />
-                                      </button>
-                                      <Link to={`/main/${categoryForToLower}/study-area/${categoryFor.toLowerCase()}-review/${groupNameId !== undefined ? groupNameId + '/' : ''}${material.id}`}>
-                                        <OpenInNewIcon sx={{ fontSize: '20px' }} />
-                                      </Link>
-                                    </div>
-                                  </div>
-                                );
+                            <button onClick={async () => {
+    
+                              const response = await axios.get(`${SERVER_URL}/studyMaterial/get-material-from-categoryId/${category.id}`);
+                                
+                              let responseData = response.data;
+                              let filteredData = responseData.filter(item => item.tag === 'Shared');
+    
+                              console.log(responseData);
+    
+                              if (filteredData.length > 0) {
+                                return alert(`${category.category} cannot be edited. Some study materials that ${categoryFor === 'Personal' ? 'you have' : 'your group has'} shared in the virtual library room are found in this category.`);
+                              } else {
+                                setCurrentCategoryIdToEdit(category.id)
+                                setCurrentCategoryToEdit(category.category)
+                                setEditCategoryModal(true)
                               }
-  
-                              return null; // Skip rendering if the material is not in the current category
-                            })
+    
+                              }}><BorderColorIcon className='mcolor-900' sx={{fontSize: '18px'}} /></button>
+                            <button onClick={() => deleteCategoryMaterials(category.id, category.category)}><DeleteIcon className='text-red' sx={{fontSize: '20px'}} /></button>
+                          </div>
+                        </div>
+    
+                        {editCategoryModal && (
+                          <div style={{ zIndex: 1000 }} className={`absolute flex items-center justify-center modal-bg w-full h-full`}>
+                            <div className='flex justify-center'>
+                              <div className='mbg-100 max-h-[60vh] w-[30vw] w-1/3 z-10 relative p-10 rounded-[5px]' style={{ overflowY: 'auto' }}>
+    
+                              <button className='absolute right-4 top-3 text-xl' onClick={() => {
+                                setEditCategoryModal(false);
+                                }}>
+                                ✖
+                              </button>
+    
+                              <p className='text-center text-2xl mcolor-800 font-medium'>Edit Category</p>
+                              
+                              <br />
+    
+    
+                              <div className='w-full'>
+                                <input className='border-thin-800 rounded py-2 text-center w-full' type="text" placeholder='Type category...' onChange={(e) => setCurrentCategoryToEdit(e.target.value)} value={currentCategoryToEdit} />
+                                <br />
+                                <button onClick={editCategory} className='mt-3 w-full mbg-800 mcolor-100 py-2 rounded'>Update</button>
+                              </div>
+    
+                              </div>
+                            </div>
+                          </div>
                         )}
-  
-  
-                        {expandedSharedCategories[categoryName] && sharedMaterials
-                          .filter((material) => sharedMaterialsCategoriesEach.find(category => category.category === categoryName)).length === 0 && (
-                            <p className='text-center mt-2'>No own record of study material under this category</p>
+    
+    
+    
+                        {/* Check if the category is expanded before rendering the study materials */}
+                  
+                        {expandedCategories[category.id] && (
+                          studyMaterialsCategory
+                            .filter((material) => material.StudyMaterialsCategoryId === category.id)
+                            .map((material, index) => (
+                              <div className='flex items-center justify-between'>
+                                <p key={index} className='mt-2'>
+                                  <i className="fa-solid fa-book mr-2"></i>
+                                  {material.title}
+                                </p>
+    
+                                <div>
+                                  <button 
+                                    onClick={() => deleteStudyMaterial(material.id, material.title, material.code, material.tag)}
+                                    >
+                                      <DeleteIcon sx={{fontSize: '20px'}} />
+                                  </button>
+    
+                                  <Link to={`/main/${categoryForToLower}/study-area/${categoryFor.toLowerCase()}-review/${groupNameId !== undefined ? groupNameId + '/' : ''}${material.id}`}>
+                                    <OpenInNewIcon sx={{fontSize: '20px'}} />
+                                  </Link>
+                                </div>
+                              </div>
+                            ))
+                        )}
+    
+    
+                        {expandedCategories[category.id] && studyMaterialsCategory
+                          .filter((material) => material.StudyMaterialsCategoryId === category.id)
+                          .length === 0 && (
+                            <p className='text-center'>No record</p>
                           )}
+    
+    
+    
+    
                       </div>
                     </div>
-                  ))
-                )}
-              </div>
-            </div>
-  
-  
-  
-            {/* {sharedMaterials.map((material, index) => (
-              <p key={index} className='mt-2 shadows mcolor-900 rounded-[5px] p-5 my-3   mbg-100'>
-                <i className="fa-solid fa-book mr-2"></i>
-                {material.title} - {sharedMaterialsCategories[index]?.category || 'No Category'}
-              </p>
-            ))} */}
-  
-          </div>
-        </div>
-  
-        <div className='py-6 px-10 w-3/4 '>
-          
-          <Navbar linkBack={`${categoryFor === 'Group' ? `/main/${categoryForToLower}/` : '/main'}`} linkBackName={`${categoryFor === 'Personal' ? 'Main' : 'Groups'}`} currentPageName={'Study Area'} username={userData.username}/>
-          
-  
-          <div className='flex justify-between items-center mt-10 mb-6'>
-  
-          <button className='rounded-[8px] px-6 py-2 font-medium font-lg mbg-800 mcolor-100' onClick={() => {
-          materialCategories.length > 0
-            ? navigate(`/main/${categoryForToLower}/study-area/qa-gen/${categoryFor === 'Group' ? groupNameId : ''}`, {
-                state: {
-                  categoryFor: categoryFor,
-                },
-              })
-            : alert('No category saved. Add a category first.');
-        }}>Create Reviewer</button>
-  
-  
-  
-  
-            <div>
-              <button className='mx-1 mbg-300 mcolor-800 px-6 py-2 rounded-[5px] font-medium font-lg' onClick={() => {
-                setHidden("")
-                setCategoryModal("")
-                }}>Add Category</button>
-              {categoryFor === 'Group' && (
-                <button className='mcolor-800 py-2 rounded-[5px] font-medium font-lg' onClick={() => {
-                  setHidden("")
-                  setGroupMemberModal("")
-                  }}>
-                    <MoreVertIcon fontSize='medium' />
-                </button>
-              )}
-            </div>
-          </div>
-  
-  
-          {!error && msg !== '' && (
-            <div className='green-bg text-center mt-5 rounded py-3 w-full mb-5'>
-              {msg}
-            </div>
-          )}
-  
-  
-          <p className={`${savedGroupNotif} my-5 py-2 mbg-300 mcolor-800 text-center rounded-[5px] text-lg`}>New categories added!</p>
-  
-          <p className={`${isMaterialDeleted} my-5 py-2 mbg-300 mcolor-800 text-center rounded-[5px] text-lg`}>{recentlyDeletedMaterial} has been deleted.</p>
-  
-  
-          <div>
-            {lastMaterial !== null ? (
-              <div className='relative'>
-                <p className='text-xl mcolor-900 mb-3'>Latest Uploaded Reviewer: {lastMaterial.title} from {materialCategory}</p>
-  
-                <section className="border scroll-box max-h-[63vh] min-h-[63vh]">
-                  <div className='gap-2 flex justify-between items-start'>
-                    <button
-                      onClick={() => showContent(1)}
-                      className={`w-full py-3 text-lg rounded-[5px] font-medium ${activeButton === 1 ? '' : 'mbg-300'}`}
-                    >
-                      Lesson
-                    </button>
-                    {/* <button
-                      onClick={() => showContent(2)}
-                      className={`w-full py-3 text-lg rounded-[5px] font-medium ${activeButton === 2 ? '' : 'mbg-300'}`}
-                    >
-                      Questions and Answers
-                    </button> */}
-                    <button
-                      onClick={() => showContent(3)}
-                      className={`w-full py-3 text-lg rounded-[5px] font-medium ${activeButton === 3 ? '' : 'mbg-300'}`}
-                    >
-                      Notes Reviewer
-                    </button>
-                  </div>
-                  <div className='p-10'>
-                    {showLesson && lastMaterial && <div>{lastMaterial.body}</div>}
-  
-                    {showRev && materialRev && (
-                      <div>
-                        {materialRev && Array.isArray(materialRev) && materialRev.map((material) => (
-                          <div className='mb-10 p-5 mbg-200 border-thin-800 rounded' key={material.question}>
-                            <p className='my-1 mcolor-900 font-medium'>{material.question}</p>
-                            <p className='font-medium mcolor-700'>Answer: <span className='mcolor-900 font-medium'>{material.answer}</span></p>
-                          </div>
-                        ))}
-  
-                        <div className='mb-[-1.5rem]'></div>
-                      </div>
-                    )}
-                  </div>
-                </section>
-                <div className='flex items-center justify-end absolute right-0 bottom-[-.8rem]'>
-                  <Link to={`/main/${categoryForToLower}/study-area/${categoryFor.toLowerCase()}-review/${groupNameId !== undefined ? groupNameId + '/' : ''}${lastMaterial.id}`} className='mbg-800 mcolor-100 rounded-[5px] px-12 py-2'>View Reviewer</Link>
+                    ))
+                  )}
                 </div>
               </div>
-            ) : (
-              <div className='pt-10 text-center text-xl'>No Uploaded Reviewer Appears.</div>
-            )}
+    
+              <div className='mt-10'>
+                {sharedMaterialsCategories.length > 0 ? (
+                  <div>
+                    <span>Bookmarked Materials:</span>
+                    <button onClick={toggleBookmarksExpand} className='ml-2'>
+                      {!isBookmarkExpanded ? <i className="fa-solid fa-chevron-down"></i> : <i className="fa-solid fa-chevron-up"></i>}
+                    </button>
+                  </div>
+                ) : (
+                  <p className='text-center mcolor-100 opacity-50'>No bookmarks saved.</p>
+                )}
+                <div className={`expandable-container ${isBookmarkExpanded ? 'expanded' : ''}`}>
+                  {sharedMaterialsCategories.length > 0 && (
+                    isBookmarkExpanded && [...new Set(sharedMaterialsCategories.map(category => category.category))].map((categoryName, index) => (
+                      <div className="shelf-category my-5" key={categoryName}>
+                        <div className="mbg-300 mt-2 mcolor-900 px-4 py-1 rounded-[5px]">
+                          <div className='flex items-center justify-between' style={expandedSharedCategories[categoryName] ? { borderBottom: 'solid 1px #999', paddingBottom: '.5rem', marginBottom: '.2rem' } : {}}>
+                            <div className='flex items-center'>
+                              <div className="text-lg font-medium">{categoryName}</div>
+                              <button onClick={() => toggleSharedExpandId(categoryName)} className='ml-2'>
+                                {!expandedSharedCategories[categoryName] ? (
+                                  <i className="fa-solid fa-chevron-down"></i>
+                                ) : (
+                                  <i className="fa-solid fa-chevron-up"></i>
+                                )}
+                              </button>
+                            </div>
+                            
+                            {/* delete this */}
+                            <div>
+                              <button onClick={() => deleteCategoryMaterialsShared(categoryName)}><DeleteIcon className='text-red' sx={{fontSize: '20px'}} /></button>
+                            </div>
+                            
+                          </div>
+                          {/* Check if the category is expanded before rendering the study materials */}
+                          {expandedSharedCategories[categoryName] && (
+                            sharedMaterials
+                              .filter((material) => sharedMaterialsCategoriesEach.find(category => category.category === categoryName))
+                              .map((material, index) => {
+                                const matchingCategory = sharedMaterialsCategoriesEach.find(category => category.category === categoryName);
+    
+                                // Check if the material's category matches the current categoryName
+                                if (matchingCategory && sharedMaterialsCategoriesEach[index].category === categoryName) {
+                                  return (
+                                    <div key={material.id} className='flex items-center justify-between'>
+                                      <p className='mt-2'>
+                                        <i className="fa-solid fa-book mr-2"></i>
+                                        {material.title}
+                                      </p>
+                                      <div>
+                                        <button
+                                          onClick={() => deleteStudyMaterial(material.id, material.title, material.code, material.tag)}
+                                        >
+                                          <DeleteIcon sx={{ fontSize: '20px' }} />
+                                        </button>
+                                        <Link to={`/main/${categoryForToLower}/study-area/${categoryFor.toLowerCase()}-review/${groupNameId !== undefined ? groupNameId + '/' : ''}${material.id}`}>
+                                          <OpenInNewIcon sx={{ fontSize: '20px' }} />
+                                        </Link>
+                                      </div>
+                                    </div>
+                                  );
+                                }
+    
+                                return null; // Skip rendering if the material is not in the current category
+                              })
+                          )}
+    
+    
+                          {expandedSharedCategories[categoryName] && sharedMaterials
+                            .filter((material) => sharedMaterialsCategoriesEach.find(category => category.category === categoryName)).length === 0 && (
+                              <p className='text-center mt-2'>No record</p>
+                            )}
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </div>
+    
+            </div>
           </div>
-        </div>
+
+        </div>        
       </div>
     );
   }

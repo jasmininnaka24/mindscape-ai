@@ -2,18 +2,15 @@ import React, { useEffect, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
-import { useUser } from '../../UserContext';
-import { AI_APIs_URL } from '../../urlConfig';
+import { LEARNER_TYPE_API, SERVER_URL } from '../../urlConfig';
 
 
 export const DataSubmission = () => {
   const location = useLocation();
   const { selectedStr, id } = location.state;
-
-  const { SERVER_URL } = useUser()
-
   const [sentence, setSentence] = useState("");
   const [newSentence, setNewSentence] = useState("");
+  const [loading, setLoading] = useState(false);
 
   
   const navigate = useNavigate();
@@ -25,35 +22,46 @@ export const DataSubmission = () => {
       setSentence(selectedStr);
     }
   }, [newSentence, selectedStr]);
+
   
   
   async function classifyLearnerType() {
+    try {
+      setLoading(true);
 
-    const url = `${AI_APIs_URL}/ls-classification`;
+      const url = `${LEARNER_TYPE_API}/ls-classification`;
+      const response = await axios.post(url, { text: sentence });
 
-    const response = await axios.post(url, {
-      text: sentence,
-    });
 
-    const learningStyle = response.data.learningStyle;
-    const probability = response.data.probability;
+      console.log(response);
+      const learningStyle = response.data.learningStyle;
+      const probability = response.data.probability;
 
-    // /update-typeoflearner/:id
+      let data = {
+        typeOfLearner: learningStyle,
+      };
 
-    let data = {
-      typeOfLearner: learningStyle
+      navigate('/data-result', {
+          state: {
+          sentence: sentence,
+          learningStyle: learningStyle,
+          probability: probability,
+        },
+      });
+      
+      
+      await axios.put(`${SERVER_URL}/users/update-typeoflearner/${id}`, data).then((res) => {
+        console.log(res.data);
+      });
+
+
+      
+    } catch (error) {
+      console.error("Error during classification:", error.message);
+      // Handle errors (e.g., show a user-friendly message)
+    } finally {
+      setLoading(false);
     }
-
-    await axios.put(`${SERVER_URL}/users/update-typeoflearner/${id}`, data)
-
-
-    navigate('/data-result', {
-      state: {
-        sentence: sentence,
-        learningStyle: learningStyle,
-        probability: probability,
-      },
-    });
   }
 
   return (
@@ -89,7 +97,13 @@ export const DataSubmission = () => {
               }} name="" id="" cols="100" rows="1" placeholder='I prefer...' className='border-bottom-thin text-xl p-2 single-line-textarea'></textarea>
             </div>
             <div className='flex justify-end mt-7'>
-              <button onClick={classifyLearnerType} className='mbg-800 mcolor-100 px-8 py-2 text-xl rounded-[5px]'>Submit Answer</button>
+              <button
+                onClick={classifyLearnerType}
+                disabled={loading}
+                className='mbg-800 mcolor-100 px-8 py-2 text-xl rounded-[5px]'
+              >
+                {loading ? "Submitting..." : "Submit Answer"}
+              </button>
             </div>
         </div>
       </div>

@@ -7,6 +7,7 @@ import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import GroupsIcon from '@mui/icons-material/Groups';
 import SensorDoorIcon from '@mui/icons-material/SensorDoor';
 import ClearAllIcon from '@mui/icons-material/ClearAll';
+import { Sidebar } from '../../../components/sidebar/Sidebar';
 
 import io from 'socket.io-client';
 import { Link } from 'react-router-dom';
@@ -289,84 +290,62 @@ export const DiscussionForums = () => {
 
 
   return (
-    <div>
+    <div className='poppins mcolor-900 mbg-300 relative flex'>
+
+      <Sidebar currentPage={'forum'} />
+
+      <div className={`lg:w-1/6 h-[100vh] flex flex-col items-center justify-between py-2 lg:mb-0 ${
+        window.innerWidth > 1020 ? '' :
+        window.innerWidth <= 768 ? 'hidden' : 'hidden'
+      } mbg-800`}></div>
+
+
 
       {showRooms && (
-        <div className='mbg-100 min-h-screen flex poppins'>
-
-          <div className='w-1/6 mbg-300 mcolor-900 flex flex-col justify-between'>
-            <div>
-              <p className='mcolor-900 text-2xl font-medium text-center pt-12'>{userData.username}</p>
-
-              <br />
-              <br />
-
-              <ul className='mcolor-900 w-full'>
-                <li className='px-6 my-1 py-2 text-lg'>
-                  <Link to={'/main'}>
-                    <ArrowBackIcon className='mr-3' />Back to main
-                  </Link>
-                </li>
-
-                <div className='w-full mbg-700'>
-                  <button
-                    className='px-6 my-1 py-2 text-lg  mcolor-100'
-                    onClick={() => {
-                      setShowJoinedrooms(false);
-                      setShowrooms(true);
-                    }}
-                    >
-                    <GroupsIcon className='mr-2' />
-                    Rooms
-                  </button>
-                </div>
-
+        <div className='flex-1 mbg-300 w-full pt-5 px-8 min-h-[100vh]'>
+      
+          <div>
+            <div className='h-[2vh]'></div>
+            <div className='flex items-center justify-between'>
+              <p className='text-4xl font-bold flex items-center mcolor-900'>
+                <GroupsIcon className='mr-3' sx={{ fontSize: 45 }} />
+                <p>Discussion Rooms</p>
+              </p>
+              <div className='mbg-800-opacity rounded'>
                 <button
-                className='px-6 my-1 py-2 text-lg'
-                onClick={() => {
-                  setShowJoinedrooms(true);
-                  setShowrooms(false);
-                  console.log('clicked');
-                }}
-              >
-                <GroupsIcon className='mr-2' />
-                Joined Rooms
-              </button>
-              </ul>
+                  className='px-6 my-1 py-2 text-lg mcolor-100 rounded'
+                  onClick={() => {
+                    setShowrooms(false)
+                    setShowJoinedrooms(true)
+                  }}
+                  >
+                  View Joined Rooms
+                </button>
+              </div>
             </div>
 
-            <div className='py-6 px-6 mcolor-900 font-medium text-lg w-full'><SensorDoorIcon /> Log out</div>
-          </div>
-
-      
-          <div className='rounded flex-1 h-[89vh] px-7 mbg-100'>
-
-            <p className='text-4xl font-bold flex items-center justify-center mt-12 mcolor-900'>
-              <GroupsIcon className='mr-3' sx={{ fontSize: 45 }} />
-              <p>Discussion Forum</p>
-            </p>
-
             {/* inputs and buttons */}
-            <div className='w-full flex items-center justify-center mt-5 gap-5'>
+            <div className='w-full flex items-center justify-center gap-5 mt-3'>
               <div className='flex items-center gap-5 w-full'>
-                <div className='border-thin-800 w-full rounded'>
-                  <input
-                    type="text"
-                    placeholder='Search for a room?...'
-                    className='w-full py-2 rounded text-center'
-                    value={searchTerm}
-                    onChange={handleSearch}
-                  />         
-                </div>
+
                 <div className='flex items-center justify-center w-full gap-1 my-5'>
-                  <button className='mbg-700 mcolor-100 px-5 py-2 rounded w-full' onClick={() => {
+                  <button className='btn-primary px-5 py-2 rounded w-full' onClick={() => {
                     setShowCreateRoomModal(true)
                   }}>Create a room</button>
                 </div>
                 <div className='flex items-center justify-center w-full gap-1 my-5'>
-                  <button className='mbg-300 mcolor-900 border-thin-800 px-5 py-2 rounded w-full' onClick={() => {
+                  <button className='mbg-800 mcolor-100 border-thin-800 px-5 py-2 rounded w-full' onClick={() => {
                     setShowCategories(true)
                   }}>View Categories</button>
+                </div>
+                <div className='border-medium-800 w-full rounded'>
+                  <input
+                    type="text"
+                    placeholder='Search for a room...'
+                    className='w-full py-2 rounded text-center mbg-input'
+                    value={searchTerm}
+                    onChange={handleSearch}
+                  />         
                 </div>
               </div>
             </div>
@@ -439,7 +418,7 @@ export const DiscussionForums = () => {
 
             {(searchTerm !== '' || selectedCategory !== null) && (
               <div className='flex items-center justify-end mb-5'>
-                <button className='mbg-300 border-thin-800 rounded py-1 px-5 mcolor-900' onClick={handleClear}>
+                <button className='mbg-700 border-thin-800 rounded py-1 px-5 mcolor-100' onClick={handleClear}>
                 <ClearAllIcon /> Clear
                 </button>
               </div>
@@ -496,7 +475,7 @@ export const DiscussionForums = () => {
                 const userIdExists = room?.users?.some((userr) => userr.userId === user?.id);
          
                 return (
-                  <div key={index} className='mbg-300 py-3 px-5 rounded'>
+                  <div key={index} className='mbg-200 border-thin-800 py-3 px-5 rounded'>
                     {room && (
                       <>
                         <p className='mcolor-800'>
@@ -554,63 +533,33 @@ export const DiscussionForums = () => {
 
 
       {showJoinedRooms && (
-        <div className='mbg-200 min-h-screen flex poppins'>
+        <div className='flex-1 mbg-300 w-full pt-5 px-8 min-h-[100vh]'>
 
-          <div className='w-1/6 mbg-300 mcolor-900 flex flex-col justify-between'>
-            <div>
-              <p className='mcolor-900 text-2xl font-medium text-center pt-12'>{userData.username}</p>
-
-              <br />
-              <br />
-
-              <ul className='mcolor-900 w-full'>
-                <li className='px-6 my-1 py-2 text-lg'>
-                  <Link to={'/main'}>
-                    <ArrowBackIcon className='mr-3' />Back to main
-                  </Link>
-                </li>
-
-
-                <div className='w-full'>
-                  <button
-                    className='px-6 my-1 py-2 text-lg mcolor-900'
-                    onClick={() => {
-                      setShowJoinedrooms(false);
-                      setShowrooms(true);
-                    }}
-                    >
-                    <GroupsIcon className='mr-2' />
-                    Rooms
-                  </button>
-                </div>
-
-                <div className='w-full mbg-700'>
-                  <button
-                    className='px-6 my-1 py-2 text-lg mcolor-100'
-                    onClick={() => {
-                      setShowrooms(false)
-                      setShowJoinedrooms(true)
-                    }}
-                    >
-                    <GroupsIcon className='mr-2' />
-                    Joined Rooms
-                  </button>
-                </div>
-              </ul>
-            </div>
-
-            <div className='py-6 px-6 mcolor-900 font-medium text-lg w-full'><SensorDoorIcon /> Log out</div>
-          </div>
-
-          <div className='flex-1 flex'>
-            <div className='w-1/2 h-[100vh] px-8' style={{ borderRight: '2px solid #999', overflowY: 'auto' }}>
-              <p className='text-4xl font-bold flex items-center justify-center mt-12 mcolor-900'>
+          <div>
+            <div className='h-[2vh]'></div>
+            <div className='flex items-center justify-between'>
+              <p className='text-4xl font-bold flex items-center mcolor-900'>
                 <GroupsIcon className='mr-3' sx={{ fontSize: 45 }} />
                 <p>Chat Rooms</p>
               </p>
+              <div className='mbg-800-opacity rounded'>
+                <button
+                  className='px-6 my-1 py-2 text-lg mcolor-100 rounded'
+                  onClick={() => {
+                    setShowJoinedrooms(false);
+                    setShowrooms(true);
+                  }}
+                  >
+                  View All Rooms
+                </button>
+              </div>
+            </div>
+          </div>
 
-              <p>{currentIndex}</p>
-              <p>{currentRoom}</p>
+
+
+          <div className='flex gap-5 my-5'>
+            <div className='w-1/2 h-[80vh] pr-3' style={{ overflowY: 'auto' }}>
 
               {filteredRooms
               .filter(room => room !== null)
@@ -619,10 +568,9 @@ export const DiscussionForums = () => {
          
                 if (userIdExists) {
                   return (
-                    <div key={index} className='mbg-300 py-3 px-5 my-5 rounded'>
+                    <div key={index} className='mbg-input border-thin-800 w-full py-3 px-5 mb-5 rounded'>
                       {room && (
                         <>
-                          <p className='mcolor-800'>Room: <span className='font-medium mcolor-900'>{room?.room}</span></p>
                           <p className='mcolor-800'>Room name: <span className='font-medium mcolor-900'>{room?.roomName}</span></p>
                           <p className='mcolor-800'>Room category: <span className='font-medium mcolor-900'>{room?.roomCategory}</span></p>
                           <p className='mcolor-800'>Room Description: <span className='font-medium mcolor-900'>{room?.roomDescription}</span></p>
@@ -664,9 +612,13 @@ export const DiscussionForums = () => {
                     );
                 }
                 })}
+
+              {filteredRooms.length === 0 && (
+                <p className='mcolor-500 text-center font-medium my-8 text-lg'>You haven't joined in any room yet</p>
+              )}
             </div>
 
-            <div className='border-thin-800 rounded w-1/2 h-[89vh]'>
+            <div className='border-thin-800 rounded w-1/2 h-[68vh]'>
 
               <div className="chat-window">
                 <div className="chat-header flex items-center justify-between px-5">

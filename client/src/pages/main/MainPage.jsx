@@ -5,22 +5,14 @@ import { useUser } from '../../UserContext';
 import axios from 'axios';
 import { SERVER_URL } from '../../urlConfig';
 import { fetchUserData } from '../../userAPI';
-import CloseIcon from '@mui/icons-material/Close';
-import ChevronRightIcon from '@mui/icons-material/ChevronRight';
-import KeyboardArrowLeftIcon from '@mui/icons-material/KeyboardArrowLeft';
-import PersonPinOutlinedIcon from '@mui/icons-material/PersonPinOutlined';
-import PeopleAltOutlinedIcon from '@mui/icons-material/PeopleAltOutlined';
-import LocalLibraryOutlinedIcon from '@mui/icons-material/LocalLibraryOutlined';
-import QuestionAnswerOutlinedIcon from '@mui/icons-material/QuestionAnswerOutlined';
-import SpaIcon from '@mui/icons-material/Spa';
-import AccountCircleOutlinedIcon from '@mui/icons-material/AccountCircleOutlined';
 import { useDropzone } from 'react-dropzone';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
 
+import { Sidebar } from '../../components/sidebar/Sidebar';
 
 // animation import
-import { motion, AnimatePresence  } from 'framer-motion';
+import { motion  } from 'framer-motion';
 
 
 export const MainPage = () => {
@@ -1032,23 +1024,8 @@ export const MainPage = () => {
 
 
 
-  const toggleSidebar = () => {
-    setSidebarOpen(!sidebarOpen);
-  };
 
-  useEffect(() => {
-    const handleResize = () => {
-      const tabletCondition = window.innerWidth <= 768;
-      setIsTablet(tabletCondition);
-      const isLargerThan1020 = window.innerWidth > 1020;
-      setSidebarOpen(tabletCondition ? !tabletCondition : isLargerThan1020);
-    };
-  
-    handleResize();
-    window.addEventListener('resize', handleResize);
-  
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
+
 
 
   const tabVariants = {
@@ -1081,71 +1058,9 @@ export const MainPage = () => {
     return (
       <div className='poppins mcolor-900 mbg-300 relative flex'>
       {/* Toggle button for mobile and tablet sizes */}
-      <motion.button
-        className='lg:hidden fixed left-0 top-0'
-        onClick={toggleSidebar}
-        initial={{ opacity: 0, y: -50 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.2 }}
-      >
-      </motion.button>
-  
-      {/* Sidebar */}
-      <AnimatePresence>
-        {sidebarOpen && (
-          <motion.div
-          style={{zIndex: 1}}
-          className={`lg:w-1/6 fixed h-[100vh] flex flex-col items-center justify-between py-2 lg:mb-0 ${
-            window.innerWidth > 1020 ? '' :
-            window.innerWidth <= 768 ? 'w-full fixed' : 'md:w-1/2 fixed'
-          } mbg-800`}
-            initial={{ opacity: 0, x: isTablet ? 0 : '-100%' }}
-            animate={{ opacity: 1, x: isTablet ? 0 : 0 }}
-            exit={{ opacity: 0, x: isTablet ? 0 : '-100%' }}
-            transition={{ duration: 0.2 }}
-          >
-            {/* Sidebar content goes here */}
-            <div className={`mbg-800 mcolor-100 fixed top-5 right-5`}>
-              <button onClick={toggleSidebar}>
-                {sidebarOpen && window.innerWidth < 1020 && <CloseIcon/> }
-              </button>
-            </div>
 
-            <div className='mcolor-300 text-center mt-8'>
-              <Link>
-                <h3 className='text-2xl my-1'><SpaIcon className='mb-2'/> MindScape</h3>
-              </Link>
-            </div>
-
-            <ul className='mcolor-100 w-full'>
-              <li className='my-1 py-4 pl-2 ml-2 rounded-side text-md mbg-300 mcolor-800'>
-                <Link><span className='mcolor-800'><AccountCircleOutlinedIcon/></span> My Profile</Link>
-              </li>
-              <li className='my-1 py-4 pl-2 ml-2 rounded text-md'>
-                <Link><span className='mcolor-300'><PersonPinOutlinedIcon/></span> Personal Study Room</Link>
-              </li>
-              <li className='my-1 py-4 pl-2 ml-2 rounded text-md'>
-                <Link><span className='mcolor-300'><PeopleAltOutlinedIcon/></span> Group Study Rooms</Link>
-              </li>
-              <li className='my-1 py-4 pl-2 ml-2 rounded text-md'>
-                <Link><span className='mcolor-300'><LocalLibraryOutlinedIcon/></span> Virtual Library Room</Link>
-              </li>
-              <li className='my-1 py-4 pl-2 ml-2 rounded text-md'>
-                <Link><span className='mcolor-300'><QuestionAnswerOutlinedIcon/></span> Discussion Forums</Link>
-              </li>
-            </ul>
-
-            <div className='mcolor-100 py-5'>
-              <button className='text-lg'>Logout</button>
-            </div>
-
-
-          </motion.div>
-        )}
-      </AnimatePresence>
-  
-
-      
+      <Sidebar currentPage={'profile'}/>
+        
       <div className={`lg:w-1/6 h-[100vh] flex flex-col items-center justify-between py-2 lg:mb-0 ${
         window.innerWidth > 1020 ? '' :
         window.innerWidth <= 768 ? 'hidden' : 'hidden'
@@ -1159,77 +1074,72 @@ export const MainPage = () => {
         
       </div> */}
 
-      <div className={`flex-1 min-h-[100vh] mbg-300 w-full mx-5 pt-5`}>
-        {/* <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className='w-full mcolor-800 mt-10 mb-3 rounded text-center'
-        >
-          <h1 className='text-lg'>Welcome back, Jasmin In-naka! 😇</h1>
-        </motion.div> */}
+      <div className={`flex-1 mbg-300 w-full mx-5 pt-5`}>
 
-        <motion.ul
-          className='mbg-400 w-full rounded-[1rem] flex flex-col items-center lg:flex-row lg:justify-between p-2'
-          variants={tabListVariants}
-          initial="hidden"
-          animate="visible"
-        >
-          <motion.button
-            variants={tabVariants}
-            whileTap="active"
-            className={`${showMainProfile ? 'btn-800 mcolor-100' : 'mcolor-800'} text-center rounded-[1rem] w-full lg:w-full lg:mr-2 py-2`}
-            onClick={() => {
-              setShowPasswordSecurity(false);
-              setShowAccountSettings(false);
-              setShowAccountDeletion(false);
-              setShowMainProfile(true);
-            }}
+        <div className='mbg-100 p-4 rounded-[1rem]'>
+          <motion.ul
+            className='mbg-400 w-full rounded-[1rem] flex flex-col items-center lg:flex-row lg:justify-between'
+            variants={tabListVariants}
+            initial="hidden"
+            animate="visible"
           >
-            Account Settings
-          </motion.button>
+            <motion.button
+              variants={tabVariants}
+              whileTap="active"
+              className={`${showMainProfile ? 'btn-800 mcolor-100' : 'mcolor-800'} text-center rounded-[1rem] w-full lg:w-full lg:mr-2 py-2`}
+              onClick={() => {
+                setShowPasswordSecurity(false);
+                setShowAccountSettings(false);
+                setShowAccountDeletion(false);
+                setShowMainProfile(true);
+              }}
+            >
+              Account Settings
+            </motion.button>
 
-          <motion.button
-            variants={tabVariants}
-            whileTap="active"
-            className={`${showAccountSettings ? 'btn-800 mcolor-100' : 'mcolor-800'} text-center rounded-[1rem] w-full lg:w-full lg:mr-2 py-2`}
-            onClick={() => {
-              setShowMainProfile(false);
-              setShowPasswordSecurity(false);
-              setShowAccountDeletion(false);
-              setShowAccountSettings(true);
-            }}
-          >
-            Contributed Materials
-          </motion.button>
+            <motion.button
+              variants={tabVariants}
+              whileTap="active"
+              className={`${showAccountSettings ? 'btn-800 mcolor-100' : 'mcolor-800'} text-center rounded-[1rem] w-full lg:w-full lg:mr-2 py-2`}
+              onClick={() => {
+                setShowMainProfile(false);
+                setShowPasswordSecurity(false);
+                setShowAccountDeletion(false);
+                setShowAccountSettings(true);
+              }}
+            >
+              Contributed Materials
+            </motion.button>
 
-          <motion.button
-            variants={tabVariants}
-            whileTap="active"
-            className={`${showPasswordSecurity ? 'btn-800 mcolor-100' : 'mcolor-800'} text-center rounded-[1rem] w-full lg:w-full lg:mr-2 py-2`}
-            onClick={() => {
-              setShowAccountSettings(false);
-              setShowMainProfile(false);
-              setShowAccountDeletion(false);
-              setShowPasswordSecurity(true);
-            }}
-          >
-            Password & Security
-          </motion.button>
+            <motion.button
+              variants={tabVariants}
+              whileTap="active"
+              className={`${showPasswordSecurity ? 'btn-800 mcolor-100' : 'mcolor-800'} text-center rounded-[1rem] w-full lg:w-full lg:mr-2 py-2`}
+              onClick={() => {
+                setShowAccountSettings(false);
+                setShowMainProfile(false);
+                setShowAccountDeletion(false);
+                setShowPasswordSecurity(true);
+              }}
+            >
+              Password & Security
+            </motion.button>
 
-          <motion.button
-            variants={tabVariants}
-            whileTap="active"
-            className={`${showAccountDeletion ? 'btn-800 mcolor-100' : 'mcolor-800'} text-center rounded-[1rem] w-full lg:w-full lg:mr-2 py-2`}
-            onClick={() => {
-              setShowAccountSettings(false);
-              setShowMainProfile(false);
-              setShowPasswordSecurity(false);
-              setShowAccountDeletion(true);
-            }}
-          >
-            Account Deletion
-          </motion.button>
-        </motion.ul>
+            <motion.button
+              variants={tabVariants}
+              whileTap="active"
+              className={`${showAccountDeletion ? 'btn-800 mcolor-100' : 'mcolor-800'} text-center rounded-[1rem] w-full lg:w-full lg:mr-2 py-2`}
+              onClick={() => {
+                setShowAccountSettings(false);
+                setShowMainProfile(false);
+                setShowPasswordSecurity(false);
+                setShowAccountDeletion(true);
+              }}
+            >
+              Account Deletion
+            </motion.button>
+          </motion.ul>
+        </div>
 
             
         <br />
@@ -1268,7 +1178,7 @@ export const MainPage = () => {
                     <p className='text-2xl mb-1 font-medium mcolor-800 mb-1'>Upload a new photo</p>
                     <p className='text-sm opacity-70 mb-4'>Drag and drop an image to the photo or click to select one.</p>
 
-                    <button className={`${(buttonLoading && buttonClickedNumber === 1) ? 'mbg-200 mcolor-900 border-thin-800' : 'btn-800 mcolor-100'} px-10 py-2 rounded`} disabled={(buttonLoading && buttonClickedNumber === 1)} onClick={(e) => updateUserImage(e, 1)}>
+                    <button className={`${(buttonLoading && buttonClickedNumber === 1) ? 'mbg-200 mcolor-900 border-thin-800' : 'btn-primary mcolor-100'} px-10 py-2 rounded`} disabled={(buttonLoading && buttonClickedNumber === 1)} onClick={(e) => updateUserImage(e, 1)}>
                       {(buttonLoading && buttonClickedNumber === 1) ? (
                         <div>Updating...</div>
                       ) : (
@@ -1292,7 +1202,7 @@ export const MainPage = () => {
 
 
                 {/* Changing information */}
-                <br /><br /><br />
+                <br /><br />
                 <p className='text-xl mcolor-800 font-medium'>Change your information here: </p>
 
                 <ul className='grid grid-cols-2 gap-5 my-5'>
@@ -1374,7 +1284,7 @@ export const MainPage = () => {
                 </ul>
 
                 <div className='flex items-center justify-end w-full mt-10'>
-                  <button className={`${(buttonLoading && buttonClickedNumber === 2) ? 'mbg-200 mcolor-900 border-thin-800' : 'btn-800 mcolor-100'} px-5 py-2 rounded`} disabled={(buttonLoading && buttonClickedNumber === 2)} onClick={(e) => updateUserInformation(e, 2)}>
+                  <button className={`${(buttonLoading && buttonClickedNumber === 2) ? 'mbg-200 mcolor-900 border-thin-800' : 'btn-primary mcolor-100'} px-5 py-2 rounded`} disabled={(buttonLoading && buttonClickedNumber === 2)} onClick={(e) => updateUserInformation(e, 2)}>
                       {(buttonLoading && buttonClickedNumber === 2) ? (
                         <div>Updating...</div>
                       ) : (
@@ -1872,7 +1782,11 @@ export const MainPage = () => {
 
 
           <motion.div
-            className='w-full lg:w-1/3 h-100 mbg-400 rounded h-[68vh] flex flex-col justify-center'
+            className={`w-full lg:w-1/3 mbg-800 rounded flex flex-col justify-center mcolor-100 ${
+              window.innerWidth > 1300 ? 'h-[48vh]' :
+              window.innerWidth > 900 ? 'h-[58vh]' :
+              'h-[68vh]'
+            }`}
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
@@ -1894,7 +1808,7 @@ export const MainPage = () => {
               >
                 <img
                   src={`${SERVER_URL}/images/${userData.userImage}`}
-                  className='rounded-full shadows'
+                  className='rounded-full'
                   style={{ width: '150px', objectFit: 'cover', height: '150px' }}
                   alt=""
                 />
@@ -1908,16 +1822,16 @@ export const MainPage = () => {
               exit={{ opacity: 0, y: -20 }}
               transition={{ duration: 0.5, delay: 0.6 }}
             >
-              <p className='text-2xl mb-1 font-medium text-2xl mb-1 mcolor-800 mb-5 mt-3'>
+              <p className='text-2xl mb-1 font-medium text-2xl mb-1 mb-5 mt-3'>
                 {userData.username}
               </p>
 
-              <p className='opacity-80 text-md font-medium'>
+              <p className='text-md font-medium'>
                 {userData.typeOfLearner} Learner
               </p>
 
-              <p className='opacity-75 text-md'>{groupListLength} Group Study Rooms</p>
-              <p className='opacity-75 text-md'>
+              <p className='text-md'>{groupListLength} Group Study Rooms</p>
+              <p className='text-md'>
                 {contributedMaterialsLength} Study Materials Contributes
               </p>
             </motion.div>

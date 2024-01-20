@@ -4,9 +4,11 @@ import axios from 'axios';
 import io from 'socket.io-client';
 import { useUser } from '../../UserContext';
 import { fetchUserData } from '../../userAPI';
-import { useNavigate, useParams } from 'react-router-dom';
+import { Link, useNavigate, useParams } from 'react-router-dom';
 import PushPinIcon from '@mui/icons-material/PushPin';
 import { SERVER_URL } from '../../urlConfig';
+import { Sidebar } from '../sidebar/Sidebar';
+import { motion } from 'framer-motion';
 
 
 
@@ -59,6 +61,8 @@ export const PreJoinPage = (props) => {
   const [recentlyDeletedMaterial, setRecentlyDeletedMaterial] = useState('');
   const [isMaterialDeleted, setIsMaterialDeleted] = useState('hidden');
   const [materialTitle, setMaterialTitle] = useState('');
+  const [materialCategory, setMaterialCategory] = useState('');
+  const [materialNumQues, setMaterialNumQues] = useState('');
   const [isDone, setIsDone] = useState(false);
   const [loading, setLoading] = useState(true);
 
@@ -67,24 +71,27 @@ export const PreJoinPage = (props) => {
   const getUserData = async () => {
     if (UserId === undefined) {
       navigate(`/login?group_session&groupId=${groupId}&materialId=${materialId}`);
-      return; // Exit early if UserId is undefined
+      return;
     }
-
+  
     try {
       const userData = await fetchUserData(UserId);
+      const { username, email, studyProfTarget, typeOfLearner, userImage } = userData || {};
+  
       setUserData({
-        username: userData?.username,
-        email: userData?.email,
-        studyProfTarget: userData?.studyProfTarget,
-        typeOfLearner: userData?.typeOfLearner,
-        userImage: userData?.userImage
+        username,
+        email,
+        studyProfTarget,
+        typeOfLearner,
+        userImage
       });
-
+  
       setLoading(false);
     } catch (error) {
       console.error('Error fetching user data:', error);
     }
   };
+  
 
   useEffect(() => {
     
@@ -110,17 +117,18 @@ export const PreJoinPage = (props) => {
     
     const fetchData = async () => {
       try {
-        
-        await axios.get(`${SERVER_URL}/quesRev/study-material-rev/${materialId}`).then((response) => {
-          setNotesReviewer(response.data)
-        })
-
     
-        await axios.get(`${SERVER_URL}/studyMaterial/get-material/${materialId}`).then((response) => {
-          setLessonContext(response.data.body);
-          setMaterialTitle(response.data.title);
-          setUserUploaderId(response.data.UserId)
-        })
+        const materialDetails = await axios.get(`${SERVER_URL}/studyMaterial/get-material/${materialId}`);
+
+        const categoryDetails = await axios.get(`${SERVER_URL}/studyMaterialCategory/get-categoryy/${materialDetails.data.StudyMaterialsCategoryId}`);
+
+        const fetchedQuestions = await axios.get(`${SERVER_URL}/quesAns/study-material-mcq/${materialDetails.data.id}`);
+
+        
+        setMaterialTitle(materialDetails.data.title);
+        setUserUploaderId(materialDetails.data.UserId)
+        setMaterialCategory(categoryDetails.data.category);
+        setMaterialNumQues(fetchedQuestions.data.length);
         
         const previousSavedData = await axios.get(`${SERVER_URL}/DashForPersonalAndGroup/get-latest-assessment-group/${materialId}/${groupId}`);
 
@@ -139,6 +147,7 @@ export const PreJoinPage = (props) => {
 
       setLoading(false)
     }
+    
     
     fetchData(); 
 
@@ -161,162 +170,83 @@ export const PreJoinPage = (props) => {
     setShowPreJoin(false);
     setShowAssessmentPage(true);
   
-    let data = {
+    const socketListeners = {
+      'assessment_user_list': setUserListAssessment,
+      'selected_assessment_answers': setSelectedAssessmentAnswer,
+      'updated_time': setSeconds,
+      'is_running': setIsRunning,
+      'submitted_button_response': setIsSubmittedButtonClicked,
+      'id_of_who_submitted': setIdOfWhoSubmitted,
+      'username_of_who_submitted': setUsernameOfWhoSubmitted,
+      'assessment_score': setScore,
+      'isSubmitted_assess': setIsSubmitted,
+      'isAssessment_done': setIsAssessmentDone,
+      'show_submitted_answer_modal': setShowSubmittedAnswerModal,
+      'show_texts': setShowTexts,
+      'show_assessment': setShowAssessment,
+      'show_analysis': setShowAnalysis,
+      'over_all_items': setOverAllItems,
+      'pre_assessment_score': setPreAssessmentScore,
+      'assessment_score_latest': setAssessmentScore,
+      'assessment_imp': setAssessmentImp,
+      'assessment_score_perf': setAssessmentScorePerf,
+      'completion_time': setCompletionTime,
+      'confidence_level': setConfidenceLevel,
+      'over_all_performance': setOverAllPerformance,
+      'assessment_count_more_than_one': setAssessmentCountMoreThanOne,
+      'generated_analysis': setGeneratedAnalysis,
+      'shuffled_choices_assessment': setShuffledChoicesAssessment,
+      'extracted_QA_assessment': setQAAssessment,
+      'assessment_users_choices': setAssessmentUsersChoices,
+      'message_list': (message) => {
+        if (message.length !== 0) {
+          setMessageList(message);
+        }
+      },
+      'assessment_started': setIsStartAssessmentButtonStarted,
+    };
+  
+    Object.entries(socketListeners).forEach(([event, handler]) => {
+      socket.on(event, handler);
+    });
+  
+    const data = {
       room: assessementRoom,
       username: userData?.username,
-      userId: userId,
-      selectedAssessmentAnswer: selectedAssessmentAnswer,
+      userId,
+      selectedAssessmentAnswer,
       timeDurationVal: itemCount,
       isAnswersSubmitted: isSubmittedButtonClicked,
-      idOfWhoSubmitted: idOfWhoSubmitted,
-      usernameOfWhoSubmitted: usernameOfWhoSubmitted,
+      idOfWhoSubmitted,
+      usernameOfWhoSubmitted,
       assessmentScore: score,
       isSubmittedChar: isSubmitted,
-      isAssessmentDone: isAssessmentDone,
+      isAssessmentDone,
       isRunning: false,
-      showSubmittedAnswerModal: showSubmittedAnswerModal,
-      showTexts: showTexts,
-      showAnalysis: showAnalysis,
-      showAssessment: showAssessment,
-      overAllItems: overAllItems, 
-      preAssessmentScore: preAssessmentScore, 
-      assessmentScoreLatest: assessmentScore, 
-      assessmentImp: assessmentImp,
-      assessmentScorePerf: assessmentScorePerf,
-      completionTime: completionTime, 
-      confidenceLevel: confidenceLevel, 
-      overAllPerformance: overAllPerformance, 
-      assessmentCountMoreThanOne: assessmentCountMoreThanOne,
-      generatedAnalysis: generatedAnalysis,
+      showSubmittedAnswerModal,
+      showTexts,
+      showAnalysis,
+      showAssessment,
+      overAllItems,
+      preAssessmentScore,
+      assessmentScoreLatest: assessmentScore,
+      assessmentImp,
+      assessmentScorePerf,
+      completionTime,
+      confidenceLevel,
+      overAllPerformance,
+      assessmentCountMoreThanOne,
+      generatedAnalysis,
       shuffledChoicesAssess: shuffledChoicesAssessment,
-      extractedQAAssessment: extractedQAAssessment,
-      assessmentUsersChoices: assessmentUsersChoices,
-      messageList: messageList,
-      isStudyStarted: isStartAssessmentButtonStarted
-    };  
-
+      extractedQAAssessment,
+      assessmentUsersChoices,
+      messageList,
+      isStudyStarted: isStartAssessmentButtonStarted,
+    };
   
     socket.emit('join_assessment_room', data);
-  
-    socket.on('assessment_user_list', (updatedData) => {
-      setUserListAssessment(updatedData);
-    });
-  
-    socket.on('selected_assessment_answers', (selectedChoicesData) => {
-      setSelectedAssessmentAnswer(selectedChoicesData);
-    });
-  
-    socket.on('updated_time', (time) => {
-      setSeconds(time);
-    });
-  
-    socket.on('is_running', (isrunning) => {
-      setIsRunning(isrunning);
-    });
-  
-    socket.on('submitted_button_response', (isSubmittedButtonTrue) => {
-      setIsSubmittedButtonClicked(isSubmittedButtonTrue);
-    });
-  
-    socket.on('id_of_who_submitted', (id) => {
-      setIdOfWhoSubmitted(id);
-    });
-  
-    socket.on('username_of_who_submitted', (username) => {
-      setUsernameOfWhoSubmitted(username);
-    });
-  
-    socket.on('assessment_score', (score) => {
-      setScore(score);
-    });
-  
-    socket.on('isSubmitted_assess', (isSubmitted) => {
-      setIsSubmitted(isSubmitted);
-    });
-  
-    socket.on('isAssessment_done', (isAssessmentDone) => {
-      setIsAssessmentDone(isAssessmentDone);
-    });
-  
-    socket.on('show_submitted_answer_modal', (submittedModal) => {
-      setShowSubmittedAnswerModal(submittedModal);
-    });
-  
-    socket.on('show_texts', (showTexts) => {
-      setShowTexts(showTexts);
-    });
-  
-    socket.on('show_assessment', (showAssessment) => {
-      setShowAssessment(showAssessment);
-    });
-  
-    socket.on('show_analysis', (showAnalysis) => {
-      setShowAnalysis(showAnalysis);
-    });
-  
-    socket.on('over_all_items', (data) => {
-      setOverAllItems(data);
-    });
-  
-    socket.on('pre_assessment_score', (data) => {
-      setPreAssessmentScore(data);
-    });
-  
-    socket.on('assessment_score_latest', (data) => {
-      setAssessmentScore(data);
-    });
-  
-    socket.on('assessment_imp', (data) => {
-      setAssessmentImp(data);
-    });
-  
-    socket.on('assessment_score_perf', (data) => {
-      setAssessmentScorePerf(data);
-    });
-  
-    socket.on('completion_time', (data) => {
-      setCompletionTime(data);
-    });
-  
-    socket.on('confidence_level', (data) => {
-      setConfidenceLevel(data);
-    });
-  
-    socket.on('over_all_performance', (data) => {
-      setOverAllPerformance(data);
-    });
-  
-    socket.on('assessment_count_more_than_one', (data) => {
-      setAssessmentCountMoreThanOne(data);
-    });
-  
-    socket.on('generated_analysis', (data) => {
-      setGeneratedAnalysis(data);
-    });
-
-    socket.on('shuffled_choices_assessment', (data) => {
-      setShuffledChoicesAssessment(data);
-    });
-
-    socket.on('extracted_QA_assessment', (data) => {
-      setQAAssessment(data);
-    });
-
-    socket.on('assessment_users_choices', (data) => {
-      setAssessmentUsersChoices(data);
-    });
-    
-    socket.on("message_list", (message) => {
-      if (message.length !== 0) {
-        setMessageList(message)
-      }
-    });
-    
-    socket.on('assessment_started', (data) => {
-      setIsStartAssessmentButtonStarted(data);
-    });
-
   };
+  
   
 
   const deleteStudyMaterial = async (id, title) => {
@@ -352,114 +282,179 @@ export const PreJoinPage = (props) => {
     </div>
   } else {
     return (
-      <div className='container py-8 poppins'>
-        <Navbar linkBack={`/main/group/study-area/${groupId}`} linkBackName={`Study Area`} currentPageName={'Reviewer Page Preview'} username={userData?.username}/>
-        <div>
-  
-            <div className='flex justify-between items-center my-5 py-3'>
-  
-  
-              {/* modify buttons */}
-              <div className='flex items-center gap-3'>
-                <button className='px-6 py-2 rounded-[5px] text-lg mbg-200 mcolor-800 border-thin-800 font-normal' onClick={() => deleteStudyMaterial(materialId, materialTitle)}>Delete Material</button>
-  
-                {!takeAssessment && (
-                  <button className='px-6 py-2 rounded-[5px] text-lg mbg-200 mcolor-800 border-thin-800 font-normal' onClick={() => {
-                    if (userUploaderId === UserId) {
-                      navigate(`/main/group/study-area/update-material/${groupId}/${materialId}`)
-                    } else {
-                      setShowModal(true)
-                      setShowModifyModal(true)
-                    }
-                  }}>Modify Material</button>
-                )}
+      <div className='poppins mcolor-900 mbg-300 relative flex'>
+        {/* <Navbar linkBack={`/main/group/study-area/${groupId}`} linkBackName={`Study Area`} currentPageName={'Reviewer Page Preview'} username={userData?.username}/> */}
+
+        <Sidebar currentPage={'group-study-area'} />
+
+        <div className={`lg:w-1/6 h-[100vh] flex flex-col items-center justify-between py-2 lg:mb-0 ${
+        window.innerWidth > 1020 ? '' :
+        window.innerWidth <= 768 ? 'hidden' : 'hidden'
+      } mbg-800`}></div>
+
+
+        <div className='flex-1 mbg-300 w-full flex flex-col min-h-[100vh] justify-center items-center px-5'>
+
+          <motion.div 
+            className={`${isMaterialDeleted} mt-5 py-2 mbg-300 mcolor-800 text-center rounded-[5px] text-lg`}
+            initial={{ opacity: 0, y: -50 }} // initial state
+            animate={{ opacity: 1, y: 0 }}   // animate to this state
+            transition={{ duration: 0.5 }}   // transition duration
+          >
+            {recentlyDeletedMaterial} has been deleted.
+          </motion.div>
+
+          <div className='flex gap-5 w-full'>
+
+
+            <div className='w-full'>
+              <div className='mt-3 mb-5'>
+                {/* <Navbar linkBack={`/main/personal/study-area`} linkBackName={`Study Area`} currentPageName={'Reviewer Page Preview'} username={'Jennie Kim'}/> */}
               </div>
-  
-  
-  
-              <div className='flex justify-between items-center gap-4'>
-                <div className='flex items-center gap-2'>
-  
-                
-                  <button className='px-6 py-2 rounded-[5px] text-lg mbg-200 mcolor-800 border-thin-800 font-normal' onClick={startStudySession}>Join Study Room</button>
+
+
+              <div className='flex gap-10 w-full'>
+                <div className='w-2/3 rounded-[5px] py-3 px-5'>
+                  <div className='w-full'>
+                    <motion.p className='text-2xl'
+                      initial={{ opacity: 0, y: 50 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.3, delay: 0.2 }}
+                    >You have been identified as a <span className='font-bold underline'>{userData.typeOfLearner} Learner</span></motion.p >
+                    <br />
+                    <motion.p className='mcolor-900 my-1'
+                      initial={{ opacity: 0, y: 50 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.5, delay: 0.4 }}
+                    ><PushPinIcon className='text-red mr-1' />The design and formatting of your study sessions will be tailored to suit your specific learner type. If you wish to explore design and format options for other learner types, you can modify your profile configuration.</motion.p >
+                    <br />
+                    <motion.p className='mcolor-900 my-1'
+                      initial={{ opacity: 0, y: 50 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.8, delay: 0.7 }}
+                    ><PushPinIcon className='text-red mr-1' />Study Session, which includes a Pomodoro technique, is designed to enhance your productivity and focus. The Pomodoro technique involves structured intervals of focused work, promoting efficient learning and concentration. Stay organized and make the most of your study time with this purposeful approach to learning.</motion.p >
+                    <br />
+                    <motion.p className='mcolor-900 my-1'
+                      initial={{ opacity: 0, y: 50 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 1, delay: 0.9 }}
+                    ><PushPinIcon className='text-red mr-1' />Upon completing an assessment, your performance data will be seamlessly integrated into the dashboard. This allows for a comprehensive view of your progress over time, facilitating a deeper understanding of your strengths and areas for improvement. Take advantage of this valuable insight to refine your learning strategy and achieve continuous growth.</motion.p >
+                    <br />
+                    <motion.p className='mcolor-900 my-1'
+                      initial={{ opacity: 0, y: 50 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 1.3, delay: 1.2 }}
+                    ><PushPinIcon className='text-red mr-1' />Please be aware that the action of deleting or updating data is irreversible. Exercise caution when making changes to ensure the accuracy and completeness of your information. Prioritize data integrity to maintain a reliable and consistent record of your learning activities within the system.</motion.p >
+                  </div>
+
+                  {/* modal */}
+
+                  {showModal && (
+                    <motion.div
+                      style={{ zIndex: 1000 }}
+                      className={`absolute flex flex-col items-center justify-center modal-bg w-full h-full`}
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      exit={{ opacity: 0 }}
+                    >
+                      <div className='flex justify-center'>
+                        <div className='mbg-100 min-h-[45vh] w-[30vw] w-1/3 z-10 relative p-10 rounded-[5px]'>
+
+                        <button className='absolute right-4 top-3 text-xl' onClick={() => {
+                          setShowModal(false);
+                        }}>
+                          ✖
+                        </button>
+                        
+                        <div className='h-full flex justify-center items-center'>
+                          <div>
+                            <p className='mcolor-900 text-2xl font-medium text-center'>Reminder</p>
+                            <p className='text-center text-lg font-medium mcolor-800 mt-8'><PushPinIcon className='text-red-dark' />You need to take the pre-assessment page first.</p>     
+                            <p className='text-center text-lg font-medium mcolor-800 mt-5'><PushPinIcon className='text-red-dark' />Once you start the study session, you won't be able to update the study material anymore.</p>     
+                          </div>
+                        </div>
+
+                        </div>
+                      </div>
+                    </motion.div>
+                  )}
+
                 </div>
-  
-  
-                <button className='px-6 py-2 rounded-[5px] text-lg mbg-800 mcolor-100 font-normal' onClick={takeAssessmentBtn}>
-                  Take {takeAssessment ? 'Assessment' : 'Pre-Assessment'}
-                </button>
-  
+
+                <motion.div
+                  className='flex flex-col w-1/3 items-center'>
+
+                  <motion.div className='btn-light mcolor-700 w-full p-5 rounded shadows'
+                    initial={{ opacity: 0, y: 50 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.3, delay: 0.2 }}
+                  >
+                    <p className='text-lg font-medium mb-4'>Study Material Information:</p>
+
+                    <p className='mt-1'>Category: <span className='font-bold'>{materialCategory}</span></p>
+                    <p className='mt-1'>Material Title: <span className='font-bold'>{materialTitle}</span></p>
+                    <p className='mt-1'>Number of Questions: <span className='font-bold'>{materialNumQues}</span></p>
+                  </motion.div>
+
+                  <br />
+                  <motion.div className='border-hr w-full'
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: .30 }}
+                    transition={{ duration: 0.3, delay: 1.7 }}
+                  ></motion.div>
+                  <br />
+
+                                    
+
+                  <div className='flex flex-col items-center gap-4 w-full h-full'>
+
+                    <motion.div className='flex items-center gap-2 w-full'
+                      initial={{ opacity: 0, y: 50 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.5, delay: 0.4 }}>
+                      <button className='w-full px-6 py-5 shadows rounded-[5px] text-lg btn-primary font-normal' onClick={startStudySession}>Join Study Session</button>
+                    </motion.div>
+                      
+                    <motion.div className='w-full'
+                        initial={{ opacity: 0, y: 50 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.8, delay: 0.7 }}>
+                      <button className='w-full px-6 py-5 shadows rounded-[5px] text-lg mbg-800 mcolor-100 font-normal' onClick={takeAssessmentBtn}>Take {takeAssessment ? 'Assessment' : 'Pre-Assessment'}</button>
+                    </motion.div>
+
+                      <motion.button className='px-5 py-5 shadows w-full rounded-[5px] text-lg mbg-200 mcolor-800 border-medium-800 font-normal'
+                      onClick={() => deleteStudyMaterial(materialId, materialTitle)}
+                      initial={{ opacity: 0, y: 50 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 1, delay: 0.9 }}
+                      >Delete Material</motion.button>
+
+                    {!takeAssessment && (
+                      <motion.button className='px-5 py-5 shadows w-full rounded-[5px] text-lg mbg-200 mcolor-800 border-medium-800 font-normal'
+                      initial={{ opacity: 0, y: 50 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 1.3, delay: 1.2 }}
+                      onClick={() => {
+                        if (userUploaderId === UserId) {
+                          navigate(`/main/group/study-area/update-material/${groupId}/${materialId}`)
+                        } else {
+                          setShowModal(true)
+                          setShowModifyModal(true)
+                        }
+                      }}
+                      >
+                        Modify Material
+                      </motion.button>
+                      )}
+
+                  </div>
+                </motion.div>
               </div>
             </div>
-  
-            <div className='border-medium-800 scroll-box max-h-[70vh] min-h-[70vh] rounded-[5px]'>
-              <div className='flex items-center gap-1'>
-                <button className={`w-full py-4 rounded-[8px] text-lg font-medium mcolor-800 ${showNotesReviewer === false ? 'mbg-300' : ''}`} onClick={() => {
-                  SetShowLessonContext(false)
-                  SetShowNotesReviewer(true)
-                }}>Notes Reviewer</button>
-                <button className={`w-full py-4 rounded-[8px] text-lg font-medium mcolor-800 ${showLessonContext === false ? 'mbg-300' : ''}`} onClick={() => {
-                  SetShowLessonContext(true)
-                  SetShowNotesReviewer(false)
-                }}>Lesson Context</button>
-              </div>
-  
-              {showNotesReviewer && (
-                <div className='mt-6 mb-5'>
-                  <div className='flex items-center'>
-                    <p className='w-full text-lg mcolor-800 font-bold px-5'>Question: </p>
-                    <p className='w-full text-lg mcolor-800 font-bold px-7'>Answer: </p>
-                  </div>
-                  {notesReviewer.map((item, index) => {
-                    return <div key={index} className='flex gap-3'>
-                      <p className='text-start w-full m-3 p-2 mcolor-700 font-medium'>{item.question}</p>
-                      <p className='text-start w-full m-3 p-2 mcolor-900 font-medium'>{item.answer}</p>
-                    </div>
-                  })}
-                </div>
-              )}
-  
-              {showLessonContext && (
-                <div className='px-10 py-8 mcolor-900'>
-                  {lessonContext}
-                </div>
-              )}
-  
-  
-              {showModal && (
-                <div style={{ zIndex: 1000 }} className={`absolute flex flex-col items-center justify-center modal-bg w-full h-full`}>
-                  <div className='flex justify-center'>
-                    <div className='mbg-100 min-h-[45vh] w-[30vw] w-1/3 z-10 relative p-10 rounded-[5px]'>
-  
-                    <button className='absolute right-4 top-3 text-xl' onClick={() => {
-                      setShowModal(false);
-                    }}>
-                      ✖
-                    </button>
-                    
-                    <div className='h-full flex justify-center items-center'>
-                      {showModifyModal ? (
-                        <div>
-                          <p className='mcolor-900 text-2xl font-medium text-center'>Reminder</p>
-                          <p className='text-center text-lg font-medium mcolor-800 mt-5'><PushPinIcon className='text-red-dark' />Modifications are only allowed by the individual who uploaded this material.</p>     
-                        </div>
-                        ) : (
-                        <div>
-                          <p className='mcolor-900 text-2xl font-medium text-center'>Reminder</p>
-                          <p className='text-center text-lg font-medium mcolor-800 mt-8'><PushPinIcon className='text-red-dark' />You need to take the pre-assessment page first.</p>     
-                          <p className='text-center text-lg font-medium mcolor-800 mt-5'><PushPinIcon className='text-red-dark' />Once you start the study session, you won't be able to update the study material anymore.</p>     
-                        </div>
-                        )}
-                    </div>
-  
-                    </div>
-                  </div>
-                </div>
-              )}
-  
-  
-            </div>
+
           </div>
+
+        </div>
       </div>  
     )
   }

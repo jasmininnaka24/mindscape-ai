@@ -6,7 +6,10 @@ import { useUser } from '../../../UserContext'
 import DeleteIcon from '@mui/icons-material/Delete';
 import { fetchUserData } from '../../../userAPI'
 import { SERVER_URL } from '../../../urlConfig';
+import { Sidebar } from '../../../components/sidebar/Sidebar'
 
+// icons import
+import LabelIcon from '@mui/icons-material/Label';
 
 export const VirtualLibraryMain = () => {
 
@@ -107,144 +110,138 @@ export const VirtualLibraryMain = () => {
 
 
   const fetchData = async () => {
-
-    // setFilteredSharedCategories
- 
-    // for fetching personal
-    const personalStudyMaterial = await axios.get(`${SERVER_URL}/studyMaterial/study-material-category/Personal/${UserId}`)
-    const filteredPersonalStudyMaterials = personalStudyMaterial.data.filter(item => item.tag === 'Own Record');
-    setPersonalStudyMaterials(filteredPersonalStudyMaterials);
-
-
-    const fetchedPersonalStudyMaterial = personalStudyMaterial.data;
-
-    const fetchedPersonalStudyMaterialCategory = await Promise.all(
-      fetchedPersonalStudyMaterial.map(async (material, index) => {
-        const materialCategoryResponse = await axios.get(`${SERVER_URL}/studyMaterialCategory/get-categoryy/${material.StudyMaterialsCategoryId}`);
-        return materialCategoryResponse.data; // Return the data from each promise
-      })
-    );
-      
-    setPersonalStudyMaterialsCategory(fetchedPersonalStudyMaterialCategory);
-    
-    
-    const groupStudyMaterial = await axios.get(`${SERVER_URL}/studyMaterial/study-material-category/Group/${UserId}`)
-    const filteredGroupStudyMaterials = groupStudyMaterial.data.filter(item => item.tag === 'Own Record');
-    setGroupStudyMaterials(filteredGroupStudyMaterials);
-    
-    
-    // console.log(filteredGroupStudyMaterials);
-    
-
-    const fetchedGroupStudyMaterialCategory = await Promise.all(
-      filteredGroupStudyMaterials.map(async (material, index) => {
-        const materialCategoryResponse = await axios.get(`${SERVER_URL}/studyMaterialCategory/get-categoryy/${material.StudyMaterialsCategoryId}`);
-        return materialCategoryResponse.data; // Return the data from each promise
-      })
-    );
-      
-    setGroupStudyMaterialsCategory(fetchedGroupStudyMaterialCategory);
-      
-    // console.log(fetchedGroupStudyMaterialCategory);
-      
-      
-      
-    const sharedStudyMaterial = await axios.get(`${SERVER_URL}/studyMaterial/shared-materials`);
-    const sharedStudyMaterialResponse = sharedStudyMaterial.data;  
-    setSharedMaterials(sharedStudyMaterialResponse)
-
-    const fetchedSharedStudyMaterialCategory = await Promise.all(
-      sharedStudyMaterialResponse.map(async (material, index) => {
-        const materialCategorySharedResponse = await axios.get(`${SERVER_URL}/studyMaterialCategory/shared-material-category/${material.StudyMaterialsCategoryId}/Group/${UserId}`);
-        return materialCategorySharedResponse.data;
-      })
-    );
-          
-    setSharedMaterialsCategory(fetchedSharedStudyMaterialCategory);
-    // Use Promise.all with map for asynchronous operations
-    let sortedDataUsers = await Promise.all(
-      sharedStudyMaterialResponse.map(async (user) => {
-        const response = await axios.get(`${SERVER_URL}/users/get-user/${user.UserId}`);
-        return response.data;
-      })
-    );  
-
-    setSharedMaterials(sharedStudyMaterialResponse);
-
-    setSharedMaterialsCategoryUsers(sortedDataUsers);
-
-    // Use Promise.all with map for asynchronous operations
-    let sortedDataBookmarksCounts = await Promise.all(
-      sharedStudyMaterialResponse.map(async (user) => {
-        const response = await axios.get(`${SERVER_URL}/studyMaterial/bookmark-counts/${user.code}`);
-        return response.data;
-      })
-    );  
-
-    setSharedMaterialsCategoryBookmarks(sortedDataBookmarksCounts);
-
-
-    const uniqueCategories = [...new Set(fetchedSharedStudyMaterialCategory.map(item => item.category))];
-
-    // Sort the unique categories alphabetically
-    const sortedCategories = uniqueCategories.sort((a, b) => a.localeCompare(b));
-    
-    // Create an array of promises for each unique category
-    const promiseArray = sortedCategories.map(async (category) => {
-      // Find the first occurrence of the category in the original array
-      const firstOccurrence = fetchedSharedStudyMaterialCategory.find(item => item.category === category);
-    
-      // Simulate an asynchronous operation (replace with your actual asynchronous operation)
-      await new Promise(resolve => setTimeout(resolve, 100));
-    
-      // Return a new object with the category details
-      return {
-        id: firstOccurrence.id,
-        category: category,
-        categoryFor: firstOccurrence.categoryFor,
-        studyPerformance: firstOccurrence.studyPerformance,
-        createdAt: firstOccurrence.createdAt,
-        updatedAt: firstOccurrence.updatedAt,
-        StudyGroupId: firstOccurrence.StudyGroupId,
-        UserId: firstOccurrence.UserId
+    try {
+      setLoading(true);
+  
+      const fetchPersonalStudyMaterial = async () => {
+        const personalStudyMaterial = await axios.get(`${SERVER_URL}/studyMaterial/study-material-category/Personal/${UserId}`);
+        return personalStudyMaterial.data;
       };
-    });
-    
-      // Use Promise.all to wait for all promises to resolve
-      Promise.all(promiseArray)
-        .then(async (sortedCategoryObjects) => {
-          setFilteredSharedCategories(sortedCategoryObjects);
+  
+      const fetchGroupStudyMaterial = async () => {
+        const groupStudyMaterial = await axios.get(`${SERVER_URL}/studyMaterial/study-material-category/Group/${UserId}`);
+        return groupStudyMaterial.data;
+      };
+  
+      const fetchSharedStudyMaterial = async () => {
+        const sharedStudyMaterial = await axios.get(`${SERVER_URL}/studyMaterial/shared-materials`);
+        return sharedStudyMaterial.data;
+      };
+  
+      const fetchSharedMaterialCategory = async () => {
+        const sharedStudyMaterialResponse = await fetchSharedStudyMaterial();
+  
+        const fetchedSharedStudyMaterialCategory = await Promise.all(
+          sharedStudyMaterialResponse.map(async (material, index) => {
+            const materialCategorySharedResponse = await axios.get(`${SERVER_URL}/studyMaterialCategory/shared-material-category/${material.StudyMaterialsCategoryId}/Group/${UserId}`);
+            return materialCategorySharedResponse.data;
+          })
+        );
+  
+        setSharedMaterialsCategory(fetchedSharedStudyMaterialCategory);
+  
+        const uniqueCategories = [...new Set(fetchedSharedStudyMaterialCategory.map(item => item.category))];
+        const sortedCategories = uniqueCategories.sort((a, b) => a.localeCompare(b));
+  
+        const promiseArray = sortedCategories.map(async (category) => {
+          const firstOccurrence = fetchedSharedStudyMaterialCategory.find(item => item.category === category);
+          await new Promise(resolve => setTimeout(resolve, 100));
+  
+          return {
+            id: firstOccurrence.id,
+            category: category,
+            categoryFor: firstOccurrence.categoryFor,
+            studyPerformance: firstOccurrence.studyPerformance,
+            createdAt: firstOccurrence.createdAt,
+            updatedAt: firstOccurrence.updatedAt,
+            StudyGroupId: firstOccurrence.StudyGroupId,
+            UserId: firstOccurrence.UserId
+          };
+        });
+  
+        const sortedCategoryObjects = await Promise.all(promiseArray);
+        setFilteredSharedCategories(sortedCategoryObjects);
+      };
+  
+      const fetchSharedMaterialDetails = async () => {
+        const sharedStudyMaterialResponse = await fetchSharedStudyMaterial();
+  
+        const sortedDataUsers = await Promise.all(
+          sharedStudyMaterialResponse.map(async (user) => {
+            const response = await axios.get(`${SERVER_URL}/users/get-user/${user.UserId}`);
+            return response.data;
+          })
+        );
+        setSharedMaterialsCategoryUsers(sortedDataUsers);
+  
+        const sortedDataBookmarksCounts = await Promise.all(
+          sharedStudyMaterialResponse.map(async (user) => {
+            const response = await axios.get(`${SERVER_URL}/studyMaterial/bookmark-counts/${user.code}`);
+            return response.data;
+          })
+        );
+        setSharedMaterialsCategoryBookmarks(sortedDataBookmarksCounts);
+  
+        setSharedMaterials(sharedStudyMaterialResponse);
+      };
+  
+      const fetchGroups = async () => {
+        const response = await axios.get(`${SERVER_URL}/studyGroup/extract-group-through-user/${UserId}`);
+        setGroupList(response.data);
+  
+        if (response.data.length === 0) {
+          const userMemberGroupList = await axios.get(`${SERVER_URL}/studyGroupMembers/get-materialId/${UserId}`);
+  
+          const materialPromises = userMemberGroupList.data.map(async (item) => {
+            const material = await axios.get(`${SERVER_URL}/studyGroup/extract-all-group/${item.StudyGroupId}`);
+            return material.data;
+          });
+  
+          const materials = await Promise.all(materialPromises);
+          setGroupList(materials);
+        }
+      };
+  
+      const [personalStudyMaterial, groupStudyMaterial] = await Promise.all([
+        fetchPersonalStudyMaterial(),
+        fetchGroupStudyMaterial()
+      ]);
+  
+      const filteredPersonalStudyMaterials = personalStudyMaterial.filter(item => item.tag === 'Own Record');
+      setPersonalStudyMaterials(filteredPersonalStudyMaterials);
+  
+      const fetchedPersonalStudyMaterialCategory = await Promise.all(
+        personalStudyMaterial.map(async (material, index) => {
+          const materialCategoryResponse = await axios.get(`${SERVER_URL}/studyMaterialCategory/get-categoryy/${material.StudyMaterialsCategoryId}`);
+          return materialCategoryResponse.data;
         })
-        .catch((error) => {
-          console.error('Error:', error);
-        });
-
-      
-      
-      const response = await axios.get(`${SERVER_URL}/studyGroup/extract-group-through-user/${UserId}`);
-      setGroupList(response.data);
-      
-      let dataLength = response.data.length;
-      
-      if (dataLength !== 0) {
-      } else {
-        const userMemberGroupList = await axios.get(`${SERVER_URL}/studyGroupMembers/get-materialId/${UserId}`);
-        
-        const materialPromises = userMemberGroupList.data.map(async (item) => {
-          const material = await axios.get(`${SERVER_URL}/studyGroup/extract-all-group/${item.StudyGroupId}`);
-          return material.data;
-        });
-    
-        const materials = await Promise.all(materialPromises);
-        setGroupList(materials);
-      }
-
-
-
-
-      setLoading(false)
-    
-  }
+      );
+      setPersonalStudyMaterialsCategory(fetchedPersonalStudyMaterialCategory);
+  
+      const filteredGroupStudyMaterials = groupStudyMaterial.filter(item => item.tag === 'Own Record');
+      setGroupStudyMaterials(filteredGroupStudyMaterials);
+  
+      const fetchedGroupStudyMaterialCategory = await Promise.all(
+        filteredGroupStudyMaterials.map(async (material, index) => {
+          const materialCategoryResponse = await axios.get(`${SERVER_URL}/studyMaterialCategory/get-categoryy/${material.StudyMaterialsCategoryId}`);
+          return materialCategoryResponse.data;
+        })
+      );
+      setGroupStudyMaterialsCategory(fetchedGroupStudyMaterialCategory);
+  
+      await Promise.all([
+        fetchSharedMaterialCategory(),
+        fetchSharedMaterialDetails(),
+        fetchGroups()
+      ]);
+  
+      setLoading(false);
+    } catch (error) {
+      console.error('Error fetching data:', error);
+      setLoading(false);
+    }
+  };
+  
 
   useEffect(() => {
     
@@ -267,299 +264,122 @@ export const VirtualLibraryMain = () => {
     
 
   const viewStudyMaterialDetails = async (index, materialFor, filter, category) => {
-
-    setButtonLoader(true)
-    setShowPresentStudyMaterials(false)
-
-    if (filter === 'not filtered') {
-      if (materialFor === 'personal') {
-        setCurrentMaterialTitle(personalStudyMaterials[index].title)
-        setCurrentMaterialCategory(personalStudyMaterialsCategory[index].category)
-      } else if (materialFor === 'group') {
-        setCurrentMaterialTitle(groupStudyMaterials[index].title)
-        setCurrentMaterialCategory(groupStudyMaterialsCategory[index].category)
-      } else {
-        setCurrentMaterialTitle(sharedMaterials[index].title)
-        setCurrentMaterialCategory(sharedMaterialsCategory[index].category)
-      }
+    setButtonLoader(true);
+    setShowPresentStudyMaterials(false);
   
+    let materialData, mcqResponse, materialId, choicesUrl;
   
-      try {
-        let mcqResponse = []
-        if (materialFor === 'personal') {
-  
-        mcqResponse = await axios.get(`${SERVER_URL}/quesAns/study-material-mcq/${personalStudyMaterials[index].id}`);
-  
-        setContext(personalStudyMaterials[index].body)
-      } else if (materialFor === 'group') {
-        mcqResponse = await axios.get(`${SERVER_URL}/quesAns/study-material-mcq/${groupStudyMaterials[index].id}`);
-        setContext(groupStudyMaterials[index].body)
-      } else {
-        mcqResponse = await axios.get(`${SERVER_URL}/quesAns/study-material-mcq/${sharedMaterials[index].id}`);
-        setContext(sharedMaterials[index].body)
-      }
-      
-      setMaterialMCQ(mcqResponse.data);
-      
-      if (Array.isArray(mcqResponse.data)) {
-        const materialChoices = mcqResponse.data.map(async (materialChoice) => {
-          try {
-            let choiceResponse = []
-  
-            if (materialFor === 'personal') {
-              choiceResponse = await axios.get(`${SERVER_URL}/quesAnsChoices/study-material/${personalStudyMaterials[index].id}/${materialChoice.id}`);
-            } else if (materialFor === 'group') {
-              choiceResponse = await axios.get(`${SERVER_URL}/quesAnsChoices/study-material/${groupStudyMaterials[index].id}/${materialChoice.id}`);
-            } else {
-              choiceResponse = await axios.get(`${SERVER_URL}/quesAnsChoices/study-material/${sharedMaterials[index].id}/${materialChoice.id}`);
-            }
-              return choiceResponse.data;
-            } catch (error) {
-              console.error('Error fetching data:', error);
-            }
-          });
-          
-          const responses = await Promise.all(materialChoices);
-          const allChoices = responses.flat();
-          setMaterialMCQChoices(allChoices);
-        }
-      } catch (error) {
-        console.error('Error fetching study material by ID:', error);
-      }
-  
-      try {
-  
-        let revResponse = []
-  
-        if (materialFor === 'personal') {
-          revResponse = await axios.get(`${SERVER_URL}/quesRev/study-material-rev/${personalStudyMaterials[index].id}`);
-        } else if (materialFor === 'group') {
-          revResponse = await axios.get(`${SERVER_URL}/quesRev/study-material-rev/${groupStudyMaterials[index].id}`);
-        } else {
-          revResponse = await axios.get(`${SERVER_URL}/quesRev/study-material-rev/${sharedMaterials[index].id}`);
-        }
-  
-  
-  
-        
-        setMaterialNotes(revResponse.data);
-      } catch (error) {
-        console.error('Error fetching study material by ID:', error);
-      }
-      
-      if (materialFor !== 'shared') {
-        setShowQuiz(false)
-        setShowNotes(false) 
-        setShowContext(true)
-        setEnableBackButton(true)
-      } else {
-        setShowModal(true)
-        setShowContext(true)
-        setEnableBackButton(false)
-      }
-      setShowMaterialDetails(true)
-    } else if (filter === 'filtered') {
-      setCurrentMaterialTitle(filteredStudyMaterialsByCategory[index].title)
-      setCurrentMaterialCategory(category)
-      // console.log(filteredStudyMaterialsByCategory[index].title)
-
-
-
-
-      try {
-        let mcqResponse = await axios.get(`${SERVER_URL}/quesAns/study-material-mcq/${filteredStudyMaterialsByCategory[index].id}`);
-  
-        setContext(filteredStudyMaterialsByCategory[index].body)
-        setMaterialMCQ(mcqResponse.data);
-      
-      if (Array.isArray(mcqResponse.data)) {
-        const materialChoices = mcqResponse.data.map(async (materialChoice) => {
-          try {
-            let choiceResponse = await axios.get(`${SERVER_URL}/quesAnsChoices/study-material/${filteredStudyMaterialsByCategory[index].id}/${materialChoice.id}`);
-            
-              return choiceResponse.data;
-            } catch (error) {
-              console.error('Error fetching data:', error);
-            }
-          });
-          
-          const responses = await Promise.all(materialChoices);
-          const allChoices = responses.flat();
-          setMaterialMCQChoices(allChoices);
-        }
-      } catch (error) {
-        console.error('Error fetching study material by ID:', error);
-      }
-  
-      try {
-  
-        let revResponse = await axios.get(`${SERVER_URL}/quesRev/study-material-rev/${filteredStudyMaterialsByCategory[index].id}`);
-       
-  
-        setMaterialNotes(revResponse.data);
-      } catch (error) {
-        console.error('Error fetching study material by ID:', error);
-      }
-      
-      setShowModal(true)
-      setShowContext(true)
-      setEnableBackButton(false) 
-      //   setShowContext(true)
-      //   setEnableBackButton(true)
-      // } else {
-      // }
-      setShowMaterialDetails(true)
+    if (filter === 'filtered') {
+      materialData = filteredStudyMaterialsByCategory[index];
     } else if (filter === 'searched') {
-      setCurrentMaterialTitle(searchedMaterials[index].title)
-      setCurrentMaterialCategory(category)
-      // console.log(searchedMaterials[index].title)
-
-
-
-
-      try {
-        let mcqResponse = await axios.get(`${SERVER_URL}/quesAns/study-material-mcq/${searchedMaterials[index].id}`);
-  
-        setContext(searchedMaterials[index].body)
-        setMaterialMCQ(mcqResponse.data);
-      
-      if (Array.isArray(mcqResponse.data)) {
-        const materialChoices = mcqResponse.data.map(async (materialChoice) => {
-          try {
-            let choiceResponse = await axios.get(`${SERVER_URL}/quesAnsChoices/study-material/${searchedMaterials[index].id}/${materialChoice.id}`);
-            
-              return choiceResponse.data;
-            } catch (error) {
-              console.error('Error fetching data:', error);
-            }
-          });
-          
-          const responses = await Promise.all(materialChoices);
-          const allChoices = responses.flat();
-          setMaterialMCQChoices(allChoices);
-        }
-      } catch (error) {
-        console.error('Error fetching study material by ID:', error);
-      }
-  
-      try {
-  
-        let revResponse = await axios.get(`${SERVER_URL}/quesRev/study-material-rev/${searchedMaterials[index].id}`);
-       
-  
-        setMaterialNotes(revResponse.data);
-      } catch (error) {
-        console.error('Error fetching study material by ID:', error);
-      }
-      
-      setShowModal(true)
-      setShowContext(true)
-      setEnableBackButton(false) 
-      //   setShowContext(true)
-      //   setEnableBackButton(true)
-      // } else {
-      // }
-      setShowMaterialDetails(true)
+      materialData = searchedMaterials[index];
+    } else if (filter === 'category') {
+      materialData = searchCategoryMaterials[index];
     } else {
-      setCurrentMaterialTitle(searchCategoryMaterials[index].title)
-      setCurrentMaterialCategory(category)
-      // console.log(searchedMaterials[index].title)
-
-
-
-
-      try {
-        let mcqResponse = await axios.get(`${SERVER_URL}/quesAns/study-material-mcq/${searchCategoryMaterials[index].id}`);
+      materialData =
+        materialFor === 'personal'
+          ? personalStudyMaterials[index]
+          : materialFor === 'group'
+          ? groupStudyMaterials[index]
+          : sharedMaterials[index];
+    }
   
-        setContext(searchCategoryMaterials[index].body)
-        setMaterialMCQ(mcqResponse.data);
-      
+    setCurrentMaterialTitle(materialData.title);
+    setCurrentMaterialCategory(category);
+  
+    try {
+      materialId = materialData.id;
+      const baseUrl = `${SERVER_URL}/quesAns/study-material-mcq/${materialId}`;
+  
+      mcqResponse = await axios.get(baseUrl);
+      setContext(materialData.body);
+      setMaterialMCQ(mcqResponse.data);
+  
       if (Array.isArray(mcqResponse.data)) {
+        choicesUrl = `${SERVER_URL}/quesAnsChoices/study-material/${materialId}`;
         const materialChoices = mcqResponse.data.map(async (materialChoice) => {
           try {
-            let choiceResponse = await axios.get(`${SERVER_URL}/quesAnsChoices/study-material/${searchCategoryMaterials[index].id}/${materialChoice.id}`);
-            
-              return choiceResponse.data;
-            } catch (error) {
-              console.error('Error fetching data:', error);
-            }
-          });
-          
-          const responses = await Promise.all(materialChoices);
-          const allChoices = responses.flat();
-          setMaterialMCQChoices(allChoices);
-        }
-      } catch (error) {
-        console.error('Error fetching study material by ID:', error);
+            const choiceResponse = await axios.get(`${choicesUrl}/${materialChoice.id}`);
+            return choiceResponse.data;
+          } catch (error) {
+            console.error('Error fetching data:', error);
+          }
+        });
+  
+        const responses = await Promise.all(materialChoices);
+        const allChoices = responses.flat();
+        setMaterialMCQChoices(allChoices);
       }
-  
-      try {
-  
-        let revResponse = await axios.get(`${SERVER_URL}/quesRev/study-material-rev/${searchCategoryMaterials[index].id}`);
-       
-  
-        setMaterialNotes(revResponse.data);
-      } catch (error) {
-        console.error('Error fetching study material by ID:', error);
-      }
-      
-      setShowModal(true)
-      setShowContext(true)
-      setEnableBackButton(false) 
-      //   setShowContext(true)
-      //   setEnableBackButton(true)
-      // } else {
-      // }
-      setShowMaterialDetails(true)
+    } catch (error) {
+      console.error('Error fetching study material by ID:', error);
     }
-
-
-    setButtonLoader(false)
-
-  }
+  
+    try {
+      const revResponse = await axios.get(`${SERVER_URL}/quesRev/study-material-rev/${materialId}`);
+      setMaterialNotes(revResponse.data);
+    } catch (error) {
+      console.error('Error fetching study material by ID:', error);
+    }
+  
+    if (materialFor !== 'shared') {
+      setShowQuiz(false);
+      setShowNotes(false);
+      setShowContext(true);
+      setEnableBackButton(true);
+    } else {
+      setShowModal(true);
+      setShowContext(true);
+      setEnableBackButton(false);
+    }
+  
+    setShowMaterialDetails(true);
+    setButtonLoader(false);
+  };
+  
 
 
 
   const shareMaterial = async (index, materialFor) => {
     try {
-      let studyMaterialResponse = '';
-      let data = {
-        tag: 'Shared',
-      };
+      let materialArray, materialId, categoryData;
   
-      let materialArray = materialFor === 'personal' ? personalStudyMaterials : groupStudyMaterials;
+      if (materialFor === 'personal') {
+        materialArray = personalStudyMaterials;
+      } else if (materialFor === 'group') {
+        materialArray = groupStudyMaterials;
+      }
   
-      if (materialArray && materialArray[index]) {
-        if (materialFor === 'personal') {
-          studyMaterialResponse = await axios.put(`${SERVER_URL}/studyMaterial/update-tag/${personalStudyMaterials[index].id}`, data);
-        } else {
-          studyMaterialResponse = await axios.put(`${SERVER_URL}/studyMaterial/update-tag/${groupStudyMaterials[index].id}`, data);
-        }
+      if (materialArray && materialArray.length > index) {
+        materialId = materialArray[index].id;
   
-        let categoryData = {
+        await axios.put(`${SERVER_URL}/studyMaterial/update-tag/${materialId}`, { tag: 'Shared' });
+  
+        categoryData = {
           isShared: true,
         };
   
-        await axios.put(`${SERVER_URL}/studyMaterialCategory/update-shared/${studyMaterialResponse.data.StudyMaterialsCategoryId}`, categoryData);
+        const studyMaterialResponse = await axios.put(
+          `${SERVER_URL}/studyMaterialCategory/update-shared/${materialArray[index].StudyMaterialsCategoryId}`,
+          categoryData
+        );
   
         if (currentMaterialCategory !== '') {
           // Fetch the newly shared material
           const newSharedMaterial = await axios.get(`${SERVER_URL}/studyMaterial/get-material/${studyMaterialResponse.data.id}`);
-          
+  
           // Update the state with the new material added to the beginning of the array
           setFilteredStudyMaterialsByCategory(prevMaterials => [newSharedMaterial.data, ...prevMaterials]);
         }
-  
       } else {
-        console.error(`Material at index ${index} is undefined.`);
+        console.error(`Material at index ${index} is undefined or out of bounds.`);
       }
   
       fetchData();
     } catch (error) {
       console.error('Error sharing material:', error);
-      // Handle errors if needed
     }
   };
+  
   
 
   function generateRandomString() {
@@ -593,582 +413,369 @@ export const VirtualLibraryMain = () => {
 
 
   const bookmarkMaterial = async (index, id, materialFor, buttonclickedNum) => {
-
-    setButtonLoading(true)
-    setButtonClickedNumber(buttonclickedNum)
-
-
-    const groupID = id;
-    
-    const title = sharedMaterials[index].title;
-    const body = sharedMaterials[index].body;
-    const numInp = sharedMaterials[index].numInp;
-    const materialId = sharedMaterials[index].StudyMaterialsCategoryId;
-    const materialForDb = sharedMaterials[index].materialFor;
-    const materialCode = sharedMaterials[index].code;
-    const materialTag = sharedMaterials[index].tag;
-    
- 
- 
-    const savedFunctionality = async () => {
-     
-    let genQAData = []
-    
-    let genMCQAData = []
-    let genToF = []
-    let genIdentification = []
-    let genFITB = []
- 
-    let mcqaDistractors = []
-    let tofDistractors = []
-    let genQADataRev = []
- 
- 
- 
- 
-     const studyMaterialsData = {
-       title: title,
-       body: body,
-       numInp: numInp,
-       materialFor: materialFor,
-       code: materialCode,
-       StudyGroupId: materialFor === 'Group' ? groupID : null,
-       StudyMaterialsCategoryId: materialId,
-       UserId: UserId,
-       bookmarkedBy: UserId,
-       tag: 'Bookmarked'
-     };
- 
- 
-     
-     try {
-       let mcqResponse = await axios.get(`${SERVER_URL}/quesAns/study-material-mcq/${sharedMaterials[index].id}`);
- 
-       genQAData = mcqResponse.data
- 
-       genMCQAData = genQAData.filter(data => data.quizType === 'MCQA')
-       genToF = genQAData.filter(data => data.quizType === 'ToF')
-       genIdentification = genQAData.filter(data => data.quizType === 'Identification')
-       genFITB = genQAData.filter(data => data.quizType === 'FITB')
- 
- 
- 
-     // MCQA Distractors
-     if (Array.isArray(genMCQAData)) {
-       const materialChoices = genMCQAData.map(async (materialChoice) => {
-         try {
-           let choiceResponse = await axios.get(`${SERVER_URL}/quesAnsChoices/study-material/${sharedMaterials[index].id}/${materialChoice.id}`);
- 
-             return choiceResponse.data;
-           } catch (error) {
-             console.error('Error fetching data:', error);
-           }
-         });
-         
-         const responses = await Promise.all(materialChoices);
-         const allChoices = responses.flat();
-         mcqaDistractors = responses;
-       }
-     
- 
-       // True or False distractors
- 
-     if (Array.isArray(genToF)) {
-       const materialChoices = genToF.map(async (materialChoice) => {
-         try {
-           let choiceResponse = await axios.get(`${SERVER_URL}/quesAnsChoices/study-material/${sharedMaterials[index].id}/${materialChoice.id}`);
- 
-             return choiceResponse.data;
-           } catch (error) {
-             console.error('Error fetching data:', error);
-           }
-         });
-         
-         const responses = await Promise.all(materialChoices);
-         const allChoices = responses.flat();
-         tofDistractors = responses;
-       }
- 
- 
-     } catch (error) {
-       console.error('Error fetching study material by ID:', error);
-     }
- 
-     try {
- 
-       let revResponse = await axios.get(`${SERVER_URL}/quesRev/study-material-rev/${sharedMaterials[index].id}`);
- 
-       genQADataRev = revResponse.data;
-       
-     } catch (error) {
-       console.error('Error fetching study material by ID:', error);
-     }
- 
- 
- 
- 
- 
- 
-     try {
-       const smResponse = await axios.post(
-         `${SERVER_URL}/studyMaterial`,
-         studyMaterialsData
-       );
- 
- 
-       // genMCQAData = genQAData.filter(data => data.quizType === 'MCQA')
-       // genToF = genQAData.filter(data => data.quizType === 'ToF')
-       // genIdentification = genQAData.filter(data => data.quizType === 'Identification')
-       // genFITB = genQAData.filter(data => data.quizType === 'FITB')
- 
-       for (let i = 0; i < genMCQAData.length; i++) {      
- 
-         const qaData = {
-           question: genMCQAData[i].question,
-           answer: genMCQAData[i].answer,
-           bgColor: genMCQAData[i].bgColor,
-           quizType: 'MCQA',
-           StudyMaterialId: smResponse.data.id,
-           UserId: smResponse.data.UserId,
-         };
- 
-         const qaResponse = await axios.post(
-           `${SERVER_URL}/quesAns`,
-           qaData
-         );
- 
-         for (let j = 0; j < mcqaDistractors[i].length; j++) {
-           let qacData = {
-               choice: mcqaDistractors[i][j].choice, // Extract the string value from the object
-               QuesAnId: qaResponse.data.id,
-               StudyMaterialId: smResponse.data.id,
-               UserId: smResponse.data.UserId,
-           };
-   
-           try {
-               await axios.post(`${SERVER_URL}/quesAnsChoices`, qacData);
-               console.log("Saved! mcq");
-           } catch (error) {
-               console.error(error);
-           }
-         }
- 
-       }
- 
- 
-       for (let i = 0; i < genQADataRev.length; i++) {      
- 
-         const qaDataRev = {
-           question:genQADataRev[i].question,
-           answer: genQADataRev[i].answer,
-           StudyMaterialId: smResponse.data.id,
-           UserId: smResponse.data.UserId,
-         };
- 
-         await axios.post(`${SERVER_URL}/quesRev`, qaDataRev);
- 
-       }
- 
- 
-       for (let i = 0; i < genToF.length; i++) {
- 
-         const trueSentencesData = {
-           question: genToF[i].question,
-           answer: 'True',
-           quizType: 'ToF',
-           bgColor: genToF[i].bgColor,
-           StudyMaterialId: smResponse.data.id,
-           UserId: smResponse.data.UserId,
-         };
-       
-         try {
-           // Create the question and get the response
-           const qaResponse = await axios.post(`${SERVER_URL}/quesAns`, trueSentencesData);
-       
-           // Iterate through mcqaDistractors and create question choices
-           for (let j = 0; j < tofDistractors[i].length; j++) {
-             let qacData = {
-                 choice: tofDistractors[i][j].choice, // Extract the string value from the object
-                 QuesAnId: qaResponse.data.id,
-                 StudyMaterialId: smResponse.data.id,
-                 UserId: smResponse.data.UserId,
-             };
-     
-             try {
-                 await axios.post(`${SERVER_URL}/quesAnsChoices`, qacData);
-                 console.log("Saved! choice");
-             } catch (error) {
-                 console.error(error);
-             }
-           }
-         } catch (error) {
-           console.error(error);
-         }
-       }
-       
- 
-       for (let i = 0; i < genFITB.length; i++) {
- 
-         const fillInTheBlankData = {
-           question: genFITB[i].question,
-           answer: genFITB[i].answer,
-           quizType: 'FITB',
-           bgColor: genFITB[i].bgColor,
-           StudyMaterialId: smResponse.data.id,
-           UserId: smResponse.data.UserId,
-         }
- 
-         try {
-           await axios.post(
-             `${SERVER_URL}/quesAns`,
-             fillInTheBlankData
-             );
-         } catch (error) {
-           console.error();
-         }
-       }
-       
- 
-       for (let i = 0; i < genIdentification.length; i++) {
- 
-         const identificationData = {
-           question: genIdentification[i].question,
-           answer: genIdentification[i].answer,
-           quizType: 'FITB',
-           bgColor: genIdentification[i].bgColor,
-           StudyMaterialId: smResponse.data.id,
-           UserId: smResponse.data.UserId,
-         }
- 
-         try {
-           await axios.post(
-             `${SERVER_URL}/quesAns`,
-             identificationData
-             );
-         } catch (error) {
-           console.error();
-         }
-       }
- 
+    try {
+      setButtonLoading(true);
+      setButtonClickedNumber(buttonclickedNum);
   
-     } catch (error) {
-       console.error('Error saving study material:', error);
-     }
-     
- 
- 
-     fetchData()
-
-     setButtonLoading(false)
-     setButtonClickedNumber(0)
-    }
- 
- 
-    if (materialFor === 'Personal') {
-
-      
- 
-     const personalStudyMaterial = await axios.get(`${SERVER_URL}/studyMaterial/study-material-category/Personal/${UserId}`)
- 
-     let bookmarkedPersonalMaterial = personalStudyMaterial.data;
- 
- 
-      const filteredMaterialResult = bookmarkedPersonalMaterial.filter(material => (material.code === materialCode && material.materialFor === materialFor && material.UserId === UserId));
- 
-      if (filteredMaterialResult.length === 0) {
-
-        savedFunctionality()
-       } else {
-       alert('Already exists.')
-       setButtonLoading(false)
-       setButtonClickedNumber(0)
+      const groupID = id;
+      const {
+        title,
+        body,
+        numInp,
+        StudyMaterialsCategoryId: materialId,
+        materialFor: materialForDb,
+        code: materialCode,
+        tag: materialTag,
+      } = sharedMaterials[index];
+  
+      const studyMaterialsData = {
+        title,
+        body,
+        numInp,
+        materialFor: materialForDb,
+        code: materialCode,
+        StudyGroupId: materialForDb === 'Group' ? groupID : null,
+        StudyMaterialsCategoryId: materialId,
+        UserId,
+        bookmarkedBy: UserId,
+        tag: 'Bookmarked',
+      };
+  
+      const savedFunctionality = async (genMCQAData, genToF, mcqaDistractors, tofDistractors, genQADataRev, genFITB, genIdentification) => {
+        try {
+          const smResponse = await axios.post(`${SERVER_URL}/studyMaterial`, studyMaterialsData);
+  
+          for (const genMCQA of genMCQAData) {
+            const qaData = {
+              question: genMCQA.question,
+              answer: genMCQA.answer,
+              bgColor: genMCQA.bgColor,
+              quizType: 'MCQA',
+              StudyMaterialId: smResponse.data.id,
+              UserId: smResponse.data.UserId,
+            };
+  
+            const qaResponse = await axios.post(`${SERVER_URL}/quesAns`, qaData);
+  
+            for (const choice of mcqaDistractors[genMCQAData.indexOf(genMCQA)]) {
+              const qacData = {
+                choice: choice.choice,
+                QuesAnId: qaResponse.data.id,
+                StudyMaterialId: smResponse.data.id,
+                UserId: smResponse.data.UserId,
+              };
+  
+              await axios.post(`${SERVER_URL}/quesAnsChoices`, qacData);
+            }
+          }
+  
+          for (const genQADataRev of genQADataRev) {
+            const qaDataRev = {
+              question: genQADataRev.question,
+              answer: genQADataRev.answer,
+              StudyMaterialId: smResponse.data.id,
+              UserId: smResponse.data.UserId,
+            };
+  
+            await axios.post(`${SERVER_URL}/quesRev`, qaDataRev);
+          }
+  
+          for (const genToFData of genToF) {
+            const trueSentencesData = {
+              question: genToFData.question,
+              answer: 'True',
+              quizType: 'ToF',
+              bgColor: genToFData.bgColor,
+              StudyMaterialId: smResponse.data.id,
+              UserId: smResponse.data.UserId,
+            };
+  
+            const qaResponse = await axios.post(`${SERVER_URL}/quesAns`, trueSentencesData);
+  
+            for (const choice of tofDistractors[genToF.indexOf(genToFData)]) {
+              const qacData = {
+                choice: choice.choice,
+                QuesAnId: qaResponse.data.id,
+                StudyMaterialId: smResponse.data.id,
+                UserId: smResponse.data.UserId,
+              };
+  
+              await axios.post(`${SERVER_URL}/quesAnsChoices`, qacData);
+            }
+          }
+  
+          for (const genFITBData of genFITB) {
+            const fillInTheBlankData = {
+              question: genFITBData.question,
+              answer: genFITBData.answer,
+              quizType: 'FITB',
+              bgColor: genFITBData.bgColor,
+              StudyMaterialId: smResponse.data.id,
+              UserId: smResponse.data.UserId,
+            };
+  
+            await axios.post(`${SERVER_URL}/quesAns`, fillInTheBlankData);
+          }
+  
+          for (const genIdentificationData of genIdentification) {
+            const identificationData = {
+              question: genIdentificationData.question,
+              answer: genIdentificationData.answer,
+              quizType: 'FITB',
+              bgColor: genIdentificationData.bgColor,
+              StudyMaterialId: smResponse.data.id,
+              UserId: smResponse.data.UserId,
+            };
+  
+            await axios.post(`${SERVER_URL}/quesAns`, identificationData);
+          }
+        } catch (error) {
+          console.error('Error saving study material:', error);
+        }
+      };
+  
+      const personalOrGroupStudyMaterial = async (studyMaterialCategory) => {
+        const studyMaterial = await axios.get(`${SERVER_URL}/studyMaterial/study-material-category/${studyMaterialCategory}/${UserId}`);
+        const bookmarkedMaterial = studyMaterial.data;
+  
+        const filteredMaterialResult = bookmarkedMaterial.filter(material => (
+          material.code === materialCode && material.materialFor === materialForDb &&
+          ((materialForDb === 'Personal' && material.UserId === UserId) || (materialForDb === 'Group' && material.StudyGroupId === groupID))
+        ));
+  
+        if (filteredMaterialResult.length === 0) {
+          savedFunctionality(
+            await axios.get(`${SERVER_URL}/quesAns/study-material-mcq/${materialId}`),
+            await axios.get(`${SERVER_URL}/quesAns/study-material-mcq/${materialId}`),
+            await axios.get(`${SERVER_URL}/quesRev/study-material-rev/${materialId}`),
+          );
+        } else {
+          alert('Already exists.');
+          setButtonLoading(false);
+          setButtonClickedNumber(0);
+        }
+      };
+  
+      if (materialForDb === 'Personal') {
+        personalOrGroupStudyMaterial('Personal');
+      } else {
+        personalOrGroupStudyMaterial('Group');
       }
- 
- 
-     } else {
- 
-       const groupStudyMaterial = await axios.get(`${SERVER_URL}/studyMaterial/study-material-category/Group/${UserId}`)
- 
-       let bookmarkedPersonalMaterial = groupStudyMaterial.data;
- 
- 
-       const filteredMaterialResult = bookmarkedPersonalMaterial.filter(material => (material.code === materialCode && material.materialFor === materialFor && material.StudyGroupId === groupID));
- 
- 
-       if (filteredMaterialResult.length === 0) {
-          savedFunctionality()
-         } else {
-         alert('Already exists.')
-         setButtonLoading(false)
-         setButtonClickedNumber(0)
-       }
-     }
-     
-
-   }
+  
+      fetchData();
+  
+      setButtonLoading(false);
+      setButtonClickedNumber(0);
+    } catch (error) {
+      console.error('Error bookmarking material:', error);
+    }
+  };
   
 
   const filterMaterial = async (categoryTitle) => {
-
-    let filteredCategory = sharedMaterialsCategory.filter(category => category.category === categoryTitle);
-
-
-
-    
-    const uniqueIds = new Set();
-
-    const filteredUniqueCategory = filteredCategory.filter(category => {
-      // Check if the id is already in the Set
-      if (!uniqueIds.has(category.id)) {
-        // If not, add the id to the Set and keep this entry
-        uniqueIds.add(category.id);
-        return true;
-      }
-      // If the id is already in the Set, filter out this entry
-      return false;
-    });
-
-    let matchingMaterials = [];
-
-    filteredUniqueCategory.forEach(biologyItem => {
-      sharedMaterials.forEach(material => {
-          if (biologyItem.id === material.StudyMaterialsCategoryId) {
-              matchingMaterials.push(material);
-          }
+    try {
+      const filteredCategory = sharedMaterialsCategory.filter(category => category.category === categoryTitle);
+  
+      const uniqueIds = new Set();
+      const filteredUniqueCategory = filteredCategory.filter(category => {
+        // Check if the id is already in the Set
+        if (!uniqueIds.has(category.id)) {
+          // If not, add the id to the Set and keep this entry
+          uniqueIds.add(category.id);
+          return true;
+        }
+        // If the id is already in the Set, filter out this entry
+        return false;
       });
-    });
-
-
-
-
-
-
-  setFilteredStudyMaterialsByCategory(matchingMaterials);
-  // console.log(matchingMaterials);
-
-  // Use Promise.all with map for asynchronous operations
-  let sortedDataUsers = await Promise.all(
-    matchingMaterials.map(async (user) => {
-      const response = await axios.get(`${SERVER_URL}/users/get-user/${user.UserId}`);
-      return response.data;
-    })
-  );
-
-
-
-  // Now sortedDataUsers contains the resolved data for all users
-  setCurrentFilteredCategoryUsers(sortedDataUsers);
-
-  // Use Promise.all with map for asynchronous operations
-  let sortedDataBookmarksCounts = await Promise.all(
-    matchingMaterials.map(async (user) => {
-      const response = await axios.get(`${SERVER_URL}/studyMaterial/bookmark-counts/${user.code}`);
-      return response.data;
-    })
-  );  
-
-  setCurrentFilteredCategoryBookmarks(sortedDataBookmarksCounts);
-  console.log(sortedDataBookmarksCounts.length)
-
-
-  setCurrentFilteredCategory(categoryTitle)
-  }
-
+  
+      const matchingMaterials = sharedMaterials.filter(material =>
+        filteredUniqueCategory.some(categoryItem => categoryItem.id === material.StudyMaterialsCategoryId)
+      );
+  
+      setFilteredStudyMaterialsByCategory(matchingMaterials);
+  
+      const userIdPromises = matchingMaterials.map(async (user) => {
+        const response = await axios.get(`${SERVER_URL}/users/get-user/${user.UserId}`);
+        return response.data;
+      });
+  
+      const bookmarksCountPromises = matchingMaterials.map(async (user) => {
+        const response = await axios.get(`${SERVER_URL}/studyMaterial/bookmark-counts/${user.code}`);
+        return response.data;
+      });
+  
+      // Use Promise.all to execute asynchronous operations concurrently
+      const [sortedDataUsers, sortedDataBookmarksCounts] = await Promise.all([
+        Promise.all(userIdPromises),
+        Promise.all(bookmarksCountPromises)
+      ]);
+  
+      setCurrentFilteredCategoryUsers(sortedDataUsers);
+      setCurrentFilteredCategoryBookmarks(sortedDataBookmarksCounts);
+      setCurrentFilteredCategory(categoryTitle);
+    } catch (error) {
+      console.error('Error filtering material:', error);
+    }
+  };
+  
 
 
 
   const handleSearchChange = async (value) => {
-    // Convert the input value to lowercase
-    const lowercaseValue = value.toLowerCase();
+    try {
+      // Convert the input value to lowercase
+      const lowercaseValue = value.toLowerCase();
   
-    // Filter shared materials based on case-insensitive title or body comparison
-    let filteredMaterials = sharedMaterials.filter(material => {
-      const lowercaseTitle = material.title.toLowerCase();
-      const lowercaseBody = material.body.toLowerCase(); // Replace 'body' with the actual property name
-  
-      return lowercaseTitle.includes(lowercaseValue) || lowercaseBody.includes(lowercaseValue);
-    });
-
-
-    // Filter shared categories based on case-insensitive category comparison
-    let filteredCategories = filteredSharedCategories.filter(category => {
-      const lowercaseCategory = category.category.toLowerCase();
-      return lowercaseCategory.includes(lowercaseValue);
-    });
-
-
-
-    const uniqueIds = new Set();
-
-    const filteredUniqueCategory = filteredMaterials.filter(category => {
-      // Check if the id is already in the Set
-      if (!uniqueIds.has(category.id)) {
-        // If not, add the id to the Set and keep this entry
-        uniqueIds.add(category.id);
-        return true;
-      }
-      // If the id is already in the Set, filter out this entry
-      return false;
-    });
-
-    // console.log(filteredUniqueCategory);
-    let matchingMaterials = [];
-
-    filteredUniqueCategory.forEach(biologyItem => {
-      sharedMaterials.forEach(material => {
-          if (biologyItem.id === material.StudyMaterialsCategoryId) {
-              matchingMaterials.push(material);
-          }
+      // Filter shared materials based on case-insensitive title or body comparison
+      const filteredMaterials = sharedMaterials.filter(material => {
+        const lowercaseTitle = material.title.toLowerCase();
+        const lowercaseBody = material.body.toLowerCase();
+        return lowercaseTitle.includes(lowercaseValue) || lowercaseBody.includes(lowercaseValue);
       });
-    });
-
-
-
-    const fetchedSharedStudyMaterialCategory = await Promise.all(
-      filteredMaterials.map(async (material, index) => {
-        const materialCategorySharedResponse = await axios.get(`${SERVER_URL}/studyMaterialCategory/shared-material-category/${material.StudyMaterialsCategoryId}/Group/${UserId}`);
-        return materialCategorySharedResponse.data;
-      })
-    );
-
-    const fetchedSearchCategoryMaterials = await Promise.all(
-      filteredCategories.map(async (material, index) => {
-        const sharedStudyMaterial = await axios.get(`${SERVER_URL}/studyMaterial/shared-materials/${material.id}`);
-        return sharedStudyMaterial.data;
-      })
-    );
-
   
-    setSearchedMaterials(filteredUniqueCategory);
-    setSearchCategory(fetchedSharedStudyMaterialCategory);
-
-    // Use Promise.all with map for asynchronous operations
-    let sortedDataBookmarksCounts = await Promise.all(
-      matchingMaterials.map(async (user) => {
-        const response = await axios.get(`${SERVER_URL}/studyMaterial/bookmark-counts/${user.code}`);
-        return response.data;
-      })
-    );  
-
-    setSearchCategoryBookmarks(sortedDataBookmarksCounts);
-
-    // Use Promise.all with map for asynchronous operations
-    let sortedDataUsers = await Promise.all(
-      fetchedSharedStudyMaterialCategory.map(async (user) => {
-        const response = await axios.get(`${SERVER_URL}/users/get-user/${user.UserId}`);
-        return response.data;
-      })
-    );
-
-
-
-    // Now sortedDataUsers contains the resolved data for all users
-    setSearchCategoryUsers(sortedDataUsers);
-
-        
-    setSearchedMaterialsCategories(filteredCategories);
-    setSearchCategoryMaterials(fetchedSearchCategoryMaterials.flat());
-  }
+      // Filter shared categories based on case-insensitive category comparison
+      const filteredCategories = filteredSharedCategories.filter(category => {
+        const lowercaseCategory = category.category.toLowerCase();
+        return lowercaseCategory.includes(lowercaseValue);
+      });
+  
+      // Remove duplicate StudyMaterialsCategoryId entries
+      const uniqueIds = new Set();
+      const filteredUniqueCategory = filteredMaterials.filter(category => {
+        if (!uniqueIds.has(category.id)) {
+          uniqueIds.add(category.id);
+          return true;
+        }
+        return false;
+      });
+  
+      const matchingMaterials = filteredUniqueCategory.filter(biologyItem =>
+        sharedMaterials.some(material => biologyItem.id === material.StudyMaterialsCategoryId)
+      );
+  
+      // Use Promise.all with map for asynchronous operations
+      const [fetchedSharedStudyMaterialCategory, fetchedSearchCategoryMaterials] = await Promise.all([
+        Promise.all(filteredMaterials.map(async material => {
+          const materialCategorySharedResponse = await axios.get(`${SERVER_URL}/studyMaterialCategory/shared-material-category/${material.StudyMaterialsCategoryId}/Group/${UserId}`);
+          return materialCategorySharedResponse.data;
+        })),
+        Promise.all(filteredCategories.map(async material => {
+          const sharedStudyMaterial = await axios.get(`${SERVER_URL}/studyMaterial/shared-materials/${material.id}`);
+          return sharedStudyMaterial.data;
+        }))
+      ]);
+  
+      setSearchedMaterials(filteredUniqueCategory);
+      setSearchCategory(fetchedSharedStudyMaterialCategory);
+  
+      // Use Promise.all with map for asynchronous operations
+      const sortedDataBookmarksCounts = await Promise.all(
+        matchingMaterials.map(async user => {
+          const response = await axios.get(`${SERVER_URL}/studyMaterial/bookmark-counts/${user.code}`);
+          return response.data;
+        })
+      );
+  
+      setSearchCategoryBookmarks(sortedDataBookmarksCounts);
+  
+      // Use Promise.all with map for asynchronous operations
+      const sortedDataUsers = await Promise.all(
+        fetchedSharedStudyMaterialCategory.map(async user => {
+          const response = await axios.get(`${SERVER_URL}/users/get-user/${user.UserId}`);
+          return response.data;
+        })
+      );
+  
+      setSearchCategoryUsers(sortedDataUsers);
+  
+      setSearchedMaterialsCategories(filteredCategories);
+      setSearchCategoryMaterials(fetchedSearchCategoryMaterials.flat());
+    } catch (error) {
+      console.error('Error handling search change:', error);
+    }
+  };
   
 
 
   const handleCategorySearch = async (value) => {
     const lowercaseValue = value.toLowerCase();
-
-    let filteredCategories = filteredSharedCategories.filter(category => {
-      const lowercaseCategory = category.category.toLowerCase();
-      return lowercaseCategory.includes(lowercaseValue);
-    });
-
+  
+    const filteredCategories = filteredSharedCategories.filter(category =>
+      category.category.toLowerCase().includes(lowercaseValue)
+    );
+  
     setSearchedCategories(filteredCategories);
-  }
+  };
+  
 
 
 
 
   const createGroupBtn = async () => {
-
     try {
-      const groupData = {
-        groupName: groupNameValue,
-        role: 'Super Admin',
-        code: generateRandomString(),
-        UserId: UserId,
-      };
-      
-      if (groupNameValue !== '') {
+      if (groupNameValue.trim() !== '') {
+        const groupData = {
+          groupName: groupNameValue.trim(),
+          role: 'Super Admin',
+          code: generateRandomString(),
+          UserId: UserId,
+        };
+  
         await axios.post(`${SERVER_URL}/studyGroup/create-group`, groupData);
   
         fetchData();
         setShowCreateGroupInput(false);
       } else {
-        alert('Cannot save an empty field.')
+        alert('Cannot save an empty field.');
       }
-
     } catch (error) {
       console.error('Error creating group:', error);
-      // Handle errors as needed
     }
-
   };
-
+  
 
   const removeFromLibraryOnly = async () => {
-    let data = {
-      tag: 'Own Record'
-    }
-
-    const removed = await axios.put(`${SERVER_URL}/studyMaterial/update-tag/${materialIdToRemove}`, data)
-
-
-
-    
-      // Find the index of the material with the specified ID
-      const materialIndexToRemove = filteredStudyMaterialsByCategory.findIndex(material => material.id === materialIdToRemove);
-
-      if (materialIndexToRemove !== -1) {
-        // Create a new array without the material to remove
-        const updatedFilteredStudyMaterials = [...filteredStudyMaterialsByCategory.slice(0, materialIndexToRemove), ...filteredStudyMaterialsByCategory.slice(materialIndexToRemove + 1)];
-  
-        // Update the state with the new array
-        setFilteredStudyMaterialsByCategory(updatedFilteredStudyMaterials);
-      } else {
-        console.error(`Material with ID ${materialIdToRemove} not found in filteredStudyMaterialsByCategory.`);
-      }
-
-      fetchData()
-    
-    // console.log(currentMaterialCategory);
-    setDeleteModal(false)
-  }
-
-  const deleteInAllRecords = async () => {
     try {
-      const removed = await axios.delete(`${SERVER_URL}/studyMaterial/delete-material/${materialIdToRemove}`);
+      const data = {
+        tag: 'Own Record'
+      };
   
-      // Find the index of the material with the specified ID
-      const materialIndexToRemove = filteredStudyMaterialsByCategory.findIndex((material) => material.id === materialIdToRemove);
+      await axios.put(`${SERVER_URL}/studyMaterial/update-tag/${materialIdToRemove}`, data);
+  
+      const materialIndexToRemove = filteredStudyMaterialsByCategory.findIndex(material => material.id === materialIdToRemove);
   
       if (materialIndexToRemove !== -1) {
-        // Create a new array without the material to remove
         const updatedFilteredStudyMaterials = [
           ...filteredStudyMaterialsByCategory.slice(0, materialIndexToRemove),
-          ...filteredStudyMaterialsByCategory.slice(materialIndexToRemove + 1),
+          ...filteredStudyMaterialsByCategory.slice(materialIndexToRemove + 1)
         ];
-  
-        // Update the state with the new array
+    
         setFilteredStudyMaterialsByCategory(updatedFilteredStudyMaterials);
       } else {
         console.error(`Material with ID ${materialIdToRemove} not found in filteredStudyMaterialsByCategory.`);
       }
   
       fetchData();
-      setDeleteModal(false)
+      setDeleteModal(false);
     } catch (error) {
-      console.error('Error deleting in all records:', error);
-      // Handle errors if needed
+      console.error('Error removing from library:', error);
     }
   };
+  
+  const deleteInAllRecords = async () => {
+    try {
+      await axios.delete(`${SERVER_URL}/studyMaterial/delete-material/${materialIdToRemove}`);
+  
+      const updatedFilteredStudyMaterials = filteredStudyMaterialsByCategory.filter(material => material.id !== materialIdToRemove);
+  
+      setFilteredStudyMaterialsByCategory(updatedFilteredStudyMaterials);
+      fetchData();
+      setDeleteModal(false);
+    } catch (error) {
+      console.error('Error deleting in all records:', error);
+    }
+  };
+  
   
   if (loading) {
     return <div className='h-[100vh] w-full flex items-center justify-center'>
@@ -1179,80 +786,58 @@ export const VirtualLibraryMain = () => {
   } else {
     return (
       <div>
-        <div className='poppins mcolor-900 container py-10'>
-          <Navbar linkBack={'/main/'} linkBackName={'Main'} currentPageName={'Virtual Library Room'} username={'Jennie Kim'}/>
+        <div className='poppins mcolor-900 mbg-300 relative flex'>
+          {/* <Navbar linkBack={'/main/'} linkBackName={'Main'} currentPageName={'Virtual Library Room'} username={'Jennie Kim'}/> */}
+
+          <Sidebar currentPage={'library'} />
+
+          <div className={`lg:w-1/6 h-[100vh] flex flex-col items-center justify-between py-2 lg:mb-0 ${
+            window.innerWidth > 1020 ? '' :
+            window.innerWidth <= 768 ? 'hidden' : 'hidden'
+          } mbg-800`}></div>
+
   
-          <div className='my-10'>        
+          <div className='flex-1 my-5 p-8'>    
+            <p className='text-3xl font-medium w-2/3'><LabelIcon fontSize='large' className='mcolor-800-opacity' /> Virtual Library Room</p> 
+
+
+            {/* <div className='border-hr my-5'></div>   */}
   
-            <div className='flex mt-8 gap-8'>
+            <div className='mt-8 gap-8 w-full flex'>
   
-            <div className='w-1/3 min-h-[70vh]' style={{ borderRight: '2px solid #999' }}>
+              <div className='w-2/3'>
   
-  
-                <p className='font-medium text-lg'>Search for Categories: </p>
-                <div className='mr-5 my-3 border-thin-800 rounded'>
-                  <input type="text" placeholder='Search for a category...' className='w-full py-2 rounded text-center' value={searchCategoryValue !== '' ? searchCategoryValue : ''} onChange={(event) => {
-                    handleCategorySearch(event.target.value)
-                    setSearchCategoryValue(event.target.value)
-                  }} />
+                <div className='mbg-800 py-1 px-4 rounded mcolor-100 flex items-center justify-between w-full gap-5'>
+
+                  
+                  <div className='w-1/2'>
+                    <div className='my-3 border-medium-800 rounded'>
+                      <input type="text" placeholder='Search for material...' className='w-full py-2 rounded text-center mcolor-900 mbg-200' value={searchValue !== '' ? searchValue : ''} onChange={(event) => {
+                        handleSearchChange(event.target.value)
+                        setSearchValue(event.target.value)
+                      }} />
+                    </div>
+                  </div>
+
+                  <div className='w-1/2'>
+                    <button className='btn-primary py-2 w-full rounded' onClick={() => {
+                      setShowModal(true);
+                      setShowPresentStudyMaterials(true);
+
+                      }}>Share a Study Material</button>
+                  </div>
                 </div>
-  
-  
-                <p className='font-medium text-lg'>Categories: </p>
-                <div className='grid grid-result gap-3 mr-5 my-5'>
-  
-                
-                {searchCategoryValue === '' && (
-                  filteredSharedCategories.map((material, index) => {
-                    return <div key={index} className='mbg-200 border-thin-800 py-2 rounded flex items-center justify-center'>
-                        <button onClick={() => {
-                          filterMaterial(material.category)
-                          setSearchValue('')
-                          setCurrentMaterialCategory(material.category)
-                        }}>{material.category}</button>
-                      </div>
-                  })
-                )}
-  
-                {searchCategoryValue !== '' && (
-                  searchedCategories.map((material, index) => {
-                    return <div key={index} className='mbg-200 border-thin-800 py-2 rounded flex items-center justify-center'>
-                        <button onClick={() => {
-                          filterMaterial(material.category)
-                          setSearchValue('')
-                          setCurrentMaterialCategory(material.category)
-                        }}>{material.category}</button>
-                      </div>
-                  })
-                )}
-                </div>
-              </div>
-              <div className='w-3/4'>
-  
-              <div className='flex items-center justify-between mb-14 gap-5'>
-                <div className='border-thin-800 w-1/2 rounded'>
-                  <input type="text" placeholder='Search for title/category/anything...' className='w-full py-2 rounded text-center' value={searchValue !== '' ? searchValue : ''} onChange={(event) => {
-                    handleSearchChange(event.target.value)
-                    setSearchValue(event.target.value)
-                  }} />
-                </div>
-                <div className='flex items-center justify-center w-1/2'>
-  
-                  <button className='btn-100 px-5 py-2 rounded w-full' onClick={() => {
-                    setShowModal(true);
-                    setShowPresentStudyMaterials(true);
-  
-                    }}>Share a Study Material</button>
-                </div>
-              </div>
-  
+    
   
                 <div className='flex items-center justify-between'>
-                  <p className='font-medium text-lg mb-2'>Latest Shared Study Materials:</p>
-                  <button className='btn-300 rounded px-4 py-1' onClick={() => {
-                    setFilteredStudyMaterialsByCategory([])
-                    setSearchValue('')
+                  <p className='font-medium text-lg mb-2 mt-8'>Latest Shared Study Materials:</p>
+
+                  {(filteredStudyMaterialsByCategory.length !== 0 || searchValue !== '') && (
+                    <button className='btn-800 rounded px-4 py-1 my-3' onClick={() => {
+                      setFilteredStudyMaterialsByCategory([])
+                      setSearchValue('')
                     }}>Clear Filter</button>
+                  )}
                 </div>
                 <div className='grid grid-result gap-3'>
   
@@ -1315,14 +900,14 @@ export const VirtualLibraryMain = () => {
               .sort((a, b) => b.latestBookmarkTimestamp - a.latestBookmarkTimestamp)
               .map(({ index, material, category, user, bookmarksCount }) => (
                 <div key={index} className='my-3 mbg-200 border-thin-800 p-4 rounded flex justify-between items-center'>
-                  <div>
+                  <div className='w-2/3'>
                     <p className='font-medium text-lg'>Title: {material.title}</p>
                     <p className='text-sm mt-1'>Category: {category}</p>
                     <p className='text-sm mt-1'>Uploader: {user}</p>
                     <p className='text-sm mt-1'>Bookmark Count: {bookmarksCount}</p>
                   </div>
   
-                  <div className='gap-3 mt-5'>
+                  <div className='gap-3 mt-5 flex-1'>
                     {user === userData?.username && (
                       <div className='flex justify-end'>
                         <button onClick={() => {
@@ -1337,20 +922,20 @@ export const VirtualLibraryMain = () => {
                       </div>
                     )}
   
-                    <button className='mbg-100 w-full my-1 mcolor-900 border-thin-800 px-5 py-2 rounded' disabled={buttonLoader} onClick={() => viewStudyMaterialDetails(index, 'shared', 'not filtered', category)}>
+                    <button className='mbg-100 my-1 w-full mcolor-900 border-thin-800 px-5 py-2 rounded' disabled={buttonLoader} onClick={() => viewStudyMaterialDetails(index, 'shared', 'not filtered', category)}>
                       {
                         buttonLoader ? (
                           <div className="w-full flex items-center justify-center">
                             <div className='btn-spinner'></div>
                           </div>
                           ) : (
-                          <div>View</div>
+                          <div className='w-full'>View</div>
                         )
                       }
                     </button>
 
                     
-                    <button className='btn-700 w-full my-1 mcolor-100 px-5 py-2 rounded' onClick={() => {
+                    <button className='mbg-800-opacity w-full my-1 mcolor-100 px-5 py-2 rounded' onClick={() => {
                       setShowBookmarkModal(true);
                       setChooseRoom(true);
                       setCurrentSharedMaterialIndex(index);
@@ -1547,6 +1132,54 @@ export const VirtualLibraryMain = () => {
                   )
                 )}
   
+                </div>
+              </div>
+
+              <div className='flex-1 min-h-[70vh] pl-5' style={{ borderLeft: 'solid #627271 2px' }}>
+                <div className='mbg-800 mcolor-100 py-5 px-4 rounded'>  
+                  <p className='font-medium text-lg'>Search for category: </p>
+                  <div className='my-3 border-medium-800 rounded'>
+                    <input type="text" placeholder='Search for a category...' className='w-full py-2 rounded text-center mbg-input mcolor-900' value={searchCategoryValue !== '' ? searchCategoryValue : ''} onChange={(event) => {
+                      handleCategorySearch(event.target.value)
+                      setSearchCategoryValue(event.target.value)
+                    }} />
+                  </div>
+                </div>
+  
+                <div className='flex items-center justify-between mt-6'>
+                  <p className='font-medium text-lg'>Categories: </p>
+                  {(searchCategoryValue !== '') && (
+                    <button className='btn-800 rounded px-4 py-1' onClick={() => {
+                      setSearchCategoryValue('')
+                    }}>Clear Filter</button>
+                  )}
+                </div>
+
+                <div className='grid grid-result gap-3 my-3'>
+                 
+                {searchCategoryValue === '' && (
+                  filteredSharedCategories.map((material, index) => {
+                    return <div key={index} className='mbg-200 border-thin-800 py-2 rounded flex items-center justify-center'>
+                        <button onClick={() => {
+                          filterMaterial(material.category)
+                          setSearchValue('')
+                          setCurrentMaterialCategory(material.category)
+                        }}>{material.category}</button>
+                      </div>
+                  })
+                )}
+  
+                {searchCategoryValue !== '' && (
+                  searchedCategories.map((material, index) => {
+                    return <div key={index} className='mbg-200 border-thin-800 py-2 rounded flex items-center justify-center'>
+                        <button onClick={() => {
+                          filterMaterial(material.category)
+                          setSearchValue('')
+                          setCurrentMaterialCategory(material.category)
+                        }}>{material.category}</button>
+                      </div>
+                  })
+                )}
                 </div>
               </div>
             </div>
@@ -1825,11 +1458,14 @@ export const VirtualLibraryMain = () => {
                           )}
 
                           {showNotes && (
-                            <div>
+                            <div className='my-10'>
                               {materialNotes.map((material) => (
-                                <div className='my-10'>
-                                  <p className='font-medium mcolor-700'>Question: <span className='mcolor-900 font-medium'>{material.question}</span></p>
-                                  <p className='font-medium mcolor-700 mt-1'>Answer: <span className='mcolor-900 font-medium'>{material.answer}</span></p>
+                                <div className='my-5'>
+                                  <p className='font-medium color-primary'>Question: <span className='mcolor-900 font-medium mb-4'>{material.question}</span></p>
+                                  
+                                  <p className='font-medium color-primary mt-1'>Answer: <span className='mcolor-900 font-medium'>{material.answer}</span></p>
+
+                                  <div className='border-hr my-5'></div>
                                 </div>
                               ))}
                               <div className='mb-[-1.5rem]'></div>
@@ -1840,11 +1476,12 @@ export const VirtualLibraryMain = () => {
                             <div className='mt-5'>
                               <br />
                               {materialMCQ.map((material, quesIndex) => (
-                                <div className={(material.quizType === 'MCQA' || material.quizType === 'Identification') ? 'mb-14' : material.quizType !== 'ToF' ? 'mt-10' : 'mb-5'} key={material.id}>
-                                  <p className='mt-2 mcolor-900'>{quesIndex + 1}. {material.question} - <span className='mcolor-800 font-bold'>{material.answer}</span></p>
+                                <div className={(material.quizType === 'MCQA' || material.quizType === 'Identification') ? 'mb-14' : material.quizType !== 'ToF' ? '' : ''} key={material.id}>
+                                  <p className='mt-2 color-primary font-bold'>Question: <span className='mcolor-800 font-medium ml-1'>{material.question}</span></p>
+                                  <p className='color-primary font-bold'>Answer: <span className='mcolor-800 font-medium ml-1'>{material.answer}</span></p>
 
                                   {material.quizType === 'MCQA' && (
-                                    <p className='mt-2 mb-1'>Choices: </p>
+                                    <p className='mt-5 mb-1'>Choices: </p>
                                   )}
 
                                   <ul className='grid-result gap-3' style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)' }}>
@@ -1854,6 +1491,8 @@ export const VirtualLibraryMain = () => {
                                         <li key={index} className='btn-300 text-center py-1 rounded'>{choice.choice}</li>
                                       ))}
                                   </ul>
+
+                                  <div className='border-hr mt-10'></div>
 
                                 </div>
                               ))}

@@ -4,7 +4,7 @@ import Axios from 'axios';
 import { PDFDetails, GeneratedQAResult } from './QAGenerator';
 import './studyArea.css';
 
-import { AI_APIs_URL } from '../../urlConfig';
+import { QA_AI_API } from '../../urlConfig';
 
 
 pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.js`;
@@ -25,7 +25,7 @@ export const DropZoneComponent = (props) => {
 
 
   // link here
-  const url = `${AI_APIs_URL}/qa-generation`;
+  const url = `${QA_AI_API}/qa-generation`;
 
   const [data, setData] = useState({
     text: PDFDetails,
