@@ -1,6 +1,6 @@
 import axios from 'axios';
 import React, { useEffect, useRef, useState } from 'react'
-import { useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import FavoriteIcon from '@mui/icons-material/Favorite';
 import { useUser } from '../../../../UserContext';
 import { fetchUserData } from '../../../../userAPI';
@@ -31,6 +31,7 @@ export const PersonalReviewerStart = () => {
 
   const { materialId } = useParams();
   const { user } = useUser()
+  const navigate = useNavigate()
 
   const UserId = user?.id;
   
@@ -981,11 +982,13 @@ export const PersonalReviewerStart = () => {
               <div className={`w-full`}>
                 <p className='mcolor-900 text-2xl text-center mb-5'><span className='font-bold'>{timeForBreak ? formatTime(seconds) : '00:00'}</span></p>
   
-                <p className='text-center text-xl font-medium mcolor-800 mb-12'>The 25-minute Pomodoro session has ended. If you'd like to continue, you can do so by clicking the "Continue" button below.</p>
+                <p className='text-center text-xl font-medium mcolor-800 mb-12'>The 25-minute Pomodoro session has ended. If you'd like to continue, you can do so by clicking the "Resume" button below.</p>
                 
                 <div className='absolute bottom-5 flex items-center justify-between w-full left-0 px-5'>
-                  <button className='mbg-300 mcolor-900 px-5 py-2 rounded'>Previous Page</button>
-                  <button className='mbg-700 mcolor-100 px-5 py-2 rounded' onClick={() => {
+                  <button className='mbg-300 border-thin-800 mcolor-900 px-5 py-2 rounded' onClick={() => {
+                    navigate(`/main/personal/study-area/personal-review/${materialId}`)
+                  }}>Previous Page</button>
+                  <button className='mbg-800 mcolor-input px-5 py-2 rounded' onClick={() => {
                     setHidePomodoroModalBreak('hidden')
                     setTimeForBreak(false)
                     setTimeForPomodoro(true)
@@ -997,14 +1000,14 @@ export const PersonalReviewerStart = () => {
           </div>
         </div>
   
-        <div className='w-1/6 mbg-300 h-[100vh] flex justify-between flex-col' style={{ borderRight: '1px solid #999' }}>
+        <div className='w-1/6 mbg-800 h-[100vh] flex justify-between flex-col' style={{ borderRight: '1px solid #999' }}>
   
+          <div className='px-5 pb-5 pt-10 font-bold mbg-800 mcolor-input text-center text-xl mx-5' style={{ borderBottom: '2px solid #f6f8f6' }}>{typeOfLearner} Learner</div>
+
           <div>
-            <div className='px-5 py-5 font-bold mbg-200 mcolor-800 text-center text-xl'>{typeOfLearner} Learner</div>
-  
             {/* pomodoro time */}
-            <div className='mt-10 px-5'>
-              <div className='mcolor-900 text-lg'>Time Left: <span className='font-bold'>{timeForPomodoro ? formatTime(seconds) : '00:00'}</span></div>
+            <div className='px-5'>
+              <div className='mcolor-200 text-lg'>Time Left: <span className='font-bold'>{timeForPomodoro ? formatTime(seconds) : '00:00'}</span></div>
               
   
               {timeForPomodoro && (
@@ -1022,7 +1025,7 @@ export const PersonalReviewerStart = () => {
             </div>
   
             <div className='mt-8 px-5'>
-              <div className='flex items-center mcolor-900'>
+              <div className='flex items-center mcolor-200'>
                 <p><FilterListIcon /> Filter: </p>
   
   
@@ -1083,21 +1086,23 @@ export const PersonalReviewerStart = () => {
           </div>
   
   
-          <div className='text-xl mcolor-900 text-center py-4 mbg-200'>
-            <PersonIcon className='mr-1' />{userData.username}
+          <div className='mcolor-input text-center py-4 mbg-800 mx-5' style={{ borderTop: '2px solid #f6f8f6' }}>
+            <button className='btn-primary mcolor-input w-full py-1 rounded' onClick={() => {
+              navigate(`/main/personal/study-area/personal-review/${materialId}`)
+            }}>Stop Study Session</button>
           </div>
         </div>
   
         <div className='flex-1'>
   
           <div className='flex justify-between'>
-            <div className='w-1/2 px-5 py-8 h-[100vh]' style={{ borderLeft: '2px solid #e0dfdc', overflowY: 'auto' }}>
+            <div className='w-1/2 px-5 py-8 h-[100vh] mbg-input' style={{ borderLeft: '2px solid #e0dfdc', overflowY: 'auto' }}>
               <p className='text-center mcolor-800 text-3xl opacity-75 mb-10'>Generated Notes</p>
               
   
               {typeOfLearner !== 'Auditory' ?
                 (answersItems.map((item, index) => (
-                  <div key={index} className={`${typeOfLearner === 'Visual' ? `${item.bgColor}-bg` : 'mbg-200 border-thin-800'} rounded mb-5 p-5`}>
+                  <div key={index} className={`${typeOfLearner === 'Visual' ? `${item.bgColor}-bg` : 'mbg-200'} border-thin-800 rounded mb-5 p-5`}>
   
                     <div className='mb-6'>
                       <span className='mbg-100 shadows px-5 py-2 rounded'>{capitalizeFirstLetter(item.answer)}</span>
@@ -1129,7 +1134,7 @@ export const PersonalReviewerStart = () => {
                   </div>
                 ))) : (
                   answersItems.map((item, index) => (
-                  <div key={index} className={`${typeOfLearner === 'Visual' ? `${item.bgColor}-bg` : 'mbg-200 border-thin-800'} rounded mb-5 p-5`}>
+                  <div key={index} className={`${typeOfLearner === 'Visual' ? `${item.bgColor}-bg` : 'mbg-200'} border-thin-800 rounded mb-5 p-5`}>
   
                     <div className='mb-6'>
                       <span className='mbg-100 shadows px-5 py-2 rounded'>{capitalizeFirstLetter(item.answer)}</span>
@@ -1216,7 +1221,7 @@ export const PersonalReviewerStart = () => {
                 lastColor = color; // Update lastColor for the next iteration
   
                 return (
-                  <div key={index} className={`${typeOfLearner === 'Visual' ? `${color}-bg` : 'mbg-200 border-thin-800'} rounded mb-5 p-5`}>
+                  <div key={index} className={`${typeOfLearner === 'Visual' ? `${color}-bg` : 'mbg-200'} border-thin-800 rounded mb-5 p-5`}>
                   <p><EditNoteIcon className='mcolor-900' />{filteredItem.answer}</p>
                   </div>
                 );
@@ -1226,7 +1231,7 @@ export const PersonalReviewerStart = () => {
                   lastColor = color; // Update lastColor for the next iteration
     
                   return (
-                    <div key={index} className={`${typeOfLearner === 'Visual' ? `${color}-bg` : 'mbg-200 border-thin-800'} rounded mb-5 p-5 flex items-start justify-between w-full`}>
+                    <div key={index} className={`${typeOfLearner === 'Visual' ? `${color}-bg` : 'mbg-200'} border-thin-800 rounded mb-5 p-5 flex items-start justify-between w-full`}>
                       {hiddenItems.includes(filteredItem.answer) ? (
                         <p className='w-3/4'  style={{ whiteSpace: 'pre-wrap' }}><EmojiObjectsIcon className='text-red' /> {filteredItem.answer}</p>
                         ) : (
@@ -1247,7 +1252,7 @@ export const PersonalReviewerStart = () => {
   
             </div>
   
-            <div className='w-1/2 px-5 py-8 h-[100vh]' style={{ borderLeft: '2px solid #e0dfdc', overflowY: 'auto' }}>
+            <div className='w-1/2 px-5 py-8 h-[100vh] mbg-input' style={{ borderLeft: '2px solid #e0dfdc', overflowY: 'auto' }}>
   
   
               <p className='text-center mcolor-800 text-3xl opacity-75 mb-10'>Practice</p>

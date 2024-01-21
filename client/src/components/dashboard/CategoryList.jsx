@@ -5,6 +5,10 @@ import RemoveRedEyeIcon from '@mui/icons-material/RemoveRedEye';
 import { useUser } from '../../UserContext';
 import { useLocation } from 'react-router-dom';
 import { SERVER_URL } from '../../urlConfig';
+import { Sidebar } from '../sidebar/Sidebar';
+import { Navbar } from '../navbar/logged_navbar/navbar';
+
+import EqualizerIcon from '@mui/icons-material/Equalizer';
 
 
 export const CategoryList = ({categoryFor}) => {
@@ -16,22 +20,15 @@ export const CategoryList = ({categoryFor}) => {
 
 
   const [materialCategories, setMaterialCategories] = useState([])
-  const [materialsTopicsLength, setMaterialsTopicsLength] = useState([])
   const [bookmarkedStudyMaterials, setBookmarkedStudyMaterials] = useState([]);
   const [ownRecordStudyMaterials, setOwnRecordStudyMaterials] = useState([]);
 
   const [showCategories, setShowCategories] = useState(true)
-  const [showTopicList, setShowTopicList] = useState(false)
 
-  const [preparedLength, setPreparedLength] = useState(0)
-  const [unpreparedLength, setUnpreparedLength] = useState(0)
-  const [extractedCategory, setExtractedCategory] = useState([])
   const [studyMaterials, setStudyMaterials] = useState([])
-  const [materialsTopicsData, setMaterialsTopicsData] = useState([])
   const [categoryID, setCategoryID] = useState(0);
   const [filteredBookmarks, setFilteredBookmarks] = useState([])
   const [filteredOwnRecord, setFilteredOwnRecord] = useState([])
-  const [performanceStatus, setPerformanceStatus] = useState(0)
   const [performanceStatusArr, setPerformanceStatusArr] = useState([])
 
   
@@ -216,100 +213,111 @@ export const CategoryList = ({categoryFor}) => {
 
 
   return (
-    <div className='poppins mcolor-900 container py-10'>
-      <div>
-       
+    <div className='poppins mcolor-900 mbg-300 relative flex'>
 
-        <div className='my-8 border-medium-800 min-h-[40vh] rounded-[5px]'>
+      <Sidebar currentPage={categoryFor === 'Personal' ? 'personal-study-area' : 'group-study-area'} />
 
-            <table className='w-full rounded-[5px]'>
-              <thead className='mbg-300'>
-                <tr>
-                  <td className='text-center text-xl py-3 font-medium'>Categories</td>
-                  <td className='text-center text-xl py-3 font-medium'>Performance Percentile</td>
-                  <td className='text-center text-xl py-3 font-medium'>Performance Status</td>
-                  <td className='text-center text-xl py-3 font-medium'>Number of Topics</td>
-                  <td className='text-center text-xl py-3 font-medium'>View Topics</td>
-                </tr>
-              </thead>
-              <tbody>
-                {materialCategories.slice().sort((a, b) => {
-                  if (tag === 'Own Record') {
-                    return new Date(a.createdAt) - new Date(b.createdAt);
-                  } else {
-                    // No sorting if the tag is not 'Own Record'
-                    return 0;
-                  }
-                }).map((item, index) => {
-                  return <tr className='border-bottom-thin-gray rounded-[5px]' key={index}>
-                    <td className='text-center py-3 text-lg mcolor-800'>{item.category}</td>
-                    <td className='text-center py-3 text-lg mcolor-800 w-1/4'>{performanceStatusArr[index]}%</td>
-                    <td className='text-center py-3 text-lg mcolor-800'>{performanceStatusArr[index] >= 90 ? 'Passing' : 'Requires Improvement'}</td>
+      <div className={`lg:w-1/6 h-[100vh] flex flex-col items-center justify-between py-2 lg:mb-0 ${
+        window.innerWidth > 1020 ? '' :
+        window.innerWidth <= 768 ? 'hidden' : 'hidden'
+      } mbg-800`}></div>
 
 
-                    <td className='text-center py-3 text-lg mcolor-800'>
-                      {(tag === 'Own Record' || tag === 'Shared') ? (
-                          (() => {
+      <div className='flex-1 mbg-300 w-full p-8 h-full'>
 
-                            const filteredOwnRecord = ownRecordStudyMaterials.filter(material => material.id === item.id);
-                            return filteredOwnRecord.length;
-                          })()
+        <div className='flex items-center mt-2'>
+          <EqualizerIcon sx={{ fontSize: 38 }} className='mr-1 mb-1 mcolor-700' />
+          <Navbar linkBack={`/main/${categoryFor === 'Personal' ? 'personal' : 'group'}/dashboard/${categoryFor === 'Personal' ? '' : groupId}`} linkBackName={`Dashboard`} currentPageName={'Categories'} username={'Jennie Kim'}/>
+        </div>
 
-                          ) : (
-                          (() => {
-                            const filteredBookmarks = bookmarkedStudyMaterials.filter(material => material.category.toLowerCase() === item.category.toLowerCase());
-                            return filteredBookmarks.length;
-                          })()
-                        )
+        <div className='mbg-input border-medium-800 min-h-[40vh] rounded-[5px] mt-7'>
+          <table className='w-full rounded-[5px]'>
+            <thead className='mbg-800 mcolor-100'>
+              <tr>
+                <td className='text-center py-3 font-medium'>Categories</td>
+                <td className='text-center py-3 font-medium'>Performance Percentile</td>
+                <td className='text-center py-3 font-medium'>Performance Status</td>
+                <td className='text-center py-3 font-medium'>Number of Topics</td>
+                <td className='text-center py-3 font-medium'>View Topics</td>
+              </tr>
+            </thead>
+            <tbody>
+              {materialCategories.slice().sort((a, b) => {
+                if (tag === 'Own Record') {
+                  return new Date(a.createdAt) - new Date(b.createdAt);
+                } else {
+                  // No sorting if the tag is not 'Own Record'
+                  return 0;
+                }
+              }).map((item, index) => {
+                return <tr className='border-bottom-thin-gray rounded-[5px]' key={index}>
+                  <td className='text-center py-3 mcolor-800'>{item.category}</td>
+                  <td className='text-center py-3 mcolor-800 w-1/4'>{performanceStatusArr[index]}%</td>
+                  <td className='text-center py-3 mcolor-800'>{performanceStatusArr[index] >= 90 ? 'Passing' : 'Requires Improvement'}</td>
+
+
+                  <td className='text-center py-3 mcolor-800'>
+                    {(tag === 'Own Record' || tag === 'Shared') ? (
+                        (() => {
+
+                          const filteredOwnRecord = ownRecordStudyMaterials.filter(material => material.id === item.id);
+                          return filteredOwnRecord.length;
+                        })()
+
+                        ) : (
+                        (() => {
+                          const filteredBookmarks = bookmarkedStudyMaterials.filter(material => material.category.toLowerCase() === item.category.toLowerCase());
+                          return filteredBookmarks.length;
+                        })()
+                      )
+                    }
+                  </td>
+
+                  <td className='text-center py-3 mcolor-800'>
+                
+                    <button onClick={() => {
+                      const filteredBookmarks = bookmarkedStudyMaterials.filter(material => material.category.toLowerCase() === item.category.toLowerCase());
+
+                      const filteredOwnRecord = ownRecordStudyMaterials.filter(material => material.id === item.id);
+
+                      
+                      setShowCategories(false)
+                      setFilteredBookmarks(filteredBookmarks)
+                      setFilteredOwnRecord(filteredOwnRecord)
+                      let performanceStatusGet = performanceStatusArr[index]
+
+                      let filter = (tag === 'Own Record' || tag === 'Shared') ? filteredOwnRecord : filteredBookmarks;
+                      let user = categoryFor.toLowerCase()
+
+                      
+                      let linkBack = ''
+                      if (categoryFor === 'Personal') {
+                        linkBack = `/main/${user}/dashboard/category-list/topic-list/${item.id}`
+                      } else {
+                        linkBack = `/main/${user}/dashboard/category-list/topic-list/${groupId}/${item.id}`
                       }
-                    </td>
+                      
+                      navigate(linkBack, {
+                          state: {
+                            filter: filter,
+                            performanceStatus: performanceStatusGet,
+                            tag: tag
+                          }
+                        })
+                      }
 
-                    <td className='text-center py-3 text-lg mcolor-800'>
-                  
-                      <button onClick={() => {
-                        const filteredBookmarks = bookmarkedStudyMaterials.filter(material => material.category.toLowerCase() === item.category.toLowerCase());
+                      
+                    }>
+                      <RemoveRedEyeIcon />
+                    </button>   
 
-                        const filteredOwnRecord = ownRecordStudyMaterials.filter(material => material.id === item.id);
-
-                        
-                        setShowCategories(false)
-                        setFilteredBookmarks(filteredBookmarks)
-                        setFilteredOwnRecord(filteredOwnRecord)
-                        let performanceStatusGet = performanceStatusArr[index]
-
-                        let filter = (tag === 'Own Record' || tag === 'Shared') ? filteredOwnRecord : filteredBookmarks;
-                        let user = categoryFor.toLowerCase()
-
-                        
-                        let linkBack = ''
-                        if (categoryFor === 'Personal') {
-                          linkBack = `/main/${user}/dashboard/category-list/topic-list/${item.id}`
-                        } else {
-                          linkBack = `/main/${user}/dashboard/category-list/topic-list/${groupId}/${item.id}`
-                        }
-                        
-                        navigate(linkBack, {
-                            state: {
-                              filter: filter,
-                              performanceStatus: performanceStatusGet,
-                              tag: tag
-                            }
-                          })
-                        }
-
-                        
-                      }>
-                        <RemoveRedEyeIcon />
-                      </button>   
-
-                    </td>
-                  </tr>
-                })}
-              </tbody>
-            </table>
-          
-        </div>  
-    </div>
-  </div>  
+                  </td>
+                </tr>
+              })}
+            </tbody>
+          </table>
+        </div> 
+      </div>
+    </div>  
   )
 }

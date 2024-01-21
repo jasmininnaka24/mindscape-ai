@@ -1,13 +1,14 @@
 import axios from 'axios'
 import React, { useEffect, useState } from 'react'
-import { Link, useNavigate, useParams } from 'react-router-dom'
+import { useNavigate, useParams } from 'react-router-dom'
 import RemoveRedEyeIcon from '@mui/icons-material/RemoveRedEye';
 import { PieChart } from '../charts/PieChart';
-import Category from '@mui/icons-material/Category';
 import { useUser } from '../../UserContext';
 import { useLocation } from 'react-router-dom';
-import { fetchUserData } from '../../userAPI';
 import { SERVER_URL } from '../../urlConfig';
+
+import { Sidebar } from '../sidebar/Sidebar';
+import EqualizerIcon from '@mui/icons-material/Equalizer';
 
 
 export const TopicList = ({categoryFor}) => {
@@ -16,7 +17,6 @@ export const TopicList = ({categoryFor}) => {
   const [materialsTopicsData, setMaterialsTopicsData] = useState([])
   const [preparedLength, setPreparedLength] = useState(0)
   const [unpreparedLength, setUnpreparedLength] = useState(0)
-  const [extractedCategory, setExtractedCategory] = useState([])
   const location = useLocation();
 
   const { groupId, categoryID } = useParams()
@@ -27,31 +27,6 @@ export const TopicList = ({categoryFor}) => {
 
   const UserId = user?.id;
   
-  // user data
-  const [userData, setUserData] = useState({
-    username: '',
-    email: '',
-    studyProfTarget: 0,
-    typeOfLearner: '',
-    userImage: ''
-  })
-
-
-
-  useEffect(() => {
-    const getUserData = async () => {
-      const userData = await fetchUserData(UserId);
-      setUserData({
-        username: userData.username,
-        email: userData.email,
-        studyProfTarget: userData.studyProfTarget,
-        typeOfLearner: userData.typeOfLearner,
-        userImage: userData.userImage
-      });
-    }
-
-    getUserData();
-  }, [UserId])
 
 
   
@@ -144,165 +119,166 @@ export const TopicList = ({categoryFor}) => {
 
 
   return (
-    <div>
+    <div className='poppins mcolor-900 mbg-300 relative flex'>
+
+      <Sidebar currentPage={categoryFor === 'Personal' ? 'personal-study-area' : 'group-study-area'} />
+
+      <div className={`lg:w-1/6 h-[100vh] flex flex-col items-center justify-between py-2 lg:mb-0 ${
+        window.innerWidth > 1020 ? '' :
+        window.innerWidth <= 768 ? 'hidden' : 'hidden'
+      } mbg-800`}></div>
+
+      <div className='flex-1 mbg-300 w-full h-full p-8'>
+
+        <div>
+          <div className='flex items-center mt-2'>
+            <EqualizerIcon sx={{ fontSize: 38 }} className='mr-1 mb-1 mcolor-700' />
+            <div className='mcolor-900 flex justify-between items-center'>
+              <div className='flex justify-between items-start'>
+                <div className='flex gap-3 items-center text-2xl'>
+                  <button onClick={() => {
+
+                    let linkBack = ''
+                    if (categoryFor === 'Personal') {
+                      linkBack = `/main/personal/dashboard/category-list`
+                    } else {
+                      linkBack = `/main/group/dashboard/category-list/${groupId}`
+                    }
+
+                    navigate(linkBack, {
+                      state: {
+                        tag: tag
+                      }
+                    })
+                    
+                  }}>
+                    Categories
+                  </button>
+                  <i class="fa-solid fa-chevron-right"></i>
+                  <p className='font-bold'>Topic List</p>
+                </div>
+              </div>
+            </div>
+          </div>
 
 
-      {/* navbar */}
-      <div className='mcolor-900 flex justify-between items-center'>
-        <div className='flex justify-between items-start'>
-          <div className='flex gap-3 items-center text-2xl'>
-            <button onClick={() => {
 
-              let linkBack = ''
-              if (categoryFor === 'Personal') {
-                linkBack = `/main/personal/dashboard/category-list`
-              } else {
-                linkBack = `/main/group/dashboard/category-list/${groupId}`
-              }
+          <div className='my-6 w-full flex items-center justify-center mbg-input rounded border-medium-800 py-4'>
+            <div className='w-1/3 min-h-[40vh]'>
+              <PieChart dataGathered={[unpreparedLength, preparedLength]} />
+            </div>
+            <div className='w-1/2'>
+              <p className='text-2xl mt-3 mcolor-800 font-medium'>Performance Status: <span className='font-bold color-primary'>{performanceStatus >= 90 ? 'Passing' : 'Requires Improvement'}</span></p>
+              <p className='text-2xl mt-3 mcolor-800 font-medium'>Performance in percentile: <span className='font-bold color-primary'>{performanceStatus}%</span></p>
+              <p className='text-2xl mt-3 mcolor-800 font-medium'>Target Performance: <span className='font-bold color-primary'>90%</span></p>
+            </div>
+          </div>
 
-              navigate(linkBack, {
-                state: {
-                  tag: tag
-                }
-              })
+          <div className='border-medium-800 rounded-[5px] overflow-x-auto overflow-container' style={{ height: '100%' }}>
+            <table className='p-5 w-full rounded-[5px] text-center'>
+              <thead className='mbg-800 mcolor-100'>
+                <tr>
+                  <td className='text-center py-3 font-medium'>Topic</td>
+                  <td className='text-center py-3 font-medium'>Overall <br />Performance</td>
+                  <td className='text-center py-3 font-medium'>Latest Assessment <br />% Score</td>
+                  <td className='text-center py-3 font-medium'>Confidence Level</td>
+                  <td className='text-center py-3 font-medium'>Improvement</td>
+                  <td className='text-center py-3 font-medium'>Status</td>
+                  <td className='text-center py-3 font-medium'>Records</td>
+                </tr>
+              </thead>
+
+              <tbody className='mbg-input'>
+
+              {studyMaterials.length > 0 && (
+                studyMaterials.map((item, index) => {
+                  const materialsTopic = materialsTopicsData[index] && materialsTopicsData[index][0];
+
+                  if (!materialsTopic) {
+                    return (
+                      <tr key={index}>
+                        <td className='py-3 mcolor-800'>{item.title}</td>
+                        <td className='text-center py-3 mcolor-800'>No record</td>
+                        <td className='text-center py-3 mcolor-800'>No record</td>
+                        <td className='text-center py-3 mcolor-800'>No record</td>
+                        <td className='text-center py-3 mcolor-800'>No record</td>
+                        <td className='text-center py-3 mcolor-800'>No record</td>
+                        <td className='text-center py-3 mcolor-800'>No record</td>
+
+                      </tr>
+                    );
+                  }
+
+                  const assessmentScorePerf = materialsTopic.assessmentScorePerf || 'none';
+                  const confidenceLevel = materialsTopic.confidenceLevel || 'none';
+                  const assessmentImp = materialsTopic.assessmentImp || 'none';
+
+                  // Check if assessmentImp is 'none', if true, skip rendering the row
+                  if (assessmentImp === 'none') {
+                    return (
+                      <tr key={index}>
+                        <td className='py-3 mcolor-800'>{item.title}</td>
+                        <td className='text-center py-3 mcolor-800'>No record</td>
+                        <td className='text-center py-3 mcolor-800'>No record</td>
+                        <td className='text-center py-3 mcolor-800'>No record</td>
+                        <td className='text-center py-3 mcolor-800'>No record</td>
+                        <td className='text-center py-3 mcolor-800'>No record</td>
+                        <td className='text-center py-3 mcolor-800'>No record</td>
+
+                      </tr>
+                    );
+                  }
+                  return (
+                    <tr className='border-bottom-thin-gray rounded-[5px]' key={index}>
+                      <td className='text-center py-3 mcolor-800'>{item.title}</td>
+                      <td className='text-center py-3 mcolor-800'>{item.studyPerformance}%</td>
+                      <td className='text-center py-3 mcolor-800'>{assessmentImp === 'none' ? 0 : assessmentScorePerf}%</td>
+                      <td className='text-center py-3 mcolor-800'>{assessmentImp === 'none' ? 0 : confidenceLevel}%</td>
+                      <td className='text-center py-3 mcolor-800'>{assessmentImp === 'none' ? 0 : assessmentImp}%</td>
+                      <td className='text-center py-3 mcolor-800'>{item.studyPerformance >= 90 ? 'Prepared' : 'Unprepared'}</td>
+                      <td className='text-center py-3 mcolor-800'>
+                        {(assessmentImp !== 'none' ) ? (
+                          groupId !== undefined ? (
+                            <button onClick={() => {
+                              navigate(`/main/group/dashboard/category-list/topic-list/topic-page/${groupId}/${categoryID}/${item.id}`, {
+                                state: {
+                                  filter: filter,
+                                  performanceStatus: performanceStatus,
+                                  tag: tag
+                                }
+                              })
+                            }}>
+                              <RemoveRedEyeIcon />
+                            </button>
+                            
+                          ) : (
+                            <button onClick={() => {
+
+                              navigate(`/main/personal/dashboard/category-list/topic-list/topic-page/${categoryID}/${item.id}`, {
+                                state: {
+                                  filter: filter,
+                                  performanceStatus: performanceStatus,
+                                  tag: tag
+                                }
+                              })
+                            }}>
+                              <RemoveRedEyeIcon />
+                            </button>
+                          )
+                        ) : (
+                          <div>No Record</div>
+                        )
+                        }
+                      </td>
+                    </tr>
+                  );
+                })
+              )}
               
-            }}>
-              Categories
-            </button>
-            <i class="fa-solid fa-chevron-right"></i>
-            <p className='font-bold'>Topic List</p>
+              </tbody>
+            </table>
           </div>
         </div>
-
-        <div className='flex items-center text-xl gap-3'>
-          <i class="fa-regular fa-bell"></i>
-          <i class="fa-regular fa-user"></i>
-          <button className='text-xl'>{userData.username} <i class="fa-solid fa-chevron-down ml-1"></i></button>
-        </div>
-      </div>
-
-
-
-      <div className='mb-12 w-full flex items-center justify-center'>
-        <div className='w-1/3 min-h-[40vh] mt-10'>
-          <PieChart dataGathered={[unpreparedLength, preparedLength]} />
-        </div>
-        <div className='w-1/2 mt-10'>
-          <p className='text-2xl mt-3'>Performance Status: <span className='font-bold'>{performanceStatus >= 90 ? 'Passing' : 'Requires Improvement'}</span></p>
-          <p className='text-2xl mt-3'>Performance in percentile: <span className='font-bold'>{performanceStatus}%</span></p>
-          <p className='text-2xl mt-3'>Target Performance: <span className='font-bold'>90%</span></p>
-        </div>
-      </div>
-      <div className='border-medium-800 rounded-[5px] overflow-x-auto overflow-container' style={{ height: '100%' }}>
-        <table className='p-5 w-full rounded-[5px] text-center'>
-          <thead className='mbg-300'>
-            <tr>
-              <td className='text-center text-xl py-3 font-medium px-8'>Topic</td>
-              <td className='text-center text-xl py-3 font-medium px-8'>Overall <br />Performance</td>
-              <td className='text-center text-xl py-3 font-medium px-8'>Latest Assessment <br />% Score</td>
-              <td className='text-center text-xl py-3 font-medium px-8'>Confidence Level</td>
-              <td className='text-center text-xl py-3 font-medium px-8'>Improvement</td>
-              <td className='text-center text-xl py-3 font-medium px-8'>Status</td>
-              <td className='text-center text-xl py-3 font-medium px-8'>Records</td>
-            </tr>
-          </thead>
-          <tbody>
-
-          {studyMaterials.length > 0 && (
-            studyMaterials.map((item, index) => {
-              const materialsTopic = materialsTopicsData[index] && materialsTopicsData[index][0];
-
-              if (!materialsTopic) {
-                return (
-                  <tr key={index}>
-                    <td className='py-3 text-lg mcolor-800'>{item.title}</td>
-                    <td className='text-center py-3 text-lg mcolor-800'>No record</td>
-                    <td className='text-center py-3 text-lg mcolor-800'>No record</td>
-                    <td className='text-center py-3 text-lg mcolor-800'>No record</td>
-                    <td className='text-center py-3 text-lg mcolor-800'>No record</td>
-                    <td className='text-center py-3 text-lg mcolor-800'>No record</td>
-                    <td className='text-center py-3 text-lg mcolor-800'>No record</td>
-
-                  </tr>
-                );
-              }
-
-              const assessmentScorePerf = materialsTopic.assessmentScorePerf || 'none';
-              const confidenceLevel = materialsTopic.confidenceLevel || 'none';
-              const assessmentImp = materialsTopic.assessmentImp || 'none';
-
-              // Check if assessmentImp is 'none', if true, skip rendering the row
-              if (assessmentImp === 'none') {
-                return (
-                  <tr key={index}>
-                    <td className='py-3 text-lg mcolor-800'>{item.title}</td>
-                    <td className='text-center py-3 text-lg mcolor-800'>No record</td>
-                    <td className='text-center py-3 text-lg mcolor-800'>No record</td>
-                    <td className='text-center py-3 text-lg mcolor-800'>No record</td>
-                    <td className='text-center py-3 text-lg mcolor-800'>No record</td>
-                    <td className='text-center py-3 text-lg mcolor-800'>No record</td>
-                    <td className='text-center py-3 text-lg mcolor-800'>No record</td>
-
-                  </tr>
-                );
-              }
-              return (
-                <tr className='border-bottom-thin-gray rounded-[5px]' key={index}>
-                  <td className='text-center py-3 text-lg mcolor-800'>{item.title}</td>
-                  <td className='text-center py-3 text-lg mcolor-800'>{item.studyPerformance}%</td>
-                  <td className='text-center py-3 text-lg mcolor-800'>{assessmentImp === 'none' ? 0 : assessmentScorePerf}%</td>
-                  <td className='text-center py-3 text-lg mcolor-800'>{assessmentImp === 'none' ? 0 : confidenceLevel}%</td>
-                  <td className='text-center py-3 text-lg mcolor-800'>{assessmentImp === 'none' ? 0 : assessmentImp}%</td>
-                  <td className='text-center py-3 text-lg mcolor-800'>{item.studyPerformance >= 90 ? 'Prepared' : 'Unprepared'}</td>
-                  <td className='text-center py-3 text-lg mcolor-800'>
-                    {(assessmentImp !== 'none' ) ? (
-                      groupId !== undefined ? (
-                        <button onClick={() => {
-                          navigate(`/main/group/dashboard/category-list/topic-list/topic-page/${groupId}/${categoryID}/${item.id}`, {
-                            state: {
-                              filter: filter,
-                              performanceStatus: performanceStatus,
-                              tag: tag
-                            }
-                          })
-                        }}>
-                          <RemoveRedEyeIcon />
-                        </button>
-                        
-                      ) : (
-                        <button onClick={() => {
-
-                          navigate(`/main/personal/dashboard/category-list/topic-list/topic-page/${categoryID}/${item.id}`, {
-                            state: {
-                              filter: filter,
-                              performanceStatus: performanceStatus,
-                              tag: tag
-                            }
-                          })
-                        }}>
-                          <RemoveRedEyeIcon />
-                        </button>
-                      )
-                    ) : (
-                      <div>No Record</div>
-                    )
-                    }
-                  </td>
-                </tr>
-              );
-            })
-          )}
-          
-
-
-
-
-
-
-
-
-          </tbody>
-        </table>
       </div>
     </div>
   )

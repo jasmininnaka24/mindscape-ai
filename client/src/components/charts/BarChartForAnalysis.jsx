@@ -9,12 +9,12 @@ export const BarChartForAnalysis = (props) => {
   const labels = labelSet;
 
 
-  const backgroundColors = ["#D9E1E7", "#4D5F6E"];
-  const borderColors = ["#4D5F6E", "#4D5F6E"];
+  const backgroundColors = ["#E1ECEB", "#3D5654"];
+  const borderColors = ["#3D5654", "#3D5654"];
   
   if (labels.length === 3) {
-    backgroundColors.splice(1, 0, "#D9E1E7");
-    borderColors.splice(1, 0, "#4D5F6E");
+    backgroundColors.splice(1, 0, "#E1ECEB");
+    borderColors.splice(1, 0, "#3D5654");
   }
   
   const data = {

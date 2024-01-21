@@ -117,9 +117,9 @@ export const GroupRoom = () => {
         <Sidebar currentPage={'group-study-area'} />
 
         <div className={`lg:w-1/6 h-[100vh] flex flex-col items-center justify-between py-2 lg:mb-0 ${
-        window.innerWidth > 1020 ? '' :
-        window.innerWidth <= 768 ? 'hidden' : 'hidden'
-      } mbg-800`}></div>
+          window.innerWidth > 1020 ? '' :
+          window.innerWidth <= 768 ? 'hidden' : 'hidden'
+        } mbg-800`}></div>
 
 
         <div className='flex-1 mbg-300 w-full p-5'> 
@@ -149,7 +149,7 @@ export const GroupRoom = () => {
               <div className='grid grid-cols-3 gap-5'>
     
                 {groupList && groupList.length > 0 && groupList.slice().sort((a, b) => b.id - a.id).map(({ id, groupName}) => (
-                  <div key={id} className='shadows mcolor-900 rounded-[5px] p-5 my-6 mbg-100 flex items-center justify-between relative'>
+                  <div key={id} className='shadows mcolor-900 rounded-[5px] p-5 my-6 mbg-input flex items-center justify-between relative'>
     
     
                     <p className='px-1'>{groupName}</p>

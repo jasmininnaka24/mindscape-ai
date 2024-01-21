@@ -3,14 +3,14 @@ import Chart from 'chart.js/auto';
 import { Pie } from 'react-chartjs-2';
 
 export const PieChart = ({ dataGathered }) => {
-  const backgroundColors = ['#D9E1E7', '#4D5F6E'];
+  const backgroundColors = ['#E1ECEB', '#3D5654'];
   const labels = ['Unpreparedness', 'Preparedness'];
 
   const data = {
     datasets: [
       {
         backgroundColor: backgroundColors,
-        borderColor: '#4D5F6E',
+        borderColor: '#3D5654',
         data: dataGathered,
       },
     ],
@@ -25,7 +25,7 @@ export const PieChart = ({ dataGathered }) => {
         return labels.map((label, index) => ({
           text: label,
           fillStyle: backgroundColors[index],
-          strokeStyle: '#4D5F6E',
+          strokeStyle: '#3D5654',
           lineWidth: 2,
           hidden: false,
           index: index,

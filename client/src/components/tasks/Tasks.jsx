@@ -3,6 +3,7 @@ import { Navbar } from '../navbar/logged_navbar/navbar';
 import { DateTime, Interval } from 'luxon';
 import { useUser } from '../../UserContext';
 import { SERVER_URL } from '../../urlConfig';
+import { Sidebar } from '../sidebar/Sidebar';
 
 
 // Component imports
@@ -10,12 +11,16 @@ import { AddingTask } from './AddingTask';
 import { UpdateTasks } from './UpdateTasks';
 import { DeleteTask } from './DeleteTask';
 import { CompletedTask } from './CompletedTask';
+import axios from 'axios';
+
+
+// icon imports
 import PushPinIcon from '@mui/icons-material/PushPin';
 import WatchLaterIcon from '@mui/icons-material/WatchLater';
 import PendingActionsIcon from '@mui/icons-material/PendingActions';
 import EditIcon from '@mui/icons-material/Edit';
 import DoneIcon from '@mui/icons-material/Done';
-import axios from 'axios';
+import AddTaskIcon from '@mui/icons-material/AddTask';
 
 export const Tasks = ({room, groupId}) => {
 
@@ -86,21 +91,28 @@ export const Tasks = ({room, groupId}) => {
     </div>
   } else {
     return (
-      <div>
-        {room === 'Group' ? (
-          <Navbar linkBack={`/main/group`} linkBackName={`Groups`} currentPageName={'Tasks'}/>
-        ) : (
-          <Navbar linkBack={`/main`} linkBackName={`Main`} currentPageName={'Tasks'}/>
-        )}
+      <div className='poppins mcolor-900 mbg-300 relative flex'>
 
-        <div className='my-8'>
+        <Sidebar currentPage={room === 'Personal' ? 'personal-study-area' : 'group-study-area'} />
+
+        <div className={`lg:w-1/6 h-[100vh] flex flex-col items-center justify-between py-2 lg:mb-0 ${
+        window.innerWidth > 1020 ? '' :
+        window.innerWidth <= 768 ? 'hidden' : 'hidden'
+      } mbg-800`}></div>
+
+        <div className='flex-1 mbg-300 w-full p-6'>
+          <p className='text-3xl mb-5 font-medium flex items-center mcolor-900'>
+            <AddTaskIcon className='mr-1 mcolor-700' fontSize='large' />
+            <p>Tasks</p>
+          </p>
+
           <div className="border-medium-800 gen-box flex justify-between items-center rounded">
-            <div className='box1 border-box w-1/2'>
+            <div className='box1 mbg-input border-box w-1/2'>
               <div className='scroll-box p-7'>
                 <div className='flex items-center justify-between'>
                   <p className='text-2xl font-normal'>List of Tasks</p>
                   {!showAddTaskModal ? (
-                    <button className='px-7 py-1 text-lg mbg-700 mcolor-100 rounded' onClick={() => setShowAddTaskModal(true)}>Add Task</button>
+                    <button className='px-7 py-1 text-lg mbg-800 mcolor-100 rounded' onClick={() => setShowAddTaskModal(true)}>Add Task</button>
                     ) : (
                     <button className='px-7 py-1 text-4xl rounded' onClick={() => setShowAddTaskModal(false)}>&times;</button>
                   )}
@@ -119,8 +131,12 @@ export const Tasks = ({room, groupId}) => {
                 <UpdateTasks task={task} dueDate={dueDate} room={room} taskID={taskID} listOfTasks={listOfTasks} setListOfTasks={setListOfTasks} setTask={setTask} setDueDate={setDueDate} setTaskID={setTaskID} hideModal={dynamicClassNameForHidden} closeModal={closeModal} setIsButtonClicked={setIsButtonClicked} UserId={UserId} groupId={groupId} />
   
                 
-                {listOfTasks.length === 0 && <p className='text-center text-xl mcolor-500 my-10'>No assigned task.</p>}
-                
+                {listOfTasks
+                  .filter((task) => task.completedTask !== "Completed")
+                  .length === 0 && (
+                    <p className='text-center text-xl mcolor-800-opacity my-10'>No assigned task</p>
+                )}
+
                 {/* Unaccomplished Tasks */}
                 <div className='my-5'>
                   {/* List of tasks that are need to be accomplished */}
@@ -213,11 +229,20 @@ export const Tasks = ({room, groupId}) => {
               </div>
             </div>
   
-            <div className='box2 border-box w-1/2 '>
+            <div className='box2 mbg-input border-box w-1/2 '>
   
               {/* Accomplished Tasks */}
               <div className='scroll-box p-8'>
+
                 <p className='text-2xl font-normal'>Recently Accomplished</p>
+
+                {listOfTasks
+                  .filter((task) => task.completedTask === "Completed")
+                  .length === 0 && (
+                    <p className='text-center text-xl mcolor-800-opacity my-10'>No completed task yet</p>
+                )}
+
+
                 {listOfTasks
                 .filter((task) => task.completedTask === "Completed")
                 .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))

@@ -893,7 +893,7 @@ export const StudyAreaGP = (props) => {
           {/* modal */}
           <div style={{ zIndex: 1000 }} className={`${hidden} absolute flex items-center justify-center modal-bg w-full h-full`}>
             <div className='flex justify-center'>
-              <div className='mbg-100 max-h-[60vh] w-[40vw] w-1/3 z-10 relative p-10 rounded-[5px]' style={{ overflowY: 'auto' }}>
+              <div className='mbg-input max-h-[60vh] w-[40vw] w-1/3 z-10 relative p-10 rounded-[5px]' style={{ overflowY: 'auto' }}>
     
               <button className='absolute right-4 top-3 text-xl' onClick={() => {
                 setHidden("hidden");
@@ -1136,41 +1136,54 @@ export const StudyAreaGP = (props) => {
             {/* latest added reviewer */}
             <div className=''>
               {lastMaterial !== null ? (
-                <div className='mbg-100 shadows px-5 pt-5 pb-8 rounded'>
+                <div className='mbg-input shadows px-5 py-5 rounded'>
                   <div className='relative'>
-                    <p className='text-xl mcolor-900 mb-3'>Last Uploaded Reviewer: {lastMaterial.title} from {materialCategory}</p>
+                    <p className='text-xl mcolor-900 mb-5'>Last Uploaded Reviewer: {lastMaterial.title} from {materialCategory}</p>
       
-                    <section className="border scroll-box max-h-[63vh] min-h-[63vh]">
-                      <div className='gap-2 flex justify-between items-start'>
+                    <section className="border mbg-input scroll-box max-h-[68vh] min-h-[68vh]">
+                      <div className='gap-2 flex justify-between items-start mx-5 mt-8'>
                         <button
                           onClick={() => showContent(1)}
-                          className={`w-full py-3 text-lg rounded-[5px] font-medium ${activeButton === 1 ? '' : 'mbg-300'}`}
+                          className={`w-full py-2 rounded text-lg ${activeButton === 1 ? 'border-medium-800 mcolor-800 font-bold' : 'border-medium-700 mcolor-700 font-medium'}`}
                         >
                           Lesson
                         </button>
-                        {/* <button
-                          onClick={() => showContent(2)}
-                          className={`w-full py-3 text-lg rounded-[5px] font-medium ${activeButton === 2 ? '' : 'mbg-300'}`}
-                        >
-                          Questions and Answers
-                        </button> */}
+
                         <button
                           onClick={() => showContent(3)}
-                          className={`w-full py-3 text-lg rounded-[5px] font-medium ${activeButton === 3 ? '' : 'mbg-300'}`}
+                          className={`w-full py-2 rounded text-lg ${activeButton === 3 ? 'border-medium-800 mcolor-800 font-bold' : 'border-medium-700 mcolor-700 font-medium'}`}
                         >
                           Notes Reviewer
                         </button>
+
+                        <Link to={`/main/${categoryForToLower}/study-area/${categoryFor.toLowerCase()}-review/${groupNameId !== undefined ? groupNameId + '/' : ''}${lastMaterial.id}`} className='mbg-800 mcolor-100 w-full py-2 rounded text-lg text-center border-medium-800'>
+                          <button>
+                            View Reviewer
+                          </button>
+                        </Link>
+
                       </div>
-                      <div className='p-10'>
-                        {showLesson && lastMaterial && <div>{lastMaterial.body}</div>}
+                      <div className='p-5'>
+                        {showLesson && lastMaterial && <div>
+                          
+                          <p className='mbg-200 p-5 border-thin-800 rounded my-5'>
+                            <h3 className='font-medium mcolor-700 text-2xl text-center pt-3 pb-5'><span className='font-bold mcolor-800'>{lastMaterial.title}</span></h3>
+                            {lastMaterial.body}
+                          </p>
+                          
+                          </div>
+                        }
       
                         {showRev && materialRev && (
                           <div>
+
+                            <h3 className='font-medium mcolor-700 text-2xl text-center mb-5 mt-3'><span className='font-bold mcolor-800'>Questions and Answers</span></h3>
+
                             {materialRev && Array.isArray(materialRev) && materialRev.map((material) => (
-                              <div className='mb-10 p-5 mbg-200 border-thin-800 rounded' key={material.question}>
-                                <p className='my-1 color-primary font-medium'>Question: <span className='mcolor-900 font-medium'>{material.question}</span></p>
+                              <div className='mb-10 mt-2 p-5 mbg-200 border-thin-800 rounded' key={material.question}>
+                                <p className='my-1 font-medium'><span className='mbg-700 mcolor-100 px-2 rounded'>Question:</span> <span className='mcolor-800 font-medium'>{material.question}</span></p>
                                 <p className='border-hr my-2'></p>
-                                <p className='font-medium color-primary'>Answer: <span className='mcolor-900 font-medium'>{material.answer}</span></p>
+                                <p className='font-medium'><span className='mbg-700 mcolor-100 px-2 rounded'>Answer:</span> <span className='mcolor-800 font-medium'>{material.answer}</span></p>
                               </div>
                             ))}
       
@@ -1179,8 +1192,8 @@ export const StudyAreaGP = (props) => {
                         )}
                       </div>
                     </section>
-                    <div className='flex items-center justify-end absolute left-0 bottom-[-.8rem]'>
-                      <Link to={`/main/${categoryForToLower}/study-area/${categoryFor.toLowerCase()}-review/${groupNameId !== undefined ? groupNameId + '/' : ''}${lastMaterial.id}`} className='mbg-800 mcolor-100 rounded-[5px] px-12 py-2'>View Reviewer</Link>
+                    <div className='flex items-center w-[98%] absolute left-0 mbg-input py-2 bottom-[.0rem] ml-1 mb-[.16rem] rounded'>
+
                     </div>
                   </div>
                 </div>
@@ -1200,7 +1213,7 @@ export const StudyAreaGP = (props) => {
               
               <div>
                 {materialCategories.length > 0 ? (
-                  <div className='mbg-100 mcolor-900 rounded px-4 py-2 mb-2'>
+                  <div className='mbg-input mcolor-900 rounded px-4 py-2 mb-2'>
                     <span>{categoryFor === 'Personal' ? 'My' : 'Our'} Study Material</span>
                     <button onClick={toggleExpand} className='ml-2'>{!isExpanded ? <i className="fa-solid fa-chevron-down"></i> : <i className="fa-solid fa-chevron-up"></i>}</button>
                   </div>
@@ -1253,7 +1266,7 @@ export const StudyAreaGP = (props) => {
                         {editCategoryModal && (
                           <div style={{ zIndex: 1000 }} className={`absolute flex items-center justify-center modal-bg w-full h-full`}>
                             <div className='flex justify-center'>
-                              <div className='mbg-100 max-h-[60vh] w-[30vw] w-1/3 z-10 relative p-10 rounded-[5px]' style={{ overflowY: 'auto' }}>
+                              <div className='mbg-input max-h-[60vh] w-[30vw] w-1/3 z-10 relative p-10 rounded-[5px]' style={{ overflowY: 'auto' }}>
     
                               <button className='absolute right-4 top-3 text-xl' onClick={() => {
                                 setEditCategoryModal(false);

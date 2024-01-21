@@ -3,8 +3,9 @@ import { useUser } from '../../UserContext';
 import axios from 'axios';
 import { useNavigate, useParams } from 'react-router-dom';
 import { SERVER_URL } from '../../urlConfig';
-
-
+import { Sidebar } from '../sidebar/Sidebar';
+import AccountTreeIcon from '@mui/icons-material/AccountTree';
+import { Navbar } from '../navbar/logged_navbar/navbar';
 
 export const UpdateQAGen = ({ groupId, categoryFor }) => {
 
@@ -144,10 +145,6 @@ export const UpdateQAGen = ({ groupId, categoryFor }) => {
    let backgroundColors = ['red', 'orange', 'yellow', 'green', 'blue', 'purple', 'gray']
    let randomIndex = ''
    let randomColor = ''
-
-
-
-
 
 
   const saveGeneratedDataBtn = async (e) => {
@@ -450,10 +447,6 @@ export const UpdateQAGen = ({ groupId, categoryFor }) => {
   
   };
   
-  
-
-  
-
 
   const handleTitleChange = async (newValue, materialId) => {
 
@@ -502,28 +495,44 @@ export const UpdateQAGen = ({ groupId, categoryFor }) => {
     </div>
   } else {
     return (
-      <div>
-        <div className='poppins mcolor-900'>
-          <div  className="border-hard-800 gen-box flex justify-between items-center rounded">
+      <div className='poppins mcolor-900 mbg-300 relative flex'>
+
+        <Sidebar currentPage={categoryFor === 'Personal' ? 'personal-study-area' : 'group-study-area'} />
+
+        <div className={`lg:w-1/6 h-[100vh] flex flex-col items-center justify-between py-2 lg:mb-0 ${
+          window.innerWidth > 1020 ? '' :
+          window.innerWidth <= 768 ? 'hidden' : 'hidden'
+        } mbg-800`}></div>
+
+        {/*           <Navbar linkBack={`/main/group/study-area/group-review/${groupId}/${materialID}`} linkBackName={'Group Study Area'} currentPageName={'Update Reviewer'} username={'Jennie Kim'}/>
+ */}
+        <div className='flex-1 mbg-300 w-full p-8'>
+
+          <div className='flex items-center mt-4'>
+            <AccountTreeIcon sx={{ fontSize: 30 }} className='mr-2 mb-1 mcolor-700' />
+            <Navbar linkBack={`/main/${categoryFor === 'Personal' ? 'personal' : 'group'}/study-area/${categoryFor === 'Personal' ? 'personal' : 'group'}-review${categoryFor === 'Personal' ? '/' : `/${groupId}`}${materialID}`} linkBackName={`Study Area`} currentPageName={'Generate Reviewer'} />
+          </div>
+
+          <div  className="border-medium-800 gen-box flex justify-between items-center rounded my-6">
             <div className='h-full w-full border-none'>
               <textarea
                 onChange={(event) => handleBodyChange(event.target.value)}
-                className='w-full h-full p-5 bg-transparent border-thin-800'
+                className='w-full h-full p-5 mbg-200 border-thin-800'
                 style={{ resize: 'none', outline: 'none' }}
                 value={pdfDetails}
               ></textarea>
             </div>
           </div>
-  
-  
+
+
           <br /><br />
           <div className='flex justify-center mb-10'>
             <form>
-              <input required type="text" value={materialTitle !== '' ? materialTitle : ''} onChange={(event) => handleTitleChange(event.target.value, materialID)} placeholder='Title...' className='border-hard-800 rounded-[5px] py-2 px-5' />
-  
+              <input required type="text" value={materialTitle !== '' ? materialTitle : ''} onChange={(event) => handleTitleChange(event.target.value, materialID)} placeholder='Title...' className='border-medium-800 rounded-[5px] py-2 px-5' />
+
               <select
                 required
-                className='border-hard-800 rounded-[5px] py-2 px-2 mx-3 outline-none'
+                className='border-medium-800 rounded-[5px] py-2 px-2 mx-3 outline-none'
                 onChange={(event) => handleCategoryIdChange(event.target.value)}
                 value={materialCategoryId}
               >
@@ -531,7 +540,7 @@ export const UpdateQAGen = ({ groupId, categoryFor }) => {
                 <option key={materialCategoryId} value={materialCategoryId}>
                   {studyMaterialCategories.find(category => category.id === parseInt(materialCategoryId, 10))?.category || 'Select a category'}
                 </option>
-  
+
                 {/* Map over other categories */}
                 {studyMaterialCategories.map((category) => (
                   // Skip the current category as it's already displayed at the top
@@ -542,9 +551,9 @@ export const UpdateQAGen = ({ groupId, categoryFor }) => {
                   )
                 ))}
               </select>
-  
-  
-  
+
+
+
               <button
                 onClick={(e) => saveGeneratedDataBtn(e)}
                 className={`mbg-800 mcolor-100 px-10 py-2 text-xl font-bold rounded-[5px] ${isLoading ? 'wrong-bg' : ''}`}
@@ -554,30 +563,30 @@ export const UpdateQAGen = ({ groupId, categoryFor }) => {
               </button>
             </form>
           </div>
-  
+
           <div className='flex justify-center items-center mb-12 rounded-[5px]'>
-            <button className={`w-full text-center py-3 ${activeButton === 1 ? 'mbg-300 rounded-[5px] border-medium-800' : 'border-bottom-medium border-r border-solid border-gray-500'}`} onClick={() => showContent(1)}>MCQAs</button>
-            <button className={`w-full text-center py-3 ${activeButton === 2 ? 'mbg-300 rounded-[5px] border-medium-800' : 'border-bottom-medium border-r border-solid border-gray-500'}`} onClick={() => showContent(2)}>Notes Reviewer</button>
-            <button className={`w-full text-center py-3 ${activeButton === 3 ? 'mbg-300 rounded-[5px] border-medium-800' : 'border-bottom-medium border-r border-solid border-gray-500'}`} onClick={() => showContent(3)}>True  Sentences</button>
-            <button className={`w-full text-center py-3 ${activeButton === 4 ? 'mbg-300 rounded-[5px] border-medium-800' : 'border-bottom-medium'}`} onClick={() => showContent(4)}>Fill In The Blank</button>
-            <button className={`w-full text-center py-3 ${activeButton === 5 ? 'mbg-300 rounded-[5px] border-medium-800' : 'border-bottom-medium'}`} onClick={() => showContent(5)}>Identification</button>
+            <button className={`w-full text-center py-3 ${activeButton === 1 ? 'mbg-200 rounded-[5px] border-medium-800' : 'border-bottom-medium border-r border-solid border-gray-500'}`} onClick={() => showContent(1)}>MCQAs</button>
+            <button className={`w-full text-center py-3 ${activeButton === 2 ? 'mbg-200 rounded-[5px] border-medium-800' : 'border-bottom-medium border-r border-solid border-gray-500'}`} onClick={() => showContent(2)}>Notes Reviewer</button>
+            <button className={`w-full text-center py-3 ${activeButton === 3 ? 'mbg-200 rounded-[5px] border-medium-800' : 'border-bottom-medium border-r border-solid border-gray-500'}`} onClick={() => showContent(3)}>True  Sentences</button>
+            <button className={`w-full text-center py-3 ${activeButton === 4 ? 'mbg-200 rounded-[5px] border-medium-800' : 'border-bottom-medium'}`} onClick={() => showContent(4)}>Fill In The Blank</button>
+            <button className={`w-full text-center py-3 ${activeButton === 5 ? 'mbg-200 rounded-[5px] border-medium-800' : 'border-bottom-medium'}`} onClick={() => showContent(5)}>Identification</button>
           </div>
-  
-  
+
+
           {showMCQAs && 
             <div className='min-h-[90vh]'>
-  
+
               {/* Add item */}
               <div className='mb-14 mt-10'>
-  
+
                 {activeBtnMCQAs === true && 
                   <div>
                     <button onClick={() => {
                       setActiveBtnMCQAs(activeBtnMCQAs === false ? true : false)
-                    }} className='mcolor-900 border-hard-800 px-5 py-1 rounded-[5px]'>Add Item</button>
+                    }} className='mcolor-900 border-medium-800 px-5 py-1 rounded-[5px]'>Add Item</button>
                   </div>
                 }
-  
+
                 
                 {activeBtnMCQAs === false && 
                   <div>
@@ -585,12 +594,12 @@ export const UpdateQAGen = ({ groupId, categoryFor }) => {
                       <div className='flex justify-end text-4xl'>
                         <button onClick={() => {
                           setActiveBtnMCQAs(activeBtnMCQAs === false ? true : false)
-  
+
                           setAddedQuestionStr("");
                           setAddedAnswerStr("");
                           setAddedChoice("");
                           setAddedChoices([]);
-  
+
                         }} className='dark-text'>×</button>
                       </div>
                       {/* Input for the question */}
@@ -616,7 +625,7 @@ export const UpdateQAGen = ({ groupId, categoryFor }) => {
                             value={addedAnswerStr}
                           />
                         </li>
-  
+
                         {/* Choices */}
                         
                         {addedChoices.map((item, index) => {
@@ -646,7 +655,7 @@ export const UpdateQAGen = ({ groupId, categoryFor }) => {
                           </li>
                           )
                         })}
-  
+
                         {/* Add a choice */}
                         <div className='my-2 relative '>
                           <input
@@ -659,7 +668,7 @@ export const UpdateQAGen = ({ groupId, categoryFor }) => {
                             value={addedChoice}
                             required
                           />
-  
+
                           <div className='absolute right-5 top-3 mbg-100 px-2 rounded-[20px]'>
                             <button
                               className='deleteChoiceBtn relative text-3xl'
@@ -678,22 +687,22 @@ export const UpdateQAGen = ({ groupId, categoryFor }) => {
                         </div>
                       </ul>
                     </div>
-  
+
                     <div className='flex justify-end mt-5'>
                       
                     <button
                       className='mbg-800 mcolor-100 py-2 px-16 rounded-[5px]'
                       onClick={() => {
                         let updatedChoices = addedChoices.filter((item) => item.trim() !== ""); 
-  
+
                         if (addedAnswerStr.trim() !== "" && addedQuestionStr.trim() !== "" && updatedChoices.length > 1) {
               
                           const saveQuesAndAns = async () => {
-  
+
                             randomIndex = Math.floor(Math.random() * backgroundColors.length);
                             randomColor = backgroundColors[randomIndex];
-  
-  
+
+
                             const qaData = {
                               question: addedQuestionStr,
                               answer: addedAnswerStr,
@@ -723,23 +732,23 @@ export const UpdateQAGen = ({ groupId, categoryFor }) => {
                               }
                             }
                           }
-  
-  
+
+
                           saveQuesAndAns()
-  
+
                           
                           setAddedQuestionStr("");
                           setAddedAnswerStr("");
                           setAddedChoice("");
                           setAddedChoices([]);
-  
+
                           
                           fetchData()
-  
+
                         } else {
-  
+
                           addedChoices.map((item) => item.trim() === "" && alert("Fill out the empty fields."))
-  
+
                           if (updatedChoices.length <= 1 ) {
                             alert("Please provide at least two choices to proceed.");
                           }
@@ -747,26 +756,26 @@ export const UpdateQAGen = ({ groupId, categoryFor }) => {
                           if (addedAnswerStr.trim() === "" || addedQuestionStr.trim() === "") {
                             alert("Fill out the empty fields.");
                           }
-  
+
                         }
                       }}
                     >
                       Add
                     </button>
-  
+
                     </div>
                   </div>
                 }
               </div>
-  
-  
+
+
               {materialMCQ.filter(item => item.quizType === 'MCQA').length !== 0 ? (
                 materialMCQ
                 .filter(item => item.quizType === 'MCQA')
                 .reverse()
                 .map((item, index) => (
                     <div key={item.id} className="mb-8">
-    
+
                       <div className='flex justify-end mb-4'>
                         {/* Delete button */}
                         <button
@@ -776,14 +785,14 @@ export const UpdateQAGen = ({ groupId, categoryFor }) => {
                           Delete
                         </button>
                       </div>
-    
-    
+
+
                       <input  
                         className='mb-4 brd-btn border-bottom-thin  addAChoice w-full bg-transparent border-transparent text-center py-3' 
                         value={item.question}
                         onChange={(e) => handleQuestionChange(item.id, e.target.value, 'MCQA')}
                         />
-    
+
                       <ul className="grid-result gap-4">
                         <li className="correct-bg rounded-[5px] text-center my-2">
                           <input
@@ -813,11 +822,11 @@ export const UpdateQAGen = ({ groupId, categoryFor }) => {
                                   </button>
                                 </div>
                               </li>
-    
+
                             </div>
                           ))}
                       </ul>
-    
+
                     </div>
                   ))
                 ) : (
@@ -825,13 +834,13 @@ export const UpdateQAGen = ({ groupId, categoryFor }) => {
                 )
                 
               }
-  
+
             </div>
           }
-  
+
           {showGenReviewer && (
             <div className='min-h-[90vh]'>
-  
+
               <div>
                 <button onClick={() => {
                   setActiveBtnRev(activeBtnRev === false ? true : false)
@@ -843,23 +852,23 @@ export const UpdateQAGen = ({ groupId, categoryFor }) => {
                   setActiveBtnRev(activeBtnRev === false ? true : false)
                 }} className={`text-4xl mcolor-900 px-5 py-1 rounded-[5px] ${activeBtnRev === true ? 'hidden' : ''}`}> × </button>
               </div>
-  
+
               {activeBtnRev === false && (
                 <div >
                   <div className='mt-5 mb-10'>
-  
+
                     <label htmlFor="" className='font-medium'>Enter question:</label>
                     <textarea value={revQues ? `${revQues}` : ''} onChange={(event) => {
                       setRevQues(event.target.value);
                     }} className='bg-transparent brd-btn w-full border-bottom-thin p-2' placeholder='Question here...' name="" id="" cols="30" rows="1"></textarea>
-  
-  
+
+
                     <label htmlFor="" className='mt-5 font-medium'>Enter answer:</label>
                     <textarea value={revAns ? `${revAns}` : ''} onChange={(event) => {
                       setRevAns(event.target.value);
                     }} className='bg-transparent brd-btn w-full border-bottom-thin p-2' placeholder='Answer here...' name="" id="" cols="30" rows="1"></textarea>
-  
-  
+
+
                     <div className='flex justify-end mt-5'>
                       <button onClick={addRevItem} className='px-10 py-1 mbg-800 mcolor-100 rounded-[5px]'>Add</button>
                     </div>
@@ -874,7 +883,7 @@ export const UpdateQAGen = ({ groupId, categoryFor }) => {
                       <div className='flex justify-end my-5'>
                         <button onClick={() => deleteRevQues(material.id)} className='bg-red mcolor-100 px-5 py-1 rounded-[5px]'>Delete</button>
                       </div>
-    
+
                       <ul className="grid-result gap-2">
                         <div className='flex items-center'>
                           <textarea
@@ -883,9 +892,9 @@ export const UpdateQAGen = ({ groupId, categoryFor }) => {
                             onChange={(event) => handleQuestionChange(material.id, event.target.value, 'Rev')}
                             cols={50} 
                             rows={Math.ceil((material.question ? material.question.length : 0) / 50)}
-    
+
                             />
-    
+
                         </div>
                         <div className=''>
                           <textarea
@@ -898,8 +907,8 @@ export const UpdateQAGen = ({ groupId, categoryFor }) => {
                             />
                         </div>
                       </ul>
-    
-    
+
+
                     </li>
                   )) 
                   ) : (
@@ -907,40 +916,38 @@ export const UpdateQAGen = ({ groupId, categoryFor }) => {
                   )
                 }
               </ul>
-  
+
             </div>
           )}
-  
-  
-  
-  
+
+
           {showTrueOrFalseSentences && (
             <div className='min-h-[90vh]'>
-  
+
               {/* Add item */}
               <div className='mb-14 mt-10'>
-  
+
                 {activeBtnMCQAs === true && 
                   <div>
                     <button onClick={() => {
                       setActiveBtnMCQAs(activeBtnMCQAs === false ? true : false)
-                    }} className='mcolor-900 border-hard-800 px-5 py-1 rounded-[5px]'>Add Item</button>
+                    }} className='mcolor-900 border-medium-800 px-5 py-1 rounded-[5px]'>Add Item</button>
                   </div>
                 }
-  
-  
+
+
                 {activeBtnMCQAs === false && 
                   <div>
                     <div className='my-2'>
                       <div className='flex justify-end text-4xl'>
                         <button onClick={() => {
                           setActiveBtnMCQAs(activeBtnMCQAs === false ? true : false)
-  
+
                           setAddedQuestionStr("");
                           setAddedAnswerStr("");
                           setAddedChoice("");
                           setAddedChoices([]);
-  
+
                         }} className='dark-text'>×</button>
                       </div>
                       {/* Input for the question */}
@@ -954,7 +961,7 @@ export const UpdateQAGen = ({ groupId, categoryFor }) => {
                         value={addedQuestionStr}
                       />
                       <ul>
-  
+
                         {/* Choices */}
                         
                         {addedChoices.map((item, index) => {
@@ -984,7 +991,7 @@ export const UpdateQAGen = ({ groupId, categoryFor }) => {
                           </li>
                           )
                         })}
-  
+
                         {/* Add a choice */}
                         <div className='my-2 relative '>
                           <input
@@ -997,7 +1004,7 @@ export const UpdateQAGen = ({ groupId, categoryFor }) => {
                             value={addedChoice}
                             required
                           />
-  
+
                           <div className='absolute right-5 top-3 mbg-100 px-2 rounded-[20px]'>
                             <button
                               className='deleteChoiceBtn relative text-3xl'
@@ -1016,22 +1023,22 @@ export const UpdateQAGen = ({ groupId, categoryFor }) => {
                         </div>
                       </ul>
                     </div>
-  
+
                     <div className='flex justify-end mt-5'>
                       
                     <button
                       className='mbg-800 mcolor-100 py-2 px-16 rounded-[5px]'
                       onClick={() => {
                         let updatedChoices = addedChoices.filter((item) => item.trim() !== ""); // Trim addedChoices to remove any whitespace
-  
+
                         if (addedQuestionStr.trim() !== "" && updatedChoices.length > 1) {
-  
+
                           const saveQuesAndAns = async () => {
-  
+
                             randomIndex = Math.floor(Math.random() * backgroundColors.length);
                             randomColor = backgroundColors[randomIndex];
-  
-  
+
+
                             const qaData = {
                               question: addedQuestionStr,
                               answer: 'True',
@@ -1039,7 +1046,7 @@ export const UpdateQAGen = ({ groupId, categoryFor }) => {
                               quizType: 'ToF',
                               StudyMaterialId: materialID,
                             };
-  
+
                             const qaResponse = await axios.post(
                               `${SERVER_URL}/quesAns`,
                               qaData
@@ -1061,24 +1068,24 @@ export const UpdateQAGen = ({ groupId, categoryFor }) => {
                               }
                             }
                           }
-  
-  
+
+
                           saveQuesAndAns()
-  
+
                           
                           setAddedQuestionStr("");
                           setAddedAnswerStr("");
                           setAddedChoice("");
                           setAddedChoices([]);
-  
+
                           
                           fetchData()
-  
+
                         } else {
-  
-  
+
+
                           addedChoices.map((item) => item.trim() === "" && alert("Fill out the empty fields."))
-  
+
                           if (updatedChoices.length <= 1 ) {
                             alert("Please provide at least two choices to proceed.");
                           }
@@ -1086,13 +1093,13 @@ export const UpdateQAGen = ({ groupId, categoryFor }) => {
                           if (addedQuestionStr.trim() === "") {
                             alert("Fill out the empty fields.");
                           }
-  
+
                         }
                       }}
                     >
                       Add
                     </button>
-  
+
                     </div>
                   </div>
                 }
@@ -1142,7 +1149,7 @@ export const UpdateQAGen = ({ groupId, categoryFor }) => {
                             </div>
                           ))}
                       </td>
-  
+
                       <td className='flex justify-center pt-6'>
                         <button
                           className='mt-6 text-center text-lg bg-red mcolor-100 px-4 py-1 rounded-[5px]'
@@ -1153,21 +1160,21 @@ export const UpdateQAGen = ({ groupId, categoryFor }) => {
                       </td>
                     </tr>
                   ))}
-  
+
               </table>
               ) : (
                 <div className='text-center text-lg font-medium mcolor-500'>No records found</div>
               )}
             </div>
           )}
-  
-  
+
+
           {showFillInTheBlanks && (
             <div className='min-h-[90vh]'>
-               <div>
+              <div>
                   <button onClick={() => {
                     setActiveBtnRev(activeBtnRev === false ? true : false)
-                  }} className={`border-hard-800 mcolor-900 px-5 py-1 rounded-[5px] ${activeBtnRev === false ? 'hidden' : ''}`}>Add Item</button>
+                  }} className={`border-medium-800 mcolor-900 px-5 py-1 rounded-[5px] ${activeBtnRev === false ? 'hidden' : ''}`}>Add Item</button>
                 </div>
                 
                 <div className='flex justify-end' >
@@ -1175,30 +1182,30 @@ export const UpdateQAGen = ({ groupId, categoryFor }) => {
                     setActiveBtnRev(activeBtnRev === false ? true : false)
                   }} className={`text-4xl mcolor-900 px-5 py-1 rounded-[5px] ${activeBtnRev === true ? 'hidden' : ''}`}> × </button>
                 </div>
-  
+
                 {activeBtnRev === false && (
                   <div className='mt-5 mb-10'>
-  
+
                     <label htmlFor="" className='font-medium'>Enter statement:</label>
                     <textarea value={revQues ? `${revQues}` : ''} onChange={(event) => {
                       setRevQues(event.target.value);
                     }} className='bg-transparent brd-btn w-full border-bottom-thin p-2' placeholder='Statement here...' name="" id="" cols="30" rows="1"></textarea>
-  
-  
+
+
                     <label htmlFor="" className='mt-5 font-medium'>Enter answer:</label>
                     <textarea value={revAns ? `${revAns}` : ''} onChange={(event) => {
                       setRevAns(event.target.value);
                     }} className='bg-transparent brd-btn w-full border-bottom-thin p-2' placeholder='Answer here...' name="" id="" cols="30" rows="1"></textarea>
-  
-  
+
+
                     <div className='flex justify-end mt-5'>
                       <button onClick={() => {
-  
+
                         const saveData = async () => {
-  
+
                           randomIndex = Math.floor(Math.random() * backgroundColors.length);
                           randomColor = backgroundColors[randomIndex];
-  
+
                           const qaData = {
                             question: revQues,
                             answer: revAns,
@@ -1209,7 +1216,7 @@ export const UpdateQAGen = ({ groupId, categoryFor }) => {
               
                           await axios.post(`${SERVER_URL}/quesAns`, qaData);
                         }
-  
+
                         if (revQues === '' || revAns === '') {
                           return alert('Cannot add an empty field')
                         } else {
@@ -1219,13 +1226,13 @@ export const UpdateQAGen = ({ groupId, categoryFor }) => {
                           setRevAns('')
                           setRevQues('')
                         }
-  
-  
+
+
                       }} className='px-10 py-1 mbg-800 mcolor-100 rounded-[5px]'>Add</button>
                     </div>
                   </div>
                 )}
-  
+
                 {materialMCQ.filter(item => item.quizType === 'FITB').length !== 0 ? (
                   <div>
                     <table className='w-full'>
@@ -1247,7 +1254,7 @@ export const UpdateQAGen = ({ groupId, categoryFor }) => {
                               key={index}
                               value={item.question || ''} 
                               onChange={(e) => handleQuestionChange(item.id, e.target.value, 'FITB')}
-                              className='w-full px-5 pt-4 text-start mcolor-800 text-lg'
+                              className='w-full px-5 pt-4 text-start mcolor-800 text-lg mbg-input border-thin-800 rounded'
                               rows={Math.ceil((item.question ? item.question.length : 0) / 50) + 1}
                             ></textarea>
                             </td>
@@ -1257,7 +1264,7 @@ export const UpdateQAGen = ({ groupId, categoryFor }) => {
                                 type="text" 
                                 value={item.answer || ''}
                                 onChange={(e) => handleAnswerChange(item.id, e.target.value, 'FITB')}
-                                className='text-center'
+                                className='text-center border-thin-800 mbg-input rounded'
                               />
                               <button className='text-center text-lg bg-red mcolor-100 px-4 py-1 rounded-[5px]' onClick={() => {handleDeleteMaterialMCQItem(item.id)}}>Remove</button>
                             </td>
@@ -1271,14 +1278,14 @@ export const UpdateQAGen = ({ groupId, categoryFor }) => {
                 }
             </div>
           )}
-  
-  
+
+
           {showIdentification && (
             <div className='min-h-[90vh]'>
               <div>
                 <button onClick={() => {
                   setActiveBtnRev(activeBtnRev === false ? true : false)
-                }} className={`border-hard-800 mcolor-900 px-5 py-1 rounded-[5px] ${activeBtnRev === false ? 'hidden' : ''}`}>Add Item</button>
+                }} className={`border-medium-800 mcolor-900 px-5 py-1 rounded-[5px] ${activeBtnRev === false ? 'hidden' : ''}`}>Add Item</button>
               </div>
               
               <div className='flex justify-end' >
@@ -1286,30 +1293,30 @@ export const UpdateQAGen = ({ groupId, categoryFor }) => {
                   setActiveBtnRev(activeBtnRev === false ? true : false)
                 }} className={`text-4xl mcolor-900 px-5 py-1 rounded-[5px] ${activeBtnRev === true ? 'hidden' : ''}`}> × </button>
               </div>
-  
+
               {activeBtnRev === false && (
                 <div className='mt-5 mb-10'>
-  
+
                   <label htmlFor="" className='font-medium'>Enter Question:</label>
                   <textarea value={revQues ? `${revQues}` : ''} onChange={(event) => {
                     setRevQues(event.target.value);
                   }} className='bg-transparent brd-btn w-full border-bottom-thin p-2' placeholder='Question here...' name="" id="" cols="30" rows="1"></textarea>
-  
-  
+
+
                   <label htmlFor="" className='mt-5 font-medium'>Enter answer:</label>
                   <textarea value={revAns ? `${revAns}` : ''} onChange={(event) => {
                     setRevAns(event.target.value);
                   }} className='bg-transparent brd-btn w-full border-bottom-thin p-2' placeholder='Answer here...' name="" id="" cols="30" rows="1"></textarea>
-  
-  
+
+
                   <div className='flex justify-end mt-5'>
                     <button onClick={() => {
-  
+
                       const saveData = async () => {
-  
+
                         randomIndex = Math.floor(Math.random() * backgroundColors.length);
                         randomColor = backgroundColors[randomIndex];
-  
+
                         const qaData = {
                           question: revQues,
                           answer: revAns,
@@ -1320,7 +1327,7 @@ export const UpdateQAGen = ({ groupId, categoryFor }) => {
             
                         await axios.post(`${SERVER_URL}/quesAns`, qaData);
                       }
-  
+
                       if (revQues === '' || revAns === '') {
                         return alert('Cannot add an empty field')
                       } else {
@@ -1330,13 +1337,13 @@ export const UpdateQAGen = ({ groupId, categoryFor }) => {
                         setRevQues('')
                         setRevAns('')
                       }
-  
-  
+
+
                     }} className='px-10 py-1 mbg-800 mcolor-100 rounded-[5px]'>Add</button>
                   </div>
                 </div>
               )}
-  
+
               {materialMCQ.filter(item => item.quizType === 'Identification').length !== 0 ? (
                 <div>
                   <table className='w-full'>
@@ -1358,7 +1365,7 @@ export const UpdateQAGen = ({ groupId, categoryFor }) => {
                             key={index}
                             value={item.question || ''} 
                             onChange={(e) => handleQuestionChange(item.id, e.target.value, 'Identification')}
-                            className='w-full px-5 pt-4 text-start mcolor-800 text-lg'
+                            className='w-full px-5 pt-4 text-start mcolor-800 text-lg mbg-input rounded border-thin-800'
                             rows={Math.ceil((item.question ? item.question.length : 0) / 50) + 1}
                           ></textarea>
                           </td>
@@ -1368,7 +1375,7 @@ export const UpdateQAGen = ({ groupId, categoryFor }) => {
                               type="text" 
                               value={item.answer || ''}
                               onChange={(e) => handleAnswerChange(item.id, e.target.value, 'Identification')}
-                              className='text-center'
+                              className='text-center mbg-input rounded border-thin-800'
                             />
                             <button className='text-center text-lg bg-red mcolor-100 px-4 py-1 rounded-[5px]' onClick={() => {handleDeleteMaterialMCQItem(item.id)}}>Remove</button>
                           </td>
@@ -1376,16 +1383,15 @@ export const UpdateQAGen = ({ groupId, categoryFor }) => {
                       ))}
                   </table>
                 </div>
-               ) : (
+              ) : (
                 <div className='text-center text-lg font-medium mcolor-500'>No records found</div>
-               )}
-  
+              )}
+
             </div>
           )}
   
-  
-            
         </div>
+
       </div>
     )
   }

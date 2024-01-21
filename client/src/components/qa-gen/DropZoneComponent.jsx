@@ -194,7 +194,7 @@ export const DropZoneComponent = (props) => {
         <div className="form-group">
           <div
             id="drop-area"
-            className="drop-area"
+            className="drop-area mbg-input"
             onDragOver={(event) => {
               event.preventDefault();
               event.stopPropagation();
@@ -230,7 +230,7 @@ export const DropZoneComponent = (props) => {
             id="num_questions_inp"
             value={numInp}
             placeholder="Optional"
-            className="maxnum bg-transparent"
+            className="maxnum mbg-input"
             min="1"
             max="150"
           />
@@ -243,7 +243,7 @@ export const DropZoneComponent = (props) => {
             style={{
               background: loading
                 ? `linear-gradient(90deg, gray ${progress}%, gray ${progress}%)`
-                : '#4D5F6E',
+                : '#3D5654',
               color: 'white',
               padding: '10px 20px',
               borderRadius: '5px',
@@ -280,7 +280,7 @@ export const DropZoneComponent = (props) => {
             style={{
               background: loading
                 ? `linear-gradient(90deg, gray ${progress}%, gray ${progress}%)`
-                : '#4D5F6E',
+                : '#3D5654',
               color: 'white',
               padding: '10px 20px',
               borderRadius: '5px',
@@ -318,7 +318,7 @@ export const DropZoneComponent = (props) => {
                 color: '#444',
                 padding: '10px 20px',
                 borderRadius: '5px',
-                border: 'solid 2px #4D5F6E',
+                border: 'solid 2px #3D5654',
                 cursor: loading ? 'not-allowed' : '',
               }}
               onClick={resetState}

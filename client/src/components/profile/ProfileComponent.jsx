@@ -1077,7 +1077,7 @@ export const ProfileComponent = () => {
 
       <div className={`flex-1 mbg-300 w-full mx-5 pt-5`}>
 
-        <div className='mbg-100 p-4 rounded-[1rem]'>
+        <div className='mbg-input p-4 rounded-[1rem]'>
           <motion.ul
             className='mbg-400 w-full rounded-[1rem] flex flex-col items-center lg:flex-row lg:justify-between'
             variants={tabListVariants}
@@ -1157,7 +1157,7 @@ export const ProfileComponent = () => {
               transition={{ duration: 0.5 }}
             >
               <motion.div 
-                className='shadows p-5 mbg-100 rounded'
+                className='shadows p-5 mbg-input rounded'
                 initial={{ opacity: 0, y: -20 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -20 }}
@@ -1326,7 +1326,7 @@ export const ProfileComponent = () => {
                   {sharedMaterials.map((material, index) => {
                     const category = sharedMaterialsCategory[index]?.category || 'Category not available';
 
-                    return <div key={index} className='my-3 shadows mbg-100 p-4 rounded flex items-center justify-between'>
+                    return <div key={index} className='my-3 shadows mbg-input p-4 rounded flex items-center justify-between'>
                       <div>
                         <p className='font-medium text-lg'>Title: {material.title}</p>
                         <p className='text-sm mt-1'>Category: {category}</p>
@@ -1369,7 +1369,7 @@ export const ProfileComponent = () => {
                     animate="visible"
                     exit="hidden"
                     >
-                    <div className='relative mbg-100 min-h-[30vh] max-h-[80vh] w-1/2 z-10 relative py-5 px-10 rounded-[5px]' style={{overflowY: 'auto'}}>
+                    <div className='relative mbg-input min-h-[30vh] max-h-[80vh] w-1/2 z-10 relative py-5 px-10 rounded-[5px]' style={{overflowY: 'auto'}}>
                       
                       <button className='absolute right-5 top-5 font-medium text-xl' onClick={() => {
                         setShowMaterialDetails(false)
@@ -1402,7 +1402,7 @@ export const ProfileComponent = () => {
                                 </div>
 
                                 <div className='flex items-center gap-3'>
-                                  <button className='mbg-100 mcolor-900 border-thin-800 px-5 py-2 rounded' onClick={() => viewStudyMaterialDetails(index, 'personal', 'not filtered', category)} >View</button>
+                                  <button className='mbg-input mcolor-900 border-thin-800 px-5 py-2 rounded' onClick={() => viewStudyMaterialDetails(index, 'personal', 'not filtered', category)} >View</button>
                                   {/* <button className='btn-800 mcolor-100 px-5 py-2 rounded' onClick={() => shareMaterial(index, 'personal')}>Share</button> */}
                                 </div>
                               </div>
@@ -1423,7 +1423,7 @@ export const ProfileComponent = () => {
                                 </div>
 
                                 <div className='flex items-center gap-3'>
-                                  <button className='mbg-100 mcolor-900 border-thin-800 px-5 py-2 rounded' onClick={() => viewStudyMaterialDetails(index, 'group', 'not filtered', category)}>View</button>
+                                  <button className='mbg-input mcolor-900 border-thin-800 px-5 py-2 rounded' onClick={() => viewStudyMaterialDetails(index, 'group', 'not filtered', category)}>View</button>
                                   {/* <button className='btn-800 mcolor-100 px-5 py-2 rounded' onClick={() => shareMaterial(index, 'Group')}>Share</button> */}
                                 </div>
                               </div>
@@ -1527,7 +1527,7 @@ export const ProfileComponent = () => {
                     animate="visible"
                     exit="hidden"
                     >
-                    <div className='relative mbg-100 min-h-[30vh] w-1/3 z-10 relative py-5 px-5 rounded-[5px]' style={{overflowY: 'auto'}}>
+                    <div className='relative mbg-input min-h-[30vh] w-1/3 z-10 relative py-5 px-5 rounded-[5px]' style={{overflowY: 'auto'}}>
 
                       <button className='absolute right-5 top-5 font-medium text-xl' onClick={() => {
                         setShowBookmarkModal(false)
@@ -1586,7 +1586,7 @@ export const ProfileComponent = () => {
                               </div>
                               <div className='flex items-center justify-center gap-3'>
                                 <button className='px-4 w-full py-2 rounded btn-800 mcolor-100' onClick={createGroupBtn}>Create</button>
-                                <button className='px-4 w-full py-2 rounded mbg-100 mcolor-900 border-thin-800' onClick={() => setShowCreateGroupInput(false)}>Cancel</button>
+                                <button className='px-4 w-full py-2 rounded mbg-input mcolor-900 border-thin-800' onClick={() => setShowCreateGroupInput(false)}>Cancel</button>
                               </div>
                             </div>
                           )}
@@ -1596,7 +1596,7 @@ export const ProfileComponent = () => {
 
                         {showCreateGroupInput === false && (
                           groupList.slice().sort((a, b) => b.id - a.id).map(({ id, groupName}) => (
-                            <div key={id} className='shadows mcolor-900 rounded-[5px] p-5 my-6 mbg-100 flex items-center justify-between relative'>
+                            <div key={id} className='shadows mcolor-900 rounded-[5px] p-5 my-6 mbg-input flex items-center justify-between relative'>
 
 
                               <p className='px-1'>{groupName}</p>
@@ -1653,7 +1653,7 @@ export const ProfileComponent = () => {
               transition={{ duration: 0.5 }}
             >
               <motion.div 
-                className='shadows p-5 mbg-100 rounded'
+                className='shadows p-5 mbg-input rounded'
                 initial={{ opacity: 0, y: -20 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -20 }}
@@ -1691,7 +1691,7 @@ export const ProfileComponent = () => {
                 exit={{ opacity: 0, y: -20 }}
                 transition={{ duration: 0.5, delay: 0.2 }}
               >
-                <div className='shadows p-5 mbg-100 rounded mb-5'>
+                <div className='shadows p-5 mbg-input rounded mb-5'>
 
                   <form className='px-8 gap-8 py-5'>
                     <p className='text-2xl mcolor-800 font-medium mb-5'>Account Deletion</p>

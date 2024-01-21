@@ -7,6 +7,8 @@ import PushPinIcon from '@mui/icons-material/PushPin';
 import WatchLaterIcon from '@mui/icons-material/WatchLater';
 import PendingActionsIcon from '@mui/icons-material/PendingActions';
 import { SERVER_URL } from '../../urlConfig';
+import { Sidebar } from '../sidebar/Sidebar';
+import EqualizerIcon from '@mui/icons-material/Equalizer';
 
 
 export const MainDash = ({categoryFor}) => {
@@ -28,7 +30,6 @@ export const MainDash = ({categoryFor}) => {
   const [ownRecordStudyMaterials, setOwnRecordStudyMaterials] = useState([]);
   const [bookmarkedStudyMaterials, setBookmarkedStudyMaterials] = useState([]);
 
-  const [bookmarkedMaterialsIds, setBookmarkedMaterialsIds] = useState([]);
   const [performanceStatusArr, setPerformanceStatusArr] = useState([])
   const [loading, setLoading] = useState(true);
 
@@ -311,218 +312,237 @@ export const MainDash = ({categoryFor}) => {
     </div>
   } else {
     return (
-      <div className='flex items-center justify-between gap-5 my-8'>
-        <div className='w-full rounded-[5px]'>
-          <div className='w-full border-medium-800 min-h-[37vh] rounded-[5px] relative'>
-            <div className='max-h-[36vh] w-full p-5' style={{ overflowY: 'auto' }}>
-              <p className='text-2xl font-normal'>{listOfTasks.length > 0 ? 'List of Tasks' : 'No Assigned Task'}</p>
-  
-              {listOfTasks
-                .filter(task => task.completedTask === 'Uncompleted') 
-                .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)) 
-                .map((task, key) => {
-                  const currentDateTime = DateTime.now();
-                  const dueDateTime = DateTime.fromISO(task.dueDate);
-                  const timeDifference = Interval.fromDateTimes(currentDateTime, dueDateTime);
-  
-                  // Calculate the time difference in days, hours, and minutes
-                  const { days, hours, minutes } = timeDifference.toDuration(['days', 'hours', 'minutes']).toObject();
-  
-                  // Round off hours and minutes
-                  const roundedHours = Math.round(hours);
-                  const roundedMinutes = Math.round(minutes);
-  
-                  // Check if the task is overdue
-                  const isOverdue = timeDifference.isPast;
-  
-                  // Create an array to store the time parts to include
-                  const timeParts = [];
-  
-                  // Conditionally include "days" if days > 0
-                  if (days > 0) {
-                    timeParts.push(`${days} day${days > 1 ? 's' : ''}`);
-                  }
-  
-                  // Conditionally include "hours" if roundedHours > 0
-                  if (roundedHours > 0) {
-                    timeParts.push(`${roundedHours} hour${roundedHours > 1 ? 's' : ''}`);
-                  }
-  
-                  // Conditionally include "minutes" if roundedMinutes > 0
-                  if (roundedMinutes > 0) {
-                    timeParts.push(`${roundedMinutes} minute${roundedMinutes > 1 ? 's' : ''}`);
-                  }
-  
-                  // Format the time difference based on included time parts and overdue status
-                  let formattedTimeDifference = '';
-  
-                  if (isOverdue) {
-                    formattedTimeDifference = 'On time';
-                  } else if (timeParts.length === 0) {
-                    // Handle case when all time components are zero
-                    formattedTimeDifference = `Overdue`;
-                  } else {
-                    // Handle case when the task is not overdue
-                    formattedTimeDifference = `${timeParts.join(' ')} from now`;
-                  }
-  
-                  const dueDate = new Date(task.dueDate);
-  
-                  // Format the date as "Month Day, Year"
-                  const formattedDueDate = dueDate.toLocaleDateString('en-US', {
-                    year: 'numeric',
-                    month: 'long',
-                    day: 'numeric',
-                  });
-  
-                  const formattedTime = dueDate.toLocaleTimeString('en-US', {
-                    hour: '2-digit',
-                    minute: '2-digit',
-                  });
-  
-  
-                  const abbreviatedMonth = formattedDueDate.slice(0, 3);
-                  const formattedDueDateAbbreviated = `${abbreviatedMonth} ${dueDate.getDate()}, ${dueDate.getFullYear()}`;
-  
-        
-                  return (
-                    <div key={key} className='flex items-start justify-between w-full mbg-200 px-4 py-3 border-thin-800 rounded my-3'>
-                      <div className='w-3/4'  style={{ whiteSpace: 'pre-wrap' }}>
-                        <div><PushPinIcon className='text-red-dark' /> {task.task}</div>
-                        <div className='mt-3'><WatchLaterIcon sx={{ fontSize: '22px' }} /> {formattedDueDateAbbreviated}, {formattedTime}</div>
-                        <div className={`mt-2`}><PendingActionsIcon/> <span className={`${formattedTimeDifference === 'Overdue' ? 'text-red-dark' : ''}`}>{formattedTimeDifference}</span></div>
-                      </div>
-                    <br />
-                  </div>
-                  )
-                })}
-            </div>
-            
-            {listOfTasks.length > 0 && (
-              <div className='absolute bottom-0 right-0 w-full mbg-200'>
-                <div className='flex justify-end py-2 px-4'>
-                  <Link to={`/main/${groupId === undefined ? 'personal' : 'group'}/tasks/${groupId === undefined ? '' : groupId}`}>
-                    <button className='px-4 py-1 mbg-800 mcolor-100 rounded'>
-                      View All Tasks
-                    </button>
-                  </Link>
-                </div>
-              </div>
-            )}
+      <div className='poppins mcolor-900 mbg-300 relative flex'>
+
+        <Sidebar currentPage={'group-study-area'} />
+
+        <div className={`lg:w-1/6 h-[100vh] flex flex-col items-center justify-between py-2 lg:mb-0 ${
+          window.innerWidth > 1020 ? '' :
+          window.innerWidth <= 768 ? 'hidden' : 'hidden'
+        } mbg-800`}></div>
+
+
+        <div className='flex-1 mbg-300 w-full p-5'>
+
+          <div className='flex items-center mt-5'>
+            <EqualizerIcon sx={{ fontSize: 38 }} className='mr-1 mb-1 mcolor-700' />
+            <h3 className='text-3xl font-medium'>Dashboard</h3>
           </div>
-  
-          <div className='w-full border-medium-800 min-h-[37vh] rounded-[5px] py- 5 px-10 mt-10 relative'>
-  
-            <div className='flex items-center justify-between'>
-              <div>
-                <p className='text-lg font-medium mcolor-800 mt-8 mb-1'>Recently Studying</p>
-                <p className='font-bold text-xl my-5 mcolor-800'>
-                  {!materialCategory
-                    ? 'No material has been studied'
-                    : `${materialCategory} - ${materialTitle}`}
-                </p>
-                <table className='mcolor-800'>
-                  <thead>
-                    <tr>
-                      <td className='px-3 border-medium-800'>Unattemted</td>
-                      <td className='px-3 border-medium-800'>Correct</td>
-                      <td className='px-3 border-medium-800'>Wrong</td>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr className='text-center'>
-                      <td className='px-3 border-medium-800'>{unattemptedLength} item{unattemptedLength < 2 ? '' : 's'}</td>
-                      <td className='px-3 border-medium-800'>{familiarLength} item{familiarLength < 2 ? '' : 's'}</td>
-                      <td className='px-3 border-medium-800'>{needsPracticeLength} item{needsPracticeLength < 2 ? '' : 's'}</td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-              
-              <div className='mt-5'>
-                <div className='text-center'>
-                  <p className='text-4xl mcolor-800 font-medium'>
-                    {
-                      isNaN((familiarLength / itemsCount) * 100) ? 0 + '%' : ((familiarLength / itemsCount) * 100).toFixed(2) + '%'
-                    }
-                  </p>
-                  <p className='mt-1 mcolor-400'>Study Performance</p>
+
+          <div className='flex items-center justify-between gap-5 my-3'>
+            <div className='w-full rounded-[5px]'>
+              <div className='w-full border-medium-800 min-h-[37vh] rounded-[5px] relative mbg-input'>
+                <div className='max-h-[36vh] w-full p-5' style={{ overflowY: 'auto' }}>
+                  <p className='text-xl font-medium mcolor-800'>{listOfTasks.length > 0 ? 'List of Tasks' : 'No Assigned Task'}</p>
+      
+                  {listOfTasks
+                    .filter(task => task.completedTask === 'Uncompleted') 
+                    .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)) 
+                    .map((task, key) => {
+                      const currentDateTime = DateTime.now();
+                      const dueDateTime = DateTime.fromISO(task.dueDate);
+                      const timeDifference = Interval.fromDateTimes(currentDateTime, dueDateTime);
+      
+                      // Calculate the time difference in days, hours, and minutes
+                      const { days, hours, minutes } = timeDifference.toDuration(['days', 'hours', 'minutes']).toObject();
+      
+                      // Round off hours and minutes
+                      const roundedHours = Math.round(hours);
+                      const roundedMinutes = Math.round(minutes);
+      
+                      // Check if the task is overdue
+                      const isOverdue = timeDifference.isPast;
+      
+                      // Create an array to store the time parts to include
+                      const timeParts = [];
+      
+                      // Conditionally include "days" if days > 0
+                      if (days > 0) {
+                        timeParts.push(`${days} day${days > 1 ? 's' : ''}`);
+                      }
+      
+                      // Conditionally include "hours" if roundedHours > 0
+                      if (roundedHours > 0) {
+                        timeParts.push(`${roundedHours} hour${roundedHours > 1 ? 's' : ''}`);
+                      }
+      
+                      // Conditionally include "minutes" if roundedMinutes > 0
+                      if (roundedMinutes > 0) {
+                        timeParts.push(`${roundedMinutes} minute${roundedMinutes > 1 ? 's' : ''}`);
+                      }
+      
+                      // Format the time difference based on included time parts and overdue status
+                      let formattedTimeDifference = '';
+      
+                      if (isOverdue) {
+                        formattedTimeDifference = 'On time';
+                      } else if (timeParts.length === 0) {
+                        // Handle case when all time components are zero
+                        formattedTimeDifference = `Overdue`;
+                      } else {
+                        // Handle case when the task is not overdue
+                        formattedTimeDifference = `${timeParts.join(' ')} from now`;
+                      }
+      
+                      const dueDate = new Date(task.dueDate);
+      
+                      // Format the date as "Month Day, Year"
+                      const formattedDueDate = dueDate.toLocaleDateString('en-US', {
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric',
+                      });
+      
+                      const formattedTime = dueDate.toLocaleTimeString('en-US', {
+                        hour: '2-digit',
+                        minute: '2-digit',
+                      });
+      
+      
+                      const abbreviatedMonth = formattedDueDate.slice(0, 3);
+                      const formattedDueDateAbbreviated = `${abbreviatedMonth} ${dueDate.getDate()}, ${dueDate.getFullYear()}`;
+      
+            
+                      return (
+                        <div key={key} className='flex items-start justify-between w-full mbg-input px-4 py-3 border-thin-800 rounded my-3'>
+                          <div className='w-3/4'  style={{ whiteSpace: 'pre-wrap' }}>
+                            <div><PushPinIcon className='text-red-dark' /> {task.task}</div>
+                            <div className='mt-3'><WatchLaterIcon sx={{ fontSize: '22px' }} /> {formattedDueDateAbbreviated}, {formattedTime}</div>
+                            <div className={`mt-2`}><PendingActionsIcon/> <span className={`${formattedTimeDifference === 'Overdue' ? 'text-red-dark' : ''}`}>{formattedTimeDifference}</span></div>
+                          </div>
+                        <br />
+                      </div>
+                      )
+                    })}
                 </div>
-  
-                {materialCategory && (
-                  <Link to={`/main/${categoryForLowerCase}/study-area/${categoryForLowerCase}-review-start/${materialId}`}>
-                    <button className='absolute bottom-5 right-5 mbg-800 mcolor-100 px-5 py-2 rounded-[5px]'>View Reviewer</button>
-                  </Link>
+                
+                {listOfTasks.length > 0 && (
+                  <div className='absolute bottom-0 right-0 w-full mbg-input'>
+                    <div className='flex justify-end py-2 px-4'>
+                      <Link to={`/main/${groupId === undefined ? 'personal' : 'group'}/tasks/${groupId === undefined ? '' : groupId}`}>
+                        <button className='px-4 py-1 text-sm mbg-800 mcolor-100 rounded'>
+                          View All Tasks
+                        </button>
+                      </Link>
+                    </div>
+                  </div>
                 )}
               </div>
+      
+              <div className='w-full border-medium-800 min-h-[37vh] rounded-[5px] py-5 px-6 mt-10 relative mbg-input'>
+      
+                <div className='flex items-center justify-between'>
+                  <div>
+                    <p className='text-lg font-medium mcolor-800 mt-3'>Recently Studying</p>
+                    <p className='font-bold text-lg mt-3 mb-3 mcolor-800'>
+                      {!materialCategory
+                        ? 'No material has been studied'
+                        : `${materialCategory} - ${materialTitle}`}
+                    </p>
+                    <table className='mcolor-800 mbg-input'>
+                      <thead className='mbg-300'>
+                        <tr>
+                          <td className='px-3 border-thin-800'>Unattempted</td>
+                          <td className='px-3 border-thin-800'>Correct</td>
+                          <td className='px-3 border-thin-800'>Wrong</td>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr className='text-center'>
+                          <td className='px-3 border-thin-800'>{unattemptedLength} item{unattemptedLength < 2 ? '' : 's'}</td>
+                          <td className='px-3 border-thin-800'>{familiarLength} item{familiarLength < 2 ? '' : 's'}</td>
+                          <td className='px-3 border-thin-800'>{needsPracticeLength} item{needsPracticeLength < 2 ? '' : 's'}</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                  
+                  <div className='mt-5'>
+                    <div className='text-center'>
+                      <p className='text-4xl mcolor-800 font-medium'>
+                        {
+                          isNaN((familiarLength / itemsCount) * 100) ? 0 + '%' : ((familiarLength / itemsCount) * 100).toFixed(2) + '%'
+                        }
+                      </p>
+                      <p className='mt-1 mcolor-800-opacity text-sm'>Study Performance</p>
+                    </div>
+      
+                    {materialCategory && (
+                      <Link to={`/main/${categoryForLowerCase}/study-area/${categoryForLowerCase}-review-start/${materialId}`}>
+                        <button className='absolute bottom-5 text-sm right-5 mbg-800 mcolor-100 px-5 py-2 rounded-[5px]'>View Reviewer</button>
+                      </Link>
+                    )}
+                  </div>
+                </div>
+      
+              </div>
+      
+      
             </div>
-  
-          </div>
-  
-  
-        </div>
-        <div className='w-full border-medium-800 rounded-[5px] p-5 min-h-[80vh] relative'>
-  
-          <div className='flex items-center justify-between'>
-            <p className='font-medium text-2xl mcolor-800'>{tag === 'Own Record' ? 'Own Material' : 'Bookmarked'} Records</p>
-            <button className='mbg-700 px-4 py-2 mcolor-100 rounded' onClick={() =>{
-              setTag(tag === 'Own Record' ? 'Bookmarked' : 'Own Record')
-            }}>Switch to {tag === 'Own Record' ? 'Bookmarked' : 'Own Record'} Records</button>
-          </div>
-  
-          <br />
-          <table className='w-full'>
-            <thead className='mbg-300'>
-              <tr>
-                <td className='w-1/4 text-center text-xl py-3 font-medium'>Categories</td>
-                <td className='w-1/2 text-center text-xl py-3 font-medium'>Performance Status</td>
-                <td className='w-1/2 text-center text-xl py-3 font-medium'>In Percentage</td>
-              </tr>
-            </thead>
-            <tbody>
-  
-            
-            {materialCategories && materialCategories.length > 0 ? (
-              materialCategories.slice().sort((a, b) => {
-                if (tag === 'Own Record') {
-                  return new Date(a.createdAt) - new Date(b.createdAt);
-                } else {
-                  // No sorting if the tag is not 'Own Record'
-                  return 0;
-                }
-              }).map((item, index) => (
-                <tr className='border-bottom-thin-gray' key={index}>
-                  <td className='text-center py-3 text-lg mcolor-800'>{item.category}</td>
-                  <td className='text-center py-3 text-lg mcolor-800'>{performanceStatusArr[index] >= 90 ? 'Passing' : 'Requires Improvement'}</td>
-                  <td className='text-center py-3 text-lg mcolor-800'>{performanceStatusArr[index]}%</td>
-                </tr>
-              ))
-            ) : (
-              <tr>
-                <td colSpan="3" className='text-center py-3 text-lg mcolor-800'>No data available</td>
-              </tr>
-            )}
-  
-            </tbody>
-          </table>
-  
-          {materialCategories.length > 0 && (groupId !== undefined ? (
-            <button className='absolute bottom-5 right-5 mbg-800 mcolor-100 px-5 py-2 rounded-[5px]' onClick={() => {
-              navigate(`/main/group/dashboard/category-list/${groupId}`, {
-              state: {
-                tag: tag
-              }
-            })
-            }}>View All Subjects</button>
-          ) : (
-              <button className='absolute bottom-5 right-5 mbg-800 mcolor-100 px-5 py-2 rounded-[5px]' onClick={() => {
-                navigate('/main/personal/dashboard/category-list', {
+            <div className='w-full border-medium-800 rounded-[5px] p-5 min-h-[80vh] relative mbg-input'>
+      
+              <div className='flex items-center justify-between mt-2'>
+                <p className='font-medium text-xl mcolor-800'>{tag === 'Own Record' ? 'Own Material' : 'Bookmarked'} Records</p>
+                <button className='mbg-700 px-4 py-2 mcolor-100 rounded text-sm' onClick={() =>{
+                  setTag(tag === 'Own Record' ? 'Bookmarked' : 'Own Record')
+                }}>Switch to {tag === 'Own Record' ? 'Bookmarked' : 'Own Record'} Records</button>
+              </div>
+      
+              <br />
+              <table className='w-full mt-3 mbg-input border-thin-800 rounded'>
+                <thead className='mbg-300 border-thin-800 rounded'>
+                  <tr>
+                    <td className='w-1/4 text-center py-3 font-medium'>Categories</td>
+                    <td className='w-1/2 text-center py-3 font-medium'>Performance Status</td>
+                    <td className='w-1/2 text-center py-3 font-medium'>In %</td>
+                  </tr>
+                </thead>
+                <tbody>
+      
+                
+                {materialCategories && materialCategories.length > 0 ? (
+                  materialCategories.slice().sort((a, b) => {
+                    if (tag === 'Own Record') {
+                      return new Date(a.createdAt) - new Date(b.createdAt);
+                    } else {
+                      // No sorting if the tag is not 'Own Record'
+                      return 0;
+                    }
+                  }).map((item, index) => (
+                    <tr key={index}>
+                      <td className='text-center py-3 mcolor-800'>{item.category}</td>
+                      <td className='text-center py-3 mcolor-800'>{performanceStatusArr[index] >= 90 ? 'Passing' : 'Requires Improvement'}</td>
+                      <td className='text-center py-3 mcolor-800'>{performanceStatusArr[index]}%</td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan="3" className='text-center py-3 mcolor-800'>No data available</td>
+                  </tr>
+                )}
+      
+                </tbody>
+              </table>
+      
+              {materialCategories.length > 0 && (groupId !== undefined ? (
+                <button className='absolute bottom-5 text-sm right-5 mbg-800 mcolor-100 px-5 py-2 rounded-[5px]' onClick={() => {
+                  navigate(`/main/group/dashboard/category-list/${groupId}`, {
                   state: {
                     tag: tag
                   }
                 })
-              }}>View All Subjects</button>
-          ))}
+                }}>View All Subjects</button>
+              ) : (
+                  <button className='absolute bottom-5 text-sm right-5 mbg-800 mcolor-100 px-5 py-2 rounded-[5px]' onClick={() => {
+                    navigate('/main/personal/dashboard/category-list', {
+                      state: {
+                        tag: tag
+                      }
+                    })
+                  }}>View All Subjects</button>
+              ))}
+            </div>
+          </div>
         </div>
       </div>
     )

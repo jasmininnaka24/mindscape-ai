@@ -971,15 +971,15 @@ export const VirtualLibraryMain = () => {
                 // Sort the array by the latest bookmark timestamp in descending order
                 .sort((a, b) => b.latestBookmarkTimestamp - a.latestBookmarkTimestamp)
                 .map(({ index, material, category, user, bookmarksCount }) => (
-                  <div key={index} className='my-3 mbg-200 border-thin-800 p-4 rounded flex items-center justify-between'>
-                    <div>
+                  <div key={index} className='my-3 mbg-200 border-thin-800 p-4 rounded flex justify-between items-center'>
+                    <div className='w-2/3'>
                       <p className='font-medium text-lg'>Title: {material.title}</p>
                       <p className='text-sm mt-1'>Category: {category}</p>
                       <p className='text-sm mt-1'>Uploader: {user}</p>
                       <p className='text-sm mt-1'>Bookmark Count: {bookmarksCount}</p>
                     </div>
-  
-                    <div className='gap-3'>
+    
+                    <div className='gap-3 mt-5 flex-1'>
                       {user === userData?.username && (
                         <div className='flex justify-end'>
                           <button onClick={() => {
@@ -989,28 +989,28 @@ export const VirtualLibraryMain = () => {
                               setDeleteModal(true)
                               setMaterialIdToRemove(material.id)
                               setMaterialIdToRemoveBookmarkCounts(bookmarksCount)
-                              setFilteredCategoryCounts(filteredStudyMaterialsByCategory.length)
-                              
                             }
                           }}><DeleteIcon className='text-red'/></button>
                         </div>
                       )}
-
-                      <button className='mbg-100 w-full my-1 mcolor-900 border-thin-800 px-5 py-2 rounded' disabled={buttonLoader} onClick={() => viewStudyMaterialDetails(index, 'shared', 'filtered', category)}>
+    
+                      <button className='mbg-100 my-1 w-full mcolor-900 border-thin-800 px-5 py-2 rounded' disabled={buttonLoader} onClick={() => viewStudyMaterialDetails(index, 'shared', 'not filtered', category)}>
                         {
                           buttonLoader ? (
                             <div className="w-full flex items-center justify-center">
                               <div className='btn-spinner'></div>
                             </div>
                             ) : (
-                            <div>View</div>
+                            <div className='w-full'>View</div>
                           )
                         }
                       </button>
-                      <button className='btn-700 w-full my-1 mcolor-100 px-5 py-2 rounded' onClick={() => {
-                        setShowBookmarkModal(true)
-                        setChooseRoom(true)
-                        setCurrentSharedMaterialIndex(index)
+
+                      
+                      <button className='mbg-800-opacity w-full my-1 mcolor-100 px-5 py-2 rounded' onClick={() => {
+                        setShowBookmarkModal(true);
+                        setChooseRoom(true);
+                        setCurrentSharedMaterialIndex(index);
                       }}>Bookmark</button>
                     </div>
                   </div>
@@ -1043,46 +1043,46 @@ export const VirtualLibraryMain = () => {
                       user.toLowerCase().includes(searchValue.toLowerCase())
                     )
                     .map(({ index, material, category, user, bookmarksCount }) => (
-                      <div key={index} className='my-3 mbg-200 border-thin-800 p-4 rounded flex items-center justify-between'>
-                      <div>
+                      <div key={index} className='my-3 mbg-200 border-thin-800 p-4 rounded flex justify-between items-center'>
+                        <div className='w-2/3'>
                           <p className='font-medium text-lg'>Title: {material.title}</p>
                           <p className='text-sm mt-1'>Category: {category}</p>
                           <p className='text-sm mt-1'>Uploader: {user}</p>
-                          <p className='text-sm mt-1'>Bookmarked by {bookmarksCount} user{bookmarksCount !== 1 ? 's' : ''}</p>
+                          <p className='text-sm mt-1'>Bookmark Count: {bookmarksCount}</p>
                         </div>
-  
-                        <div className='gap-3'>
-                        {user === userData?.username && (
-                          <div className='flex justify-end'>
-                            <button onClick={() => {
-                              if (bookmarksCount > 0) {
-                                alert('This material has been bookmarked by others. You can no longer remove nor delete it.')
-                              } else {
-                                setDeleteModal(true)
-                                setMaterialIdToRemove(material.id)
-                                setMaterialIdToRemoveBookmarkCounts(bookmarksCount)
-                                setFilteredCategoryCounts(filteredStudyMaterialsByCategory.length)
-                                
-                              }
-                            }}><DeleteIcon className='text-red'/></button>
-                          </div>
-                        )}
-
-                          <button className='mbg-100 w-full my-1 mcolor-900 border-thin-800 px-5 py-2 rounded' disabled={buttonLoader} onClick={() => viewStudyMaterialDetails(index, 'shared', 'filtered', category)}>
+        
+                        <div className='gap-3 mt-5 flex-1'>
+                          {user === userData?.username && (
+                            <div className='flex justify-end'>
+                              <button onClick={() => {
+                                if (bookmarksCount > 0) {
+                                  alert('This material has been bookmarked by others. You can no longer remove nor delete it.')
+                                } else {
+                                  setDeleteModal(true)
+                                  setMaterialIdToRemove(material.id)
+                                  setMaterialIdToRemoveBookmarkCounts(bookmarksCount)
+                                }
+                              }}><DeleteIcon className='text-red'/></button>
+                            </div>
+                          )}
+        
+                          <button className='mbg-100 my-1 w-full mcolor-900 border-thin-800 px-5 py-2 rounded' disabled={buttonLoader} onClick={() => viewStudyMaterialDetails(index, 'shared', 'not filtered', category)}>
                             {
                               buttonLoader ? (
                                 <div className="w-full flex items-center justify-center">
                                   <div className='btn-spinner'></div>
                                 </div>
                                 ) : (
-                                <div>View</div>
+                                <div className='w-full'>View</div>
                               )
                             }
                           </button>
-                          <button className='btn-700 w-full my-1 mcolor-100 px-5 py-2 rounded' onClick={() => {
-                            setShowBookmarkModal(true)
-                            setChooseRoom(true)
-                            setCurrentSharedMaterialIndex(index)
+      
+                          
+                          <button className='mbg-800-opacity w-full my-1 mcolor-100 px-5 py-2 rounded' onClick={() => {
+                            setShowBookmarkModal(true);
+                            setChooseRoom(true);
+                            setCurrentSharedMaterialIndex(index);
                           }}>Bookmark</button>
                         </div>
                       </div>
@@ -1238,7 +1238,7 @@ export const VirtualLibraryMain = () => {
                         {/* back here */}
 
                         {showCreateGroupInput === false ? (
-                          <button className={`px-4 py-2 rounded btn-700 mcolor-100 ${UserId === undefined && 'mt-5'}`} onClick={() => {
+                          <button className={`px-4 py-2 rounded btn-800 mcolor-100 ${UserId === undefined && 'mt-5'}`} onClick={() => {
                             setShowCreateGroupInput(true)
                           }}>Create a group</button>
                         ) : (

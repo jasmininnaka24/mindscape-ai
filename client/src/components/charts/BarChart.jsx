@@ -17,11 +17,11 @@ export const BarChart = (props) => {
 
   slicedData.forEach((value) => {
     if (value >= 90) {
-      backgroundColors.push("#4D5F6E"); // Dark blue color
-      borderColors.push("#4D5F6E"); // Dark blue color
+      backgroundColors.push("#3D5654"); // Dark blue color
+      borderColors.push("#3D5654"); // Dark blue color
     } else {
-      backgroundColors.push("#D9E1E7"); // Gray color
-      borderColors.push("#4D5F6E"); // Gray color
+      backgroundColors.push("#E1ECEB"); // Gray color
+      borderColors.push("#3D5654"); // Gray color
     }
   });
 
@@ -61,14 +61,14 @@ export const BarChart = (props) => {
         if (dataGathered.some(value => value >= 90)) {
           legendItems.push({
             text: `Greater than ${90}`,
-            fillStyle: '#4D5F6E', // Dark blue color
+            fillStyle: '#3D5654', // Dark blue color
             hidden: false,
           });
         }
         if (dataGathered.some(value => value < 90)) {
           legendItems.push({
             text: `Less than ${90}`,
-            fillStyle: '#D9E1E7', // Light blue color
+            fillStyle: '#E1ECEB', // Light blue color
             hidden: false,
           });
         }

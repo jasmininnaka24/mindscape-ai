@@ -307,21 +307,24 @@ export const DiscussionForums = () => {
           <div>
             <div className='h-[2vh]'></div>
             <div className='flex items-center justify-between'>
-              <p className='text-4xl font-bold flex items-center mcolor-900'>
-                <GroupsIcon className='mr-3' sx={{ fontSize: 45 }} />
+              <p className='text-4xl font-medium flex items-center mcolor-900'>
+                <GroupsIcon className='mr-3 mcolor-700' sx={{ fontSize: 45 }} />
                 <p>Discussion Rooms</p>
               </p>
-              <div className='mbg-800-opacity rounded'>
-                <button
-                  className='px-6 my-1 py-2 text-lg mcolor-100 rounded'
-                  onClick={() => {
-                    setShowrooms(false)
-                    setShowJoinedrooms(true)
-                  }}
-                  >
-                  View Joined Rooms
-                </button>
-              </div>
+
+              {filteredRooms.length !== 0 && (
+                <div className='mbg-800-opacity rounded'>
+                  <button
+                    className='px-6 my-1 py-2 text-lg mcolor-100 rounded'
+                    onClick={() => {
+                      setShowrooms(false)
+                      setShowJoinedrooms(true)
+                    }}
+                    >
+                    View Joined Rooms
+                  </button>
+                </div>
+              )}
             </div>
 
             {/* inputs and buttons */}
@@ -338,15 +341,18 @@ export const DiscussionForums = () => {
                     setShowCategories(true)
                   }}>View Categories</button>
                 </div>
-                <div className='border-medium-800 w-full rounded'>
-                  <input
-                    type="text"
-                    placeholder='Search for a room...'
-                    className='w-full py-2 rounded text-center mbg-input'
-                    value={searchTerm}
-                    onChange={handleSearch}
-                  />         
-                </div>
+
+                {filteredRooms.length >= 2 && (
+                  <div className='border-medium-800 w-full rounded'>
+                    <input
+                      type="text"
+                      placeholder='Search for a room...'
+                      className='w-full py-2 rounded text-center mbg-input'
+                      value={searchTerm}
+                      onChange={handleSearch}
+                    />         
+                  </div>
+                )}
               </div>
             </div>
 
@@ -463,7 +469,7 @@ export const DiscussionForums = () => {
             {filteredRooms.length > 0 ? (
               <p className='mcolor-900 font-medium my-4 text-lg'>Rooms: </p>
               ) : (
-              <p className='mcolor-500 text-center font-medium my-8 text-lg'>No available discussion room to join.</p>
+              <p className='mcolor-500 text-center font-medium my-5 text-lg'>No available discussion room to join.</p>
             )}
 
 
@@ -538,8 +544,8 @@ export const DiscussionForums = () => {
           <div>
             <div className='h-[2vh]'></div>
             <div className='flex items-center justify-between'>
-              <p className='text-4xl font-bold flex items-center mcolor-900'>
-                <GroupsIcon className='mr-3' sx={{ fontSize: 45 }} />
+              <p className='text-4xl font-medium flex items-center mcolor-900'>
+                <GroupsIcon className='mr-3 mcolor-700' sx={{ fontSize: 45 }} />
                 <p>Chat Rooms</p>
               </p>
               <div className='mbg-800-opacity rounded'>

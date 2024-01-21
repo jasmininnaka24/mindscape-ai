@@ -270,7 +270,7 @@ export const PersonalReviewerPage = () => {
                       exit={{ opacity: 0 }}
                     >
                       <div className='flex justify-center'>
-                        <div className='mbg-100 min-h-[45vh] w-[30vw] w-1/3 z-10 relative p-10 rounded-[5px]'>
+                        <div className='mbg-input min-h-[45vh] w-[30vw] w-1/3 z-10 relative p-10 rounded-[5px]'>
 
                         <button className='absolute right-4 top-3 text-xl' onClick={() => {
                           setShowModal(false);
@@ -296,7 +296,7 @@ export const PersonalReviewerPage = () => {
                 <motion.div
                   className='flex flex-col w-1/3 items-center'>
 
-                  <motion.div className='btn-light mcolor-700 w-full p-5 rounded shadows'
+                  <motion.div className='mbg-input mcolor-700 w-full p-5 rounded shadows'
                     initial={{ opacity: 0, y: 50 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.3, delay: 0.2 }}

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Link, useParams } from 'react-router-dom';
+import { Link, useNavigate, useParams } from 'react-router-dom';
 import axios from 'axios';
 import CheckIcon from '@mui/icons-material/Check';
 import { useUser } from '../../../../UserContext';
@@ -13,6 +13,7 @@ export const PersonalAssessment = () => {
 
   const { materialId } = useParams();
   const { user } = useUser()
+  const navigate = useNavigate();
 
 
   // hooks
@@ -258,9 +259,6 @@ export const PersonalAssessment = () => {
       // Handle the error appropriately, you might want to throw or log it.
     }
   };
-  
-
-
 
   const dataForSubmittingAnswers = async () => {
     
@@ -619,368 +617,344 @@ export const PersonalAssessment = () => {
     </div>
   } else {
     return (
-      <div className='py-8 poppins mbg-200 mcolor-900' id='currSec'>
+      <div className='poppins mbg-300 mcolor-900 flex flex-col justify-center items-center' id='currSec'>
+        
+        <div className='flex items-center justify-between w-3/4 pt-12 pb-8'>
+          <p className='text-center text-3xl font-medium mcolor-input mcolor-800'>Assessment for {materialTitle} of {materialCategory}</p>
+
+          <button className='mbg-700 mcolor-100 px-8 py-2 rounded'
+            onClick={() => {
+              navigate(`/main/personal/study-area/personal-review/${materialId}`)
+            }}
+          >Postpone Assessment</button>
+        </div>
   
-  
-        {showAssessment === true && (
-          <div className='container' id='assessmentSection'>
-            <p className='text-center text-3xl font-medium mcolor-700 pt-5'>Assessment for {materialTitle} of {materialCategory}</p>
-  
-            <br /><br />
-            <br /><br />
-            {(showAnalysis === false && isAssessmentDone === true) && (
-              <div>
+        <div className='flex items-center justify-center'>
+          {showAssessment === true && (
+            <div className='w-3/4 mbg-200 border-medium-800 rounded-[.8rem] p-11' id='assessmentSection'>
+              
+              <br />
+              {(showAnalysis === false && isAssessmentDone === true) && (
                 <div>
-                  <p className='text-center mcolor-500 font-medium mb-8 text-xl'>Your score is: </p>
-                  <p className='text-center text-6xl font-bold mcolor-800 mb-20'>{score}/{extractedQA.length}</p>
-  
-                  <div className=' flex items-center justify-center gap-5'>
-  
-                    {/* {takeAssessment && (
-                      (generatedAnalysis === '' && !showScoreForPreAssessment) ? (
-                        <button
-                          className='border-thin-800 px-5 py-3 rounded-[5px] w-1/4'
-                          onClick={() => {
-                            console.log('button clicked');
-                            setShowSubmittedAnswerModal(true);
-                            setIsRunning(false)
-                          }}
-                        >
-                          Analyze the Data
-                        </button>
-                      ): (
-                        <button
-                          className='border-thin-800 px-5 py-3 rounded-[5px] w-1/4'
-                          onClick={() => {
-                            setShowAnalysis(true)
-                            setShowAssessment(false);
-                            setShowSubmittedAnswerModal(false);
-                            setIsRunning(false)
-                          }}
-                        >
-                          View Analysis
-                        </button>
-                      )
-                    )
-                    } */}
-  
-                    <Link to={`/main/personal/study-area/personal-review/${materialId}`} className='border-thin-800 px-5 py-3 rounded-[5px] w-1/4 text-center'>
-                      <button>Back to Study Area</button>
-                    </Link>
-  
-                  </div>
-                </div>
-  
-  
-  
-                {showSubmittedAnswerModal === true && (
-                  <div className={`absolute top-0 modal-bg left-0 w-full h-full`}>
-                    <div className='flex items-center justify-center h-full'>
-                      <div className='relative mbg-100 min-h-[40vh] w-1/2 z-10 relative p-10 rounded-[5px]'>
-  
-                      {showTexts === true ? (
-                        <div>
-                          <p className='text-center text-xl font-medium mcolor-800 mt-5'>Kindly be advised that the data analysis process by the system AI may require 2-3 minutes, depending on your internet speed. Would you be comfortable waiting for that duration?</p>
-  
-                          <div className='w-full absolute bottom-10 flex items-center justify-center left-0 gap-4'>
-  
-                            <button className='mbg-200 border-thin-800 px-5 py-2 rounded-[5px]' onClick={() => {
-                              setShowSubmittedAnswerModal(false);
-                              setIsRunning(false)
-                            }} >No</button>
-  
-  
-                            <button className='mbg-800 mcolor-100 border-thin-800 px-5 py-2 rounded-[5px]' onClick={() => generateAnalysis(analysisId)}>Yes</button>
-                          </div>
-                        </div>
-                      ) : (
-                        <div class="loading-container">
-                          <p class="loading-text mcolor-900">Analyzing data...</p>
-                          <div class="loading-spinner"></div>
-                        </div>                    
-                      )}
-                      </div>
-                    </div>
-                  </div>
-                )}
-              </div>
-            )}
-            <br /><br />
-          
-            {isRunning === true && (
-              <div className='timer-container px-10 py-3'>
-                <div className='rounded-[5px]' style={{ height: "15px", backgroundColor: "#B3C5D4" }}>
-                  <div
-                    className='rounded-[5px]'
-                    style={{
-                      width: `${(seconds / (extractedQA.length * 60)) * 100}%`,
-                      height: "100%",
-                      backgroundColor: seconds <= 10 ? "#af4242" : "#667F93", 
-                    }}
-                    />
-                </div>
-  
-  
-                <h1 className='mcolor-900 text-lg pt-3'>
-                  Remaining time:{' '}
-                  {hours > 0 && String(hours).padStart(2, "0") + " hours and "}
-                  {(hours > 0 || minutes > 0) && String(minutes).padStart(2, "0") + " minutes and "}{String(remainingSeconds).padStart(2, "0") + " seconds"}
-                </h1>
-              </div>
-            )}
-  
-            <br /><br />
-  
-            {Array.isArray(extractedQA) && shuffledChoices.length > 0 && extractedQA.map((item, index) => (
-              <div key={index} className='mb-20'>
-                <p className='mcolor-900 text-xl mb-8'>{index + 1}. {item.question}</p>
-                <ul className='grid-result gap-4 mcolor-800'>
-                  {item.quizType === 'MCQA' && (
-                    shuffledChoices[index].map((choice, choiceIndex) => (
-                      <div
-                      key={choiceIndex}
-                      className={`flex items-center justify-center px-5 py-3 text-center choice rounded-[5px] 
-                      ${(isSubmitted === true && extractedQA[index].answer === choice) ? 'border-thin-800-correct' : 
-                      (isSubmitted === true && selectedChoice[index] !== extractedQA[index].answer && selectedChoice[index] === choice) ? 'border-thin-800-wrong' : 'border-thin-800'}`}
-                      >
-  
-                        <input
-                          type="radio"
-                          name={`option-${index}`}
-                          value={choice}
-                          id={`choice-${choiceIndex}-${index}`}
-                          className={`custom-radio cursor-pointer`}
-                          onChange={() => handleRadioChange(choice, index)}
-                          checked={selectedChoice[index] === choice}
-                          disabled={isSubmitted} 
-                          />
-  
-                        <div className=''>
-                          <div className={`flex items-center`}>
-                            <label htmlFor={`choice-${choiceIndex}-${index}`} className={`mr-5 pt-1 cursor-pointer text-xl`}>
-                              {choice}
-                            </label>
-                          </div>
-                        </div>
-                      </div>
-                    ))
-                    )}
-                </ul>
-                {item.quizType === 'ToF' && (
-                  <div className='grid-result gap-4 mcolor-800'>
-                      <div
-                        key={1}
-                        className={`flex items-center justify-center px-5 py-3 text-center choice rounded-[5px] 
-                        ${(isSubmitted === true && extractedQA[index].answer === 'True') ? 'border-thin-800-correct' : 
-                        (isSubmitted === true && selectedChoice[index] !== extractedQA[index].answer && selectedChoice[index] === 'True') ? 'border-thin-800-wrong' : 'border-thin-800'}`}
-                        >
-  
-                      <input
-                        type="radio"
-                        name={`option-${index}`}
-                        value={'True'}
-                        id={`choice-${1}-${index}`}
-                        className={`custom-radio cursor-pointer`}
-                        onChange={() => handleRadioChange('True', index)}
-                        checked={selectedChoice[index] === 'True'}
-                        disabled={isSubmitted} 
-                        />
-  
-  
-                      <div className=''>
-                        <div className={`flex items-center`}>
-                          <label htmlFor={`choice-${1}-${index}`} className={`mr-5 pt-1 cursor-pointer text-xl`}>
-                            {'True'}
-                          </label>
-                        </div>
-                      </div>
-                    </div>
-                    
-                    <div
-                        key={2}
-                        className={`flex items-center justify-center px-5 py-3 text-center choice rounded-[5px] 
-                        ${(isSubmitted === true && extractedQA[index].answer === 'False') ? 'border-thin-800-correct' : 
-                        (isSubmitted === true && selectedChoice[index] !== extractedQA[index].answer && selectedChoice[index] === 'False') ? 'border-thin-800-wrong' : 'border-thin-800'}`}
-                        >
-  
-                        <input
-                          type="radio"
-                          name={`option-${index}`}
-                          value={'False'}
-                          id={`choice-${2}-${index}`}
-                          className={`custom-radio cursor-pointer`}
-                          onChange={() => handleRadioChange('False', index)}
-                          checked={selectedChoice[index] === 'False'}
-                          disabled={isSubmitted} 
-                          />
-  
-  
-                        <div className=''>
-                          <div className={`flex items-center`}>
-                            <label htmlFor={`choice-${2}-${index}`} className={`mr-5 pt-1 cursor-pointer text-xl`}>
-                              {'False'}
-                            </label>
-                          </div>
-                        </div>
-                      </div>
-                  </div>
-                )}
-                {(item.quizType === 'Identification' || item.quizType === 'FITB') && (
                   <div>
-                    <input
-                      className={`mb-5 w-full px-5 py-5 text-lg text-center choice rounded-[5px] box-shadoww ${
-                        isSubmitted && selectedChoice[index] && extractedQA[index] &&
-                        selectedChoice[index].toLowerCase() === extractedQA[index].answer.toLowerCase()
-                          ? 'border-thin-800-correct'
-                          : isSubmitted && selectedChoice[index] && extractedQA[index] &&
-                          selectedChoice[index].toLowerCase() !== extractedQA[index].answer.toLowerCase()
-                          ? 'border-thin-800-wrong'
-                          : selectedChoice[index] && extractedQA[index] && !isSubmitted
-                          ? 'border-thin-800'
-                          : ''
-                      }`}
-                      type="text"
-                      placeholder='Answer here...'
-                      onChange={(event) => handleRadioChange(event.target.value, index)}
-                      disabled={isSubmitted} 
-                    />
-  
-                    <p className='correct-color text-center text-xl'>
-                      {isSubmitted === true &&
-                      selectedChoice[index] &&
-                      extractedQA[index] &&
-                      selectedChoice[index].toLowerCase() !== extractedQA[index].answer.toLowerCase() 
-                      ? extractedQA[index].answer 
-                      : null}
-                    </p>
-  
+                    <p className='text-center mcolor-800-opacity font-medium mb-8 text-xl'>Your score is: </p>
+                    <p className='text-center text-6xl font-bold mcolor-800 mb-8'>{score}/{extractedQA.length}</p>
+    
+                    <div className='mb-16 flex items-center justify-center gap-5'>
+    
+                   
+    
+                      <Link to={`/main/personal/study-area/personal-review/${materialId}`} className='border-thin-800 px-5 py-3 rounded-[5px] w-1/4 text-center btn-primary'>
+                        <button>Back to Study Area</button>
+                      </Link>
+    
+                    </div>
                   </div>
-  
-  
+    
+    
+    
+                  {showSubmittedAnswerModal === true && (
+                    <div className={`absolute top-0 modal-bg left-0 w-full h-full`}>
+                      <div className='flex items-center justify-center h-full'>
+                        <div className='relative mbg-100 min-h-[40vh] w-1/2 z-10 relative p-10 rounded-[5px]'>
+    
+                        {showTexts === true ? (
+                          <div>
+                            <p className='text-center text-xl font-medium mcolor-800 mt-5'>Kindly be advised that the data analysis process by the system AI may require 2-3 minutes, depending on your internet speed. Would you be comfortable waiting for that duration?</p>
+    
+                            <div className='w-full absolute bottom-10 flex items-center justify-center left-0 gap-4'>
+    
+                              <button className='mbg-300 border-thin-800 px-5 py-2 rounded-[5px]' onClick={() => {
+                                setShowSubmittedAnswerModal(false);
+                                setIsRunning(false)
+                              }} >No</button>
+    
+    
+                              <button className='mbg-800 mcolor-100 border-thin-800 px-5 py-2 rounded-[5px]' onClick={() => generateAnalysis(analysisId)}>Yes</button>
+                            </div>
+                          </div>
+                        ) : (
+                          <div class="loading-container">
+                            <p class="loading-text mcolor-900">Analyzing data...</p>
+                            <div class="loading-spinner"></div>
+                          </div>                    
+                        )}
+                        </div>
+                      </div>
+                    </div>
                   )}
-              </div>
-            ))}
-  
-            {(showAnalysis === false && isAssessmentDone === false) && (
-              <div className='flex justify-center mt-8'>
-                <button className='w-1/2 py-2 px-5 mbg-800 rounded-[5px] mcolor-100 text-lg' onClick={() => submitAnswer()}>Submit Answer</button>
-              </div>
-            )}
-  
-  
-          </div>
-        )}
-  
-        {showAnalysis === true && (
-          <div className='mcolor-800 container'>
-  
-            <div className='mt-14 flex items-center justify-between'>
-              <div>
-                <p className='text-center mx-10 mb-16 text-2xl'>You have a substantial <span className='font-bold'>{overAllPerformance.toFixed(2)}%</span> probability of success of taking the real-life exam and that the analysis classifies that you are <span className='font-bold'>{overAllPerformance.toFixed(2) >= 90 ? 'ready' : 'not yet ready'}</span> to take it as to your preference study profeciency target is <span className='font-bold'>90%</span>.</p>
-  
-                <br /><br />
-  
-                <div className='flex items-center justify-center'>
-                  <div className='w-full ml-14'>
-                    {assessmentCountMoreThanOne === true ? (
-                      <BarChartForAnalysis labelSet={["Pre-Assessment", "Last Assessment", "Latest Assessment"]} dataGathered={[preAssessmentScore, lastAssessmentScore, assessmentScore]} maxBarValue={extractedQA.length} />
-                      ) : (
-                      <BarChartForAnalysis labelSet={["Pre-Assessment", "Latest Assessment"]} dataGathered={[preAssessmentScore, assessmentScore]} maxBarValue={extractedQA.length} />
-                    )}
-                  </div>
-                  <div className='w-full ml-12'>
-  
-                    <p className='text-2xl'>{assessmentCountMoreThanOne === true ? 'Last Assessment' : 'Pre-assessment'} score: {assessmentCountMoreThanOne === true ? lastAssessmentScore : preAssessmentScore}/{extractedQA.length}</p>
-                    <p className='text-2xl'>Assessment score: {assessmentScore}/{extractedQA.length}</p>
-                    <p className='text-2xl font-bold'>Assessment improvement: {assessmentImp}%</p>
-                    <p className='text-2xl font-bold'>Assessment score performance: {assessmentScorePerf}%</p>
-  
-                    <br /><br />
-                    <p className='text-2xl'>Completion time: {completionTime} min{(completionTime > 1) ? 's' : ''}</p>
-                    <p className='text-2xl font-bold'>Confidence level: {confidenceLevel}%</p>
-  
-                  </div>
                 </div>
-              </div>
-            </div>
-  
-  
-  
-            {generatedAnalysis !== '' && (
-              <div>
-                <div className='mt-24'>
-                  <p className='mb-5 font-bold text-2xl text-center'>ANALYSIS</p>
-                  <p className='text-center text-xl mb-10'>{generatedAnalysis}</p>
-                </div>
-  
-  
-                {(completionTime >= Math.floor(extractedQA.length/2) || assessmentImp < studyProfeciencyTarget || assessmentScorePerf < studyProfeciencyTarget) && (
-                  <div className='mt-20'>
-                    <p className='mb-5 font-bold text-2xl text-center'>Recommendations</p>
-  
-                    {completionTime >= Math.floor(extractedQA.length/2) && (
-                      <p className='text-center text-xl mb-4'>
-                        <CheckIcon className='mr-2' />
-                        Challenge yourself to finish the assessment under{' '}
-                        <span className='font-bold'>
-                          {`${Math.floor(overAllItems / 120) > 0 ? (Math.floor(overAllItems / 120) === 1 ? '1 hour' : Math.floor(overAllItems / 120) + ' hours') + ' ' : ''}${Math.floor((overAllItems % 120) / 2) > 0 ? (Math.floor((overAllItems % 120) / 2) === 1 ? '1 min' : Math.floor((overAllItems % 120) / 2) + ' mins') + ' ' : ''}${((overAllItems % 2) * 30) > 0 ? ((overAllItems % 2) * 30) + ' second' + (((overAllItems % 2) * 30) !== 1 ? 's' : '') : ''}`}
-                        </span> 
-                        {' '}
-                        to increase the confidence level until it gets to 100%.
-                      </p>
-                    )}
-  
-  
-                    {assessmentImp < studyProfeciencyTarget && (
-                      <p className='text-center text-xl mb-4'>
-                        <CheckIcon className='mr-2' />
-                        You may consider revisiting the lesson/quiz practice to enhance your understanding, which will lead to an increase in your <span className='font-bold'>Assessment Improvement</span> when you retake the quiz.
-                      </p>
-                    )}
-  
-  
-                    {assessmentScorePerf < studyProfeciencyTarget && (
-                      <p className='text-center text-xl mb-4'>
-                        <CheckIcon className='mr-2' />
-                        You can aim for a quiz score of 90% or higher, which will significantly enhance your overall <span className='font-bold'>Assessment Performance</span> reaching the 90% benchmark.
-                      </p>
-                    )}
-  
+              )}
+            
+              {isRunning === true && (
+                <div className='timer-container px-10 pt-3 pb-1 mbg-300'>
+                  <div className='rounded-[5px] mbg-500' style={{ height: "8px" }}>
+                    <div
+                      className={`rounded-[5px] ${seconds <= 10 ? "bg-red" : "btn-800"}`}
+                      style={{
+                        width: `${(seconds / (extractedQA.length * 60)) * 100}%`,
+                        height: "100%",
+                      }}
+                      />
                   </div>
-                )}
-              </div>
-            )}
-  
-  
-  
-  
-  
-  
-  
-            <div className='mt-32 flex items-center justify-center gap-5'>
-              {/* <button className='border-thin-800 px-5 py-3 rounded-[5px] w-1/4' onClick={() => {
-                setShowAssessment(true)
-                setShowAnalysis(false)
-                setIsRunning(false)
-              }}>Review Answers</button> */}
-  
-              <Link to={`/main/personal/study-area/personal-review/${materialId}`} className='border-thin-800 px-5 py-3 rounded-[5px] w-1/4 text-center'>
-                <button>Back to Study Area</button>
-              </Link>      
+    
+    
+                  <h1 className='mcolor-800 py-1 text-center text-sm'>
+                    Remaining time:{' '}
+                    {hours > 0 && String(hours).padStart(2, "0") + " hours and "}
+                    {(hours > 0 || minutes > 0) && String(minutes).padStart(2, "0") + " minutes and "}{String(remainingSeconds).padStart(2, "0") + " seconds"}
+                  </h1>
+                </div>
+              )}
       
+              {Array.isArray(extractedQA) && shuffledChoices.length > 0 && extractedQA.map((item, index) => (
+                <div key={index} className='mb-12'>
+                  <p className='mcolor-900 text-xl mb-8'>{index + 1}. {item.question}</p>
+                  <ul className='grid-result gap-4 mcolor-800'>
+                    {item.quizType === 'MCQA' && (
+                      shuffledChoices[index].map((choice, choiceIndex) => (
+                        <div
+                        key={choiceIndex}
+                        className={`flex items-center justify-center px-5 py-3 text-center choice rounded-[5px] mbg-input
+                        ${(isSubmitted === true && extractedQA[index].answer === choice) ? 'border-thin-800-correct' : 
+                        (isSubmitted === true && selectedChoice[index] !== extractedQA[index].answer && selectedChoice[index] === choice) ? 'border-thin-800-wrong' : 'border-thin-800'}`}
+                        >
+    
+                          <input
+                            type="radio"
+                            name={`option-${index}`}
+                            value={choice}
+                            id={`choice-${choiceIndex}-${index}`}
+                            className={`custom-radio cursor-pointer`}
+                            onChange={() => handleRadioChange(choice, index)}
+                            checked={selectedChoice[index] === choice}
+                            disabled={isSubmitted} 
+                            />
+    
+                          <div className=''>
+                            <div className={`flex items-center`}>
+                              <label htmlFor={`choice-${choiceIndex}-${index}`} className={`mr-5 pt-1 cursor-pointer text-xl`}>
+                                {choice}
+                              </label>
+                            </div>
+                          </div>
+                        </div>
+                      ))
+                      )}
+                  </ul>
+                  {item.quizType === 'ToF' && (
+                    <div className='grid-result gap-4 mcolor-800'>
+                        <div
+                          key={1}
+                          className={`flex items-center justify-center px-5 py-3 text-center choice rounded-[5px] mbg-input
+                          ${(isSubmitted === true && extractedQA[index].answer === 'True') ? 'border-thin-800-correct' : 
+                          (isSubmitted === true && selectedChoice[index] !== extractedQA[index].answer && selectedChoice[index] === 'True') ? 'border-thin-800-wrong' : 'border-thin-800'}`}
+                          >
+    
+                        <input
+                          type="radio"
+                          name={`option-${index}`}
+                          value={'True'}
+                          id={`choice-${1}-${index}`}
+                          className={`custom-radio cursor-pointer`}
+                          onChange={() => handleRadioChange('True', index)}
+                          checked={selectedChoice[index] === 'True'}
+                          disabled={isSubmitted} 
+                          />
+    
+    
+                        <div className=''>
+                          <div className={`flex items-center`}>
+                            <label htmlFor={`choice-${1}-${index}`} className={`mr-5 pt-1 cursor-pointer text-xl`}>
+                              {'True'}
+                            </label>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <div
+                          key={2}
+                          className={`flex items-center justify-center px-5 py-3 text-center choice rounded-[5px] mbg-input
+                          ${(isSubmitted === true && extractedQA[index].answer === 'False') ? 'border-thin-800-correct' : 
+                          (isSubmitted === true && selectedChoice[index] !== extractedQA[index].answer && selectedChoice[index] === 'False') ? 'border-thin-800-wrong' : 'border-thin-800'}`}
+                          >
+    
+                          <input
+                            type="radio"
+                            name={`option-${index}`}
+                            value={'False'}
+                            id={`choice-${2}-${index}`}
+                            className={`custom-radio cursor-pointer`}
+                            onChange={() => handleRadioChange('False', index)}
+                            checked={selectedChoice[index] === 'False'}
+                            disabled={isSubmitted} 
+                            />
+    
+    
+                          <div className=''>
+                            <div className={`flex items-center`}>
+                              <label htmlFor={`choice-${2}-${index}`} className={`mr-5 pt-1 cursor-pointer text-xl`}>
+                                {'False'}
+                              </label>
+                            </div>
+                          </div>
+                        </div>
+                    </div>
+                  )}
+                  {(item.quizType === 'Identification' || item.quizType === 'FITB') && (
+                    <div>
+                      <input
+                        className={`mb-5 w-full px-5 py-5 text-lg text-center choice rounded-[5px] shadows mbg-input ${
+                          isSubmitted && selectedChoice[index] && extractedQA[index] &&
+                          selectedChoice[index].toLowerCase() === extractedQA[index].answer.toLowerCase()
+                            ? 'border-thin-800-correct'
+                            : isSubmitted && selectedChoice[index] && extractedQA[index] &&
+                            selectedChoice[index].toLowerCase() !== extractedQA[index].answer.toLowerCase()
+                            ? 'border-thin-800-wrong'
+                            : selectedChoice[index] && extractedQA[index] && !isSubmitted
+                            ? 'border-thin-800'
+                            : ''
+                        }`}
+                        type="text"
+                        placeholder='Answer here...'
+                        onChange={(event) => handleRadioChange(event.target.value, index)}
+                        disabled={isSubmitted} 
+                      />
+    
+                      <p className='correct-color text-center text-xl'>
+                        {isSubmitted === true &&
+                        selectedChoice[index] &&
+                        extractedQA[index] &&
+                        selectedChoice[index].toLowerCase() !== extractedQA[index].answer.toLowerCase() 
+                        ? extractedQA[index].answer 
+                        : null}
+                      </p>
+    
+                    </div>
+    
+    
+                    )}
+                </div>
+              ))}
+    
+              {(showAnalysis === false && isAssessmentDone === false) && (
+                <div className='flex justify-center'>
+                  <button className='w-1/2 py-2 px-5 btn-800 rounded-[5px] mcolor-100 text-lg' onClick={() => submitAnswer()}>Submit Answer</button>
+                </div>
+              )}
+    
+    
             </div>
+          )}
+    
+          {showAnalysis === true && (
+            <div className='mcolor-800 container'>
+    
+              <div className='mt-14 flex items-center justify-between'>
+                <div>
+                  <p className='text-center mx-10 mb-16 text-2xl'>You have a substantial <span className='font-bold'>{overAllPerformance.toFixed(2)}%</span> probability of success of taking the real-life exam and that the analysis classifies that you are <span className='font-bold'>{overAllPerformance.toFixed(2) >= 90 ? 'ready' : 'not yet ready'}</span> to take it as to your preference study profeciency target is <span className='font-bold'>90%</span>.</p>
+    
+                  <br /><br />
+    
+                  <div className='flex items-center justify-center'>
+                    <div className='w-full ml-14'>
+                      {assessmentCountMoreThanOne === true ? (
+                        <BarChartForAnalysis labelSet={["Pre-Assessment", "Last Assessment", "Latest Assessment"]} dataGathered={[preAssessmentScore, lastAssessmentScore, assessmentScore]} maxBarValue={extractedQA.length} />
+                        ) : (
+                        <BarChartForAnalysis labelSet={["Pre-Assessment", "Latest Assessment"]} dataGathered={[preAssessmentScore, assessmentScore]} maxBarValue={extractedQA.length} />
+                      )}
+                    </div>
+                    <div className='w-full ml-12'>
+    
+                      <p className='text-2xl'>{assessmentCountMoreThanOne === true ? 'Last Assessment' : 'Pre-assessment'} score: {assessmentCountMoreThanOne === true ? lastAssessmentScore : preAssessmentScore}/{extractedQA.length}</p>
+                      <p className='text-2xl'>Assessment score: {assessmentScore}/{extractedQA.length}</p>
+                      <p className='text-2xl font-bold'>Assessment improvement: {assessmentImp}%</p>
+                      <p className='text-2xl font-bold'>Assessment score performance: {assessmentScorePerf}%</p>
+    
+                      <br /><br />
+                      <p className='text-2xl'>Completion time: {completionTime} min{(completionTime > 1) ? 's' : ''}</p>
+                      <p className='text-2xl font-bold'>Confidence level: {confidenceLevel}%</p>
+    
+                    </div>
+                  </div>
+                </div>
+              </div>
+    
+    
+    
+              {generatedAnalysis !== '' && (
+                <div>
+                  <div className='mt-24'>
+                    <p className='mb-5 font-bold text-2xl text-center'>ANALYSIS</p>
+                    <p className='text-center text-xl mb-10'>{generatedAnalysis}</p>
+                  </div>
+    
+    
+                  {(completionTime >= Math.floor(extractedQA.length/2) || assessmentImp < studyProfeciencyTarget || assessmentScorePerf < studyProfeciencyTarget) && (
+                    <div className='mt-20'>
+                      <p className='mb-5 font-bold text-2xl text-center'>Recommendations</p>
+    
+                      {completionTime >= Math.floor(extractedQA.length/2) && (
+                        <p className='text-center text-xl mb-4'>
+                          <CheckIcon className='mr-2' />
+                          Challenge yourself to finish the assessment under{' '}
+                          <span className='font-bold'>
+                            {`${Math.floor(overAllItems / 120) > 0 ? (Math.floor(overAllItems / 120) === 1 ? '1 hour' : Math.floor(overAllItems / 120) + ' hours') + ' ' : ''}${Math.floor((overAllItems % 120) / 2) > 0 ? (Math.floor((overAllItems % 120) / 2) === 1 ? '1 min' : Math.floor((overAllItems % 120) / 2) + ' mins') + ' ' : ''}${((overAllItems % 2) * 30) > 0 ? ((overAllItems % 2) * 30) + ' second' + (((overAllItems % 2) * 30) !== 1 ? 's' : '') : ''}`}
+                          </span> 
+                          {' '}
+                          to increase the confidence level until it gets to 100%.
+                        </p>
+                      )}
+    
+    
+                      {assessmentImp < studyProfeciencyTarget && (
+                        <p className='text-center text-xl mb-4'>
+                          <CheckIcon className='mr-2' />
+                          You may consider revisiting the lesson/quiz practice to enhance your understanding, which will lead to an increase in your <span className='font-bold'>Assessment Improvement</span> when you retake the quiz.
+                        </p>
+                      )}
+    
+    
+                      {assessmentScorePerf < studyProfeciencyTarget && (
+                        <p className='text-center text-xl mb-4'>
+                          <CheckIcon className='mr-2' />
+                          You can aim for a quiz score of 90% or higher, which will significantly enhance your overall <span className='font-bold'>Assessment Performance</span> reaching the 90% benchmark.
+                        </p>
+                      )}
+    
+                    </div>
+                  )}
+                </div>
+              )}
+    
+    
+    
+    
+    
+    
+    
+              <div className='mt-32 flex items-center justify-center gap-5'>
+                {/* <button className='border-thin-800 px-5 py-3 rounded-[5px] w-1/4' onClick={() => {
+                  setShowAssessment(true)
+                  setShowAnalysis(false)
+                  setIsRunning(false)
+                }}>Review Answers</button> */}
+    
+                <Link to={`/main/personal/study-area/personal-review/${materialId}`} className='border-thin-800 px-5 py-3 rounded-[5px] w-1/4 text-center'>
+                  <button>Back to Study Area</button>
+                </Link>      
+        
+              </div>
+    
+            </div>
+          )}
+        </div>
   
-          </div>
-        )}
   
-  
-  
-      <br />
-      <br />
-      <br />
-      <br />
-      <br />
-      <br />
+        <br />
+        <br />
+        <br />
+
       </div>
     )
   }

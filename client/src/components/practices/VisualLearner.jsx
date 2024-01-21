@@ -14,7 +14,7 @@ export const VisualLearner = (props) => {
 
           {/* question */}
           <div className='relative mt-4 pb-8 text-center text-lg font-medium mcolor-900'>
-            <div className={`w-full mbg-300 mcolor-900  w-full rounded-[5px] mcolor-800`}>
+            <div className={`w-full mbg-300 mcolor-900 border-thin-800 w-full rounded-[5px] mcolor-800`}>
 
               <div className='flex items-center justify-end w-full px-4 py-2'>
                 {/* <p className='mcolor-800 text-lg mt-2 font-medium'>Type: {
@@ -78,7 +78,7 @@ export const VisualLearner = (props) => {
                   {choice.choice !== selectedChoice && (
                     <div
                       key={index}
-                      className={`flex items-center justify-center px-5 py-2 text-center choice border-thin-800 rounded-[5px]`}
+                      className={`flex items-center justify-center px-5 py-2 text-center choice border-thin-800 rounded-[5px] mbg-200`}
                       draggable="true" 
                       onDragStart={(e) => handleDragStart(e, choice.choice)}  
                       onDragEnd={handleDragEnd}
@@ -152,7 +152,7 @@ export const VisualLearner = (props) => {
 
           {enabledSubmitBtn === true && (
             <div className='flex justify-center'>
-              <button className='w-1/2 py-2 px-5 mbg-700 rounded-[5px] mcolor-100 text-lg' onClick={() => submitAnswer(extractedQA[questionIndex].id)}>Submit Answer</button>
+              <button className='w-1/2 py-2 px-5 mbg-800 rounded-[5px] mcolor-100 text-lg' onClick={() => submitAnswer(extractedQA[questionIndex].id)}>Submit Answer</button>
             </div>
           )}
         </div>
