@@ -1177,7 +1177,7 @@ export const StudyAreaGP = (props) => {
                         {showRev && materialRev && (
                           <div>
 
-                            <h3 className='font-medium mcolor-700 text-2xl text-center mb-5 mt-3'><span className='font-bold mcolor-800'>Questions and Answers</span></h3>
+                            <h3 className='font-medium mcolor-700 text-2xl text-center mb-5 mt-3'><span className='font-bold mcolor-800'>Key Points</span></h3>
 
                             {materialRev && Array.isArray(materialRev) && materialRev.map((material) => (
                               <div className='mb-10 mt-2 p-5 mbg-200 border-thin-800 rounded' key={material.question}>

@@ -173,7 +173,7 @@ export const KinestheticLearner = (props) => {
           {/* question */}
           <div className='w-full'>
             <div className='relative mt-4 pb-5 text-center text-xl font-medium text-xl mcolor-900'>
-              <p className='mbg-300 mcolor-900 w-full rounded-[5px] p-5 mcolor-800'>{extractedQA[questionIndex].question}</p>
+              <p className='mbg-300 border-thin-800 mcolor-900 w-full rounded-[5px] p-5 mcolor-800'>{extractedQA[questionIndex].question}</p>
             </div>
 
             <div>
@@ -215,7 +215,7 @@ export const KinestheticLearner = (props) => {
                   })
                 ) : (
                   <div
-                    className={`w-full text-center mx-1 rounded-[5px] cursor-pointer mbg-200 min-h-[50px] flex items-center justify-center border-medium-800 ${
+                    className={`w-full text-center mx-1 rounded-[5px] cursor-pointer mbg-100 min-h-[50px] flex items-center justify-center shadows ${
                       selectedChoice === '' ? 'mcolor-500' : 'mcolor-900'
                     }`}
                     onDrop={(e) => handleDrop(e)}
@@ -237,7 +237,7 @@ export const KinestheticLearner = (props) => {
             
 
             {(typeOfLearner === 'Kinesthetic' && extractedQA[questionIndex].quizType !== 'ToF') ? (
-              <div class="w-full mt-5 flex items-center justify-center mbg-300 min-h-[10vh] px-4 rounded">
+              <div class="w-full mt-5 flex items-center justify-center mbg-300 min-h-[10vh] px-4 py-2 border-thin-800 rounded">
                 <div class="flex flex-wrap justify-center"> 
                 {shuffledCharactersWithId.map((item) => {
                   const isDragged = lastDraggedCharacter === item.char;

@@ -46,7 +46,7 @@ export const AuditoryLearner = (props) => {
 
 
           <div className='relative mt-4 pb-8 text-center text-xl font-medium text-xl mcolor-900'>
-            <p className='mbg-300 mcolor-900 w-full rounded-[5px] py-4 mcolor-800 px-5'>{hideQuestion !== 'hidden' ? extractedQA[questionIndex].question : `Question...`}</p>
+            <p className='border-thin-800 mbg-300 mcolor-900 w-full rounded-[5px] py-4 mcolor-800 px-5'>{hideQuestion !== 'hidden' ? extractedQA[questionIndex].question : `Question...`}</p>
           </div>
 
 
@@ -227,7 +227,7 @@ export const AuditoryLearner = (props) => {
 
           {enabledSubmitBtn === true && (
             <div className='flex justify-center mt-8'>
-              <button className='w-1/2 py-2 px-5 mbg-700 rounded-[5px] mcolor-100 text-lg' onClick={() => submitAnswer(extractedQA[questionIndex].id)}>Submit Answer</button>
+              <button className='w-1/2 py-2 px-5 mbg-800 rounded-[5px] mcolor-100 text-lg' onClick={() => submitAnswer(extractedQA[questionIndex].id)}>Submit Answer</button>
             </div>
           )}
 

@@ -16,6 +16,7 @@ export const UpdateQAGen = ({ groupId, categoryFor }) => {
   const navigate = useNavigate()
   const [, setMaterialCategory] = useState([]); 
   const [materialCategoryId, setMaterialCategoryId] = useState([]); 
+  const [materialCategoryTitle, setMaterialCategoryTitle] = useState([]); 
   const [, setStudyMaterial] = useState([]);
   const [studyMaterialCategories, setStudyMaterialCategories] = useState([]);
   const [pdfDetails, setPDFDetails] = useState('')
@@ -74,6 +75,7 @@ export const UpdateQAGen = ({ groupId, categoryFor }) => {
 
       setMaterialCategory(categoryResponse.data);
       setMaterialCategoryId(categoryResponse.data.id);
+      setMaterialCategoryTitle(categoryResponse.data.category);
 
 
       let mcqResponse = await axios.get(`${SERVER_URL}/quesAns/study-material-mcq/${materialID}`);
@@ -504,8 +506,7 @@ export const UpdateQAGen = ({ groupId, categoryFor }) => {
           window.innerWidth <= 768 ? 'hidden' : 'hidden'
         } mbg-800`}></div>
 
-        {/*           <Navbar linkBack={`/main/group/study-area/group-review/${groupId}/${materialID}`} linkBackName={'Group Study Area'} currentPageName={'Update Reviewer'} username={'Jennie Kim'}/>
- */}
+
         <div className='flex-1 mbg-300 w-full p-8'>
 
           <div className='flex items-center mt-4'>
@@ -513,7 +514,10 @@ export const UpdateQAGen = ({ groupId, categoryFor }) => {
             <Navbar linkBack={`/main/${categoryFor === 'Personal' ? 'personal' : 'group'}/study-area/${categoryFor === 'Personal' ? 'personal' : 'group'}-review${categoryFor === 'Personal' ? '/' : `/${groupId}`}${materialID}`} linkBackName={`Study Area`} currentPageName={'Generate Reviewer'} />
           </div>
 
-          <div  className="border-medium-800 gen-box flex justify-between items-center rounded my-6">
+          <br />
+          <h3 className='text-center text-2xl font-bold my-7'>{materialTitle} from {materialCategoryTitle}</h3>
+
+          <div className="border-medium-800 gen-box flex justify-between items-center rounded my-3">
             <div className='h-full w-full border-none'>
               <textarea
                 onChange={(event) => handleBodyChange(event.target.value)}
@@ -523,7 +527,6 @@ export const UpdateQAGen = ({ groupId, categoryFor }) => {
               ></textarea>
             </div>
           </div>
-
 
           <br /><br />
           <div className='flex justify-center mb-10'>
