@@ -220,6 +220,7 @@ export const DropZoneComponent = (props) => {
           required
         />
 
+
         </div>
         <div className="form-group">
           <p className='mb-1 mt-10'>Maximum number of items to generate:</p>

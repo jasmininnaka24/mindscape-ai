@@ -405,7 +405,12 @@ export const QAGenerator = (props) => {
 
             <div className='flex items-center mt-4'>
               <AccountTreeIcon sx={{ fontSize: 30 }} className='mr-2 mb-1 mcolor-700' />
-              <Navbar linkBack={`/main/${materialFor === 'Personal' ? 'personal' : 'group'}/study-area/${materialFor === 'Personal' ? '' : groupNameId}`} linkBackName={`Study Area`} currentPageName={'Generate Reviewer'} />
+
+              {materialFor !== 'Everyone' ? (
+                <Navbar linkBack={`/main/${materialFor === 'Personal' ? 'personal' : 'group'}/study-area/${materialFor === 'Personal' ? '' : groupNameId}`} linkBackName={`Study Area`} currentPageName={'Generate Reviewer'} />
+              ) : (
+                <Navbar linkBack={'/main/library'} linkBackName={'Virtual Library'} currentPageName={'Generate Study Material'} username={'Jennie Kim'}/>
+              )}
             </div>
 
             
