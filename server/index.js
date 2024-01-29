@@ -15,7 +15,7 @@ app.use(express.json());
 const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
-    origin: "https://mindscape-5keczx1cv-jasmininnaka24s-projects.vercel.app",
+    origin: "https://mindscape-ai.vercel.app",
     methods: ["GET", "POST"],
     credentials: true
   },
