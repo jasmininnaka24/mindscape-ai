@@ -55,6 +55,8 @@ export const PreJoinPage = (props) => {
   const [showModal, setShowModal] = useState("");
   const [userUploaderId, setUserUploaderId] = useState(0);
   const [showModifyModal, setShowModifyModal] = useState(false)
+  const [showDeleteModal, setShowDeleteModal] = useState(false)
+  const [showAssessmentModalRem, setShowAssessmentModalRem] = useState(false)
 
 
   // deleting material
@@ -167,6 +169,8 @@ export const PreJoinPage = (props) => {
   }
 
   const takeAssessmentBtn = async () => {
+
+
     setShowPreJoin(false);
     setShowAssessmentPage(true);
   
@@ -199,7 +203,7 @@ export const PreJoinPage = (props) => {
       'extracted_QA_assessment': setQAAssessment,
       'assessment_users_choices': setAssessmentUsersChoices,
       'message_list': (message) => {
-        if (message.length !== 0) {
+        if (message.length > 0) {
           setMessageList(message);
         }
       },
@@ -250,26 +254,34 @@ export const PreJoinPage = (props) => {
   
 
   const deleteStudyMaterial = async (id, title) => {
-    // Show a confirmation dialog
-    const confirmed = window.confirm(`Are you sure you want to delete ${title}?`);
+
+    if (userUploaderId === UserId) {
+      // navigate(`/main/group/study-area/update-material/${groupId}/${materialId}`)
+      // Show a confirmation dialog
+      const confirmed = window.confirm(`Are you sure you want to delete ${title}?`);
+    
+      if (confirmed) {
+        await axios.delete(`${SERVER_URL}/studyMaterial/delete-material/${id}`)
   
-    if (confirmed) {
-      await axios.delete(`${SERVER_URL}/studyMaterial/delete-material/${id}`)
-
-      setTimeout(() => {
-        setIsMaterialDeleted('')
-        setRecentlyDeletedMaterial(title)
-      }, 100);
-
-      setTimeout(() => {
-        setIsMaterialDeleted('hidden')
-        setRecentlyDeletedMaterial('')
-      }, 1500);
-
-      setTimeout(() => {
-        navigate('/main/personal/study-area')
-      }, 2000);
+        setTimeout(() => {
+          setIsMaterialDeleted('')
+          setRecentlyDeletedMaterial(title)
+        }, 100);
+  
+        setTimeout(() => {
+          setIsMaterialDeleted('hidden')
+          setRecentlyDeletedMaterial('')
+        }, 1500);
+  
+        setTimeout(() => {
+          navigate('/main/personal/study-area')
+        }, 2000);
+      }
+    } else {
+      setShowModal(true)
+      setShowDeleteModal(true)
     }
+    
   }
 
 
@@ -282,7 +294,7 @@ export const PreJoinPage = (props) => {
     </div>
   } else {
     return (
-      <div className='poppins mcolor-900 mbg-300 relative flex'>
+      <div className='poppins mcolor-900 mbg-200 relative flex'>
         {/* <Navbar linkBack={`/main/group/study-area/${groupId}`} linkBackName={`Study Area`} currentPageName={'Reviewer Page Preview'} username={userData?.username}/> */}
 
         <Sidebar currentPage={'group-study-area'} />
@@ -293,10 +305,10 @@ export const PreJoinPage = (props) => {
       } mbg-800`}></div>
 
 
-        <div className='flex-1 mbg-300 w-full flex flex-col min-h-[100vh] justify-center items-center px-5'>
+        <div className='flex-1 mbg-200 w-full flex flex-col min-h-[100vh] justify-center items-center px-5'>
 
           <motion.div 
-            className={`${isMaterialDeleted} mt-5 py-2 mbg-300 mcolor-800 text-center rounded-[5px] text-lg`}
+            className={`${isMaterialDeleted} mt-5 py-2 green-bg w-full mcolor-800 text-center rounded-[5px] text-lg`}
             initial={{ opacity: 0, y: -50 }} // initial state
             animate={{ opacity: 1, y: 0 }}   // animate to this state
             transition={{ duration: 0.5 }}   // transition duration
@@ -316,35 +328,35 @@ export const PreJoinPage = (props) => {
               <div className='flex gap-10 w-full'>
                 <div className='w-2/3 rounded-[5px] py-3 px-5'>
                   <div className='w-full'>
-                    <motion.p className='text-2xl'
+                    <motion.p className='text-2xl font-medium'
                       initial={{ opacity: 0, y: 50 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ duration: 0.3, delay: 0.2 }}
-                    >You have been identified as a <span className='font-bold underline'>{userData.typeOfLearner} Learner</span></motion.p >
+                    >Group Learning Collaboration</motion.p >
                     <br />
                     <motion.p className='mcolor-900 my-1'
                       initial={{ opacity: 0, y: 50 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ duration: 0.5, delay: 0.4 }}
-                    ><PushPinIcon className='text-red mr-1' />The design and formatting of your study sessions will be tailored to suit your specific learner type. If you wish to explore design and format options for other learner types, you can modify your profile configuration.</motion.p >
+                    ><PushPinIcon className='text-red mr-1' />Your study sessions will be designed and formatted to accommodate the needs of group learners. If you want to explore design and format options tailored for other learning styles, you can adjust your profile configuration accordingly.</motion.p >
                     <br />
                     <motion.p className='mcolor-900 my-1'
                       initial={{ opacity: 0, y: 50 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ duration: 0.8, delay: 0.7 }}
-                    ><PushPinIcon className='text-red mr-1' />Study Session, which includes a Pomodoro technique, is designed to enhance your productivity and focus. The Pomodoro technique involves structured intervals of focused work, promoting efficient learning and concentration. Stay organized and make the most of your study time with this purposeful approach to learning.</motion.p >
+                    ><PushPinIcon className='text-red mr-1' />Study Session, incorporating the Pomodoro technique, is meticulously crafted to amplify group productivity and focus. Through the Pomodoro technique's structured intervals of concentrated work, we foster efficient learning and collective concentration. Embrace this purposeful approach to learning, enhancing organization and maximizing study time within your group.</motion.p >
                     <br />
                     <motion.p className='mcolor-900 my-1'
                       initial={{ opacity: 0, y: 50 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ duration: 1, delay: 0.9 }}
-                    ><PushPinIcon className='text-red mr-1' />Upon completing an assessment, your performance data will be seamlessly integrated into the dashboard. This allows for a comprehensive view of your progress over time, facilitating a deeper understanding of your strengths and areas for improvement. Take advantage of this valuable insight to refine your learning strategy and achieve continuous growth.</motion.p >
+                    ><PushPinIcon className='text-red mr-1' />After finishing an assessment, your group's performance data will seamlessly merge into the dashboard. This feature enables a comprehensive group overview of progress over time, fostering a deeper understanding of collective strengths and areas for improvement. Leverage this valuable insight to refine your group's learning strategy and pursue continuous growth together.</motion.p >
                     <br />
                     <motion.p className='mcolor-900 my-1'
                       initial={{ opacity: 0, y: 50 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ duration: 1.3, delay: 1.2 }}
-                    ><PushPinIcon className='text-red mr-1' />Please be aware that the action of deleting or updating data is irreversible. Exercise caution when making changes to ensure the accuracy and completeness of your information. Prioritize data integrity to maintain a reliable and consistent record of your learning activities within the system.</motion.p >
+                    ><PushPinIcon className='text-red mr-1' />Please note that only the uploader of study materials has the authority to delete or update data. Be mindful that these actions are irreversible. Exercise caution when making changes to ensure the accuracy and completeness of your information. Prioritize data integrity to maintain a reliable and consistent record of your learning activities within the system.</motion.p >
                   </div>
 
                   {/* modal */}
@@ -362,16 +374,49 @@ export const PreJoinPage = (props) => {
 
                         <button className='absolute right-4 top-3 text-xl' onClick={() => {
                           setShowModal(false);
+                          setShowDeleteModal(false)
+                          setShowModifyModal(false)
+                          setShowAssessmentModalRem(false)
                         }}>
                           ✖
                         </button>
                         
                         <div className='h-full flex justify-center items-center'>
-                          <div>
-                            <p className='mcolor-900 text-2xl font-medium text-center'>Reminder</p>
-                            <p className='text-center text-lg font-medium mcolor-800 mt-8'><PushPinIcon className='text-red-dark' />You need to take the pre-assessment page first.</p>     
-                            <p className='text-center text-lg font-medium mcolor-800 mt-5'><PushPinIcon className='text-red-dark' />Once you start the study session, you won't be able to update the study material anymore.</p>     
-                          </div>
+                          {showAssessmentModalRem && !showModifyModal && !showDeleteModal &&
+                            <div>
+                              <p className='mcolor-900 text-2xl font-medium text-center'>Reminder</p>
+                              <p className="text-center text-lg font-medium mcolor-800 mt-5">
+                                <PushPinIcon className="text-red-dark" />
+                                Once you opt to start the assessment alongside others, {userUploaderId === UserId ? "you will no longer be able to modify this study material" : "the creator of this study material will no longer be able to make alterations to it"}.
+                              </p>
+
+                              <button className='w-full py-2 btn-800 mcolor-100 rounded text-center mt-5' onClick={takeAssessmentBtn}>Continue</button>   
+                            </div>
+                          }
+
+                          {showModifyModal && !showDeleteModal && !showAssessmentModalRem &&
+                            <div>
+                              <p className='mcolor-900 text-2xl font-medium text-center'>Reminder</p>
+                              <p className='text-center text-lg font-medium mcolor-800 mt-5'><PushPinIcon className='text-red-dark' />Modifications are only allowed by the individual who uploaded this material.</p>     
+                            </div>
+                          }
+
+                          {!showModifyModal && !showAssessmentModalRem && showDeleteModal &&
+                            <div>
+                              <p className='mcolor-900 text-2xl font-medium text-center'>Reminder</p>
+                              <p className='text-center text-lg font-medium mcolor-800 mt-5'><PushPinIcon className='text-red-dark' />Only the person who uploaded this study material is permitted to delete it.</p>     
+                            </div>
+                          }
+
+
+                          {!showModifyModal && !showDeleteModal && !showAssessmentModalRem && 
+                            <div>
+                              <p className='mcolor-900 text-2xl font-medium text-center'>Reminder</p>
+                              <p className='text-center text-lg font-medium mcolor-800 mt-8'><PushPinIcon className='text-red-dark' />You need to take the pre-assessment page first.</p>     
+                              <p className='text-center text-lg font-medium mcolor-800 mt-5'><PushPinIcon className='text-red-dark' />Once you start the study session, you won't be able to update the study material anymore.</p>     
+                            </div>
+                          }
+
                         </div>
 
                         </div>
@@ -416,10 +461,17 @@ export const PreJoinPage = (props) => {
                     </motion.div>
                       
                     <motion.div className='w-full'
-                        initial={{ opacity: 0, y: 50 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.8, delay: 0.7 }}>
-                      <button className='w-full px-6 py-5 shadows rounded-[5px] text-lg mbg-800 mcolor-100 font-normal' onClick={takeAssessmentBtn}>Take {takeAssessment ? 'Assessment' : 'Pre-Assessment'}</button>
+                      initial={{ opacity: 0, y: 50 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.8, delay: 0.7 }}
+                      onClick={() => {
+                        setShowModal(true)
+                        setShowAssessmentModalRem(true)
+                      }}
+                      >
+                      <button className='w-full px-6 py-5 shadows rounded-[5px] text-lg mbg-800 mcolor-100 font-normal' onClick={() => {
+                        setShowAssessmentModalRem(true)
+                      }}>Take {takeAssessment ? 'Assessment' : 'Pre-Assessment'}</button>
                     </motion.div>
 
                       <motion.button className='px-5 py-5 shadows w-full rounded-[5px] text-lg mbg-200 mcolor-800 border-medium-800 font-normal'
@@ -427,6 +479,7 @@ export const PreJoinPage = (props) => {
                       initial={{ opacity: 0, y: 50 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ duration: 1, delay: 0.9 }}
+
                       >Delete Material</motion.button>
 
                     {!takeAssessment && (

@@ -1451,7 +1451,11 @@ export const GroupReviewerPage = () => {
                           ) : (
 
                             <div className='w-full'>
-                              <button className='mt-5 px-5 py-2 rounded border-thin-800 mbg-100 shadows' disabled={successfullyInviting || successfullyInvited} onClick={() => inviteMembers("study session")} >{successfullyInviting ? `Sending an invitation link...` : successfullyInvited ? `Successfully sent an invitation link` : `Invite other members to join`}</button>
+
+                              {userListAssessment[0]?.userId === userId && 
+                                <button className='mt-5 px-5 py-2 rounded border-thin-800 mbg-100 shadows' disabled={successfullyInviting || successfullyInvited} onClick={() => inviteMembers("study session")} >{successfullyInviting ? `Sending an invitation link...` : successfullyInvited ? `Successfully sent an invitation link` : `Invite other members to join`}</button>
+                              }
+                              
                           
 
                               <div className='flex items-center justify-between mt-8'>

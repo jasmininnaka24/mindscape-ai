@@ -378,6 +378,15 @@ export const SavedGeneratedData = (props) => {
     }
   };
   
+  const resetForm = () => {
+    setStudyMaterialTitle('');
+    setStudyMaterialCategoryId('');
+    setGeneratedQA({});
+    setPDFDetails('');
+    setNumInp('');
+  };
+  
+  
 
 
   return (

@@ -6,6 +6,8 @@ import { useNavigate } from 'react-router-dom';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
 import { SERVER_URL, CLIENT_URL } from '../../urlConfig';
+import DangerousIcon from '@mui/icons-material/Dangerous';
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 
 
 export const ResetPassword = () => {
@@ -21,6 +23,9 @@ export const ResetPassword = () => {
   const [error, setError] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
+  const passwordRegex = /^(?=.*[0-9])(?=.*[!@#$%^&*])[a-zA-Z0-9!@#$%^&*]{8,}$/;
+
 
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
@@ -44,43 +49,109 @@ export const ResetPassword = () => {
 
   const resetPassword = async (e) => {
     e.preventDefault();
-
+  
     let data = {
       password: password,
       url_host: CLIENT_URL
     }
-
-    await axios.post(`${SERVER_URL}/users/reset-password/${id}/${token}`, data).then(response => {
-      if(response.data.error) {
-
-        setTimeout(() => {
-          setError(true)
-          setMsg(response.data.message)
-        }, 100);
-        
-        setTimeout(() => {
-          setError(false)
-          setMsg('')
-        }, 2500);
   
-  
+    if (password === confirmPassword && password.length >= 8 && /[A-Z]/.test(password) && passwordRegex.test(password)) {
+      await axios.post(`${SERVER_URL}/users/reset-password/${id}/${token}`, data).then(response => {
+        if(response.data.error) {
+          setTimeout(() => {
+            setError(true)
+            setMsg(response.data.message)
+          }, 100);
+          
+          setTimeout(() => {
+            setError(false)
+            setMsg('')
+          }, 2500);
+        } else {
+          setTimeout(() => {
+            setError(false)
+            setMsg(response.data.message)
+          }, 100);
+          
+          setTimeout(() => {
+            setMsg('')
+            setShowResetPasswordUI(false)
+            navigate('/login')
+          }, 2500);
+        }
+      })
+    } else {
+      let errorMessage = '';
+      if (password.length < 8) {
+        errorMessage = 'Password must be at least 8 characters long';
+      } else if (!/[A-Z]/.test(password)) {
+        errorMessage = 'Password must contain at least one capital letter';
+      } else if (!passwordRegex.test(password)) {
+        errorMessage = 'Password must have 1 number and 1 symbol';
       } else {
-        setTimeout(() => {
-          setError(false)
-          setMsg(response.data.message)
-        }, 100);
-        
-        setTimeout(() => {
-          setMsg('')
-        }, 2500);
+        errorMessage = 'Password and Confirm Password do not match';
       }
-    })
-
-    setShowResetPasswordUI(false)
-    navigate('/login')
-
-
+  
+      setTimeout(() => {
+        setError(true)
+        setMsg(errorMessage)
+      }, 100);
+      
+      setTimeout(() => {
+        setError(false)
+        setMsg('')
+      }, 2500);
+    }
   }
+  
+
+
+
+  const calculatePasswordStrength = (password) => {
+    // Your password strength calculation logic here
+    // This example enforces at least one capital letter, one number, one symbol, and a minimum length of 8 characters
+    const hasCapital = /[A-Z]/.test(password);
+    const hasNumber = /\d/.test(password);
+    const hasSymbol = /[!@#$%^&*]/.test(password);
+
+    if (hasCapital && hasNumber && hasSymbol && password.length >= 8) {
+      return 'strong';
+    } else if (hasCapital && (hasNumber || hasSymbol) && password.length >= 8) {
+      return 'average';
+    } else {
+      return 'weak';
+    }
+  };
+
+  const strength = calculatePasswordStrength(password);
+
+  const getStrengthColor = () => {
+    switch (strength) {
+      case 'strong':
+        return 'dark-green-str';
+      case 'average':
+        return 'dark-orange-str';
+      case 'weak':
+        return 'dark-red-str';
+      default:
+        return '';
+    }
+  };
+
+  const progressBarWidth = () => {
+    switch (strength) {
+      case 'strong':
+        return '100%';
+      case 'average':
+        return '50%';
+      case 'weak':
+        return '25%';
+      default:
+        return '0%';
+    }
+  };
+
+
 
   return (
     <div className='mbg-200 h-[100vh] w-full flex items-center justify-center poppins mcolor-900'>
@@ -122,6 +193,22 @@ export const ResetPassword = () => {
               </button>
             </div>
 
+            {password !== '' && (
+              <div className='my-4 flex items-center justify-center'>
+                <div className={`mcolor-900 text-center rounded border-thin-800 py-1`} style={{ width: progressBarWidth(), transition: 'width 0.3s ease' }}>{`${strength.charAt(0).toUpperCase() + strength.slice(1)}`} <span className={`${getStrengthColor()}`}>{getStrengthColor() !== 'dark-green-str' ? <DangerousIcon /> : <CheckCircleIcon sx='18px' />}</span></div>
+              </div>
+              )}
+
+
+
+            <div className='text-sm mcolor-800-opacity my-4'>
+              <ul className="text-center">
+                <li>At least 8 characters long</li>
+                <li>At least 1 uppercase letter</li>
+                <li>At least 1 symbol and number</li>
+              </ul>
+            </div>
+
             <div className='flex relative'>
               <input
                 className='my-2 py-2 px-4 rounded border-thin-800 w-full'
@@ -140,8 +227,10 @@ export const ResetPassword = () => {
               </button>
             </div>
 
+
+
             <div>
-              <button className='mbg-700 mcolor-100 rounded w-full py-2 my-2' onClick={(e) => resetPassword(e)}>Submit</button>  
+              <button className='btn-800 mcolor-100 rounded w-full py-2 my-2' onClick={(e) => resetPassword(e)}>Submit</button>  
             </div>
           </div>
 

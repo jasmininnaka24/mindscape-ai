@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import '../../pages/main/mainpage.css';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import CloseIcon from '@mui/icons-material/Close';
 import PersonPinOutlinedIcon from '@mui/icons-material/PersonPinOutlined';
 import PeopleAltOutlinedIcon from '@mui/icons-material/PeopleAltOutlined';
@@ -10,10 +10,13 @@ import SpaIcon from '@mui/icons-material/Spa';
 import AccountCircleOutlinedIcon from '@mui/icons-material/AccountCircleOutlined';
 
 
+
 // animation import
 import { motion, AnimatePresence  } from 'framer-motion';
 
 export const Sidebar = ({currentPage}) => {
+
+  const navigate = useNavigate();
 
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [isTablet, setIsTablet] = useState(false); // Declare isTablet outside useEffect
@@ -37,6 +40,15 @@ export const Sidebar = ({currentPage}) => {
   const toggleSidebar = () => {
     setSidebarOpen(!sidebarOpen);
   };
+
+
+  const handleLogout = () => {
+    // Clear session storage
+    sessionStorage.clear();
+    navigate('/')
+  };
+
+
 
   return (
     <div>
@@ -83,25 +95,25 @@ export const Sidebar = ({currentPage}) => {
               window.innerWidth > 900 ? '-8rem' :
               '-15rem'
             }`}}>
-              <li className={`my-1 py-4 pl-5 ml-2 text-md ${currentPage === 'profile' ? 'rounded-side mbg-300 mcolor-800' : 'rounded'}`}>
+              <li className={`my-1 py-4 pl-5 ml-2 text-md ${currentPage === 'profile' ? 'rounded-side mbg-200 mcolor-800' : 'rounded'}`}>
                 <Link to={'/main/profile'}><span className='color-primary'><AccountCircleOutlinedIcon/></span> My Profile</Link>
               </li>
-              <li className={`my-1 py-4 pl-5 ml-2 text-md ${currentPage === 'personal-study-area' ? 'rounded-side mbg-300 mcolor-800' : 'rounded'}`}>
+              <li className={`my-1 py-4 pl-5 ml-2 text-md ${currentPage === 'personal-study-area' ? 'rounded-side mbg-200 mcolor-800' : 'rounded'}`}>
                 <Link to={'/main/personal/study-area'}><span className='color-primary'><PersonPinOutlinedIcon/></span> Personal Room</Link>
               </li>
-              <li className={`my-1 py-4 pl-5 ml-2 text-md ${currentPage === 'group-study-area' ? 'rounded-side mbg-300 mcolor-800' : 'rounded'}`}>
+              <li className={`my-1 py-4 pl-5 ml-2 text-md ${currentPage === 'group-study-area' ? 'rounded-side mbg-200 mcolor-800' : 'rounded'}`}>
                 <Link to={'/main/group/'}><span className='color-primary'><PeopleAltOutlinedIcon/></span> Group Rooms</Link>
               </li>
-              <li className={`my-1 py-4 pl-5 ml-2 text-md ${currentPage === 'library' ? 'rounded-side mbg-300 mcolor-800' : 'rounded'}`}>
+              <li className={`my-1 py-4 pl-5 ml-2 text-md ${currentPage === 'library' ? 'rounded-side mbg-200 mcolor-800' : 'rounded'}`}>
                 <Link to={'/main/library'}><span className='color-primary'><LocalLibraryOutlinedIcon/></span> Library Room</Link>
               </li>
-              <li className={`my-1 py-4 pl-5 ml-2 text-md ${currentPage === 'forum' ? 'rounded-side mbg-300 mcolor-800' : 'rounded'}`}>
+              <li className={`my-1 py-4 pl-5 ml-2 text-md ${currentPage === 'forum' ? 'rounded-side mbg-200 mcolor-800' : 'rounded'}`}>
                 <Link to={'/main/forums'}><span className='color-primary'><QuestionAnswerOutlinedIcon/></span> Discussion Forums</Link>
               </li>
             </ul>
 
-            <div className='mcolor-100 py-5'>
-              <button className='text-lg'>Logout</button>
+            <div className='mcolor-100 py-3 w-full px-5'>
+              <button className='text-lg rounded py-1 mbg-700 w-full' onClick={handleLogout}>Logout</button>
             </div>
 
 

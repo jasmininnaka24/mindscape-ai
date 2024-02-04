@@ -57,6 +57,11 @@ export const PersonalReviewerPage = () => {
   const [recentlyDeletedMaterial, setRecentlyDeletedMaterial] = useState('');
   const [isMaterialDeleted, setIsMaterialDeleted] = useState('hidden');
 
+  const [showModifyModal, setShowModifyModal] = useState(false)
+  const [showDeleteModal, setShowDeleteModal] = useState(false)
+  const [showAssessmentModalRem, setShowAssessmentModalRem] = useState(false)
+
+
   const [isDone, setIsDone] = useState(false);
   const [loading, setLoading] = useState(true);
 
@@ -112,7 +117,9 @@ export const PersonalReviewerPage = () => {
   }, [isDone])
 
   
-
+  const takeAssessmentBtn = async () => {
+    navigate(`/main/personal/study-area/update-material/${materialId}`)
+  }
 
 
   function generateRandomString() {
@@ -193,7 +200,7 @@ export const PersonalReviewerPage = () => {
     </div>
   } else {
     return (
-      <div className='poppins mcolor-900 mbg-300 relative flex'>
+      <div className='poppins mcolor-900 mbg-200 relative flex'>
 
         <Sidebar currentPage={'personal-study-area'} />
 
@@ -205,7 +212,7 @@ export const PersonalReviewerPage = () => {
 
 
 
-        <div className='flex-1 mbg-300 w-full flex flex-col min-h-[100vh] justify-center items-center px-5'>
+        <div className='flex-1 mbg-200 w-full flex flex-col min-h-[100vh] justify-center items-center px-5'>
 
           <motion.div 
             className={`${isMaterialDeleted} mt-5 py-2 mbg-300 mcolor-800 text-center rounded-[5px] text-lg`}
@@ -279,11 +286,29 @@ export const PersonalReviewerPage = () => {
                         </button>
                         
                         <div className='h-full flex justify-center items-center'>
+
+                        {showAssessmentModalRem && !showModifyModal &&
+
+                          <div>
+                            <p className='mcolor-900 text-2xl font-medium text-center'>Reminder</p>
+                            <p className="text-center text-lg font-medium mcolor-800 mt-5">
+                              <PushPinIcon className="text-red-dark" />
+                              Once you opt to start the assessment, you will no longer be able to modify this study material.
+                            </p>
+
+                            <button className='w-full py-2 btn-800 mcolor-100 rounded text-center mt-5' onClick={takeAssessmentBtn}>Continue</button>   
+                          </div>
+                        }
+
+                        {showModifyModal && !showAssessmentModalRem &&
+
                           <div>
                             <p className='mcolor-900 text-2xl font-medium text-center'>Reminder</p>
                             <p className='text-center text-lg font-medium mcolor-800 mt-8'><PushPinIcon className='text-red-dark' />You need to take the pre-assessment page first.</p>     
                             <p className='text-center text-lg font-medium mcolor-800 mt-5'><PushPinIcon className='text-red-dark' />Once you start the study session, you won't be able to update the study material anymore.</p>     
                           </div>
+                        }
+
                         </div>
 
                         </div>
@@ -331,9 +356,12 @@ export const PersonalReviewerPage = () => {
                         initial={{ opacity: 0, y: 50 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.8, delay: 0.7 }}>
-                      <Link to={`/main/personal/study-area/personal-assessment/${materialId}`}>
-                        <button className='w-full px-6 py-5 shadows rounded-[5px] text-lg mbg-800 mcolor-100 font-normal'>Take {takeAssessment ? 'Assessment' : 'Pre-Assessment'}</button>
-                      </Link>
+                        <button className='w-full px-6 py-5 shadows rounded-[5px] text-lg mbg-800 mcolor-100 font-normal'
+                        onClick={() => {
+                          setShowModal(true)
+                          setShowAssessmentModalRem(true)
+                        }}
+                        >Take {takeAssessment ? 'Assessment' : 'Pre-Assessment'}</button>
                     </motion.div>
 
                       <motion.button className='px-5 py-5 shadows w-full rounded-[5px] text-lg mbg-200 mcolor-800 border-medium-800 font-normal'
@@ -349,6 +377,10 @@ export const PersonalReviewerPage = () => {
                       initial={{ opacity: 0, y: 50 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ duration: 1.3, delay: 1.2 }}
+                      onClick={() => {
+                        setShowModal(true)
+                        setShowModifyModal(true)
+                      }}
                       >
                           Modify Material
                         </motion.button>

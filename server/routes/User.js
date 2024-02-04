@@ -416,6 +416,20 @@ router.post('/reset-password/:id/:token', async(req,res) => {
     return res.json({message: "User does not exist."})
   }
 
+     
+  if (password.length < 8) {
+    return res.json({ message: 'Password must be 8 characters long', error: true });
+  }
+  
+  if (!/[A-Z]/.test(password)) {
+    return res.json({ message: 'Password must contain at least one capital letter', error: true });
+  }
+  
+
+  if (!passwordRegex.test(password)) {
+    return res.json({ message: 'Password must have 1 number and 1 symbol', error: true });
+  }
+
   const secret = jwtSecret + oldUser.password;
 
 

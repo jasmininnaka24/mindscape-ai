@@ -771,7 +771,10 @@ export const AssessmentPage = (props) => {
 
             {!isStartAssessmentButtonStarted ? (
               <div className='w-full'>
-                <button className='mt-5 px-5 py-2 rounded border-thin-800 mbg-100 shadows' disabled={successfullyInviting || successfullyInvited} onClick={() => inviteMembers("assessment")} >{successfullyInviting ? `Sending an invitation link...` : successfullyInvited ? `Successfully sent an invitation link` : `Invite other members to join`}</button>
+
+                {userListAssessment[0]?.userId === userId && 
+                  <button className='mt-5 px-5 py-2 rounded border-thin-800 mbg-100 shadows' disabled={successfullyInviting || successfullyInvited} onClick={() => inviteMembers("assessment")} >{successfullyInviting ? `Sending an invitation link...` : successfullyInvited ? `Successfully sent an invitation link` : `Invite other members to join`}</button>
+                }
 
                 <div className='flex items-center justify-between mt-8'>
                   <p className='text-xl text-center mcolor-800 py-3'>Waiting for other users to join...</p>
@@ -890,7 +893,7 @@ export const AssessmentPage = (props) => {
                 <br /><br />
 
                 {isRunning && (
-                  <div className='timer-container px-10 py-3'>
+                  <div className='timer-container mbg-input px-10 py-3'>
                     <div className='rounded-[5px]' style={{ height: "8px", backgroundColor: "#B3C5D4" }}>
                       <div
                         className='rounded-[5px]'
@@ -1193,7 +1196,7 @@ export const AssessmentPage = (props) => {
                       style={{ cursor: isSubmittedButtonClicked && idOfWhoSubmitted !== userId && usernameOfWhoSubmitted !== username ? 'not-allowed' : 'pointer' }}
                     >
                       {isSubmittedButtonClicked ? 
-                        (idOfWhoSubmitted === userId ? 'Confirm Submission' : `${usernameOfWhoSubmitted} clicks the submit button`) : 'Submit Answer'
+                        (idOfWhoSubmitted === userId ? 'Confirm Submission' : `${usernameOfWhoSubmitted} clicks the submit button`) : 'Submit Answers'
                       }
                     </button>
                   </div>

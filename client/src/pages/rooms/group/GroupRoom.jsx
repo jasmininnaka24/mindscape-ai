@@ -109,7 +109,7 @@ export const GroupRoom = () => {
     </div>
   } else {
     return (
-      <div className='poppins mcolor-900 mbg-300 relative flex'>
+      <div className='poppins mcolor-900 mbg-200 relative flex'>
         {/* <div className='mt-5 mb-8'>
           <Navbar linkBack={'/main/'} linkBackName={'Main'} currentPageName={'Groups'} username={userData.username}/>
         </div> */}
@@ -122,7 +122,7 @@ export const GroupRoom = () => {
         } mbg-800`}></div>
 
 
-        <div className='flex-1 mbg-300 w-full p-5'> 
+        <div className='flex-1 mbg-200 w-full p-5'> 
     
           <div className='flex flex-col lg:flex-row gap-3'>
     
@@ -149,7 +149,7 @@ export const GroupRoom = () => {
               <div className='grid grid-cols-3 gap-5'>
     
                 {groupList && groupList.length > 0 && groupList.slice().sort((a, b) => b.id - a.id).map(({ id, groupName}) => (
-                  <div key={id} className='shadows mcolor-900 rounded-[5px] p-5 my-6 mbg-input flex items-center justify-between relative'>
+                  <div key={id} className='shadows mcolor-900 rounded-[5px] p-5 my-6 mbg-100 flex items-center justify-between relative'>
     
     
                     <p className='px-1'>{groupName}</p>

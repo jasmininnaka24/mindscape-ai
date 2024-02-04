@@ -617,7 +617,7 @@ export const PersonalAssessment = () => {
     </div>
   } else {
     return (
-      <div className='poppins mbg-300 mcolor-900 flex flex-col justify-center items-center' id='currSec'>
+      <div className='poppins mbg-200 mcolor-900 flex flex-col justify-center items-center' id='currSec'>
         
         <div className='flex items-center justify-between w-3/4 pt-12 pb-8'>
           <p className='text-center text-3xl font-medium mcolor-input mcolor-800'>Assessment for {materialTitle} of {materialCategory}</p>
@@ -687,7 +687,7 @@ export const PersonalAssessment = () => {
               )}
             
               {isRunning === true && (
-                <div className='timer-container px-10 pt-3 pb-1 mbg-300'>
+                <div className='timer-container px-10 pt-3 pb-1 mbg-200'>
                   <div className='rounded-[5px] mbg-500' style={{ height: "8px" }}>
                     <div
                       className={`rounded-[5px] ${seconds <= 10 ? "bg-red" : "btn-800"}`}
@@ -839,7 +839,7 @@ export const PersonalAssessment = () => {
     
               {(showAnalysis === false && isAssessmentDone === false) && (
                 <div className='flex justify-center'>
-                  <button className='w-1/2 py-2 px-5 btn-800 rounded-[5px] mcolor-100 text-lg' onClick={() => submitAnswer()}>Submit Answer</button>
+                  <button className='w-1/2 py-2 px-5 btn-800 rounded-[5px] mcolor-100 text-lg' onClick={() => submitAnswer()}>Submit Answers</button>
                 </div>
               )}
     

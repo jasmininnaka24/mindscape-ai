@@ -174,10 +174,14 @@ export const CreateGroupComp = (props) => {
         const groupDataId = groupData.data.id;
         const groupDataUserId = groupData.data.UserId;
       
+        console.log(UserId);
+
         if (groupDataUserId === UserId) {
           setErrorMessage('You are already in this group.');
         } else {
           const userIdPost = await axios.get(`${SERVER_URL}/studyGroupMembers/find-userId/${groupDataId}/${UserId}`);
+
+          // console.log(userIdPost.data);
       
           if (userIdPost.data !== null && userIdPost.data.UserId === UserId) {
             setErrorMessage('You are already in this group.');
@@ -205,7 +209,7 @@ export const CreateGroupComp = (props) => {
       } else {
         setErrorMessage('No room found.');
       }
-
+      
     }
 
     

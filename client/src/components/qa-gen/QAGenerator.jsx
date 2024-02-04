@@ -389,7 +389,7 @@ export const QAGenerator = (props) => {
 
   return (
 
-    <div className='poppins mcolor-900 mbg-300 relative flex'>
+    <div className='poppins mcolor-900 mbg-200 relative flex'>
 
       <Sidebar currentPage={materialFor === 'Personal' ? 'personal-study-area' : 'group-study-area'} />
 
@@ -399,7 +399,7 @@ export const QAGenerator = (props) => {
       } mbg-800`}></div>
 
 
-      <div className='flex-1 mbg-300 w-full p-8'>
+      <div className='flex-1 mbg-200 w-full p-8'>
         <PDFDetails.Provider value={{ setPDFDetails }}>
           <GeneratedQAResult.Provider value={{ setGeneratedQA, generatedQA }}>
 
@@ -416,13 +416,13 @@ export const QAGenerator = (props) => {
             
 
             <div className='poppins mcolor-900 my-4'>
-              <div className="border-medium-800 gen-box flex justify-between items-center rounded">
-                <div className='box1 mbg-200 border-box w-1/2'>
+              <div className="border-medium-800 gen-box flex justify-between items-center rounded shadows">
+                <div className='box1 mbg-100 border-box w-1/2'>
                   <div className='flex justify-center items-center dropzone'>
                     <DropZoneComponent numInp={numInp} setNumInp={setNumInp} setPDFDetails={setPDFDetails} pdfDetails={pdfDetails}  />
                   </div>
                 </div>
-                <div className='box2 mbg-200 border-box w-1/2'>
+                <div className='box2 mbg-100 border-box w-1/2'>
                   <div className='h-full border-none'>
                   <textarea
                     onChange={(event) => {
@@ -456,11 +456,11 @@ export const QAGenerator = (props) => {
                     {/* tabs */}
                     <br />
                     <div className='flex justify-center items-center mb-12 rounded-[5px]'>
-                      <button className={`w-full text-center py-3 ${activeButton === 1 ? 'mbg-200 rounded-[5px] border-medium-800' : 'border-bottom-medium border-r border-solid border-gray-500'}`} onClick={() => showContent(1)}>MCQAs</button>
-                      <button className={`w-full text-center py-3 ${activeButton === 2 ? 'mbg-200 rounded-[5px] border-medium-800' : 'border-bottom-medium border-r border-solid border-gray-500'}`} onClick={() => showContent(2)}>Notes Reviewer</button>
-                      <button className={`w-full text-center py-3 ${activeButton === 3 ? 'mbg-200 rounded-[5px] border-medium-800' : 'border-bottom-medium border-r border-solid border-gray-500'}`} onClick={() => showContent(3)}>True  Sentences</button>
-                      <button className={`w-full text-center py-3 ${activeButton === 4 ? 'mbg-200 rounded-[5px] border-medium-800' : 'border-bottom-medium'}`} onClick={() => showContent(4)}>Fill In The Blank</button>
-                      <button className={`w-full text-center py-3 ${activeButton === 5 ? 'mbg-200 rounded-[5px] border-medium-800' : 'border-bottom-medium'}`} onClick={() => showContent(5)}>Identification</button>
+                      <button className={`w-full text-center py-3 ${activeButton === 1 ? 'mbg-100 rounded-[5px] border-medium-800' : 'border-bottom-medium border-r border-solid border-gray-500'}`} onClick={() => showContent(1)}>MCQAs</button>
+                      <button className={`w-full text-center py-3 ${activeButton === 2 ? 'mbg-100 rounded-[5px] border-medium-800' : 'border-bottom-medium border-r border-solid border-gray-500'}`} onClick={() => showContent(2)}>Notes Reviewer</button>
+                      <button className={`w-full text-center py-3 ${activeButton === 3 ? 'mbg-100 rounded-[5px] border-medium-800' : 'border-bottom-medium border-r border-solid border-gray-500'}`} onClick={() => showContent(3)}>True  Sentences</button>
+                      <button className={`w-full text-center py-3 ${activeButton === 4 ? 'mbg-100 rounded-[5px] border-medium-800' : 'border-bottom-medium'}`} onClick={() => showContent(4)}>Fill In The Blank</button>
+                      <button className={`w-full text-center py-3 ${activeButton === 5 ? 'mbg-100 rounded-[5px] border-medium-800' : 'border-bottom-medium'}`} onClick={() => showContent(5)}>Identification</button>
                     </div>
 
 

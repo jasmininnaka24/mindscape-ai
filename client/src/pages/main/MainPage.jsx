@@ -1056,7 +1056,7 @@ export const MainPage = () => {
     </div>
   } else {
     return (
-      <div className='poppins mcolor-900 mbg-300 relative flex'>
+      <div className='poppins mcolor-900 mbg-200 relative flex'>
       {/* Toggle button for mobile and tablet sizes */}
 
       <Sidebar currentPage={'profile'}/>
@@ -1074,7 +1074,7 @@ export const MainPage = () => {
         
       </div> */}
 
-      <div className={`flex-1 mbg-300 w-full mx-5 pt-5`}>
+      <div className={`flex-1 mbg-200 w-full mx-5 pt-5`}>
 
         <div className='mbg-100 p-4 rounded-[1rem]'>
           <motion.ul

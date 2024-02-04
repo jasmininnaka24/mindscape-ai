@@ -16,6 +16,8 @@ export const Register = () => {
   const [passwordRegVal, setPasswordRegVal] = useState('')
   const [emailRegVal, setEmailRegVal] = useState('')
   const [msg, setMsg] = useState('');
+  const [btnMsg, setBtnMsg] = useState('');
+  const [btnClicked, setBtnClicked] = useState(false);
   const [error, setError] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showResetPasswordUI, setShowResetPasswordUI] = useState(true)
@@ -37,6 +39,7 @@ export const Register = () => {
     };
 
     setEnableDisabled(true)
+    setBtnMsg('Please wait...')
 
     try {
        await axios.post(`${SERVER_URL}/users/`, data).then((response) => {
@@ -45,7 +48,10 @@ export const Register = () => {
           setMsg(response.data.message);
           setError(true)
           setEnableDisabled(false)
+          setBtnClicked(false)
         } else {
+          setBtnMsg('')
+
           setTimeout(() => {
             setError(false)
             setMsg("Signing Up...");
@@ -56,6 +62,8 @@ export const Register = () => {
             setMsg("");
           }, 2000);
         }
+
+
        })
   
 
@@ -115,8 +123,8 @@ export const Register = () => {
   return (
     showResetPasswordUI ? (
 
-      <div className='poppins flex justify-center items-center mcolor-900 w-full h-[100vh] mbg-300' >
-        <section className='mbg-100 flex flex-col justify-center w-1/3 py-10 rounded'>
+      <div className='poppins flex justify-center items-center mcolor-900 w-full h-[100vh] mbg-200' >
+        <section className='mbg-100 shadows flex flex-col justify-center w-1/3 py-10 rounded'>
           <div className='flex items-center justify-center'>
             <div style={{ width: '50px', height: '50px' }}>
               <img src={MindScapeLogo} alt="" />
@@ -124,32 +132,32 @@ export const Register = () => {
             <p className='font-medium ml-2 text-3xl'>MindScape</p>
           </div>
           
-          <h2 className='text-xl mcolor-700 font-normal mt-4 text-center'>Sign Up for an Account</h2>
+          <h2 className='text-lg mcolor-700 font-normal mt-4 text-center'>Sign Up for an Account</h2>
           
           <br />  
 
           <form className='flex justify-center mb-5 w-full'>
             <div className='mt-3'>
               <div className='mb-3'>
-                <label htmlFor="" className='font-medium'>Username<span className='text-red'>*</span></label>
-                <input autoComplete='no' placeholder='Enter username...' type="text" className='bg-transparent w-full border-bottom-thin py-1 px-8 rounded-[10px]' value={usernameRegVal !== '' ? usernameRegVal : ''} onChange={(event) => setUsernameRegVal(event.target.value)} />
+                <label htmlFor="" className='font-medium text-sm'>Username<span className='text-red'>*</span></label>
+                <input autoComplete='no' placeholder='Enter username...' type="text" className='bg-transparent w-full border-bottom-thin text-sm py-1 px-8 rounded-[10px]' value={usernameRegVal !== '' ? usernameRegVal : ''} onChange={(event) => setUsernameRegVal(event.target.value)} />
               </div>
               <div className='mb-5 mt-8'>
-                <label htmlFor="" className='font-medium'>Email<span className='text-red'>*</span></label>
-                <input autoComplete='no' placeholder='Enter email...' type="email" className='bg-transparent w-full border-bottom-thin py-1 px-5 rounded-[5px]' value={emailRegVal !== '' ? emailRegVal : ''} onChange={(event) => setEmailRegVal(event.target.value)} />
+                <label htmlFor="" className='font-medium text-sm'>Email<span className='text-red'>*</span></label>
+                <input autoComplete='no' placeholder='Enter email...' type="email" className='bg-transparent w-full text-sm border-bottom-thin py-1 px-5 rounded-[5px]' value={emailRegVal !== '' ? emailRegVal : ''} onChange={(event) => setEmailRegVal(event.target.value)} />
               </div>
 
 
 
 
               <div className={`mt-8 ${passwordRegVal === '' && 'mb-5'}`}>
-                <label htmlFor="" className='font-medium'>Password<span className='text-red'>*</span></label>
+                <label htmlFor="" className='font-medium text-sm'>Password<span className='text-red'>*</span></label>
                 <div className='flex relative'>
                   <input
                     autoComplete='no'
                     placeholder='Enter password...'
                     type={showPassword ? 'text' : 'password'}
-                    className='bg-transparent w-full border-bottom-thin py-1 px-5 rounded-[5px]'
+                    className='bg-transparent w-full border-bottom-thin py-1 px-5 rounded-[5px] text-sm'
                     value={passwordRegVal !== '' ? passwordRegVal : ''}
                     onChange={(event) => setPasswordRegVal(event.target.value)}
                   />
@@ -173,15 +181,24 @@ export const Register = () => {
               </div>
               )}
 
-              <p className={`text-center ${(msg !== '' && error) && 'text-red my-3'}`} style={{ whiteSpace: 'pre-wrap' }}>{(msg !== '' && error) && msg}</p>
+              <p className={`text-center text-sm ${(msg !== '' && error) && 'text-red my-3'}`} style={{ whiteSpace: 'pre-wrap' }}>{(msg !== '' && error) && msg}</p>
 
               <button
-                className={`font-medium input-btn py-2 rounded-[20px] ${(msg !== '' && !error) ? 'mbg-200 border-thin-800 mcolor-900' : 'mbg-800 mcolor-100'}`}
+                className={`font-medium input-btn py-2 rounded-[20px] ${(msg !== '' && !error) ? 'mbg-200 border-thin-800 mcolor-900' : 'mbg-800 mcolor-100 text-md'}`}
                 onClick={(e) => registerAccount(e)}
                 disabled={enableDisabled}
               >
-                {enableDisabled ? 'Signing Up...' : (msg !== '' && !error) ? msg : 'Sign Up'}
+                {enableDisabled ? btnMsg === '' ? 'Signing Up...' : btnMsg : (msg !== '' && !error) ? btnMsg : 'Sign Up'}
               </button>
+
+
+              <div className='text-sm mcolor-800-opacity mt-4'>
+                <ul className="text-center">
+                  <li>At least 8 characters long</li>
+                  <li>At least 1 uppercase letter</li>
+                  <li>At least 1 symbol and number</li>
+                </ul>
+              </div>
 
 
             </div>

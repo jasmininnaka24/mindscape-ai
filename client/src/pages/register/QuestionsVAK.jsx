@@ -33,7 +33,7 @@ export const ClassificationQuestions = () => {
       });
 
     } else {
-      console.log("No radio button selected");
+      alert("Please choose one among the options.");
     }
   }
 

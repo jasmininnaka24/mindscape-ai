@@ -20,150 +20,116 @@ export const Login = () => {
   const isGroupSession = searchParams.has('group_session');
   const groupId = searchParams.get('groupId');
   const materialId = searchParams.get('materialId');
-
+  
   const navigate = useNavigate();
   const { setUserInformation } = useUser();
   
-  const [modalIsOpen, setModalIsOpen] = useState(false);
-
-  const [passwordLogVal, setPasswordLogVal] = useState('')
-  const [emailLogVal, setEmailLogVal] = useState('')
+  const [passwordLogVal, setPasswordLogVal] = useState('');
+  const [emailLogVal, setEmailLogVal] = useState('');
   const [msg, setMsg] = useState('');
+  const [btnMsg, setBtnMsg] = useState('');
   const [error, setError] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [signInBtnClicked, setSignInBtnClicked] = useState(false);
-
-
-  const openModal = () => {
-    setModalIsOpen(true);
-  };
-
-  const closeModal = () => {
-    setModalIsOpen(false);
-  };
-
-
+  
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
   };
-
-
+  
+  const handleLoginResponse = (response) => {
+    setSignInBtnClicked(false);
+    setError(response.data.error);
+    setMsg(response.data.message);
+    if (!response.data.error) {
+      sessionStorage.setItem("accessToken", response.data.accessToken);
+      setUserInformation(response.data.user);
+      setTimeout(() => {
+        setBtnMsg("Logging in...");
+        setTimeout(() => {
+          if (isGroupSession) {
+            navigate(`/main/group/study-area/group-review/${groupId}/${materialId}`);
+          } else {
+            navigate('/main');
+          }
+        }, 2000);
+      }, 100);
+    }
+  };
+  
+  const loginUser = async (data) => {
+    try {
+      const response = await axios.post(`${SERVER_URL}/users/login`, data);
+      handleLoginResponse(response);
+    } catch (error) {
+      setSignInBtnClicked(false);
+      setError(true);
+      setMsg("An error occurred during login.");
+    }
+  };
+  
   const loginAccount = async (e) => {
-
-    setSignInBtnClicked(true)
-
-    e.preventDefault(); 
-
+    e.preventDefault();
+    setSignInBtnClicked(true);
+    setBtnMsg("Please wait...");
+  
     const data = {
       email: emailLogVal,
       password: passwordLogVal,
       url_host: CLIENT_URL
     };
-    
-    console.log(data);
-    await axios.post(`${SERVER_URL}/users/login`, data).then((response) => {
-      if (response.data.error) {
-        setMsg(response.data.message);
-        setError(true)
-      } else {
-        sessionStorage.setItem("accessToken", response.data.accessToken);
-        setUserInformation(response.data.user);
-
-        setTimeout(() => {
-          setError(false)
-          setMsg("Logging in...");
-        }, 100);
-
-        setTimeout(() => {
-
-          if (isGroupSession) {
-
-            navigate(`/main/group/study-area/group-review/${groupId}/${materialId}`);
-          } else {
-            navigate('/main');
-          }
-
-        }, 2000);
-      }
-    });
+  
+    if (data.email && data.password) {
+      await loginUser(data);
+    }
   };
   
-
   const handleCallBackResponse = async (response) => {
-    console.log("Encoded JWT ID token: " + response.credential);
-    let userObject = jwt_decode(response.credential);
-    console.log(userObject);
+    setSignInBtnClicked(true);
+    setBtnMsg("Please wait...");
+  
+    let userObject;
+    try {
+      console.log("Encoded JWT ID token: " + response.credential);
+      userObject = jwt_decode(response.credential);
+      console.log(userObject);
+    } catch (error) {
+      setSignInBtnClicked(false);
+      setError(true);
+      setMsg("An error occurred while decoding user credentials.");
+      return;
+    }
   
     const data = {
       email: userObject.email,
       url_host: CLIENT_URL
     };
-
-    console.log(data);
   
-    await axios.post(`${SERVER_URL}/users/login`, data).then((response) => {
-      
-      if (response.data.error) {
-        setMsg(response.data.message);
-        setError(true)
-      } else {
-        sessionStorage.setItem("accessToken", response.data.accessToken);
-        setUserInformation(response.data.user);
-
-        setTimeout(() => {
-          setError(false)
-          setMsg("Logging in...");
-        }, 100);
-
-        setTimeout(() => {
-          if (isGroupSession) {
-    
-            navigate(`/main/group/study-area/group-review/${groupId}/${materialId}`);
-          } else {
-            navigate('/main');
-          }
-        }, 2000);
-      }
-    });
-    
+    if (data.email) {
+      await loginUser(data);
+    }
   };
   
-
   useEffect(() => {
-    // global google
     google.accounts.id.initialize({
       client_id: CLIENT_ID,
       callback: handleCallBackResponse
     });
-    
-    
+  
     google.accounts.id.renderButton(
       document.getElementById("signInDiv"),
       { theme: "outline", size: "large"}
     );
+  }, []);
+  
+  
 
-    // google.accounts.id.prompt()
-  }, [])
 
-
-
-  // const customStyles = {
-  //   content: {
-  //     width: '50%',
-  //     height: '50%', 
-  //     backgroundColor: 'white', 
-  //     textAlign: 'center'
-  //   },
-  //   overlay: {
-  //     backgroundColor: 'rgba(0, 0, 0, 0)', // Customize the background color of the overlay
-  //   },
-  // };
   
 
   return (
-    <div className='poppins flex justify-center items-center mcolor-900 w-full h-[100vh] mbg-300'>
+    <div className='poppins flex justify-center items-center mcolor-900 w-full h-[100vh] mbg-200'>
 
-      <div className='mbg-100 p-8 rounded'>
+      <div className='mbg-100 shadows p-8 rounded'>
         <div className='flex items-center justify-center'>
           <div style={{ width: '50px', height: '50px' }}>
             <img src={MindScapeLogo} alt="" />
@@ -225,7 +191,7 @@ export const Login = () => {
 
             <p className={`text-center ${(msg !== '' && error) && 'text-red my-3'}`} style={{ whiteSpace: 'pre-wrap' }}>{(msg !== '' && error) && msg}</p>
             
-            <button className={`font-medium input-btn py-2 rounded-[20px] ${((msg !== '' && !error) || signInBtnClicked) ? 'mbg-200 border-thin-800 mcolor-900' : 'btn-800'}`} onClick={(e) => loginAccount(e)}>{(msg !== '' && !error) ? msg : signInBtnClicked ? 'Logging In...' : 'Sign In'}</button>
+            <button className={`font-medium input-btn py-2 rounded-[20px] ${((msg !== '' && !error) || signInBtnClicked) ? 'mbg-200 border-thin-800 mcolor-900' : 'btn-800'}`} onClick={(e) => loginAccount(e)}>{(btnMsg !== '' && !error) ? btnMsg : signInBtnClicked ? btnMsg : 'Sign In'}</button>
           </div>
 
         </div>

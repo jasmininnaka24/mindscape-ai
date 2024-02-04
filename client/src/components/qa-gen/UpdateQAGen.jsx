@@ -117,16 +117,25 @@ export const UpdateQAGen = ({ groupId, categoryFor }) => {
         }
 
 
-  
+        if (loading){
+          setLoading(false)
+        }
     } catch (error) {
       console.error('Error:', error);
     }
+
+
+    // if (loading){
+    //   setLoading(false)
+    // }
 
   }  
 
   const fetchRevData = async () => {
     const revResponse = await axios.get(`${SERVER_URL}/quesRev/study-material-rev/${materialID}`);
     setMaterialRev(revResponse.data);
+    
+
   }
 
   useEffect(() => {
@@ -134,7 +143,9 @@ export const UpdateQAGen = ({ groupId, categoryFor }) => {
     fetchData()
     fetchRevData()
 
-    setLoading(false)
+
+
+
 
     console.log('mounted');
 
@@ -497,7 +508,7 @@ export const UpdateQAGen = ({ groupId, categoryFor }) => {
     </div>
   } else {
     return (
-      <div className='poppins mcolor-900 mbg-300 relative flex'>
+      <div className='poppins mcolor-900 mbg-200 relative flex'>
 
         <Sidebar currentPage={categoryFor === 'Personal' ? 'personal-study-area' : 'group-study-area'} />
 
@@ -507,11 +518,11 @@ export const UpdateQAGen = ({ groupId, categoryFor }) => {
         } mbg-800`}></div>
 
 
-        <div className='flex-1 mbg-300 w-full p-8'>
+        <div className='flex-1 mbg-200 w-full p-8'>
 
           <div className='flex items-center mt-4'>
             <AccountTreeIcon sx={{ fontSize: 30 }} className='mr-2 mb-1 mcolor-700' />
-            <Navbar linkBack={`/main/${categoryFor === 'Personal' ? 'personal' : 'group'}/study-area/${categoryFor === 'Personal' ? 'personal' : 'group'}-review${categoryFor === 'Personal' ? '/' : `/${groupId}`}${materialID}`} linkBackName={`Study Area`} currentPageName={'Generate Reviewer'} />
+            <Navbar linkBack={`/main/${categoryFor === 'Personal' ? 'personal' : 'group'}/study-area/${categoryFor === 'Personal' ? 'personal' : 'group'}-review${categoryFor === 'Personal' ? '/' : `/${groupId}/`}${materialID}`} linkBackName={`Study Area`} currentPageName={'Generate Reviewer'} />
           </div>
 
           <br />
@@ -568,11 +579,11 @@ export const UpdateQAGen = ({ groupId, categoryFor }) => {
           </div>
 
           <div className='flex justify-center items-center mb-12 rounded-[5px]'>
-            <button className={`w-full text-center py-3 ${activeButton === 1 ? 'mbg-200 rounded-[5px] border-medium-800' : 'border-bottom-medium border-r border-solid border-gray-500'}`} onClick={() => showContent(1)}>MCQAs</button>
-            <button className={`w-full text-center py-3 ${activeButton === 2 ? 'mbg-200 rounded-[5px] border-medium-800' : 'border-bottom-medium border-r border-solid border-gray-500'}`} onClick={() => showContent(2)}>Notes Reviewer</button>
-            <button className={`w-full text-center py-3 ${activeButton === 3 ? 'mbg-200 rounded-[5px] border-medium-800' : 'border-bottom-medium border-r border-solid border-gray-500'}`} onClick={() => showContent(3)}>True  Sentences</button>
-            <button className={`w-full text-center py-3 ${activeButton === 4 ? 'mbg-200 rounded-[5px] border-medium-800' : 'border-bottom-medium'}`} onClick={() => showContent(4)}>Fill In The Blank</button>
-            <button className={`w-full text-center py-3 ${activeButton === 5 ? 'mbg-200 rounded-[5px] border-medium-800' : 'border-bottom-medium'}`} onClick={() => showContent(5)}>Identification</button>
+            <button className={`w-full text-center py-3 ${activeButton === 1 ? 'mbg-100 rounded-[5px] border-medium-800' : 'border-bottom-medium border-r border-solid border-gray-500'}`} onClick={() => showContent(1)}>MCQAs</button>
+            <button className={`w-full text-center py-3 ${activeButton === 2 ? 'mbg-100 rounded-[5px] border-medium-800' : 'border-bottom-medium border-r border-solid border-gray-500'}`} onClick={() => showContent(2)}>Notes Reviewer</button>
+            <button className={`w-full text-center py-3 ${activeButton === 3 ? 'mbg-100 rounded-[5px] border-medium-800' : 'border-bottom-medium border-r border-solid border-gray-500'}`} onClick={() => showContent(3)}>True  Sentences</button>
+            <button className={`w-full text-center py-3 ${activeButton === 4 ? 'mbg-100 rounded-[5px] border-medium-800' : 'border-bottom-medium'}`} onClick={() => showContent(4)}>Fill In The Blank</button>
+            <button className={`w-full text-center py-3 ${activeButton === 5 ? 'mbg-100 rounded-[5px] border-medium-800' : 'border-bottom-medium'}`} onClick={() => showContent(5)}>Identification</button>
           </div>
 
 

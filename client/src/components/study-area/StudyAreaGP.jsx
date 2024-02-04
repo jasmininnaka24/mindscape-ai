@@ -623,7 +623,7 @@ export const StudyAreaGP = (props) => {
     } else {
       alert(`Cannot be deleted. This study material is shared in the virtual library room.`);
     }
-  
+
   }
 
 
@@ -809,6 +809,8 @@ export const StudyAreaGP = (props) => {
     } catch (error) {
       console.error('Error fetching materials:', error);
     }
+
+    fetchData()
   };
   
 
@@ -844,7 +846,7 @@ export const StudyAreaGP = (props) => {
           } else {
             navigate(`/main/personal/study-area/${groupNameId}`)
           }
-        }, 2500);
+        }, 1500);
 
 
   
@@ -865,6 +867,8 @@ export const StudyAreaGP = (props) => {
     } catch (error) {
       console.error('Error deleting materials:', error);
     }
+    fetchData()
+
   };
   
   
@@ -878,7 +882,7 @@ export const StudyAreaGP = (props) => {
     </div>
   } else {
     return (
-      <div className='poppins mcolor-900 mbg-300 relative flex'>
+      <div className='poppins mcolor-900 mbg-200 relative flex'>
 
         <Sidebar currentPage={categoryFor === 'Personal' ? 'personal-study-area' : 'group-study-area'} />
 
@@ -889,11 +893,11 @@ export const StudyAreaGP = (props) => {
       } mbg-800`}></div>
 
 
-        <div className='flex-1 mbg-300 w-full pt-5 flex'>
+        <div className='flex-1 mbg-200 w-full pt-5 flex'>
           {/* modal */}
           <div style={{ zIndex: 1000 }} className={`${hidden} absolute flex items-center justify-center modal-bg w-full h-full`}>
             <div className='flex justify-center'>
-              <div className='mbg-input max-h-[60vh] w-[40vw] w-1/3 z-10 relative p-10 rounded-[5px]' style={{ overflowY: 'auto' }}>
+              <div className='mbg-100 max-h-[60vh] w-[40vw] w-1/3 z-10 relative p-10 rounded-[5px]' style={{ overflowY: 'auto' }}>
     
               <button className='absolute right-4 top-3 text-xl' onClick={() => {
                 setHidden("hidden");
@@ -1129,18 +1133,18 @@ export const StudyAreaGP = (props) => {
             )}
     
     
-            <p className={`${savedGroupNotif} my-5 py-2 mbg-300 mcolor-800 text-center rounded-[5px] text-lg`}>New categories added!</p>
+            <p className={`${savedGroupNotif} my-5 py-2 mbg-200 mcolor-800 text-center rounded-[5px] text-lg`}>New categories added!</p>
     
-            <p className={`${isMaterialDeleted} my-5 py-2 mbg-300 mcolor-800 text-center rounded-[5px] text-lg`}>{recentlyDeletedMaterial} has been deleted.</p>
+            <p className={`${isMaterialDeleted} my-5 py-2 green-bg mcolor-800 text-center rounded-[5px] text-lg`}>{recentlyDeletedMaterial} has been deleted.</p>
     
             {/* latest added reviewer */}
             <div className=''>
               {lastMaterial !== null ? (
-                <div className='mbg-input shadows px-5 py-5 rounded'>
+                <div className='mbg-100 shadows px-5 py-5 rounded'>
                   <div className='relative'>
                     <p className='text-xl mcolor-900 mb-5'>Last Uploaded Reviewer: {lastMaterial.title} from {materialCategory}</p>
       
-                    <section className="border mbg-input scroll-box max-h-[68vh] min-h-[68vh]">
+                    <section className="border mbg-100 scroll-box max-h-[68vh] min-h-[68vh]">
                       <div className='gap-2 flex justify-between items-start mx-5 mt-8'>
                         <button
                           onClick={() => showContent(1)}
@@ -1192,7 +1196,7 @@ export const StudyAreaGP = (props) => {
                         )}
                       </div>
                     </section>
-                    <div className='flex items-center w-[98%] absolute left-0 mbg-input py-2 bottom-[.0rem] ml-1 mb-[.16rem] rounded'>
+                    <div className='flex items-center w-[98%] absolute left-0 mbg-100 py-2 bottom-[.0rem] ml-1 mb-[.16rem] rounded'>
 
                     </div>
                   </div>
@@ -1213,7 +1217,7 @@ export const StudyAreaGP = (props) => {
               
               <div>
                 {materialCategories.length > 0 ? (
-                  <div className='mbg-input mcolor-900 rounded px-4 py-2 mb-2'>
+                  <div className='mbg-100 mcolor-900 rounded px-4 py-2 mb-2'>
                     <span>{categoryFor === 'Personal' ? 'My' : 'Our'} Study Material</span>
                     <button onClick={toggleExpand} className='ml-2'>{!isExpanded ? <i className="fa-solid fa-chevron-down"></i> : <i className="fa-solid fa-chevron-up"></i>}</button>
                   </div>
@@ -1224,7 +1228,7 @@ export const StudyAreaGP = (props) => {
                   {materialCategories.length > 0 && (
                     isExpanded && materialCategories.map((category) => (
                     <div className="shelf-category my-2" key={category.id}>
-                      <div className="mbg-300 mt-2 mcolor-900 px-4 py-1 rounded-[5px]">
+                      <div className="mbg-200 mt-2 mcolor-900 px-4 py-1 rounded-[5px]">
     
                       <div className='flex items-center justify-between' style={expandedCategories[category.id] ? { borderBottom: 'solid 1px #999', paddingBottom: '.5rem', marginBottom: '.2rem' } : {}}>
     
@@ -1266,7 +1270,7 @@ export const StudyAreaGP = (props) => {
                         {editCategoryModal && (
                           <div style={{ zIndex: 1000 }} className={`absolute flex items-center justify-center modal-bg w-full h-full`}>
                             <div className='flex justify-center'>
-                              <div className='mbg-input max-h-[60vh] w-[30vw] w-1/3 z-10 relative p-10 rounded-[5px]' style={{ overflowY: 'auto' }}>
+                              <div className='mbg-100 max-h-[60vh] w-[30vw] w-1/3 z-10 relative p-10 rounded-[5px]' style={{ overflowY: 'auto' }}>
     
                               <button className='absolute right-4 top-3 text-xl' onClick={() => {
                                 setEditCategoryModal(false);
@@ -1351,7 +1355,7 @@ export const StudyAreaGP = (props) => {
                   {sharedMaterialsCategories.length > 0 && (
                     isBookmarkExpanded && [...new Set(sharedMaterialsCategories.map(category => category.category))].map((categoryName, index) => (
                       <div className="shelf-category my-5" key={categoryName}>
-                        <div className="mbg-300 mt-2 mcolor-900 px-4 py-1 rounded-[5px]">
+                        <div className="mbg-200 mt-2 mcolor-900 px-4 py-1 rounded-[5px]">
                           <div className='flex items-center justify-between' style={expandedSharedCategories[categoryName] ? { borderBottom: 'solid 1px #999', paddingBottom: '.5rem', marginBottom: '.2rem' } : {}}>
                             <div className='flex items-center'>
                               <div className="text-lg font-medium">{categoryName}</div>

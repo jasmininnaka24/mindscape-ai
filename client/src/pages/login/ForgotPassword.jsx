@@ -41,7 +41,7 @@ export const ForgotPassword = () => {
           </div>
 
           <div>
-            <button className='mbg-700 mcolor-100 rounded w-full py-2 my-2' onClick={(e) => submitForgotPasswordInfo(e)}>Submit</button>
+            <button className='btn-800 mcolor-100 rounded w-full py-2 my-2' onClick={(e) => submitForgotPasswordInfo(e)}>Submit</button>
           </div>
         </form>
       ) : (

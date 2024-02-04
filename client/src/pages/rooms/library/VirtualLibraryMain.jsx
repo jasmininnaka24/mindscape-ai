@@ -83,7 +83,12 @@ export const VirtualLibraryMain = () => {
   const [loading, setLoading] = useState(true);
   const [buttonLoading, setButtonLoading] = useState(false);
   const [buttonLoader, setButtonLoader] = useState(false);
+  const [buttonLoaderIndex, setButtonLoaderIndex] = useState(0);
+  const [currentMaterial, setCurrentMaterial] = useState('');
   const [buttonClickedNumber, setButtonClickedNumber] = useState(0);
+  const [loadOnce, setLoadOnce] = useState(false);
+  const [btnClicked, setBtnClicked] = useState(false);
+
   const { user } = useUser()
   const UserId = user?.id;
 
@@ -111,8 +116,12 @@ export const VirtualLibraryMain = () => {
 
   const fetchData = async () => {
     try {
-      setLoading(true);
-  
+      
+      if (loadOnce) {
+        setLoading(true)
+        setLoadOnce(false)
+      }
+    
       const fetchPersonalStudyMaterial = async () => {
         const personalStudyMaterial = await axios.get(`${SERVER_URL}/studyMaterial/study-material-category/Personal/${UserId}`);
         return personalStudyMaterial.data;
@@ -120,6 +129,7 @@ export const VirtualLibraryMain = () => {
   
       const fetchGroupStudyMaterial = async () => {
         const groupStudyMaterial = await axios.get(`${SERVER_URL}/studyMaterial/study-material-category/Group/${UserId}`);
+        console.log(groupStudyMaterial.data);
         return groupStudyMaterial.data;
       };
   
@@ -236,9 +246,11 @@ export const VirtualLibraryMain = () => {
       ]);
   
       setLoading(false);
+      setBtnClicked(false)
     } catch (error) {
       console.error('Error fetching data:', error);
       setLoading(false);
+      setBtnClicked(false)
     }
   };
   
@@ -265,6 +277,7 @@ export const VirtualLibraryMain = () => {
 
   const viewStudyMaterialDetails = async (index, materialFor, filter, category) => {
     setButtonLoader(true);
+    setButtonLoaderIndex(index)
     setShowPresentStudyMaterials(false);
   
     let materialData, mcqResponse, materialId, choicesUrl;
@@ -334,12 +347,16 @@ export const VirtualLibraryMain = () => {
   
     setShowMaterialDetails(true);
     setButtonLoader(false);
+    setButtonLoaderIndex(0)
   };
   
 
 
 
-  const shareMaterial = async (index, materialFor) => {
+  const shareMaterial = async (index, materialFor, materialTitle) => {
+    setBtnClicked(true)
+    setButtonLoaderIndex(index)
+    setCurrentMaterial(materialTitle)
     try {
       let materialArray, materialId, categoryData;
   
@@ -374,10 +391,13 @@ export const VirtualLibraryMain = () => {
         console.error(`Material at index ${index} is undefined or out of bounds.`);
       }
   
-      fetchData();
     } catch (error) {
+      fetchData();
       console.error('Error sharing material:', error);
     }
+    fetchData();
+    setBtnClicked(false)
+    setButtonLoaderIndex(0)
   };
   
   
@@ -413,163 +433,327 @@ export const VirtualLibraryMain = () => {
 
 
   const bookmarkMaterial = async (index, id, materialFor, buttonclickedNum) => {
-    try {
-      setButtonLoading(true);
-      setButtonClickedNumber(buttonclickedNum);
+
+    setBtnClicked(true)
+
+
+
+    const groupID = id;
+    
+    const title = sharedMaterials[index].title;
+    const body = sharedMaterials[index].body;
+    const numInp = sharedMaterials[index].numInp;
+    const materialId = sharedMaterials[index].StudyMaterialsCategoryId;
+    const materialForDb = sharedMaterials[index].materialFor;
+    const materialCode = sharedMaterials[index].code;
+    const materialTag = sharedMaterials[index].tag;
+    
+ 
+ 
+    const savedFunctionality = async () => {
+     
+    let genQAData = []
+    
+    let genMCQAData = []
+    let genToF = []
+    let genIdentification = []
+    let genFITB = []
+ 
+    let mcqaDistractors = []
+    let tofDistractors = []
+    let genQADataRev = []
+ 
+ 
+ 
+ 
+     const studyMaterialsData = {
+       title: title,
+       body: body,
+       numInp: numInp,
+       materialFor: materialFor,
+       code: materialCode,
+       StudyGroupId: materialFor === 'Group' ? groupID : null,
+       StudyMaterialsCategoryId: materialId,
+       UserId: UserId,
+       bookmarkedBy: UserId,
+       tag: 'Bookmarked'
+     };
+ 
+ 
+
+     try {
+      
+       let mcqResponse = await axios.get(`${SERVER_URL}/quesAns/study-material-mcq/${sharedMaterials[index].id}`);
+ 
+       genQAData = mcqResponse.data
+ 
+       genMCQAData = genQAData.filter(data => data.quizType === 'MCQA')
+       genToF = genQAData.filter(data => data.quizType === 'ToF')
+       genIdentification = genQAData.filter(data => data.quizType === 'Identification')
+       genFITB = genQAData.filter(data => data.quizType === 'FITB')
+ 
+ 
+ 
+     // MCQA Distractors
+     if (Array.isArray(genMCQAData)) {
+       const materialChoices = genMCQAData.map(async (materialChoice) => {
+         try {
+           let choiceResponse = await axios.get(`${SERVER_URL}/quesAnsChoices/study-material/${sharedMaterials[index].id}/${materialChoice.id}`);
+ 
+             return choiceResponse.data;
+           } catch (error) {
+             console.error('Error fetching data:', error);
+           }
+         });
+         
+         const responses = await Promise.all(materialChoices);
+         const allChoices = responses.flat();
+         mcqaDistractors = responses;
+       }
+     
+ 
+       // True or False distractors
+ 
+     if (Array.isArray(genToF)) {
+       const materialChoices = genToF.map(async (materialChoice) => {
+         try {
+           let choiceResponse = await axios.get(`${SERVER_URL}/quesAnsChoices/study-material/${sharedMaterials[index].id}/${materialChoice.id}`);
+ 
+             return choiceResponse.data;
+           } catch (error) {
+             console.error('Error fetching data:', error);
+           }
+         });
+         
+         const responses = await Promise.all(materialChoices);
+         const allChoices = responses.flat();
+         tofDistractors = responses;
+       }
+ 
+ 
+     } catch (error) {
+       console.error('Error fetching study material by ID:', error);
+     }
+ 
+     try {
+ 
+       let revResponse = await axios.get(`${SERVER_URL}/quesRev/study-material-rev/${sharedMaterials[index].id}`);
+ 
+       genQADataRev = revResponse.data;
+       
+     } catch (error) {
+       console.error('Error fetching study material by ID:', error);
+     }
+ 
+ 
+ 
+ 
+ 
+ 
+     try {
+      setBtnClicked(false)
+      setButtonLoading(true)
+      setButtonClickedNumber(buttonclickedNum)
   
-      const groupID = id;
-      const {
-        title,
-        body,
-        numInp,
-        StudyMaterialsCategoryId: materialId,
-        materialFor: materialForDb,
-        code: materialCode,
-        tag: materialTag,
-      } = sharedMaterials[index];
+       const smResponse = await axios.post(
+         `${SERVER_URL}/studyMaterial`,
+         studyMaterialsData
+       );
+ 
+ 
+       // genMCQAData = genQAData.filter(data => data.quizType === 'MCQA')
+       // genToF = genQAData.filter(data => data.quizType === 'ToF')
+       // genIdentification = genQAData.filter(data => data.quizType === 'Identification')
+       // genFITB = genQAData.filter(data => data.quizType === 'FITB')
+ 
+       for (let i = 0; i < genMCQAData.length; i++) {      
+ 
+         const qaData = {
+           question: genMCQAData[i].question,
+           answer: genMCQAData[i].answer,
+           bgColor: genMCQAData[i].bgColor,
+           quizType: 'MCQA',
+           StudyMaterialId: smResponse.data.id,
+           UserId: smResponse.data.UserId,
+         };
+ 
+         const qaResponse = await axios.post(
+           `${SERVER_URL}/quesAns`,
+           qaData
+         );
+ 
+         for (let j = 0; j < mcqaDistractors[i].length; j++) {
+           let qacData = {
+               choice: mcqaDistractors[i][j].choice, // Extract the string value from the object
+               QuesAnId: qaResponse.data.id,
+               StudyMaterialId: smResponse.data.id,
+               UserId: smResponse.data.UserId,
+           };
+   
+           try {
+               await axios.post(`${SERVER_URL}/quesAnsChoices`, qacData);
+               console.log("Saved! mcq");
+           } catch (error) {
+               console.error(error);
+           }
+         }
+ 
+       }
+ 
+ 
+       for (let i = 0; i < genQADataRev.length; i++) {      
+ 
+         const qaDataRev = {
+           question:genQADataRev[i].question,
+           answer: genQADataRev[i].answer,
+           StudyMaterialId: smResponse.data.id,
+           UserId: smResponse.data.UserId,
+         };
+ 
+         await axios.post(`${SERVER_URL}/quesRev`, qaDataRev);
+ 
+       }
+ 
+ 
+       for (let i = 0; i < genToF.length; i++) {
+ 
+         const trueSentencesData = {
+           question: genToF[i].question,
+           answer: 'True',
+           quizType: 'ToF',
+           bgColor: genToF[i].bgColor,
+           StudyMaterialId: smResponse.data.id,
+           UserId: smResponse.data.UserId,
+         };
+       
+         try {
+           // Create the question and get the response
+           const qaResponse = await axios.post(`${SERVER_URL}/quesAns`, trueSentencesData);
+       
+           // Iterate through mcqaDistractors and create question choices
+           for (let j = 0; j < tofDistractors[i].length; j++) {
+             let qacData = {
+                 choice: tofDistractors[i][j].choice, // Extract the string value from the object
+                 QuesAnId: qaResponse.data.id,
+                 StudyMaterialId: smResponse.data.id,
+                 UserId: smResponse.data.UserId,
+             };
+     
+             try {
+                 await axios.post(`${SERVER_URL}/quesAnsChoices`, qacData);
+                 console.log("Saved! choice");
+             } catch (error) {
+                 console.error(error);
+             }
+           }
+         } catch (error) {
+           console.error(error);
+         }
+       }
+       
+ 
+       for (let i = 0; i < genFITB.length; i++) {
+ 
+         const fillInTheBlankData = {
+           question: genFITB[i].question,
+           answer: genFITB[i].answer,
+           quizType: 'FITB',
+           bgColor: genFITB[i].bgColor,
+           StudyMaterialId: smResponse.data.id,
+           UserId: smResponse.data.UserId,
+         }
+ 
+         try {
+           await axios.post(
+             `${SERVER_URL}/quesAns`,
+             fillInTheBlankData
+             );
+         } catch (error) {
+           console.error();
+         }
+       }
+       
+ 
+       for (let i = 0; i < genIdentification.length; i++) {
+ 
+         const identificationData = {
+           question: genIdentification[i].question,
+           answer: genIdentification[i].answer,
+           quizType: 'FITB',
+           bgColor: genIdentification[i].bgColor,
+           StudyMaterialId: smResponse.data.id,
+           UserId: smResponse.data.UserId,
+         }
+ 
+         try {
+           await axios.post(
+             `${SERVER_URL}/quesAns`,
+             identificationData
+             );
+         } catch (error) {
+           console.error();
+         }
+       }
+ 
   
-      const studyMaterialsData = {
-        title,
-        body,
-        numInp,
-        materialFor: materialForDb,
-        code: materialCode,
-        StudyGroupId: materialForDb === 'Group' ? groupID : null,
-        StudyMaterialsCategoryId: materialId,
-        UserId,
-        bookmarkedBy: UserId,
-        tag: 'Bookmarked',
-      };
-  
-      const savedFunctionality = async (genMCQAData, genToF, mcqaDistractors, tofDistractors, genQADataRev, genFITB, genIdentification) => {
-        try {
-          const smResponse = await axios.post(`${SERVER_URL}/studyMaterial`, studyMaterialsData);
-  
-          for (const genMCQA of genMCQAData) {
-            const qaData = {
-              question: genMCQA.question,
-              answer: genMCQA.answer,
-              bgColor: genMCQA.bgColor,
-              quizType: 'MCQA',
-              StudyMaterialId: smResponse.data.id,
-              UserId: smResponse.data.UserId,
-            };
-  
-            const qaResponse = await axios.post(`${SERVER_URL}/quesAns`, qaData);
-  
-            for (const choice of mcqaDistractors[genMCQAData.indexOf(genMCQA)]) {
-              const qacData = {
-                choice: choice.choice,
-                QuesAnId: qaResponse.data.id,
-                StudyMaterialId: smResponse.data.id,
-                UserId: smResponse.data.UserId,
-              };
-  
-              await axios.post(`${SERVER_URL}/quesAnsChoices`, qacData);
-            }
-          }
-  
-          for (const genQADataRev of genQADataRev) {
-            const qaDataRev = {
-              question: genQADataRev.question,
-              answer: genQADataRev.answer,
-              StudyMaterialId: smResponse.data.id,
-              UserId: smResponse.data.UserId,
-            };
-  
-            await axios.post(`${SERVER_URL}/quesRev`, qaDataRev);
-          }
-  
-          for (const genToFData of genToF) {
-            const trueSentencesData = {
-              question: genToFData.question,
-              answer: 'True',
-              quizType: 'ToF',
-              bgColor: genToFData.bgColor,
-              StudyMaterialId: smResponse.data.id,
-              UserId: smResponse.data.UserId,
-            };
-  
-            const qaResponse = await axios.post(`${SERVER_URL}/quesAns`, trueSentencesData);
-  
-            for (const choice of tofDistractors[genToF.indexOf(genToFData)]) {
-              const qacData = {
-                choice: choice.choice,
-                QuesAnId: qaResponse.data.id,
-                StudyMaterialId: smResponse.data.id,
-                UserId: smResponse.data.UserId,
-              };
-  
-              await axios.post(`${SERVER_URL}/quesAnsChoices`, qacData);
-            }
-          }
-  
-          for (const genFITBData of genFITB) {
-            const fillInTheBlankData = {
-              question: genFITBData.question,
-              answer: genFITBData.answer,
-              quizType: 'FITB',
-              bgColor: genFITBData.bgColor,
-              StudyMaterialId: smResponse.data.id,
-              UserId: smResponse.data.UserId,
-            };
-  
-            await axios.post(`${SERVER_URL}/quesAns`, fillInTheBlankData);
-          }
-  
-          for (const genIdentificationData of genIdentification) {
-            const identificationData = {
-              question: genIdentificationData.question,
-              answer: genIdentificationData.answer,
-              quizType: 'FITB',
-              bgColor: genIdentificationData.bgColor,
-              StudyMaterialId: smResponse.data.id,
-              UserId: smResponse.data.UserId,
-            };
-  
-            await axios.post(`${SERVER_URL}/quesAns`, identificationData);
-          }
-        } catch (error) {
-          console.error('Error saving study material:', error);
-        }
-      };
-  
-      const personalOrGroupStudyMaterial = async (studyMaterialCategory) => {
-        const studyMaterial = await axios.get(`${SERVER_URL}/studyMaterial/study-material-category/${studyMaterialCategory}/${UserId}`);
-        const bookmarkedMaterial = studyMaterial.data;
-  
-        const filteredMaterialResult = bookmarkedMaterial.filter(material => (
-          material.code === materialCode && material.materialFor === materialForDb &&
-          ((materialForDb === 'Personal' && material.UserId === UserId) || (materialForDb === 'Group' && material.StudyGroupId === groupID))
-        ));
-  
-        if (filteredMaterialResult.length === 0) {
-          savedFunctionality(
-            await axios.get(`${SERVER_URL}/quesAns/study-material-mcq/${materialId}`),
-            await axios.get(`${SERVER_URL}/quesAns/study-material-mcq/${materialId}`),
-            await axios.get(`${SERVER_URL}/quesRev/study-material-rev/${materialId}`),
-          );
-        } else {
-          alert('Already exists.');
-          setButtonLoading(false);
-          setButtonClickedNumber(0);
-        }
-      };
-  
-      if (materialForDb === 'Personal') {
-        personalOrGroupStudyMaterial('Personal');
-      } else {
-        personalOrGroupStudyMaterial('Group');
-      }
-  
-      fetchData();
-  
-      setButtonLoading(false);
-      setButtonClickedNumber(0);
-    } catch (error) {
-      console.error('Error bookmarking material:', error);
+     } catch (error) {
+       console.error('Error saving study material:', error);
+     }
+     
+ 
+ 
+     
+     fetchData()
+     setBtnClicked(false)
+     setButtonLoading(false)
+     setButtonClickedNumber(0)
     }
-  };
+ 
+ 
+    if (materialFor === 'Personal') {
+
+      
+ 
+     const personalStudyMaterial = await axios.get(`${SERVER_URL}/studyMaterial/study-material-category/Personal/${UserId}`)
+ 
+     let bookmarkedPersonalMaterial = personalStudyMaterial.data;
+ 
+ 
+      const filteredMaterialResult = bookmarkedPersonalMaterial.filter(material => (material.code === materialCode && material.materialFor === materialFor && material.UserId === UserId));
+ 
+      if (filteredMaterialResult.length === 0) {
+
+        savedFunctionality()
+       } else {
+         alert('Already exists.')
+      setBtnClicked(false)
+       setButtonLoading(false)
+       setButtonClickedNumber(0)
+      }
+ 
+ 
+     } else {
+ 
+       const groupStudyMaterial = await axios.get(`${SERVER_URL}/studyMaterial/study-material-category/Group/${UserId}`)
+ 
+       let bookmarkedPersonalMaterial = groupStudyMaterial.data;
+ 
+ 
+       const filteredMaterialResult = bookmarkedPersonalMaterial.filter(material => (material.code === materialCode && material.materialFor === materialFor && material.StudyGroupId === groupID));
+ 
+ 
+       if (filteredMaterialResult.length === 0) {
+          savedFunctionality()
+         } else {
+         alert('Already exists.')
+         setBtnClicked(false)
+         setButtonLoading(false)
+         setButtonClickedNumber(0)
+       }
+     }
+     
+
+   }
   
 
   const filterMaterial = async (categoryTitle) => {
@@ -628,7 +812,7 @@ export const VirtualLibraryMain = () => {
   
       // Filter shared materials based on case-insensitive title or body comparison
       const filteredMaterials = sharedMaterials.filter(material => {
-        const lowercaseTitle = material.title.toLowerCase();
+        const lowercaseTitle = material?.title.toLowerCase();
         const lowercaseBody = material.body.toLowerCase();
         return lowercaseTitle.includes(lowercaseValue) || lowercaseBody.includes(lowercaseValue);
       });
@@ -735,6 +919,8 @@ export const VirtualLibraryMain = () => {
   
 
   const removeFromLibraryOnly = async () => {
+    setBtnClicked(true)
+    setCurrentMaterial('Removing')
     try {
       const data = {
         tag: 'Own Record'
@@ -760,9 +946,13 @@ export const VirtualLibraryMain = () => {
     } catch (error) {
       console.error('Error removing from library:', error);
     }
+
+    fetchData()
   };
   
   const deleteInAllRecords = async () => {
+    setBtnClicked(true)
+    setCurrentMaterial('Deleting')
     try {
       await axios.delete(`${SERVER_URL}/studyMaterial/delete-material/${materialIdToRemove}`);
   
@@ -774,6 +964,8 @@ export const VirtualLibraryMain = () => {
     } catch (error) {
       console.error('Error deleting in all records:', error);
     }
+    fetchData()
+    setBtnClicked(false)
   };
   
   
@@ -786,7 +978,7 @@ export const VirtualLibraryMain = () => {
   } else {
     return (
       <div>
-        <div className='poppins mcolor-900 mbg-300 relative flex'>
+        <div className='poppins mcolor-900 mbg-200 relative flex'>
           {/* <Navbar linkBack={'/main/'} linkBackName={'Main'} currentPageName={'Virtual Library Room'} username={'Jennie Kim'}/> */}
 
           <Sidebar currentPage={'library'} />
@@ -848,7 +1040,7 @@ export const VirtualLibraryMain = () => {
                 {deleteModal && (
                   <div className={`absolute top-0 modal-bg left-0 w-full h-full`}>
                     <div className='flex items-center justify-center h-full'>
-                      <div className='relative mbg-100 min-h-[30vh] w-1/3 z-10 relative py-5 px-5 rounded-[5px]' style={{overflowY: 'auto'}}>
+                      <div className='relative mbg-input min-h-[30vh] w-1/3 z-10 relative py-5 px-5 rounded-[5px]' style={{overflowY: 'auto'}}>
   
                         <button className='absolute right-5 top-5 font-medium text-xl' onClick={(e) => {
                           e.preventDefault()
@@ -860,10 +1052,10 @@ export const VirtualLibraryMain = () => {
                             <div>
                               <div className='flex flex-col gap-4'>
                                 <br />
-                                <button className='btn-300 py-4 rounded text-md font-medium' onClick={removeFromLibraryOnly}>Remove From Library Only</button>
+                                <button className='btn-300 py-4 rounded text-md font-medium' onClick={removeFromLibraryOnly}>{btnClicked && currentMaterial === 'Removing' ? 'Removing...' : 'Remove From Library Only'}</button>
                                 <button className='btn-300 py-4 rounded text-md font-medium' onClick={() => {
                                   deleteInAllRecords()
-                                }}>Delete in All Records</button>
+                                }}>{btnClicked && currentMaterial === 'Deleting' ? 'Deleting...' : 'Delete in All Records'}</button>
                               </div>
                             </div>
                           </div>
@@ -899,9 +1091,9 @@ export const VirtualLibraryMain = () => {
               // Sort the array by the latest bookmark timestamp in descending order
               .sort((a, b) => b.latestBookmarkTimestamp - a.latestBookmarkTimestamp)
               .map(({ index, material, category, user, bookmarksCount }) => (
-                <div key={index} className='my-3 mbg-200 border-thin-800 p-4 rounded flex justify-between items-center'>
+                <div key={index} className='my-3 mbg-input border-thin-800 p-4 rounded flex justify-between items-center'>
                   <div className='w-2/3'>
-                    <p className='font-medium text-lg'>Title: {material.title}</p>
+                    <p className='font-medium text-lg'>Title: {material?.title}</p>
                     <p className='text-sm mt-1'>Category: {category}</p>
                     <p className='text-sm mt-1'>Uploader: {user}</p>
                     <p className='text-sm mt-1'>Bookmark Count: {bookmarksCount}</p>
@@ -922,9 +1114,9 @@ export const VirtualLibraryMain = () => {
                       </div>
                     )}
   
-                    <button className='mbg-100 my-1 w-full mcolor-900 border-thin-800 px-5 py-2 rounded' disabled={buttonLoader} onClick={() => viewStudyMaterialDetails(index, 'shared', 'not filtered', category)}>
+                    <button className='mbg-200 my-1 w-full mcolor-900 border-thin-800 px-5 py-2 rounded' disabled={buttonLoader} onClick={() => viewStudyMaterialDetails(index, 'shared', 'not filtered', category)}>
                       {
-                        buttonLoader ? (
+                        (buttonLoader && index === buttonLoaderIndex) ? (
                           <div className="w-full flex items-center justify-center">
                             <div className='btn-spinner'></div>
                           </div>
@@ -971,9 +1163,9 @@ export const VirtualLibraryMain = () => {
                 // Sort the array by the latest bookmark timestamp in descending order
                 .sort((a, b) => b.latestBookmarkTimestamp - a.latestBookmarkTimestamp)
                 .map(({ index, material, category, user, bookmarksCount }) => (
-                  <div key={index} className='my-3 mbg-200 border-thin-800 p-4 rounded flex justify-between items-center'>
+                  <div key={index} className='my-3 mbg-input border-thin-800 p-4 rounded flex justify-between items-center'>
                     <div className='w-2/3'>
-                      <p className='font-medium text-lg'>Title: {material.title}</p>
+                      <p className='font-medium text-lg'>Title: {material?.title}</p>
                       <p className='text-sm mt-1'>Category: {category}</p>
                       <p className='text-sm mt-1'>Uploader: {user}</p>
                       <p className='text-sm mt-1'>Bookmark Count: {bookmarksCount}</p>
@@ -994,10 +1186,10 @@ export const VirtualLibraryMain = () => {
                         </div>
                       )}
     
-                      <button className='mbg-100 my-1 w-full mcolor-900 border-thin-800 px-5 py-2 rounded' disabled={buttonLoader} onClick={() => viewStudyMaterialDetails(index, 'shared', 'not filtered', category)}>
+                      <button className='mbg-200 my-1 w-full mcolor-900 border-thin-800 px-5 py-2 rounded' disabled={buttonLoader} onClick={() => viewStudyMaterialDetails(index, 'shared', 'not filtered', category)}>
                         {
-                          buttonLoader ? (
-                            <div className="w-full flex items-center justify-center">
+                        (buttonLoader && index === buttonLoaderIndex) ? (
+                          <div className="w-full flex items-center justify-center">
                               <div className='btn-spinner'></div>
                             </div>
                             ) : (
@@ -1038,14 +1230,14 @@ export const VirtualLibraryMain = () => {
                       };
                     })
                     .filter(({ material, category, user, bookmarksCount }) =>
-                      material.title.toLowerCase().includes(searchValue.toLowerCase()) ||
+                      material?.title.toLowerCase().includes(searchValue.toLowerCase()) ||
                       category.toLowerCase().includes(searchValue.toLowerCase()) ||
                       user.toLowerCase().includes(searchValue.toLowerCase())
                     )
                     .map(({ index, material, category, user, bookmarksCount }) => (
-                      <div key={index} className='my-3 mbg-200 border-thin-800 p-4 rounded flex justify-between items-center'>
+                      <div key={index} className='my-3 mbg-input border-thin-800 p-4 rounded flex justify-between items-center'>
                         <div className='w-2/3'>
-                          <p className='font-medium text-lg'>Title: {material.title}</p>
+                          <p className='font-medium text-lg'>Title: {material?.title}</p>
                           <p className='text-sm mt-1'>Category: {category}</p>
                           <p className='text-sm mt-1'>Uploader: {user}</p>
                           <p className='text-sm mt-1'>Bookmark Count: {bookmarksCount}</p>
@@ -1066,9 +1258,9 @@ export const VirtualLibraryMain = () => {
                             </div>
                           )}
         
-                          <button className='mbg-100 my-1 w-full mcolor-900 border-thin-800 px-5 py-2 rounded' disabled={buttonLoader} onClick={() => viewStudyMaterialDetails(index, 'shared', 'not filtered', category)}>
+                          <button className='mbg-200 my-1 w-full mcolor-900 border-thin-800 px-5 py-2 rounded' disabled={buttonLoader} onClick={() => viewStudyMaterialDetails(index, 'shared', 'not filtered', category)}>
                             {
-                              buttonLoader ? (
+                              (buttonLoader && index === buttonLoaderIndex) ? (
                                 <div className="w-full flex items-center justify-center">
                                   <div className='btn-spinner'></div>
                                 </div>
@@ -1091,46 +1283,8 @@ export const VirtualLibraryMain = () => {
   
   
   
-                {searchValue !== '' && (
-                  // Check if searchedMaterials and searchCategoryMaterials have the same array of objects
-                  searchedMaterials.length !== searchCategoryMaterials.length &&
-                  searchedMaterials.every((material, index) => material.title && searchCategoryMaterials[index]?.title) && (
-                    searchCategoryMaterials.map((material, index) => {
-                      const category = searchedMaterialsCategories[0]?.category || 'Category not available';
-                      const title = searchCategoryMaterials[index].title;
-  
-                      return (
-                        <div key={index} className='my-3 mbg-200 border-thin-800 p-4 rounded '>
-                          <div>
-                            <p className='font-medium text-lg'>Title: {title}</p>
-                            <p className='text-sm mt-1'>Category: {category}</p>
-                          </div>
-  
-                          <div className='flex items-center gap-3'>
 
-                            <button className='mbg-100 w-full my-1 mcolor-900 border-thin-800 px-5 py-2 rounded' disabled={buttonLoader} onClick={() => viewStudyMaterialDetails(index, 'shared', 'searched-category', category)}>
-                              {
-                                buttonLoader ? (
-                                  <div className="w-full flex items-center justify-center">
-                                    <div className='btn-spinner'></div>
-                                  </div>
-                                  ) : (
-                                  <div>View</div>
-                                )
-                              }
-                            </button>
 
-                            <button className='btn-700 mcolor-100 px-5 py-2 rounded' onClick={() => {
-                              setShowBookmarkModal(true)
-                              setChooseRoom(true)
-                              setCurrentSharedMaterialIndex(index)
-                            }}>Bookmark</button>
-                          </div>
-                        </div>
-                      );
-                    })
-                  )
-                )}
   
                 </div>
               </div>
@@ -1159,7 +1313,7 @@ export const VirtualLibraryMain = () => {
                  
                 {searchCategoryValue === '' && (
                   filteredSharedCategories.map((material, index) => {
-                    return <div key={index} className='mbg-200 border-thin-800 py-2 rounded flex items-center justify-center'>
+                    return <div key={index} className='mbg-input border-thin-800 py-2 rounded flex items-center justify-center'>
                         <button onClick={() => {
                           filterMaterial(material.category)
                           setSearchValue('')
@@ -1191,9 +1345,9 @@ export const VirtualLibraryMain = () => {
             {showBookmarkModal && (
               <div className={`absolute top-0 modal-bg left-0 w-full h-full`}>
                 <div className='flex items-center justify-center h-full'>
-                  <div className='relative mbg-100 min-h-[30vh] w-1/3 z-10 relative py-5 px-5 rounded-[5px]' style={{overflowY: 'auto'}}>
+                  <div className='relative mbg-input min-h-[30vh] w-1/3 z-10 relative py-5 px-5 rounded-[5px]' style={{overflowY: 'auto'}}>
 
-                    <button className='absolute right-5 top-5 font-medium text-xl' onClick={() => {
+                    <button className='absolute right-5 top-5 font-medium text-xl' disabled={btnClicked || buttonLoading} onClick={() => {
                       setShowBookmarkModal(false)
                       setChooseGroupRoom(false)
                       setChooseRoom(false)
@@ -1207,15 +1361,20 @@ export const VirtualLibraryMain = () => {
                           <p className='text-lg mb-5'>Bookmark to: </p>
                           <div className='flex flex-col gap-4'>
 
-                            <button className={`${(buttonLoading && buttonClickedNumber === 4) ? 'btn-300 py-4 rounded text-md font-medium' : 'btn-300 py-4 rounded text-md font-medium'} px-10 py-2 rounded`} disabled={(buttonLoading && buttonClickedNumber === 4)} onClick={() => bookmarkMaterial(currentSharedMaterialIndex, null, 'Personal', 4)}>
+                            <button className={`${(buttonLoading && buttonClickedNumber === 4) ? 'btn-300 py-4 rounded text-md font-medium' : 'btn-300 py-4 rounded text-md font-medium'} px-10 py-2 rounded`} disabled={(!btnClicked && buttonLoading && buttonClickedNumber === 4)} onClick={() => bookmarkMaterial(currentSharedMaterialIndex, null, 'Personal', 4)}>
                               {(buttonLoading && buttonClickedNumber === 4) ? (
                                 <div>Bookmarking to Personal Study Room...</div>
                               ) : (
-                                <div>Personal Study Room</div>
+                                btnClicked ? (
+                                  <div>Please Wait...</div>
+                                  ) : (
+                                  <div>Personal Study Room</div>
+                                ) 
                               )}
+
                             </button>
 
-                            <button className='btn-300 py-4 rounded text-md font-medium' onClick={() => {
+                            <button disabled={(btnClicked || ((buttonLoading) && buttonClickedNumber === 4))} className='btn-300 py-4 rounded text-md font-medium'  onClick={() => {
                               setChooseRoom(false)
                               setChooseGroupRoom(true)
                             }}>Group Study Room</button>
@@ -1228,7 +1387,7 @@ export const VirtualLibraryMain = () => {
                   {chooseGroupRoom && (
                     <div>
 
-                        <button className='mbg-200 mcolor-900 rounded px-4 py-1 rounded border-thin-800' onClick={() => {
+                        <button className='mbg-200 mcolor-900 rounded px-4 py-1 rounded border-thin-800' disabled={btnClicked || buttonLoading} onClick={() => {
                           setChooseGroupRoom(false)
                           setChooseRoom(true)
                         }}>Back</button>
@@ -1238,7 +1397,8 @@ export const VirtualLibraryMain = () => {
                         {/* back here */}
 
                         {showCreateGroupInput === false ? (
-                          <button className={`px-4 py-2 rounded btn-800 mcolor-100 ${UserId === undefined && 'mt-5'}`} onClick={() => {
+                          <button className={`px-4 py-2 rounded btn-800 mcolor-100 ${UserId === undefined && 'mt-5'}`}
+                          disabled={btnClicked || buttonLoading} onClick={() => {
                             setShowCreateGroupInput(true)
                           }}>Create a group</button>
                         ) : (
@@ -1250,7 +1410,7 @@ export const VirtualLibraryMain = () => {
                             </div>
                             <div className='flex items-center justify-center gap-3'>
                               <button className='px-4 w-full py-2 rounded btn-700 mcolor-100' onClick={createGroupBtn}>Create</button>
-                              <button className='px-4 w-full py-2 rounded mbg-100 mcolor-900 border-thin-800' onClick={() => setShowCreateGroupInput(false)}>Cancel</button>
+                              <button className='px-4 w-full py-2 rounded mbg-input mcolor-900 border-thin-800' onClick={() => setShowCreateGroupInput(false)}>Cancel</button>
                             </div>
                           </div>
                         )}
@@ -1260,19 +1420,25 @@ export const VirtualLibraryMain = () => {
 
                       {showCreateGroupInput === false && (
                         groupList.slice().sort((a, b) => b.id - a.id).map(({ id, groupName}) => (
-                          <div key={id} className='shadows mcolor-900 rounded-[5px] p-5 my-6 mbg-100 flex items-center justify-between relative'>
+                          <div key={id} className='shadows mcolor-900 rounded-[5px] p-5 my-6 mbg-input flex items-center justify-between relative'>
 
 
                             <p className='px-1'>{groupName}</p>
               
 
-                            <button className={`${(buttonLoading && buttonClickedNumber === (id+'1')) ? 'mbg-200 mcolor-900 border-thin-800' : 'btn-700 mcolor-100'} px-5 py-2 rounded`} disabled={(buttonLoading && buttonClickedNumber === (id+'1'))} onClick={() => bookmarkMaterial(currentSharedMaterialIndex, id, 'Group', (id+'1'))}>
+                            <button className={`${(buttonLoading && buttonClickedNumber === (id+'1')) ? 'mbg-200 mcolor-900 border-thin-800' : 'btn-700 mcolor-100'} px-5 py-2 rounded`} disabled={(!btnClicked && buttonLoading && buttonClickedNumber === (id+'1'))} onClick={() => bookmarkMaterial(currentSharedMaterialIndex, id, 'Group', (id+'1'))}>
                               {(buttonLoading && buttonClickedNumber === (id+'1')) ? (
                                 <div>Bookmarking...</div>
                               ) : (
+                                btnClicked ? (
+                                  <div>Please Wait...</div>
+                                  ) : (
                                 <div>Bookmark</div>
+                                )
                               )}
                             </button>
+
+                            
 
                             {/* {expandedGroupId === id && (
 
@@ -1329,9 +1495,9 @@ export const VirtualLibraryMain = () => {
             {showModal && (
               <div className={`absolute top-0 modal-bg left-0 w-full h-full`}>
                 <div className='flex items-center justify-center h-full'>
-                  <div className='relative mbg-100 h-[75vh] w-1/2 z-10 relative py-5 px-10 rounded-[5px]' style={{overflowY: 'auto'}}>
+                  <div className='relative mbg-input h-[75vh] w-1/2 z-10 relative py-5 px-10 rounded-[5px]' style={{overflowY: 'auto'}}>
                     
-                    <button className='absolute right-5 top-5 font-medium text-xl' onClick={() => {
+                    <button className='absolute right-5 top-5 font-medium text-xl' disabled={btnClicked} onClick={() => {
                       setShowMaterialDetails(false)
                       setShowPresentStudyMaterials(false)
                       setShowModal(false)
@@ -1344,7 +1510,7 @@ export const VirtualLibraryMain = () => {
                         <br />
                         <div className='flex items-center justify-center mb-2'>
                           <Link to={'/main/library/generate-quiz'}>
-                            <button className='btn-800 px-5 py-2 rounded border-thin-800'>Generate a new Study Material</button>
+                            <button disabled={btnClicked} className='btn-800 px-5 py-2 rounded border-thin-800'>Generate a new Study Material</button>
                           </Link>
                         </div>
                         <br />
@@ -1357,16 +1523,16 @@ export const VirtualLibraryMain = () => {
   
                           return <div key={index} className='flex justify-between my-3 mbg-200 border-thin-800 p-4 rounded '>
                               <div>
-                                <p className='font-medium text-lg'>Title: {material.title}</p>
+                                <p className='font-medium text-lg'>Title: {material?.title}</p>
                                 <p className='text-sm mt-1'>Category: {category}</p>
                                 
                               </div>
   
                               <div className='flex items-center gap-3'>
 
-                                <button className='mbg-100 w-full my-1 mcolor-900 border-thin-800 px-5 py-2 rounded' disabled={buttonLoader} onClick={() => viewStudyMaterialDetails(index, 'personal', 'not filtered', category)}>
+                                <button className='mbg-input w-full my-1 mcolor-900 border-thin-800 px-5 py-2 rounded' disabled={buttonLoader || btnClicked} onClick={() => viewStudyMaterialDetails(index, 'personal', 'not filtered', category)}>
                                   {
-                                    buttonLoader ? (
+                                    (buttonLoader && index === buttonLoaderIndex) ? (
                                       <div className="w-full flex items-center justify-center">
                                         <div className='btn-spinner'></div>
                                       </div>
@@ -1377,7 +1543,7 @@ export const VirtualLibraryMain = () => {
                                 </button>
 
 
-                                <button className='btn-700 mcolor-100 px-5 py-2 rounded' onClick={() => shareMaterial(index, 'personal')}>Share</button>
+                                <button className='btn-700 mcolor-100 px-5 py-2 rounded' onClick={() => shareMaterial(index, 'personal', material?.title)}>{btnClicked && material?.title === currentMaterial ? 'Sharing...' : 'Share'}</button>
                               </div>
                             </div>
                         })}
@@ -1391,16 +1557,16 @@ export const VirtualLibraryMain = () => {
   
                           return <div key={index} className='my-3 mbg-200 border-thin-800 p-4 rounded flex items-center justify-between'>
                               <div>
-                                <p className='font-medium text-lg'>Title: {material.title}</p>
+                                <p className='font-medium text-lg'>Title: {material?.title}</p>
                                 <p className='text-sm mt-1'>Category: {category}</p>
   
                               </div>
   
                               <div className='flex items-center gap-3'>
 
-                                <button className='mbg-100 w-full my-1 mcolor-900 border-thin-800 px-5 py-2 rounded' disabled={buttonLoader} onClick={() => viewStudyMaterialDetails(index, 'group', 'not filtered', category)}>
+                                <button className='mbg-input w-full my-1 mcolor-900 border-thin-800 px-5 py-2 rounded' disabled={buttonLoader || btnClicked} onClick={() => viewStudyMaterialDetails(index, 'group', 'not filtered', category)}>
                                   {
-                                    buttonLoader ? (
+                                    (buttonLoader && index === buttonLoaderIndex) ? (
                                       <div className="w-full flex items-center justify-center">
                                         <div className='btn-spinner'></div>
                                       </div>
@@ -1410,7 +1576,7 @@ export const VirtualLibraryMain = () => {
                                   }
                                 </button>
                                 
-                                <button className='btn-700 mcolor-100 px-5 py-2 rounded' onClick={() => shareMaterial(index, 'Group')}>Share</button>
+                                <button className='btn-700 mcolor-100 px-5 py-2 rounded' onClick={() => shareMaterial(index, 'group', material?.title)}>{btnClicked && material?.title === currentMaterial ? 'Sharing...' : 'Share'}</button>
                               </div>
                             </div>
                         })}
@@ -1419,11 +1585,18 @@ export const VirtualLibraryMain = () => {
   
   
   
+                    {buttonLoader && 
+                      <div className="w-full flex items-center justify-center">
+                        <div className='btn-spinner'></div>
+                      </div>
+                    }
+
                     {showMaterialDetails && (
                       <div>
 
+                        
                         {enableBackButton && (
-                          <button className='mbg-200 mcolor-900 rounded px-4 py-1 rounded border-thin-800' onClick={() => {
+                          <button disabled={buttonLoader || btnClicked} className='mbg-200 mcolor-900 rounded px-4 py-1 rounded border-thin-800' onClick={() => {
                             setShowMaterialDetails(false)
                             setShowPresentStudyMaterials(true)
                           }}>Back</button>
@@ -1500,6 +1673,7 @@ export const VirtualLibraryMain = () => {
                           )}
 
                         </div>
+
                       </div>
                     )}
                   

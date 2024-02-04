@@ -121,9 +121,10 @@ export const DiscussionForums = () => {
       console.log(allActiveUserList);
     });
   
-    socket.on('discussion_rooms_list', (roomsList) => {
-      setRoomList(roomsList);
-      console.log(roomsList);
+    socket.on('discussion_rooms_list', (roomsListData) => {
+      setRoomList(roomsListData);
+      setCurrentIndex(currentIndex)
+      setCurrentRoom(roomList[currentIndex]?.roomName)
     });
   };
   
@@ -164,13 +165,13 @@ export const DiscussionForums = () => {
     
     socket.emit('created_discussion_forum', data);
 
-    socket.on('discussion_rooms_list', (roomsListData) => {
-      const index = roomsListData.findIndex(roomData => roomData.room === data.room);
-      console.log('Index of the created room:', index);
+    // socket.on('discussion_rooms_list', (roomsListData) => {
+    //   const index = roomsListData.findIndex(roomData => roomData.room === data.room);
+    //   console.log('Index of the created room:', index);
 
-      setCurrentIndex(index)
-      setCurrentRoom(roomList[index]?.roomName)
-    });
+    //   setCurrentIndex(index)
+    //   setCurrentRoom(roomList[index]?.roomName)
+    // });
 
 
     setShowCreateRoomModal(false)
@@ -205,15 +206,21 @@ export const DiscussionForums = () => {
     }
 
     socket.emit('message_joined_created_room', data);
+    console.log("Current index ah: " + currentIndex);
     setMessage('')
-
     socket.on('discussion_rooms_list', (roomsListData) => {
-      const index = roomsListData.findIndex(roomData => roomData.room === data.room);
-      console.log('Index of the created room:', index);
-
-      setCurrentIndex(index)
-      setCurrentRoom(roomList[index]?.roomName)
+      setRoomList(roomsListData);
+      setCurrentIndex(currentIndex)
+      setCurrentRoom(roomList[currentIndex]?.roomName)
     });
+
+    // socket.on('discussion_rooms_list', (roomsListData) => {
+    //   const index = roomsListData.findIndex(roomData => roomData.room === data.room);
+    //   console.log('Index of the created room:', index);
+
+    //   setCurrentIndex(index)
+    //   setCurrentRoom(roomList[index]?.roomName)
+    // });
 
   }
 
@@ -290,7 +297,7 @@ export const DiscussionForums = () => {
 
 
   return (
-    <div className='poppins mcolor-900 mbg-300 relative flex'>
+    <div className='poppins mcolor-900 mbg-200 relative flex'>
 
       <Sidebar currentPage={'forum'} />
 
@@ -302,7 +309,7 @@ export const DiscussionForums = () => {
 
 
       {showRooms && (
-        <div className='flex-1 mbg-300 w-full pt-5 px-8 min-h-[100vh]'>
+        <div className='flex-1 mbg-200 w-full pt-5 px-8 min-h-[100vh]'>
       
           <div>
             <div className='h-[2vh]'></div>
@@ -313,9 +320,9 @@ export const DiscussionForums = () => {
               </p>
 
               {filteredRooms.length !== 0 && (
-                <div className='mbg-800-opacity rounded'>
+                <div className='rounded'>
                   <button
-                    className='px-6 my-1 py-2 text-lg mcolor-100 rounded'
+                    className='px-6 my-1 py-2 text-lg mbg-input mcolor-800 shadows rounded'
                     onClick={() => {
                       setShowrooms(false)
                       setShowJoinedrooms(true)
@@ -479,9 +486,8 @@ export const DiscussionForums = () => {
               .filter(room => room !== null)
               .map((room, index) => {
                 const userIdExists = room?.users?.some((userr) => userr.userId === user?.id);
-         
                 return (
-                  <div key={index} className='mbg-200 border-thin-800 py-3 px-5 rounded'>
+                  <div key={index} className='mbg-input border-thin-800 py-3 px-5 rounded'>
                     {room && (
                       <>
                         <p className='mcolor-800'>
@@ -539,7 +545,7 @@ export const DiscussionForums = () => {
 
 
       {showJoinedRooms && (
-        <div className='flex-1 mbg-300 w-full pt-5 px-8 min-h-[100vh]'>
+        <div className='flex-1 mbg-200 w-full pt-5 px-8 min-h-[100vh]'>
 
           <div>
             <div className='h-[2vh]'></div>
@@ -548,10 +554,10 @@ export const DiscussionForums = () => {
                 <GroupsIcon className='mr-3 mcolor-700' sx={{ fontSize: 45 }} />
                 <p>Chat Rooms</p>
               </p>
-              <div className='mbg-800-opacity rounded'>
+              <div className='rounded'>
                 <button
-                  className='px-6 my-1 py-2 text-lg mcolor-100 rounded'
-                  onClick={() => {
+                    className='px-6 my-1 py-2 text-lg mbg-input mcolor-800 shadows rounded'
+                    onClick={() => {
                     setShowJoinedrooms(false);
                     setShowrooms(true);
                   }}

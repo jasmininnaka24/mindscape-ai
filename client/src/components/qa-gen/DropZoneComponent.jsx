@@ -22,6 +22,7 @@ export const DropZoneComponent = (props) => {
   const [progress, setProgress] = useState(0);
   const [isRegenerate, setIsRegenerate] = useState(false)
   const [showLoading, setShowLoading] = useState(false);
+  const [error, setError] = useState('')
 
 
   // link here
@@ -48,13 +49,15 @@ export const DropZoneComponent = (props) => {
         if (file.type === 'application/pdf') {
 
           fileContent = await extractPdfText(file);
-                    
+          setError('')
+    
         } else if (file.type === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document') {
 
           fileContent = await extractDocxText(file);
+          setError('')
 
         } else {
-          alert("Unsupported file type")
+          setError('Unsupported file type')
           return;
         }
   
@@ -126,7 +129,7 @@ export const DropZoneComponent = (props) => {
     event.preventDefault();
 
     if (numInp === 0) {
-      alert('Maximum number of items to generate cannot be 0.');
+      setError('Maximum number of items to generate cannot be 0.');
     } else {
       const animationDurationInSeconds = numInp * 2 + 5;
       setLoading(true);
@@ -194,7 +197,7 @@ export const DropZoneComponent = (props) => {
         <div className="form-group">
           <div
             id="drop-area"
-            className="drop-area mbg-input"
+            className="drop-area mbg-200"
             onDragOver={(event) => {
               event.preventDefault();
               event.stopPropagation();
@@ -222,8 +225,13 @@ export const DropZoneComponent = (props) => {
 
 
         </div>
-        <div className="form-group">
-          <p className='mb-1 mt-10'>Maximum number of items to generate:</p>
+        
+        {error !== '' && <p className='text-center text-red'>{error}</p>}
+        
+
+
+        <div className="form-group mt-8">
+          <p className='mb-1'>Maximum number of items to generate:</p>
           <input
             required
             type="number"
@@ -231,7 +239,7 @@ export const DropZoneComponent = (props) => {
             id="num_questions_inp"
             value={numInp}
             placeholder="Optional"
-            className="maxnum mbg-input"
+            className="maxnum mbg-200"
             min="1"
             max="150"
           />
@@ -315,7 +323,7 @@ export const DropZoneComponent = (props) => {
               className="generate-btn"
               disabled={loading || !data.num_questions_inp || !data.text}
               style={{
-                backgroundColor: loading ? '#D9E1E7' : '#D9E1E7',
+                backgroundColor: loading ? '#FFFFFF' : '#FFFFFF',
                 color: '#444',
                 padding: '10px 20px',
                 borderRadius: '5px',
