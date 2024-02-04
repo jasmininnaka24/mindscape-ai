@@ -314,7 +314,7 @@ export const MainDash = ({categoryFor}) => {
     return (
       <div className='poppins mcolor-900 mbg-300 relative flex'>
 
-        <Sidebar currentPage={'group-study-area'} />
+        <Sidebar currentPage={categoryFor === 'Personal' ? 'personal-study-area' : 'group-study-area'} />
 
         <div className={`lg:w-1/6 h-[100vh] flex flex-col items-center justify-between py-2 lg:mb-0 ${
           window.innerWidth > 1020 ? '' :
@@ -322,7 +322,7 @@ export const MainDash = ({categoryFor}) => {
         } mbg-800`}></div>
 
 
-        <div className='flex-1 mbg-300 w-full p-5'>
+        <div className='flex-1 mbg-200 w-full p-5'>
 
           <div className='flex items-center mt-5'>
             <EqualizerIcon sx={{ fontSize: 38 }} className='mr-1 mb-1 mcolor-700' />

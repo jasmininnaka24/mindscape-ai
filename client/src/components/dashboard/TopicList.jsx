@@ -119,7 +119,7 @@ export const TopicList = ({categoryFor}) => {
 
 
   return (
-    <div className='poppins mcolor-900 mbg-300 relative flex'>
+    <div className='poppins mcolor-900 mbg-200 relative flex'>
 
       <Sidebar currentPage={categoryFor === 'Personal' ? 'personal-study-area' : 'group-study-area'} />
 
@@ -128,7 +128,7 @@ export const TopicList = ({categoryFor}) => {
         window.innerWidth <= 768 ? 'hidden' : 'hidden'
       } mbg-800`}></div>
 
-      <div className='flex-1 mbg-300 w-full h-full p-8'>
+      <div className='flex-1 mbg-200 w-full h-full p-8'>
 
         <div>
           <div className='flex items-center mt-2'>

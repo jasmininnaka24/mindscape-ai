@@ -91,7 +91,7 @@ export const Tasks = ({room, groupId}) => {
     </div>
   } else {
     return (
-      <div className='poppins mcolor-900 mbg-300 relative flex'>
+      <div className='poppins mcolor-900 mbg-200 relative flex'>
 
         <Sidebar currentPage={room === 'Personal' ? 'personal-study-area' : 'group-study-area'} />
 
@@ -100,7 +100,7 @@ export const Tasks = ({room, groupId}) => {
         window.innerWidth <= 768 ? 'hidden' : 'hidden'
       } mbg-800`}></div>
 
-        <div className='flex-1 mbg-300 w-full p-6'>
+        <div className='flex-1 mbg-200 w-full p-6'>
           <p className='text-3xl mb-5 font-medium flex items-center mcolor-900'>
             <AddTaskIcon className='mr-1 mcolor-700' fontSize='large' />
             <p>Tasks</p>
