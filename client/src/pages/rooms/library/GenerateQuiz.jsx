@@ -5,5 +5,5 @@ import { QAGenerator } from '../../../components/qa-gen/QAGenerator';
 export const GenerateQuiz = () => {
   return (
     <QAGenerator materialFor={'Everyone'} />
-  )
+    )
 }

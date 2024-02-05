@@ -5,7 +5,6 @@
 .third-child{
   display: flex;
   justify-content: center;
-  margin-top: .4rem;
 }
 .big-line{
   height: 7px;

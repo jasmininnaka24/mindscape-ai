@@ -1,4 +1,7 @@
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@100;200;300;400;500;600;700;800;900&family=Quicksand:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,600;0,700;1,400;1,500;1,600;1,700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&display=swap');
+
 
 @tailwind base;
 @tailwind components;
@@ -13,6 +16,12 @@ html {
 } */
 .poppins{
   font-family: 'Poppins', sans-serif;
+}
+.lora{
+  font-family: 'Lora', serif;
+}
+.lato{
+  font-family: 'Lato', sans-serif;
 }
 
 body {
@@ -124,6 +133,9 @@ body {
 
 .mbg-700{
   background: #627271;
+}
+.mbg-700-opacity{
+  background: rgba(100, 113, 114, 0.5);
 }
 .mcolor-700{
   color: #627271;

@@ -66,29 +66,50 @@ export const QAGenerator = (props) => {
       studyMaterialCategoryLink = `${SERVER_URL}/studyMaterialCategory/personal-study-material/${materialFor}/${UserId}`;
 
       
-      const sharedStudyMaterialResponse = await axios.get(studyMaterialCategoryLink);
-      console.log(sharedStudyMaterialResponse.data);
+      await axios.get(studyMaterialCategoryLink);
 
 
     } else if (materialFor === 'Group') {
       studyMaterialCategoryLink = `${SERVER_URL}/studyMaterialCategory/${materialFor}/${groupNameId}`;
 
-      const sharedStudyMaterialResponse = await axios.get(studyMaterialCategoryLink);
-      console.log(sharedStudyMaterialResponse.data);
+      await axios.get(studyMaterialCategoryLink);
 
     } else {
 
-      // studyMaterialLink = `${SERVER_URL}/studyMaterial/study-material-group-category/${categoryFor}/${groupNameId}`;
+      let fetchedSharedStudyMaterialCategory = [];
 
-      const sharedStudyMaterialResponse = await axios.get(`${SERVER_URL}/studyMaterial/shared-materials`);
-      console.log('API Response:', sharedStudyMaterialResponse.data);
+      // Fetch the first study material category
+      let studyMaterialCategoryLink = `${SERVER_URL}/studyMaterialCategory/personal-study-material/personal/${UserId}`;
+      const personalStudyMaterialResponse = await axios.get(studyMaterialCategoryLink);
+      fetchedSharedStudyMaterialCategory.push(personalStudyMaterialResponse.data);
+
+      console.log('Personal:', personalStudyMaterialResponse.data);
       
-      const fetchedSharedStudyMaterialCategory = await Promise.all(
-        sharedStudyMaterialResponse.data.map(async (material, index) => {
-          const materialCategorySharedResponse = await axios.get(`${SERVER_URL}/studyMaterialCategory/shared-material-category/${material.StudyMaterialsCategoryId}/Group/${UserId}`);
-          return materialCategorySharedResponse.data;
-        })
-      );
+      // Fetch the second study material category
+      const groupStudyMaterialResponse = await axios.get(`${SERVER_URL}/studyMaterialCategory/group-study-material/Group/${UserId}`);
+      fetchedSharedStudyMaterialCategory.push(groupStudyMaterialResponse.data);
+
+      console.log('Group:', groupStudyMaterialResponse.data);
+
+      
+      // Fetch shared materials
+      const sharedStudyMaterialResponse = await axios.get(`${SERVER_URL}/studyMaterial/shared-materials`);
+      console.log('Shared Response:', sharedStudyMaterialResponse.data);
+      
+      // Fetch shared material categories for each shared material
+      const sharedMaterialCategoryPromises = sharedStudyMaterialResponse.data.map(async (material) => {
+        const materialCategorySharedResponse = await axios.get(`${SERVER_URL}/studyMaterialCategory/shared-material-category/${material.StudyMaterialsCategoryId}/Group/${UserId}`);
+        return materialCategorySharedResponse.data;
+      });
+      
+      // Wait for all promises to resolve
+      const sharedMaterialCategories = await Promise.all(sharedMaterialCategoryPromises);
+      
+      // Add fetched data to fetchedSharedStudyMaterialCategory
+      fetchedSharedStudyMaterialCategory = fetchedSharedStudyMaterialCategory.concat(sharedMaterialCategories);
+      
+      console.log('All fetched data:', fetchedSharedStudyMaterialCategory);
+      
   
       const uniqueCategories = [...new Set(fetchedSharedStudyMaterialCategory.map(item => item.category))];
   
@@ -117,8 +138,7 @@ export const QAGenerator = (props) => {
       });
       
       // Use Promise.all to wait for all promises to resolve
-      const sortedCategoryObjects = await Promise.all(promiseArray);
-      console.log(sortedCategoryObjects);
+      const sortedCategoryObjects = fetchedSharedStudyMaterialCategory.flat();
       setStudyMaterialCategories(sortedCategoryObjects);
       
       if (sortedCategoryObjects.length > 0) {

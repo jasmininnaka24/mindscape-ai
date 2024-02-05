@@ -10,7 +10,7 @@ export const Benefits = () => {
       {/* top */}
       <div className='flex justify-between items-center'>
         <div className="line"></div>
-        <h2 className="text-4xl font-medium text-center py-10">Benefits of MindScape</h2>
+        <h2 className="text-4xl font-medium text-center py-10 lora">Benefits of MindScape</h2>
         <div className="line"></div>
       </div>
 
@@ -20,7 +20,7 @@ export const Benefits = () => {
         {/* information about the app */}
         <div className='box-border w-1/2'>
           <div>
-            <p className='text-justify text-lg my-4'>Through the use of the Mindscape application, students can experience a transformative impact on their educational journey. This innovative platform goes beyond traditional learning methods, offering students the opportunity to achieve enhanced academic performance, foster growth development, and provide an enriched overall learning experience.</p>
+            <p className='text-justify text-lg my-4 lora'>Through the use of the Mindscape application, students can experience a transformative impact on their educational journey. This innovative platform goes beyond traditional learning methods, offering students the opportunity to achieve enhanced academic performance, foster growth development, and provide an enriched overall learning experience.</p>
             <p className='text-justify text-lg my-4'>The collaborative features of Mindscape create a dynamic learning environment, facilitating interaction and knowledge-sharing among users. This collaborative aspect not only enhances the academic experience but also prepares students for the collaborative nature of their future workplaces.</p>
             
           </div>

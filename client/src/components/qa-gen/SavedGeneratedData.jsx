@@ -378,20 +378,15 @@ export const SavedGeneratedData = (props) => {
     }
   };
   
-  const resetForm = () => {
-    setStudyMaterialTitle('');
-    setStudyMaterialCategoryId('');
-    setGeneratedQA({});
-    setPDFDetails('');
-    setNumInp('');
-  };
-  
-  
 
 
   return (
     <form>
       <input required type="text" onChange={(event) => {setStudyMaterialTitle(event.target.value)}} placeholder='Title...' className='border-hard-800 rounded-[5px] py-2 px-5' />
+
+
+
+      
 
       <select
         required
@@ -404,6 +399,7 @@ export const SavedGeneratedData = (props) => {
           </option>
         ))}
       </select>
+
 
 
       <button

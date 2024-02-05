@@ -101,6 +101,18 @@ router.get('/personal-study-material/:categoryFor/:UserId', async (req, res) => 
   res.json(extractedCategories);
 })
 
+router.get('/group-study-material/:categoryFor/:UserId', async (req, res) => {
+  const { categoryFor, UserId } = req.params;
+  const extractedCategories = await StudyMaterialsCategories.findAll({
+    where: {
+      categoryFor: categoryFor,
+      UserId: UserId, 
+    },
+  });
+  res.json(extractedCategories);
+  console.log(extractedCategories);
+})
+
 
 
 router.get('/get-lastmaterial/:id/:categoryFor/:UserId', async (req, res) => {
