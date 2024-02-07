@@ -76,74 +76,50 @@ export const QAGenerator = (props) => {
 
     } else {
 
-      let fetchedSharedStudyMaterialCategory = [];
-
-      // Fetch the first study material category
-      let studyMaterialCategoryLink = `${SERVER_URL}/studyMaterialCategory/personal-study-material/personal/${UserId}`;
-      const personalStudyMaterialResponse = await axios.get(studyMaterialCategoryLink);
-      fetchedSharedStudyMaterialCategory.push(personalStudyMaterialResponse.data);
-
-      console.log('Personal:', personalStudyMaterialResponse.data);
+      // studyMaterialLink = `${SERVER_URL}/studyMaterial/study-material-group-category/${categoryFor}/${groupNameId}`;
+      const sharedStudyMaterialResponse = await axios.get(`${SERVER_URL}/studyMaterialCategory/shared-categories`);
+      console.log('API Response:', sharedStudyMaterialResponse.data);
       
-      // Fetch the second study material category
-      const groupStudyMaterialResponse = await axios.get(`${SERVER_URL}/studyMaterialCategory/group-study-material/Group/${UserId}`);
-      fetchedSharedStudyMaterialCategory.push(groupStudyMaterialResponse.data);
-
-      console.log('Group:', groupStudyMaterialResponse.data);
-
-      
-      // Fetch shared materials
-      const sharedStudyMaterialResponse = await axios.get(`${SERVER_URL}/studyMaterial/shared-materials`);
-      console.log('Shared Response:', sharedStudyMaterialResponse.data);
-      
-      // Fetch shared material categories for each shared material
-      const sharedMaterialCategoryPromises = sharedStudyMaterialResponse.data.map(async (material) => {
-        const materialCategorySharedResponse = await axios.get(`${SERVER_URL}/studyMaterialCategory/shared-material-category/${material.StudyMaterialsCategoryId}/Group/${UserId}`);
-        return materialCategorySharedResponse.data;
-      });
-      
-      // Wait for all promises to resolve
-      const sharedMaterialCategories = await Promise.all(sharedMaterialCategoryPromises);
-      
-      // Add fetched data to fetchedSharedStudyMaterialCategory
-      fetchedSharedStudyMaterialCategory = fetchedSharedStudyMaterialCategory.concat(sharedMaterialCategories);
-      
-      console.log('All fetched data:', fetchedSharedStudyMaterialCategory);
-      
-  
-      const uniqueCategories = [...new Set(fetchedSharedStudyMaterialCategory.map(item => item.category))];
-  
-      // Sort the unique categories alphabetically
-      const sortedCategories = uniqueCategories.sort((a, b) => a.localeCompare(b));
-      
-      // Create an array of promises for each unique category
-      const promiseArray = sortedCategories.map(async (category) => {
-        // Find the first occurrence of the category in the original array
-        const firstOccurrence = fetchedSharedStudyMaterialCategory.find(item => item.category === category);
-      
-        // Simulate an asynchronous operation (replace with your actual asynchronous operation)
-        await new Promise(resolve => setTimeout(resolve, 100));
-      
-        // Return a new object with the category details
-        return {
-          id: firstOccurrence.id,
-          category: category,
-          categoryFor: firstOccurrence.categoryFor,
-          studyPerformance: firstOccurrence.studyPerformance,
-          createdAt: firstOccurrence.createdAt,
-          updatedAt: firstOccurrence.updatedAt,
-          StudyGroupId: firstOccurrence.StudyGroupId,
-          UserId: firstOccurrence.UserId
-        };
-      });
-      
-      // Use Promise.all to wait for all promises to resolve
-      const sortedCategoryObjects = fetchedSharedStudyMaterialCategory.flat();
-      setStudyMaterialCategories(sortedCategoryObjects);
-      
-      if (sortedCategoryObjects.length > 0) {
-        setStudyMaterialCategoryId(sortedCategoryObjects[0].id);
+      // Check if sharedStudyMaterialResponse.data is an array before using map
+      if (Array.isArray(sharedStudyMaterialResponse.data)) {
+        const uniqueCategories = [...new Set(sharedStudyMaterialResponse.data.map(item => item.category))];
+        
+        // Sort the unique categories alphabetically
+        const sortedCategories = uniqueCategories.sort((a, b) => a.localeCompare(b));
+        
+        // Create an array of promises for each unique category
+        const promiseArray = sortedCategories.map(async (category) => {
+          // Find the first occurrence of the category in the original array
+          const firstOccurrence = sharedStudyMaterialResponse.data.find(item => item.category === category);
+        
+          // Simulate an asynchronous operation (replace with your actual asynchronous operation)
+          await new Promise(resolve => setTimeout(resolve, 100));
+        
+          // Return a new object with the category details
+          return {
+            id: firstOccurrence.id,
+            category: category,
+            categoryFor: firstOccurrence.categoryFor,
+            studyPerformance: firstOccurrence.studyPerformance,
+            createdAt: firstOccurrence.createdAt,
+            updatedAt: firstOccurrence.updatedAt,
+            StudyGroupId: firstOccurrence.StudyGroupId,
+            UserId: firstOccurrence.UserId
+          };
+        });
+        
+        // Use Promise.all to wait for all promises to resolve
+        const sortedCategoryObjects = await Promise.all(promiseArray);
+        console.log(sortedCategoryObjects);
+        setStudyMaterialCategories(sortedCategoryObjects);
+        
+        if (sortedCategoryObjects.length > 0) {
+          setStudyMaterialCategoryId(sortedCategoryObjects[0].id);
+        }
+      } else {
+        console.error("sharedStudyMaterialResponse.data is not an array");
       }
+      
     }
 
     
@@ -494,7 +470,7 @@ export const QAGenerator = (props) => {
                         <div>
                           <button onClick={() => {
                             setActiveBtnMCQAs(activeBtnMCQAs === false ? true : false)
-                          }} className='mcolor-900 border-hard-800 px-5 py-1 rounded-[5px]'>Add Item</button>
+                          }} className='mcolor-900 border-thin-800 px-5 py-1 rounded-[5px]'>Add Item</button>
                         </div>
                       }
 
@@ -908,7 +884,7 @@ export const QAGenerator = (props) => {
                           <div>
                             <button onClick={() => {
                               setActiveBtnMCQAs(activeBtnMCQAs === false ? true : false)
-                            }} className='mcolor-900 border-medium-800 px-5 py-1 rounded-[5px]'>Add Item</button>
+                            }} className='mcolor-900 border-thin-800 px-5 py-1 rounded-[5px]'>Add Item</button>
                           </div>
                         }
 

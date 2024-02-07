@@ -6,9 +6,12 @@ import { Navbar } from '../../components/navbar/navbar';
 import { Link } from 'react-router-dom';
 import groupStudyRoomImg from '../../assets/groupstudy.jpg';
 import { motion } from "framer-motion";
-
+import { useResponsiveSizes } from '../../components/useResponsiveSizes'; 
 
 export const Home = () => {
+
+  const { extraSmallDevice, smallDevice, mediumDevices, largeDevices, extraLargeDevices } = useResponsiveSizes();
+
 
   return (
     <div className='flex justify-center mbg-100 mcolor-900'>
@@ -52,10 +55,10 @@ export const Home = () => {
               animate={{ opacity: 1 }} // Animation when component mounts
               transition={{ delay: 1 }} // Delay before animation starts
             >
-              <h2 className='py-3 font-bold text-center text-6xl'>AI-Driven Study Tools</h2>
+              <h2 className={`py-3 font-bold text-center ${smallDevice ? 'text-5xl px-5' : extraSmallDevice ? 'text-4xl px-5' : 'text-6xl'}`}>AI-Driven Study Tools</h2>
             </motion.div>
             <motion.div 
-              className='second-child text-2xl text-center lato'
+              className={`second-child text-center lato ${smallDevice ? 'text-lg px-5' : extraSmallDevice ? 'text-md px-5' : 'text-2xl'}`}
               initial={{ opacity: 0 }} // Initial animation state
               animate={{ opacity: 1 }} // Animation when component mounts
               transition={{ delay: 1.5 }} // Delay before animation starts
@@ -68,7 +71,7 @@ export const Home = () => {
               animate={{ opacity: 1 }} // Animation when component mounts
               transition={{ delay: 2 }} // Delay before animation starts
             >
-              <p className='w-3/4 p-4 font-sm mbg-700-opacity rounded lato'>An application designed to revolutionize the way students learn, utilizing cutting-edge AI technology to provide personalized study recommendations, real-time feedback, and collaborative learning environments.</p>
+              <p className={`w-3/4 p-4 mbg-700-opacity rounded lato ${smallDevice ? 'text-md' : extraSmallDevice ? 'hidden' : 'text-md'}`}>An application designed to revolutionize the way students learn, utilizing cutting-edge AI technology to provide personalized study recommendations, real-time feedback, and collaborative learning environments.</p>
             </motion.div>
 
             {/* main-page get started button */}
@@ -86,12 +89,12 @@ export const Home = () => {
 
 
         {/* About section */}
-        <section id="about">
+        <section id="about" className='min-h-[50vh] flex items-center justify-center'>
           <About />
         </section>
 
         {/* Benefits section */}
-        <section id="benefits" className='h-[100vh] flex items-center justify-center'>
+        <section id="benefits" className='min-h-[50vh] flex items-center justify-center'>
           <Benefits />
         </section>
 

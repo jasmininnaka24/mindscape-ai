@@ -1,0 +1,8 @@
+@media only screen and (max-width: 880px) {
+  .hidden-on-tablet-to-small-screen {
+    display: none;
+  }
+  .appear-on-tablet-to-small-screen {
+    display: none;
+  }
+}

@@ -25,6 +25,14 @@ export const MainPage = () => {
 
 
 
+
+
+
+
+  // other usestates
+
+
+
   const [groupListLength, setGroupListLength] = useState(0);
   const [contributedMaterialsLength, setContributedMaterialsLength] = useState(0);
   const [showPresentStudyMaterials, setShowPresentStudyMaterials] = useState(false);

@@ -113,6 +113,31 @@ router.get('/group-study-material/:categoryFor/:UserId', async (req, res) => {
   console.log(extractedCategories);
 })
 
+router.get('/study-material-category/:category/:isShared', async (req, res) => {
+  const { category, isShared } = req.params;
+  const extractedCategories = await StudyMaterialsCategories.findAll({
+    where: {
+      category: category,
+      isShared: isShared, 
+    },
+  });
+  res.json(extractedCategories);
+  console.log(extractedCategories);
+})
+
+router.get('/categories-i-added/:categoryFor/:UserId', async (req, res) => {
+  const { categoryFor, UserId } = req.params;
+  const extractedCategories = await StudyMaterialsCategories.findAll({
+    where: {
+      categoryFor: categoryFor,
+      UserId: UserId, 
+      isShared: 0,
+    },
+  });
+  res.json(extractedCategories);
+  console.log(extractedCategories);
+})
+
 
 
 router.get('/get-lastmaterial/:id/:categoryFor/:UserId', async (req, res) => {
@@ -145,6 +170,33 @@ router.get('/shared-material-category/:id/:categoryFor/:UserId', async (req, res
   const extractedCategory = await StudyMaterialsCategories.findOne({
     where: {
       id: id, 
+    },
+  });
+  console.log(id);
+
+  res.json(extractedCategory);
+
+})
+
+
+router.get('/shared-categories', async (req, res) => {
+  const { id } = req.params;
+  const extractedCategory = await StudyMaterialsCategories.findAll({
+    where: {
+      isShared: true, 
+    },
+  });
+  console.log(id);
+
+  res.json(extractedCategory);
+
+})
+
+router.get('/shared-categories-everyone', async (req, res) => {
+  const { id } = req.params;
+  const extractedCategory = await StudyMaterialsCategories.findAll({
+    where: {
+      categoryFor: 'Everyone', 
     },
   });
   console.log(id);
