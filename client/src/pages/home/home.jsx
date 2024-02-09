@@ -7,16 +7,42 @@ import { Link } from 'react-router-dom';
 import groupStudyRoomImg from '../../assets/groupstudy.jpg';
 import { motion } from "framer-motion";
 import { useResponsiveSizes } from '../../components/useResponsiveSizes'; 
+import { HashLink } from 'react-router-hash-link';
+
+// icon imports
+import CloseIcon from '@mui/icons-material/Close';
+import { useState } from 'react';
+
 
 export const Home = () => {
 
   const { extraSmallDevice, smallDevice, mediumDevices, largeDevices, extraLargeDevices } = useResponsiveSizes();
 
+  const [toggleMenuBtn, setToggleMenuBtn] = useState(false);
+
+  const toggleMenuBtnFunc = () => { setToggleMenuBtn(toggleMenuBtn ? false : true) }
+
 
   return (
     <div className='flex justify-center mbg-100 mcolor-900'>
       <div className='max-width'>
-        <Navbar/>
+        <Navbar toggleMenuBtnFunc={toggleMenuBtnFunc} />
+
+
+        {toggleMenuBtn && (
+          <nav className={`fixed h-[100vh] w-full top-0 left-0 dark-opacity mcolor-100 flex justify-center ${!extraSmallDevice && !smallDevice ? 'hidden' : ''}`} style={{ zIndex: '100' }}>
+            <button onClick={toggleMenuBtnFunc} className='absolute right-10 top-8 mcolor-100'><CloseIcon/></button>
+
+            <ul className='flex flex-col items-center justify-center'>
+              <HashLink className='mb-5 py-3 text-xl' to={'#'}>Home</HashLink>
+              <HashLink className='mb-5 py-3 text-xl' to={'#about'}>About</HashLink>
+              <HashLink className='mb-5 py-3 text-xl' to={'#benefits'}>Benefits</HashLink>
+            </ul>
+          </nav>
+        )}
+
+
+
 
         <div className='py-6 nav mcolor-100'>nav</div>
 
@@ -44,7 +70,7 @@ export const Home = () => {
 
           <motion.div 
             className='mcolor-100' 
-            style={{ zIndex: '100', borderRadius: '10px' }}
+            style={{ zIndex: '50', borderRadius: '10px' }}
             initial={{ opacity: 0, y: 50 }} // Initial animation state
             animate={{ opacity: 1, y: 0 }} // Animation when component mounts
             transition={{ delay: 0.5 }} // Delay before animation starts

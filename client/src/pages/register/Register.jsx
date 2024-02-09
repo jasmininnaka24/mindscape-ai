@@ -1,16 +1,25 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import VisibilityIcon from '@mui/icons-material/Visibility';
-import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
 import axios from 'axios'
 import InboxIcon from '../../assets/mail.png';
 import MindScapeLogo from '../../assets/mindscape_logo.png';
-import CheckCircleIcon from '@mui/icons-material/CheckCircle';
-import DangerousIcon from '@mui/icons-material/Dangerous';
 import { SERVER_URL, CLIENT_URL } from '../../urlConfig';
 
 
+// icon imports
+import VisibilityIcon from '@mui/icons-material/Visibility';
+import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import DangerousIcon from '@mui/icons-material/Dangerous';
+
+// responsive sizes
+import { useResponsiveSizes } from '../../components/useResponsiveSizes'; 
+
+
+
 export const Register = () => {
+
+  const { extraSmallDevice, smallDevice, mediumDevices, largeDevices, extraLargeDevices } = useResponsiveSizes();
 
   const [usernameRegVal, setUsernameRegVal] = useState('')
   const [passwordRegVal, setPasswordRegVal] = useState('')
@@ -123,93 +132,92 @@ export const Register = () => {
   return (
     showResetPasswordUI ? (
 
-      <div className='poppins flex justify-center items-center mcolor-900 w-full h-[100vh] mbg-200' >
-        <section className='mbg-100 shadows flex flex-col justify-center w-1/3 py-10 rounded'>
-          <div className='flex items-center justify-center'>
-            <div style={{ width: '50px', height: '50px' }}>
-              <img src={MindScapeLogo} alt="" />
-            </div>
-            <p className='font-medium ml-2 text-3xl'>MindScape</p>
-          </div>
-          
-          <h2 className='text-lg mcolor-700 font-normal mt-4 text-center'>Sign Up for an Account</h2>
-          
-          <br />  
+      <div className='poppins flex justify-center items-center mcolor-900 w-full h-[100vh] mbg-200'>
 
-          <form className='flex justify-center mb-5 w-full'>
-            <div className='mt-3'>
-              <div className='mb-3'>
-                <label htmlFor="" className='font-medium text-sm'>Username<span className='text-red'>*</span></label>
-                <input autoComplete='no' placeholder='Enter username...' type="text" className='bg-transparent w-full border-bottom-thin text-sm py-1 px-8 rounded-[10px]' value={usernameRegVal !== '' ? usernameRegVal : ''} onChange={(event) => setUsernameRegVal(event.target.value)} />
-              </div>
-              <div className='mb-5 mt-8'>
-                <label htmlFor="" className='font-medium text-sm'>Email<span className='text-red'>*</span></label>
-                <input autoComplete='no' placeholder='Enter email...' type="email" className='bg-transparent w-full text-sm border-bottom-thin py-1 px-5 rounded-[5px]' value={emailRegVal !== '' ? emailRegVal : ''} onChange={(event) => setEmailRegVal(event.target.value)} />
-              </div>
-
-
-
-
-              <div className={`mt-8 ${passwordRegVal === '' && 'mb-5'}`}>
-                <label htmlFor="" className='font-medium text-sm'>Password<span className='text-red'>*</span></label>
-                <div className='flex relative'>
-                  <input
-                    autoComplete='no'
-                    placeholder='Enter password...'
-                    type={showPassword ? 'text' : 'password'}
-                    className='bg-transparent w-full border-bottom-thin py-1 px-5 rounded-[5px] text-sm'
-                    value={passwordRegVal !== '' ? passwordRegVal : ''}
-                    onChange={(event) => setPasswordRegVal(event.target.value)}
-                  />
-                  <button
-                    type="button"
-                    className='ml-2 focus:outline-none absolute right-0 mcolor-800'
-                    onClick={togglePasswordVisibility}
-                  >
-                    {showPassword ? <VisibilityOffIcon /> : <VisibilityIcon />}
-                  </button>
+          <div className={`mbg-100 ${extraSmallDevice ? 'h-[100vh] w-full' : ''} shadows p-8 rounded flex flex-col items-center justify-center`}>
+            <div className='px-5'>
+              <div className='flex items-center justify-center'>
+                <div style={{ width: '50px', height: '50px' }}>
+                  <img src={MindScapeLogo} alt="" />
                 </div>
+                <p className='font-medium ml-2 text-3xl'>MindScape</p>
               </div>
 
+              <h2 className='text-lg mcolor-700 font-normal mt-4 text-center'>Sign Up for an Account</h2>
 
 
 
+              <div className='my-5 w-full flex items-center justify-center w-full'>
+                <div className='w-full'>
 
-              {passwordRegVal !== '' && (
-              <div className='my-4 flex items-center justify-center'>
-                <div className={`mcolor-900 text-center rounded border-thin-800 py-1`} style={{ width: progressBarWidth(), transition: 'width 0.3s ease' }}>{`${strength.charAt(0).toUpperCase() + strength.slice(1)}`} <span className={`${getStrengthColor()}`}>{getStrengthColor() !== 'dark-green-str' ? <DangerousIcon /> : <CheckCircleIcon sx='18px' />}</span></div>
+                  <div className='my-3 w-full'>
+                    <p htmlFor="" className='font-medium'>Username<span className='text-red'>*</span></p>
+                    <input required autoComplete='no' placeholder='Enter your username...' type="text" className='bg-transparent w-full border-bottom-thin py-1 rounded-[5px] input-login' value={usernameRegVal !== '' ? usernameRegVal : ''} onChange={(event) => setUsernameRegVal(event.target.value)} />
+                  </div>
+
+                  <div className='my-3 w-full'>
+                    <p htmlFor="" className='font-medium'>Email<span className='text-red'>*</span></p>
+                    <input required autoComplete='no' placeholder='Enter your email...' type="email" className='bg-transparent w-full border-bottom-thin py-1 rounded-[5px] input-login' value={emailRegVal !== '' ? emailRegVal : ''} onChange={(event) => setEmailRegVal(event.target.value)} />
+                  </div>
+
+                  <div className='my-3 w-full relative'>
+                    <p htmlFor="" className='font-medium'>Password<span className='text-red'>*</span></p>
+                    <input
+                      required
+                      autoComplete='new-password' // 'no' may not be the best choice for accessibility
+                      placeholder='Enter your password...'
+                      type={showPassword ? 'text' : 'password'}
+                      className='bg-transparent w-full border-bottom-thin py-1 rounded-[5px] input-login'
+                      value={passwordRegVal !== '' ? passwordRegVal : ''}
+                      onChange={(event) => setPasswordRegVal(event.target.value)}
+                    />
+
+                    <button
+                      type="button"
+                      className='ml-2 focus:outline-none absolute right-0 mcolor-800'
+                      onClick={togglePasswordVisibility}
+                    >
+                      {showPassword ? <VisibilityOffIcon /> : <VisibilityIcon />}
+                    </button>
+                  </div>
+
+                  
+
+                  {passwordRegVal !== '' && (
+                    <div className='my-4 flex items-center justify-center'>
+                      <div className={`mcolor-900 text-center rounded border-thin-800 py-1`} style={{ width: progressBarWidth(), transition: 'width 0.3s ease' }}>{`${strength.charAt(0).toUpperCase() + strength.slice(1)}`} <span className={`${getStrengthColor()}`}>{getStrengthColor() !== 'dark-green-str' ? <DangerousIcon /> : <CheckCircleIcon sx='18px' />}</span></div>
+                    </div>
+                    )}
+
+                    <p className={`text-center text-sm ${(msg !== '' && error) && 'text-red my-3'}`} style={{ whiteSpace: 'pre-wrap' }}>{(msg !== '' && error) && msg}</p>
+
+                    <button
+                      className={`w-full mt-3 font-medium input-btn py-2 rounded-[20px] ${(msg !== '' && !error) ? 'mbg-200 border-thin-800 mcolor-900' : 'mbg-800 mcolor-100 text-md'}`}
+                      onClick={(e) => registerAccount(e)}
+                      disabled={enableDisabled}
+                    >
+                      {enableDisabled ? btnMsg === '' ? 'Signing Up...' : btnMsg : (msg !== '' && !error) ? btnMsg : 'Sign Up'}
+                    </button>
+
+
+                    <div className='text-sm mcolor-800-opacity mt-4'>
+                      <ul className="text-center">
+                        <li>At least 8 characters long</li>
+                        <li>At least 1 uppercase letter</li>
+                        <li>At least 1 symbol and number</li>
+                      </ul>
+                    </div>
+                </div>
+
               </div>
-              )}
 
-              <p className={`text-center text-sm ${(msg !== '' && error) && 'text-red my-3'}`} style={{ whiteSpace: 'pre-wrap' }}>{(msg !== '' && error) && msg}</p>
-
-              <button
-                className={`font-medium input-btn py-2 rounded-[20px] ${(msg !== '' && !error) ? 'mbg-200 border-thin-800 mcolor-900' : 'mbg-800 mcolor-100 text-md'}`}
-                onClick={(e) => registerAccount(e)}
-                disabled={enableDisabled}
-              >
-                {enableDisabled ? btnMsg === '' ? 'Signing Up...' : btnMsg : (msg !== '' && !error) ? btnMsg : 'Sign Up'}
-              </button>
-
-
-              <div className='text-sm mcolor-800-opacity mt-4'>
-                <ul className="text-center">
-                  <li>At least 8 characters long</li>
-                  <li>At least 1 uppercase letter</li>
-                  <li>At least 1 symbol and number</li>
-                </ul>
+              <div className='text-center'>Already have an account? <span className='font-bold ml-1'><Link to={'/login'}>Sign In</Link></span>
               </div>
-
-
             </div>
-          </form>
 
-          <div className='w-full flex items-center justify-center px-14'>
-            Already have an account? <span className='font-bold ml-1'><Link to={'/login'}>Sign In</Link></span>
           </div>
-
-        </section>
       </div>
+
     ) : (
       <div className='h-[100vh] flex items-center justify-center'>
         <div className=''>

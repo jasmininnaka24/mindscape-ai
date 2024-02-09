@@ -17,16 +17,13 @@ import { motion  } from 'framer-motion';
 
 export const MainPage = () => {
 
+  
+
   const { getRootProps, getInputProps, acceptedFiles } = useDropzone({
     onDrop: (acceptedFiles) => {
       setImage(acceptedFiles[0]);
     },
   });
-
-
-
-
-
 
 
   // other usestates
@@ -91,11 +88,6 @@ export const MainPage = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [passwordVal, setPasswordVal] = useState('')
 
-  const [followerAndFollowingModal, setFollowerAndFollowingModal] = useState('hidden')
-
-  const [showFollowerList, setShowFollowerList] = useState(false);
-  const [showFollowingList, setShowFollowingList] = useState(false);
-
 
   const [loading, setLoading] = useState(true);
   const [buttonLoading, setButtonLoading] = useState(false);
@@ -106,9 +98,6 @@ export const MainPage = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [users, setUsers] = useState([]);
   const [searchResults, setSearchResults] = useState([]);
-  const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [isTablet, setIsTablet] = useState(false); // Declare isTablet outside useEffect
-
 
 
   const togglePasswordVisibility = () => {
@@ -136,10 +125,6 @@ export const MainPage = () => {
 
   const fetchUserDataFrontend = async () => {
     try {
-
-      setFollowerAndFollowingModal('hidden')
-      setShowFollowerList(false)
-      setShowFollowingList(false)
 
       const userData = await fetchUserData(userId === undefined ? UserId : userId);
 
@@ -983,16 +968,7 @@ export const MainPage = () => {
   
 
 
-  const toggleExpansion = () => {
-    setdropDownPersonalLinks(!dropDownPersonalLinks ? true : false);
-  };
 
-  const handleLogout = () => {
-    // Clear session storage
-    sessionStorage.clear();
-    navigate('/')
-  };
-  
 
 
   useEffect(() => {

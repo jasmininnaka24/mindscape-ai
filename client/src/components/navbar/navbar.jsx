@@ -1,17 +1,19 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import './navbar.css';
 import '../responsiveness/navbar.css'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faRightFromBracket } from '@fortawesome/free-solid-svg-icons';
 import { HashLink } from 'react-router-hash-link';
 import { Link } from 'react-router-dom';
-import SpaIcon from '@mui/icons-material/Spa';
 
+// icon imports
+import SpaIcon from '@mui/icons-material/Spa';
+import MenuIcon from '@mui/icons-material/Menu';
 
 import { useResponsiveSizes } from '../useResponsiveSizes'; 
 
 
-export const Navbar = () => {
+export const Navbar = ({toggleMenuBtnFunc}) => {
   const { extraSmallDevice, smallDevice, mediumDevices, largeDevices, extraLargeDevices } = useResponsiveSizes();
 
 
@@ -32,7 +34,9 @@ export const Navbar = () => {
           <HashLink className='mx-4' to={'#benefits'}>Benefits</HashLink>
         </div>
 
-        <div className='ms-login'>
+        <div className='ms-login flex items-center gap-2'>
+          <button onClick={toggleMenuBtnFunc} className={`${!extraSmallDevice && !smallDevice ? 'hidden' : ''}`}><MenuIcon /></button>
+
           <Link to={'/login'} className='flex justify-between items-center gap-2'>
             <div>Login</div>
             <div>
@@ -41,6 +45,9 @@ export const Navbar = () => {
           </Link>
         </div>
       </nav>
+
+
+
     </div>
   )
 }

@@ -1,4 +1,4 @@
-// export const CLIENT_URL = "https://mindscape-ai.vercel.app";
+// export const CLIENT_URL = "https://www.mindscapeai.online";
 // export const SERVER_URL = "https://2ynn4j-3001.csb.app";
 // export const SERVER_URL = "https://mindscape-server.onrender.com";
 // export const SERVER_URL = "https://8ca770f7-7510-4bd6-9803-db60fba996f7-00-2d4dpgvtb35gg.spock.replit.dev";

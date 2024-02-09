@@ -1,6 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import '../../pages/main/mainpage.css';
 import { Link, useNavigate } from 'react-router-dom';
+
+
+
+// icon imports
 import CloseIcon from '@mui/icons-material/Close';
 import PersonPinOutlinedIcon from '@mui/icons-material/PersonPinOutlined';
 import PeopleAltOutlinedIcon from '@mui/icons-material/PeopleAltOutlined';
@@ -9,12 +13,16 @@ import QuestionAnswerOutlinedIcon from '@mui/icons-material/QuestionAnswerOutlin
 import SpaIcon from '@mui/icons-material/Spa';
 import AccountCircleOutlinedIcon from '@mui/icons-material/AccountCircleOutlined';
 
-
+// responsive sizes
+import { useResponsiveSizes } from '../useResponsiveSizes'; 
 
 // animation import
 import { motion, AnimatePresence  } from 'framer-motion';
 
 export const Sidebar = ({currentPage}) => {
+
+    const { extraSmallDevice, smallDevice, mediumDevices, largeDevices, extraLargeDevices } = useResponsiveSizes();
+
 
   const navigate = useNavigate();
 
@@ -22,18 +30,12 @@ export const Sidebar = ({currentPage}) => {
   const [isTablet, setIsTablet] = useState(false); // Declare isTablet outside useEffect
 
   useEffect(() => {
-    const handleResize = () => {
-      const tabletCondition = window.innerWidth <= 768;
-      setIsTablet(tabletCondition);
-      const isLargerThan1020 = window.innerWidth > 1020;
-      setSidebarOpen(tabletCondition ? !tabletCondition : isLargerThan1020);
-    };
-  
-    handleResize();
-    window.addEventListener('resize', handleResize);
-  
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
+    if (!extraLargeDevices) {
+      setSidebarOpen(false)
+    } else {
+      setSidebarOpen(true)
+    }
+  }, [extraLargeDevices]);
 
 
 
@@ -53,12 +55,13 @@ export const Sidebar = ({currentPage}) => {
   return (
     <div>
       <motion.button
-        className='lg:hidden fixed left-0 top-0'
+        className='fixed left-0 top-0'
         onClick={toggleSidebar}
         initial={{ opacity: 0, y: -50 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.2 }}
       >
+        Open
       </motion.button>
 
       {/* Sidebar */}
@@ -66,9 +69,10 @@ export const Sidebar = ({currentPage}) => {
         {sidebarOpen && (
           <motion.div
           style={{zIndex: 1}}
-          className={`lg:w-1/6 fixed h-[100vh] flex flex-col items-center justify-between py-2 lg:mb-0 ${
-            window.innerWidth > 1020 ? '' :
-            window.innerWidth <= 768 ? 'w-full fixed' : 'md:w-1/2 fixed'
+          className={`fixed h-[100vh] flex flex-col items-center justify-between py-2 ${
+            extraLargeDevices ? 'w-1/6' :
+            sidebarOpen && (largeDevices) ? 'w-1/4' : 
+            sidebarOpen && (smallDevice || mediumDevices) ? 'w-1/2' : 'w-full'
           } mbg-800`}
             initial={{ opacity: 0, x: isTablet ? 0 : '-100%' }}
             animate={{ opacity: 1, x: isTablet ? 0 : 0 }}
@@ -78,7 +82,7 @@ export const Sidebar = ({currentPage}) => {
             {/* Sidebar content goes here */}
             <div className={`mbg-800 mcolor-100 fixed top-5 right-5`}>
               <button onClick={toggleSidebar}>
-                {sidebarOpen && window.innerWidth < 1020 && <CloseIcon/> }
+                {sidebarOpen && !extraLargeDevices && <CloseIcon/> }
               </button>
             </div>
 

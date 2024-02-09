@@ -6,8 +6,6 @@ import axios from 'axios';
 import { SERVER_URL } from '../../urlConfig';
 import { fetchUserData } from '../../userAPI';
 import { useDropzone } from 'react-dropzone';
-import VisibilityIcon from '@mui/icons-material/Visibility';
-import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
 
 import { Sidebar } from '../sidebar/Sidebar';
 
@@ -15,8 +13,18 @@ import { Sidebar } from '../sidebar/Sidebar';
 // animation import
 import { motion  } from 'framer-motion';
 
+// icons import
+import VisibilityIcon from '@mui/icons-material/Visibility';
+import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
+
+// reesponsive sizes
+import { useResponsiveSizes } from '../useResponsiveSizes'; 
+
 
 export const ProfileComponent = () => {
+
+  const { extraSmallDevice, smallDevice, mediumDevices, largeDevices, extraLargeDevices } = useResponsiveSizes();
+
 
   const { getRootProps, getInputProps, acceptedFiles } = useDropzone({
     onDrop: (acceptedFiles) => {
@@ -84,24 +92,13 @@ export const ProfileComponent = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [passwordVal, setPasswordVal] = useState('')
 
-  const [followerAndFollowingModal, setFollowerAndFollowingModal] = useState('hidden')
-
-  const [showFollowerList, setShowFollowerList] = useState(false);
-  const [showFollowingList, setShowFollowingList] = useState(false);
-
 
   const [loading, setLoading] = useState(true);
   const [buttonLoading, setButtonLoading] = useState(false);
   const [buttonLoader, setButtonLoader] = useState(false);
   const [buttonClickedNumber, setButtonClickedNumber] = useState(0);
   const [loadOnce, setLoadOnce] = useState(false);
-  const [dropDownPersonalLinks, setdropDownPersonalLinks] = useState(false);
-  const [searchTerm, setSearchTerm] = useState('');
   const [users, setUsers] = useState([]);
-  const [searchResults, setSearchResults] = useState([]);
-  const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [isTablet, setIsTablet] = useState(false); // Declare isTablet outside useEffect
-
 
 
   const togglePasswordVisibility = () => {
@@ -129,10 +126,6 @@ export const ProfileComponent = () => {
 
   const fetchUserDataFrontend = async () => {
     try {
-
-      setFollowerAndFollowingModal('hidden')
-      setShowFollowerList(false)
-      setShowFollowingList(false)
 
       const userData = await fetchUserData(userId === undefined ? UserId : userId);
 
@@ -411,9 +404,6 @@ export const ProfileComponent = () => {
 
     setButtonLoader(false)
   }
-
-
-
 
 
   const bookmarkMaterial = async (index, id, materialFor, buttonclickedNum) => {
@@ -734,8 +724,6 @@ export const ProfileComponent = () => {
    }
 
 
-
-
    function generateRandomString() {
     const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
     const numbers = '0123456789';
@@ -975,19 +963,7 @@ export const ProfileComponent = () => {
 
     setButtonClickedNumber(0)
   }
-  
 
-
-  const toggleExpansion = () => {
-    setdropDownPersonalLinks(!dropDownPersonalLinks ? true : false);
-  };
-
-  const handleLogout = () => {
-    // Clear session storage
-    sessionStorage.clear();
-    navigate('/')
-  };
-  
 
 
   useEffect(() => {
@@ -1009,22 +985,6 @@ export const ProfileComponent = () => {
 
     fetchData();
   }, []);
-
-
-  const handleSearch = async (event) => {
-    setSearchTerm(event)
-  
-    const response = await axios.get(`${SERVER_URL}/users`);
-    let responseData = response.data;
-  
-    // Assuming you want to filter users based on the username field
-    let filteredUsers = responseData.filter(user => 
-      user.username.toLowerCase().includes(event.toLowerCase())
-    );
-  
-    setSearchResults(filteredUsers);
-  };
-
 
 
 
@@ -1064,20 +1024,9 @@ export const ProfileComponent = () => {
 
       <Sidebar currentPage={'profile'}/>
         
-      <div className={`lg:w-1/6 h-[100vh] flex flex-col items-center justify-between py-2 lg:mb-0 ${
-        window.innerWidth > 1020 ? '' :
-        window.innerWidth <= 768 ? 'hidden' : 'hidden'
-      } mbg-800`}></div>
+      <div className={`h-[100vh] flex flex-col items-center justify-between py-2 ${extraLargeDevices && 'w-1/6'} mbg-800`}></div>
 
-      {/* Main content */}
-      {/* <div className={`mbg-200`}>
-        <button onClick={toggleSidebar}>
-          {sidebarOpen ? <KeyboardArrowLeftIcon/> : <ChevronRightIcon/>}
-        </button>
-        
-      </div> */}
-
-      <div className={`flex-1 mbg-200 w-full mx-5 pt-5`}>
+      <div className={`flex-1 mbg-200 w-full ${!extraSmallDevice ? 'mx-5' : ''} pt-5`}>
 
         <div className='mbg-100 p-4 rounded-[1rem]'>
           <motion.ul
@@ -1146,10 +1095,10 @@ export const ProfileComponent = () => {
 
             
         <br />
-        <div className='flex justify-between relative'>
+        <div className={`flex ${(extraLargeDevices || largeDevices) ? 'flex-row justify-between' : 'flex-col-reverse'} relative`}>
 
 
-          <div className='w-full lg:w-2/3 pr-5'>
+          <div className={`${(extraLargeDevices || largeDevices) ? 'w-2/3 pr-5' : 'w-full mt-5'}`}>
             {showMainProfile && (
               <motion.div 
               className='mb-5'
@@ -1165,7 +1114,7 @@ export const ProfileComponent = () => {
                 exit={{ opacity: 0, y: -20 }}
                 transition={{ duration: 0.5, delay: 0.2 }}
               >
-                <form className='flex items-center justify-center px-8 gap-8 pt-5'>
+                <form className={`flex ${extraSmallDevice ? 'flex-col' : 'flex-row'} items-center justify-center px-8 gap-8 pt-5`}>
                   <div className='p-2 rounded-full' {...getRootProps()} style={{ width: '220px', cursor: 'pointer', border: '3px dashed #888' }}>
                     <input {...getInputProps()} name='image' type='file' />
                     {acceptedFiles.length === 0 ? (
@@ -1177,7 +1126,7 @@ export const ProfileComponent = () => {
                     )}
                   </div>
 
-                  <div className=''>
+                  <div className={`${extraSmallDevice ? 'text-center' : 'text-start'}`}>
                     <p className='text-2xl mb-1 font-medium mcolor-800 mb-1'>Upload a new photo</p>
                     <p className='text-sm opacity-70 mb-4'>Drag and drop an image to the photo or click to select one.</p>
 
@@ -1208,7 +1157,7 @@ export const ProfileComponent = () => {
                 <br /><br />
                 <p className='text-xl mcolor-800 font-medium'>Change your information here: </p>
 
-                <ul className='grid grid-cols-2 gap-5 my-5'>
+                <ul className={`grid ${extraSmallDevice ? 'grid-cols-1' : 'grid-cols-2'} gap-5 my-5`}>
                   <li className='w-full'>
                     <p className='text-md'>Username</p>
                     <input
@@ -1287,7 +1236,7 @@ export const ProfileComponent = () => {
                 </ul>
 
                 <div className='flex items-center justify-end w-full mt-10'>
-                  <button className={`${(buttonLoading && buttonClickedNumber === 2) ? 'mbg-200 mcolor-900 border-thin-800' : 'btn-primary mcolor-100'} px-5 py-2 rounded`} disabled={(buttonLoading && buttonClickedNumber === 2)} onClick={(e) => updateUserInformation(e, 2)}>
+                  <button className={`${(buttonLoading && buttonClickedNumber === 2) ? 'mbg-200 mcolor-900 border-thin-800' : 'btn-primary mcolor-100'} px-5 py-2 rounded ${extraSmallDevice ? 'w-full' : ''}`} disabled={(buttonLoading && buttonClickedNumber === 2)} onClick={(e) => updateUserInformation(e, 2)}>
                       {(buttonLoading && buttonClickedNumber === 2) ? (
                         <div>Updating...</div>
                       ) : (
@@ -1752,7 +1701,7 @@ export const ProfileComponent = () => {
                           />
                           <motion.button
                             type="button"
-                            className='ml-2 focus:outline-none absolute right-2 bottom-2 mcolor-800'
+                            className='ml-2 focus:outline-none absolute right-2  mcolor-800'
                             onClick={togglePasswordVisibility}
                             whileTap={{ scale: 0.9 }}
                           >
@@ -1785,18 +1734,14 @@ export const ProfileComponent = () => {
 
 
           <motion.div
-            className={`w-full lg:w-1/3 mbg-800 rounded flex flex-col justify-center mcolor-100 ${
-              window.innerWidth > 1300 ? 'h-[48vh]' :
-              window.innerWidth > 900 ? 'h-[58vh]' :
-              'h-[68vh]'
-            }`}
+            className={`flex justify-center ${(extraLargeDevices || largeDevices) ? 'w-1/3 flex-col' : extraSmallDevice ? 'flex-col' : 'w-full flex-row gap-7'} mbg-800 rounded mcolor-100 py-8 min-h-[20vh] max-h-[50vh]`}
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
             transition={{ duration: 0.5 }}
           >
             <motion.div
-              className='flex items-center justify-center w-full'
+              className={`flex items-center justify-center ${(extraLargeDevices || largeDevices) ? 'w-full' : ''}`}
               initial={{ opacity: 0, y: -20 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20 }}
@@ -1819,7 +1764,7 @@ export const ProfileComponent = () => {
             </motion.div>
 
             <motion.div
-              className='text-center'
+              className={`${(extraLargeDevices || largeDevices || extraSmallDevice) ? 'text-center' : 'text-start'}`}
               initial={{ opacity: 0, y: -20 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20 }}

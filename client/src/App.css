@@ -891,7 +891,9 @@ input:focus{
   font-weight: 500;
 }
 
-
+.dark-opacity{
+  background: rgb(61, 86, 84, .96);
+}
 
 .ms-nav-links {
   display: flex;
