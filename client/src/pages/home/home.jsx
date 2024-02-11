@@ -44,7 +44,7 @@ export const Home = () => {
 
 
 
-        <div className='py-6 nav mcolor-100'>nav</div>
+        <div className={`py-6 nav mcolor-100`}>nav</div>
 
         <div className="flex rounded flex-col justify-center main-page w-full" style={{ position: 'relative', borderRadius: '10px' }}>
           
@@ -81,7 +81,7 @@ export const Home = () => {
               animate={{ opacity: 1 }} // Animation when component mounts
               transition={{ delay: 1 }} // Delay before animation starts
             >
-              <h2 className={`py-3 font-bold text-center ${smallDevice ? 'text-5xl px-5' : extraSmallDevice ? 'text-4xl px-5' : 'text-6xl'}`}>AI-Driven Study Tools</h2>
+              <h2 className={`py-3 font-bold text-center ${smallDevice ? 'text-5xl px-5' : extraSmallDevice ? 'text-4xl px-5' : 'text-6xl'}`}><span className='color-light'>AI-Driven</span> Study Tools</h2>
             </motion.div>
             <motion.div 
               className={`second-child text-center lato ${smallDevice ? 'text-lg px-5' : extraSmallDevice ? 'text-md px-5' : 'text-2xl'}`}
@@ -115,12 +115,12 @@ export const Home = () => {
 
 
         {/* About section */}
-        <section id="about" className='min-h-[50vh] flex items-center justify-center'>
+        <section id="about" className='min-h-[85vh] flex items-center justify-center'>
           <About />
         </section>
 
         {/* Benefits section */}
-        <section id="benefits" className='min-h-[50vh] flex items-center justify-center'>
+        <section id="benefits" className='min-h-[85vh] flex items-center justify-center'>
           <Benefits />
         </section>
 

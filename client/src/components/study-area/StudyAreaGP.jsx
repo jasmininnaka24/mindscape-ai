@@ -3,22 +3,31 @@ import React, { useEffect, useState } from 'react';
 import { Navbar } from '../navbar/logged_navbar/navbar';
 import { Link, useLocation } from 'react-router-dom';
 import { useNavigate, useParams } from 'react-router-dom';
+
+
+// responsive sizes
+import { useResponsiveSizes } from '../useResponsiveSizes'; 
+
+// other imports
+import { SearchFunctionality } from '../search/SearchFunctionality';
+import { SERVER_URL } from '../../urlConfig';
+import { Sidebar } from '../sidebar/Sidebar';
+import { useUser } from '../../UserContext';
+import { fetchUserData } from '../../userAPI';
+
+// icons import
 import CategoryIcon from '@mui/icons-material/Category';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 import DeleteIcon from '@mui/icons-material/Delete';
 import BorderColorIcon from '@mui/icons-material/BorderColor';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
-import { SearchFunctionality } from '../search/SearchFunctionality';
-import { SERVER_URL } from '../../urlConfig';
 import LocalLibraryIcon from '@mui/icons-material/LocalLibrary';
 
-import { Sidebar } from '../sidebar/Sidebar';
-
-
-import { useUser } from '../../UserContext';
-import { fetchUserData } from '../../userAPI';
-
 export const StudyAreaGP = (props) => {
+
+  const { extraSmallDevice, smallDevice, mediumDevices, largeDevices, extraLargeDevices } = useResponsiveSizes();
+
+
   const navigate = useNavigate();
 
   const location = useLocation();
@@ -886,14 +895,9 @@ export const StudyAreaGP = (props) => {
 
         <Sidebar currentPage={categoryFor === 'Personal' ? 'personal-study-area' : 'group-study-area'} />
 
+        <div className={`h-[100vh] flex flex-col items-center justify-between py-2 ${extraLargeDevices && 'w-1/6'} mbg-800`}></div>
 
-        <div className={`lg:w-1/6 h-[100vh] flex flex-col items-center justify-between py-2 lg:mb-0 ${
-        window.innerWidth > 1020 ? '' :
-        window.innerWidth <= 768 ? 'hidden' : 'hidden'
-      } mbg-800`}></div>
-
-
-        <div className='flex-1 mbg-200 w-full pt-5 flex'>
+        <div className={`flex-1 mbg-200 w-full pt-5 flex ${(smallDevice || extraSmallDevice) ? 'flex-col' : 'flex-row'}`}>
           {/* modal */}
           <div style={{ zIndex: 1000 }} className={`${hidden} absolute flex items-center justify-center modal-bg w-full h-full`}>
             <div className='flex justify-center'>
@@ -1090,14 +1094,14 @@ export const StudyAreaGP = (props) => {
       
 
     
-          <div className='py-4 px-10 w-3/4 '>    
+          <div className={`py-4 ${(extraLargeDevices || largeDevices) ? 'w-3/4 px-10' : (smallDevice || extraSmallDevice) ? 'w-full' : 'w-2/3 px-10'} `}>    
 
     
-            <div className='flex justify-between items-center mb-6'>
+            <div className={`flex justify-between items-center mb-6 ${(extraLargeDevices || largeDevices) ? 'flex-row' : 'flex-col'}`}>
         
               <h3 className='text-center text-2xl font-medium'><LocalLibraryIcon className='mb-1 mr-1 mcolor-800-opacity' fontSize='large' /> Study Area</h3>
 
-              <div>
+              <div className={`${(!extraLargeDevices || !largeDevices) && 'mt-4'}`}>
 
                 <button className='rounded-[8px] px-6 py-2 font-medium font-lg btn-primary' onClick={() => {
                   materialCategories.length > 0
@@ -1142,10 +1146,10 @@ export const StudyAreaGP = (props) => {
               {lastMaterial !== null ? (
                 <div className='mbg-100 shadows px-5 py-5 rounded'>
                   <div className='relative'>
-                    <p className='text-xl mcolor-900 mb-5'>Last Uploaded Reviewer: {lastMaterial.title} from {materialCategory}</p>
+                    <p className='text-xl mcolor-900 mb-5 font-medium'>Last Uploaded Reviewer: {lastMaterial.title} from {materialCategory}</p>
       
-                    <section className="border mbg-100 scroll-box max-h-[68vh] min-h-[68vh]">
-                      <div className='gap-2 flex justify-between items-start mx-5 mt-8'>
+                    <section className={`${extraSmallDevice ? '' : 'border'} scroll-box mbg-100 max-h-[68vh] min-h-[68vh]`}>
+                      <div className={`gap-2 flex justify-between items-start ${extraSmallDevice ? 'mx-2' : 'mx-5'} my-8 ${(extraLargeDevices || largeDevices) ? 'flex-row' : 'flex-col'}`}>
                         <button
                           onClick={() => showContent(1)}
                           className={`w-full py-2 rounded text-lg ${activeButton === 1 ? 'border-medium-800 mcolor-800 font-bold' : 'border-medium-700 mcolor-700 font-medium'}`}
@@ -1167,12 +1171,14 @@ export const StudyAreaGP = (props) => {
                         </Link>
 
                       </div>
-                      <div className='p-5'>
+                      <div className={`${extraSmallDevice ? 'mx-2' : 'mx-5'}`}>
                         {showLesson && lastMaterial && <div>
                           
                           <p className='mbg-200 p-5 border-thin-800 rounded my-5'>
-                            <h3 className='font-medium mcolor-700 text-2xl text-center pt-3 pb-5'><span className='font-bold mcolor-800'>{lastMaterial.title}</span></h3>
-                            {lastMaterial.body}
+                            <h3 className='font-medium mcolor-700 text-2xl text-center pt-3 pb-5'><span className='font-bold my-5 mcolor-800'>{lastMaterial.title}</span></h3>
+                            <p>
+                              {lastMaterial.body}
+                            </p>
                           </p>
                           
                           </div>
@@ -1181,7 +1187,7 @@ export const StudyAreaGP = (props) => {
                         {showRev && materialRev && (
                           <div>
 
-                            <h3 className='font-medium mcolor-700 text-2xl text-center mb-5 mt-3'><span className='font-bold mcolor-800'>Key Points</span></h3>
+                            <h3 className='font-medium mcolor-700 text-2xl text-center my-8'><span className='font-bold mcolor-800'>Key Points</span></h3>
 
                             {materialRev && Array.isArray(materialRev) && materialRev.map((material) => (
                               <div className='mb-10 mt-2 p-5 mbg-200 border-thin-800 rounded' key={material.question}>
@@ -1196,7 +1202,7 @@ export const StudyAreaGP = (props) => {
                         )}
                       </div>
                     </section>
-                    <div className='flex items-center w-[98%] absolute left-0 mbg-100 py-2 bottom-[.0rem] ml-1 mb-[.16rem] rounded'>
+                    <div className={`flex items-center w-[98%] absolute left-0 mbg-100 py-2 bottom-[.0rem] ml-1 ${extraSmallDevice ? 'hidden' : 'mb-[.12rem]'} rounded`}>
 
                     </div>
                   </div>
@@ -1210,7 +1216,7 @@ export const StudyAreaGP = (props) => {
           </div>
 
           {/* Side */}
-          <div className={`flex flex-col justify-between w-1/4 h-[95vh] p-5 sidebar mbg-800 mcolor-100 rounded`} style={{ overflowY: 'auto' }}>
+          <div className={`flex flex-col justify-between ${(extraLargeDevices || largeDevices) ? 'w-1/4 p-5' : (smallDevice || extraSmallDevice) ? 'w-full px-10 mt-5' : 'w-1/3 p-5'} h-[95vh] sidebar mbg-800 mcolor-100 rounded`} style={{ overflowY: 'auto' }}>
             <div className="my-5 shelf-categories">
               
               <p className="text-2xl mb-10 font-bold text-center opacity-90">{categoryFor === 'Group' ? `${groupName.toUpperCase()}'S ` : 'PERSONAL'} SHELF</p>

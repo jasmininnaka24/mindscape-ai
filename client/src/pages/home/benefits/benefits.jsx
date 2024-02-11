@@ -11,12 +11,14 @@ export const Benefits = () => {
 
 
   return (
-    <div className='' id='benefits-page' data-aos='fade-up'>
+    <div>
       <div className='py-6 nav mcolor-100'>nav</div>
+      <div className='benefits-page' data-aos='fade-up'>
+
       {/* top */}
       <div className='flex justify-between items-center'>
         <div className={`${!extraSmallDevice ? 'line' : ''}`}></div>
-        <h2 className={`${!extraSmallDevice ? 'text-4xl' : 'text-2xl'} font-medium text-center py-10 lora`}>Benefits of MindScape</h2>
+        <h2 className={`${!extraSmallDevice ? 'text-4xl' : 'text-2xl'} font-bold text-center py-10 lora`}>Benefits of MindScape</h2>
         <div className={`${!extraSmallDevice ? 'line' : ''}`}></div>
       </div>
 
@@ -26,8 +28,8 @@ export const Benefits = () => {
         {/* information about the app */}
         <div className={`box-border-right ${(!largeDevices && !extraLargeDevices) ? 'w-full mt-5' : 'w-3/4'}`}>
           <div>
-            <p className='text-justify text-lg my-4 lora'>Through the use of the Mindscape application, students can experience a transformative impact on their educational journey. This innovative platform goes beyond traditional learning methods, offering students the opportunity to achieve enhanced academic performance, foster growth development, and provide an enriched overall learning experience.</p>
-            <p className='text-justify text-lg my-4'>The collaborative features of Mindscape create a dynamic learning environment, facilitating interaction and knowledge-sharing among users. This collaborative aspect not only enhances the academic experience but also prepares students for the collaborative nature of their future workplaces.</p>
+            <p className='text-justify text-lg my-4 poppins'>Through the use of the Mindscape application, students can experience a transformative impact on their educational journey. This innovative platform goes beyond traditional learning methods, offering students the opportunity to achieve enhanced academic performance, foster growth development, and provide an enriched overall learning experience.</p>
+            <p className='text-justify text-lg my-4 poppins'>The collaborative features of Mindscape create a dynamic learning environment, facilitating interaction and knowledge-sharing among users. This collaborative aspect not only enhances the academic experience but also prepares students for the collaborative nature of their future workplaces.</p>
             
           </div>
         </div>
@@ -39,5 +41,6 @@ export const Benefits = () => {
 
       </div>
     </div>
+  </div>
   )
 }

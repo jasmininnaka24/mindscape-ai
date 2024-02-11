@@ -4,8 +4,15 @@ import axios from 'axios';
 import { useUser } from '../../UserContext';
 import { SERVER_URL } from '../../urlConfig';
 
+// responsive sizes
+import { useResponsiveSizes } from '../useResponsiveSizes'; 
+
+
 
 export const CreateGroupComp = (props) => {
+
+  const { extraSmallDevice, smallDevice, mediumDevices, largeDevices, extraLargeDevices } = useResponsiveSizes();
+
 
   const { user } = useUser();
 
@@ -224,14 +231,14 @@ export const CreateGroupComp = (props) => {
   }, []);
     
   return (
-    <div className='w-1/2 flex justify-between items-center gap-5'>
+    <div className={`${(extraLargeDevices || largeDevices) ? 'w-1/2' : 'w-full'} flex justify-between items-center gap-5 ${extraSmallDevice ? 'flex-col' : 'flex-row'}`}>
 
-      <button className='w-1/2 btn-800 border-thin-800 font-medium px-6 py-3 rounded-[5px]' onClick={() => {
+      <button className={`${extraSmallDevice ? 'w-full' : 'w-1/2'} btn-800 border-thin-800 font-medium px-6 py-3 rounded-[5px]`} onClick={() => {
         setHidden('')
         setJoinGroup('')
       }}>Join Group</button>
       
-      <button className='w-1/2 btn-primary border-thin-800 font-medium px-6 py-3 rounded-[5px]' onClick={() => {
+      <button className={`${extraSmallDevice ? 'w-full' : 'w-1/2'} btn-primary border-thin-800 font-medium px-6 py-3 rounded-[5px]`} onClick={() => {
         setHidden('')
         setCreateGroup('')
         }}>

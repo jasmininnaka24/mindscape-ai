@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from 'react'
-import { Navbar } from '../navbar/logged_navbar/navbar';
 import { DateTime, Interval } from 'luxon';
 import { useUser } from '../../UserContext';
 import { SERVER_URL } from '../../urlConfig';
@@ -22,7 +21,15 @@ import EditIcon from '@mui/icons-material/Edit';
 import DoneIcon from '@mui/icons-material/Done';
 import AddTaskIcon from '@mui/icons-material/AddTask';
 
+// responsive sizes
+import { useResponsiveSizes } from '../useResponsiveSizes'; 
+
+
+
 export const Tasks = ({room, groupId}) => {
+
+  const { extraSmallDevice, smallDevice, mediumDevices, largeDevices, extraLargeDevices } = useResponsiveSizes();
+
 
   // States
   const [task, setTask] = useState("");
@@ -95,10 +102,8 @@ export const Tasks = ({room, groupId}) => {
 
         <Sidebar currentPage={room === 'Personal' ? 'personal-study-area' : 'group-study-area'} />
 
-        <div className={`lg:w-1/6 h-[100vh] flex flex-col items-center justify-between py-2 lg:mb-0 ${
-        window.innerWidth > 1020 ? '' :
-        window.innerWidth <= 768 ? 'hidden' : 'hidden'
-      } mbg-800`}></div>
+        <div className={`min-h-[100vh] flex flex-col items-center justify-between py-2 ${extraLargeDevices && 'w-1/6'} mbg-800`}></div>
+
 
         <div className='flex-1 mbg-200 w-full p-6'>
           <p className='text-3xl mb-5 font-medium flex items-center mcolor-900'>
@@ -106,16 +111,18 @@ export const Tasks = ({room, groupId}) => {
             <p>Tasks</p>
           </p>
 
-          <div className="border-medium-800 gen-box flex justify-between items-center rounded">
-            <div className='box1 mbg-input border-box w-1/2'>
+          <div className={`border-medium-800 flex ${(extraLargeDevices || largeDevices) ? 'flex-row gen-box' : 'flex-col'} justify-between items-center rounded`}>
+            <div className={`min-h-[80vh] box1 mbg-input border-box ${(extraLargeDevices || largeDevices) ? 'w-1/2' : 'w-full'}`}>
               <div className='scroll-box p-7'>
-                <div className='flex items-center justify-between'>
-                  <p className='text-2xl font-normal'>List of Tasks</p>
-                  {!showAddTaskModal ? (
-                    <button className='px-7 py-1 text-lg mbg-800 mcolor-100 rounded' onClick={() => setShowAddTaskModal(true)}>Add Task</button>
-                    ) : (
-                    <button className='px-7 py-1 text-4xl rounded' onClick={() => setShowAddTaskModal(false)}>&times;</button>
-                  )}
+                <div className={`flex ${extraSmallDevice ? 'flex-col-reverse' : 'flex-row  items-center justify-between'}`}>
+                  <p className={`${extraSmallDevice ? 'text-sm' : 'text-xl'} font-normal`}>List of Tasks</p>
+                  <div className='flex items-center justify-end inline'>
+                    {!showAddTaskModal ? (
+                      <button className={`py-1 ${extraSmallDevice ? 'text-sm px-2' : 'text-lg px-7'} mbg-800 mcolor-100 rounded`} onClick={() => setShowAddTaskModal(true)}>Add Task</button>
+                      ) : (
+                      <button className={`px-7 py-1 text-4xl rounded`} onClick={() => setShowAddTaskModal(false)}>&times;</button>
+                    )}
+                  </div>
                 </div>
   
                 {showAddTaskModal && (
@@ -134,7 +141,7 @@ export const Tasks = ({room, groupId}) => {
                 {listOfTasks
                   .filter((task) => task.completedTask !== "Completed")
                   .length === 0 && (
-                    <p className='text-center text-xl mcolor-800-opacity my-10'>No assigned task</p>
+                    <p className={`text-center ${extraSmallDevice ? 'text-sm' : 'text-xl'} mcolor-800-opacity my-10`}>No assigned task</p>
                 )}
 
                 {/* Unaccomplished Tasks */}
@@ -229,17 +236,17 @@ export const Tasks = ({room, groupId}) => {
               </div>
             </div>
   
-            <div className='box2 mbg-input border-box w-1/2 '>
+            <div className={`min-h-[80vh] box2 mbg-input border-box ${(extraLargeDevices || largeDevices) ? 'w-1/2' : 'w-full gen-border-top'}`}>
   
               {/* Accomplished Tasks */}
               <div className='scroll-box p-8'>
 
-                <p className='text-2xl font-normal'>Recently Accomplished</p>
+                <p className={`${extraSmallDevice ? 'text-sm' : 'text-xl'} font-normal`}>Recently Accomplished</p>
 
                 {listOfTasks
                   .filter((task) => task.completedTask === "Completed")
                   .length === 0 && (
-                    <p className='text-center text-xl mcolor-800-opacity my-10'>No completed task yet</p>
+                    <p className={`text-center ${extraSmallDevice ? 'text-sm' : 'text-xl'} mcolor-800-opacity my-10`}>No completed task yet</p>
                 )}
 
 

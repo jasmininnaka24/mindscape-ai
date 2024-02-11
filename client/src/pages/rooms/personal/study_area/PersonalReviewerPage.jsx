@@ -1,18 +1,24 @@
 import React, { useEffect, useState } from 'react'
-import { Navbar } from '../../../../components/navbar/logged_navbar/navbar'
 import { useNavigate, useParams } from 'react-router-dom';
 import axios from 'axios';
 import { Link } from 'react-router-dom';
 import { useUser } from '../../../../UserContext';
-import PushPinIcon from '@mui/icons-material/PushPin';
-import PermIdentityOutlinedIcon from '@mui/icons-material/PermIdentityOutlined';
 import { SERVER_URL } from '../../../../urlConfig';
 import { fetchUserData } from '../../../../userAPI'; 
 import { Sidebar } from '../../../../components/sidebar/Sidebar';
 import { motion } from 'framer-motion';
 
+// responsive sizes
+import { useResponsiveSizes } from '../../../../components/useResponsiveSizes'; 
+
+// imported icons
+import PushPinIcon from '@mui/icons-material/PushPin';
+
 
 export const PersonalReviewerPage = () => {
+
+  const { extraSmallDevice, smallDevice, mediumDevices, largeDevices, extraLargeDevices } = useResponsiveSizes();
+
 
   const { materialId } = useParams();
   const { user } = useUser()
@@ -204,15 +210,13 @@ export const PersonalReviewerPage = () => {
 
         <Sidebar currentPage={'personal-study-area'} />
 
-        <div className={`lg:w-1/6 h-[100vh] flex flex-col items-center justify-between py-2 lg:mb-0 ${
-        window.innerWidth > 1020 ? '' :
-        window.innerWidth <= 768 ? 'hidden' : 'hidden'
-      } mbg-800`}></div>
+        <div className={`h-[100vh] flex flex-col items-center justify-between py-2 ${extraLargeDevices && 'w-1/6'} mbg-800`}></div>
 
 
 
 
-        <div className='flex-1 mbg-200 w-full flex flex-col min-h-[100vh] justify-center items-center px-5'>
+
+        <div className={`flex-1 mbg-200 w-full flex flex-col min-h-[100vh] justify-center items-center px-5`}>
 
           <motion.div 
             className={`${isMaterialDeleted} mt-5 py-2 mbg-300 mcolor-800 text-center rounded-[5px] text-lg`}
@@ -232,38 +236,38 @@ export const PersonalReviewerPage = () => {
               </div>
 
 
-              <div className='flex gap-10 w-full'>
-                <div className='w-2/3 rounded-[5px] py-3 px-5'>
+              <div className={`flex ${(extraLargeDevices || largeDevices) ? 'gap-10' : 'gap-2'} ${(extraSmallDevice) ? 'flex-col-reverse' : 'flex-row'} w-full`}>
+                <div className={`${extraSmallDevice ? 'w-full mt-5' : 'w-2/3'} rounded-[5px] py-3 px-5`}>
                   <div className='w-full'>
-                    <motion.p className='text-2xl'
+                    <motion.p className={`${(extraLargeDevices || largeDevices) ? 'text-2xl' : extraSmallDevice ? 'text-xl' : 'text-lg'} font-medium quicksand`}
                       initial={{ opacity: 0, y: 50 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ duration: 0.3, delay: 0.2 }}
                     >You have been identified as a <span className='font-bold underline'>{userData.typeOfLearner} Learner</span></motion.p >
                     <br />
-                    <motion.p className='mcolor-900 my-1'
+                    <motion.p className={`mcolor-900 text-justify my-1 ${(extraLargeDevices || largeDevices) ? 'text-lg' : (mediumDevices || extraSmallDevice) ? 'text-sm' : 'text-xs'}`}
                       initial={{ opacity: 0, y: 50 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ duration: 0.5, delay: 0.4 }}
-                    ><PushPinIcon className='text-red mr-1' />The design and formatting of your study sessions will be tailored to suit your specific learner type. If you wish to explore design and format options for other learner types, you can modify your profile configuration.</motion.p >
+                    ><PushPinIcon className={'text-red mr-1'} />The design and formatting of your study sessions will be tailored to suit your specific learner type. If you wish to explore design and format options for other learner types, you can modify your profile configuration.</motion.p >
                     <br />
-                    <motion.p className='mcolor-900 my-1'
+                    <motion.p className={`mcolor-900 text-justify my-1 ${(extraLargeDevices || largeDevices) ? 'text-lg' : (mediumDevices || extraSmallDevice) ? 'text-sm' : 'text-xs'}`}
                       initial={{ opacity: 0, y: 50 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ duration: 0.8, delay: 0.7 }}
-                    ><PushPinIcon className='text-red mr-1' />Study Session, which includes a Pomodoro technique, is designed to enhance your productivity and focus. The Pomodoro technique involves structured intervals of focused work, promoting efficient learning and concentration. Stay organized and make the most of your study time with this purposeful approach to learning.</motion.p >
+                    ><PushPinIcon className={'text-red mr-1'} />Study Session, which includes a Pomodoro technique, is designed to enhance your productivity and focus. The Pomodoro technique involves structured intervals of focused work, promoting efficient learning and concentration. Stay organized and make the most of your study time with this purposeful approach to learning.</motion.p >
                     <br />
-                    <motion.p className='mcolor-900 my-1'
+                    <motion.p className={`mcolor-900 text-justify my-1 ${(extraLargeDevices || largeDevices) ? 'text-lg' : (mediumDevices || extraSmallDevice) ? 'text-sm' : 'text-xs'}`}
                       initial={{ opacity: 0, y: 50 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ duration: 1, delay: 0.9 }}
-                    ><PushPinIcon className='text-red mr-1' />Upon completing an assessment, your performance data will be seamlessly integrated into the dashboard. This allows for a comprehensive view of your progress over time, facilitating a deeper understanding of your strengths and areas for improvement. Take advantage of this valuable insight to refine your learning strategy and achieve continuous growth.</motion.p >
+                    ><PushPinIcon className={'text-red mr-1'} />Upon completing an assessment, your performance data will be seamlessly integrated into the dashboard. This allows for a comprehensive view of your progress over time, facilitating a deeper understanding of your strengths and areas for improvement. Take advantage of this valuable insight to refine your learning strategy and achieve continuous growth.</motion.p >
                     <br />
-                    <motion.p className='mcolor-900 my-1'
+                    <motion.p className={`mcolor-900 text-justify my-1 ${(extraLargeDevices || largeDevices) ? 'text-lg' : (mediumDevices || extraSmallDevice) ? 'text-sm' : 'text-xs'}`}
                       initial={{ opacity: 0, y: 50 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ duration: 1.3, delay: 1.2 }}
-                    ><PushPinIcon className='text-red mr-1' />Please be aware that the action of deleting or updating data is irreversible. Exercise caution when making changes to ensure the accuracy and completeness of your information. Prioritize data integrity to maintain a reliable and consistent record of your learning activities within the system.</motion.p >
+                    ><PushPinIcon className={'text-red mr-1'} />Please be aware that the action of deleting or updating data is irreversible. Exercise caution when making changes to ensure the accuracy and completeness of your information. Prioritize data integrity to maintain a reliable and consistent record of your learning activities within the system.</motion.p >
                   </div>
 
                   {/* modal */}
@@ -319,18 +323,18 @@ export const PersonalReviewerPage = () => {
                 </div>
 
                 <motion.div
-                  className='flex flex-col w-1/3 items-center'>
+                  className={`flex flex-col ${extraSmallDevice ? 'w-full mt-5' : 'w-1/3'} items-center`}>
 
                   <motion.div className='mbg-input mcolor-700 w-full p-5 rounded shadows'
                     initial={{ opacity: 0, y: 50 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.3, delay: 0.2 }}
                   >
-                    <p className='text-lg font-medium mb-4'>Study Material Information:</p>
+                    <p className={`${(extraLargeDevices || largeDevices || extraSmallDevice) ? 'text-lg' : 'text-sm'} font-bold mb-4`}>Study Material Information:</p>
       
-                    <p className='mt-1'>Category: <span className='font-bold'>{materialCategory}</span></p>
-                    <p className='mt-1'>Material Title: <span className='font-bold'>{materialTitle}</span></p>
-                    <p className='mt-1'>Number of Questions: <span className='font-bold'>{materialNumQues}</span></p>
+                    <p className={`mt-1 ${(extraLargeDevices || largeDevices || extraSmallDevice) ? 'text-md' : 'text-xs'}`}>Category: <span className='font-bold'>{materialCategory}</span></p>
+                    <p className={`mt-1 ${(extraLargeDevices || largeDevices || extraSmallDevice) ? 'text-md' : 'text-xs'}`}>Material Title: <span className='font-bold'>{materialTitle}</span></p>
+                    <p className={`mt-1 ${(extraLargeDevices || largeDevices || extraSmallDevice) ? 'text-md' : 'text-xs'}`}>Number of Questions: <span className='font-bold'>{materialNumQues}</span></p>
                   </motion.div>
 
                   <br />
@@ -349,14 +353,14 @@ export const PersonalReviewerPage = () => {
                       initial={{ opacity: 0, y: 50 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ duration: 0.5, delay: 0.4 }}>
-                      <button className='w-full px-6 py-5 shadows rounded-[5px] text-lg btn-primary font-normal' onClick={startStudySession}>Start Study Session</button>
+                      <button className={`w-full px-6 py-5 shadows rounded-[5px] ${(extraLargeDevices || largeDevices) ? 'text-lg' : 'text-sm'} btn-primary font-normal`} onClick={startStudySession}>Start Study Session</button>
                     </motion.div>
                       
                     <motion.div className='w-full'
                         initial={{ opacity: 0, y: 50 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.8, delay: 0.7 }}>
-                        <button className='w-full px-6 py-5 shadows rounded-[5px] text-lg mbg-800 mcolor-100 font-normal'
+                        <button className={`w-full px-6 py-5 shadows rounded-[5px] ${(extraLargeDevices || largeDevices) ? 'text-lg' : 'text-sm'} mbg-800 mcolor-100 font-normal`}
                         onClick={() => {
                           setShowModal(true)
                           setShowAssessmentModalRem(true)
@@ -364,7 +368,7 @@ export const PersonalReviewerPage = () => {
                         >Take {takeAssessment ? 'Assessment' : 'Pre-Assessment'}</button>
                     </motion.div>
 
-                      <motion.button className='px-5 py-5 shadows w-full rounded-[5px] text-lg mbg-200 mcolor-800 border-medium-800 font-normal'
+                      <motion.button className={`px-5 py-5 shadows w-full rounded-[5px] ${(extraLargeDevices || largeDevices) ? 'text-lg' : 'text-sm'} mbg-200 mcolor-800 border-medium-800 font-normal`}
                       onClick={() => deleteStudyMaterial(materialId, materialTitle)}
                       initial={{ opacity: 0, y: 50 }}
                       animate={{ opacity: 1, y: 0 }}
@@ -373,7 +377,7 @@ export const PersonalReviewerPage = () => {
 
                     {!takeAssessment && (
                       <Link className='w-full' to={`/main/personal/study-area/update-material/${materialId}`}>
-                        <motion.button className='px-5 py-5 shadows w-full rounded-[5px] text-lg mbg-200 mcolor-800 border-medium-800 font-normal'
+                        <motion.button className={`px-5 py-5 shadows w-full rounded-[5px] ${(extraLargeDevices || largeDevices) ? 'text-lg' : 'text-sm'} mbg-200 mcolor-800 border-medium-800 font-normal`}
                       initial={{ opacity: 0, y: 50 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ duration: 1.3, delay: 1.2 }}

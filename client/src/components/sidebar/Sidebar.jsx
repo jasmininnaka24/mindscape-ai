@@ -93,11 +93,9 @@ export const Sidebar = ({currentPage}) => {
             </div>
 
             <ul className='mcolor-100 w-full' style={{marginTop: `${
-              window.innerWidth > 1300 ? '-5rem' :
-              window.innerWidth > 1230 ? '-8rem' :
-              window.innerWidth > 1020 ? '-8rem' :
-              window.innerWidth > 900 ? '-8rem' :
-              '-15rem'
+              extraLargeDevices ? '-15rem' :
+              (largeDevices || mediumDevices) ? '-8rem' :
+              (smallDevice || extraSmallDevice) ? '-5rem' : '-8rem'
             }`}}>
               <li className={`my-1 py-4 pl-5 ml-2 text-md ${currentPage === 'profile' ? 'rounded-side mbg-200 mcolor-800' : 'rounded'}`}>
                 <Link to={'/main/profile'}><span className='color-primary'><AccountCircleOutlinedIcon/></span> My Profile</Link>
