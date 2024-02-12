@@ -372,6 +372,9 @@ input:focus{
 .text-red-dark{
   color: #af4242;
 }
+.border-red-dark{
+  border: #af4242 1px solid;
+}
 .text-greenn{
   color: #476c50;
 }

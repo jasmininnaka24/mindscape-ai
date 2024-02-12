@@ -3,14 +3,19 @@ import ScrollToBottom from "react-scroll-to-bottom";
 import { useUser } from '../../../UserContext';
 import { fetchUserData } from '../../../userAPI';
 
-import ArrowBackIcon from '@mui/icons-material/ArrowBack';
-import GroupsIcon from '@mui/icons-material/Groups';
-import SensorDoorIcon from '@mui/icons-material/SensorDoor';
-import ClearAllIcon from '@mui/icons-material/ClearAll';
 import { Sidebar } from '../../../components/sidebar/Sidebar';
 
+
+// icon imports
+import GroupsIcon from '@mui/icons-material/Groups';
+import ClearAllIcon from '@mui/icons-material/ClearAll';
+
+
+// responsive sizes
+import { useResponsiveSizes } from '../../../components/useResponsiveSizes'; 
+
+
 import io from 'socket.io-client';
-import { Link } from 'react-router-dom';
 
 import { SERVER_URL } from '../../../urlConfig';
 
@@ -23,6 +28,9 @@ const socket = io(SERVER_URL, {
 
 
 export const DiscussionForums = () => {
+
+  const { extraSmallDevice, smallDevice, mediumDevices, largeDevices, extraLargeDevices } = useResponsiveSizes();
+
 
   const { user } = useUser();
 
@@ -301,11 +309,7 @@ export const DiscussionForums = () => {
 
       <Sidebar currentPage={'forum'} />
 
-      <div className={`lg:w-1/6 h-[100vh] flex flex-col items-center justify-between py-2 lg:mb-0 ${
-        window.innerWidth > 1020 ? '' :
-        window.innerWidth <= 768 ? 'hidden' : 'hidden'
-      } mbg-800`}></div>
-
+      <div className={`min-h-[100vh] flex flex-col items-center justify-between py-2 ${extraLargeDevices && 'w-1/6'} mbg-800`}></div>
 
 
       {showRooms && (
@@ -313,16 +317,16 @@ export const DiscussionForums = () => {
       
           <div>
             <div className='h-[2vh]'></div>
-            <div className='flex items-center justify-between'>
-              <p className='text-4xl font-medium flex items-center mcolor-900'>
-                <GroupsIcon className='mr-3 mcolor-700' sx={{ fontSize: 45 }} />
+            <div className={`flex ${(extraSmallDevice || smallDevice) ? 'flex-col' : 'flex-row'} items-center justify-between`}>
+              <p className={`${(extraSmallDevice || smallDevice) ? 'text-xl' : 'text-3xl'} font-medium flex items-center mcolor-900`}>
+                <GroupsIcon className='mr-3 mcolor-700' sx={{ fontSize: (extraSmallDevice || smallDevice) ? 25 : 45 }} />
                 <p>Discussion Rooms</p>
               </p>
 
               {filteredRooms.length !== 0 && (
-                <div className='rounded'>
+                <div className={`${(extraSmallDevice || smallDevice) && 'mt-4'} rounded`}>
                   <button
-                    className='px-6 my-1 py-2 text-lg mbg-input mcolor-800 shadows rounded'
+                    className={`px-6 my-1 py-2 ${(extraSmallDevice || smallDevice) ? 'text-sm' : 'text-md'} mbg-input mcolor-800 shadows rounded`}
                     onClick={() => {
                       setShowrooms(false)
                       setShowJoinedrooms(true)
@@ -336,14 +340,14 @@ export const DiscussionForums = () => {
 
             {/* inputs and buttons */}
             <div className='w-full flex items-center justify-center gap-5 mt-3'>
-              <div className='flex items-center gap-5 w-full'>
+              <div className={`flex ${(extraSmallDevice || smallDevice) ? 'flex-col mt-5' : 'flex-row'} items-center gap-5 w-full`}>
 
-                <div className='flex items-center justify-center w-full gap-1 my-5'>
+                <div className={`flex items-center justify-center w-full gap-1 ${(extraSmallDevice || smallDevice) ? 'text-sm' : 'text-md my-5'}`}>
                   <button className='btn-primary px-5 py-2 rounded w-full' onClick={() => {
                     setShowCreateRoomModal(true)
                   }}>Create a room</button>
                 </div>
-                <div className='flex items-center justify-center w-full gap-1 my-5'>
+                <div className={`flex items-center justify-center w-full gap-1 ${(extraSmallDevice || smallDevice) ? 'text-sm' : 'text-md my-5'}`}>
                   <button className='mbg-800 mcolor-100 border-thin-800 px-5 py-2 rounded w-full' onClick={() => {
                     setShowCategories(true)
                   }}>View Categories</button>
@@ -354,7 +358,7 @@ export const DiscussionForums = () => {
                     <input
                       type="text"
                       placeholder='Search for a room...'
-                      className='w-full py-2 rounded text-center mbg-input'
+                      className={`w-full py-2 rounded text-center mbg-input ${(extraSmallDevice || smallDevice) ? 'text-sm' : 'text-md'}`}
                       value={searchTerm}
                       onChange={handleSearch}
                     />         
@@ -476,11 +480,11 @@ export const DiscussionForums = () => {
             {filteredRooms.length > 0 ? (
               <p className='mcolor-900 font-medium my-4 text-lg'>Rooms: </p>
               ) : (
-              <p className='mcolor-500 text-center font-medium my-5 text-lg'>No available discussion room to join.</p>
+              <p className={`mcolor-500 text-center font-medium my-5 ${(extraSmallDevice || smallDevice) ? 'text-sm' : 'text-lg'}`}>No available discussion room to join.</p>
             )}
 
 
-            <div className='grid grid-cols-3 gap-3'>
+            <div className={`grid ${(extraSmallDevice || smallDevice) ? 'grid-cols-1' : mediumDevices ? 'grid-cols-2' : 'grid-cols-3'} gap-3`}>
 
             {filteredRooms
               .filter(room => room !== null)
@@ -490,21 +494,21 @@ export const DiscussionForums = () => {
                   <div key={index} className='mbg-input border-thin-800 py-3 px-5 rounded'>
                     {room && (
                       <>
-                        <p className='mcolor-800'>
-                          Room name: <span className='font-medium mcolor-900'>{room?.roomName || 'N/A'}</span>
+                        <p className={`mcolor-800 ${extraSmallDevice ? 'text-xs' : 'text-sm'}`}>
+                          Room name: <span className={`font-medium mcolor-900`}>{room?.roomName || 'N/A'}</span>
                         </p>
-                        <p className='mcolor-800'>
-                          Room category: <span className='font-medium mcolor-900'>{room?.roomCategory || 'N/A'}</span>
+                        <p className={`mcolor-800 ${extraSmallDevice ? 'text-xs' : 'text-sm'}`}>
+                          Room category: <span className={`font-medium mcolor-900`}>{room?.roomCategory || 'N/A'}</span>
                         </p>
-                        <p className='mcolor-800'>
-                          Room Description: <span className='font-medium mcolor-900'>{room?.roomDescription || 'N/A'}</span>
+                        <p className={`mcolor-800 ${extraSmallDevice ? 'text-xs' : 'text-sm'}`}>
+                          Room Description: <span className={`font-medium mcolor-900`}>{room?.roomDescription || 'N/A'}</span>
                         </p>
 
-                        <div className='flex justify-between mt-3'>
-                          <p>Users: {room?.users ? room?.users.length : 0}</p>
+                        <div className='flex items-center justify-between mt-3'>
+                          <p className={`${extraSmallDevice ? 'text-xs' : 'text-sm'}`}>Users: {room?.users ? room?.users.length : 0}</p>
                           {!userIdExists ? (
                             <button
-                              className='mbg-700 mcolor-100 px-5 py-2 rounded'
+                              className={`${extraSmallDevice ? 'text-xs px-3 py-1' : 'text-sm px-5 py-2'} mbg-700 mcolor-100 rounded`}
                               onClick={() => {
                                 joinCreatedRoom(room?.room, room?.users, index)
                                 setCurrentRoom(room?.room)
@@ -516,7 +520,7 @@ export const DiscussionForums = () => {
                             </button>
                           ) : (
                             <button
-                              className='mbg-700 mcolor-100 px-5 py-2 rounded'
+                              className={`${extraSmallDevice ? 'text-xs px-3 py-1' : 'text-sm px-5 py-2'} mbg-700 mcolor-100 rounded`}
                               onClick={() => {
                                 setCurrentRoom(room?.room)
                                 setCurrentMessageRoom(room?.roomName)
@@ -570,8 +574,10 @@ export const DiscussionForums = () => {
 
 
 
-          <div className='flex gap-5 my-5'>
-            <div className='w-1/2 h-[80vh] pr-3' style={{ overflowY: 'auto' }}>
+          <div className={`flex ${(extraLargeDevices || largeDevices) ? 'flex-row' : 'flex-col-reverse'} gap-5 my-5`}>
+            <div className={`${(extraLargeDevices || largeDevices) ? 'w-1/2' : 'w-full'} h-[80vh]`} style={{ overflowY: 'auto' }}>
+
+              <h3 className={`text-lg font-medium ${filteredRooms.length === 0 && 'hidden'}`}>Rooms: </h3>
 
               {filteredRooms
               .filter(room => room !== null)
@@ -630,7 +636,9 @@ export const DiscussionForums = () => {
               )}
             </div>
 
-            <div className='border-thin-800 rounded w-1/2 h-[68vh]'>
+            <br /><br /><br />
+
+            <div className={`border-thin-800 rounded ${(extraLargeDevices || largeDevices) ? 'w-1/2' : 'w-full'} h-[68vh]`}>
 
               <div className="chat-window">
                 <div className="chat-header flex items-center justify-between px-5">

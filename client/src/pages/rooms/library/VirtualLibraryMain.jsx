@@ -3,15 +3,22 @@ import { Navbar } from '../../../components/navbar/logged_navbar/navbar'
 import axios from 'axios'
 import { Link } from 'react-router-dom'
 import { useUser } from '../../../UserContext'
-import DeleteIcon from '@mui/icons-material/Delete';
 import { fetchUserData } from '../../../userAPI'
 import { SERVER_URL } from '../../../urlConfig';
 import { Sidebar } from '../../../components/sidebar/Sidebar'
 
 // icons import
 import LabelIcon from '@mui/icons-material/Label';
+import DeleteIcon from '@mui/icons-material/Delete';
+
+// responsive sizes
+import { useResponsiveSizes } from '../../../components/useResponsiveSizes';
+
 
 export const VirtualLibraryMain = () => {
+
+  const { extraSmallDevice, smallDevice, mediumDevices, largeDevices, extraLargeDevices } = useResponsiveSizes();
+
 
   const [groupList, setGroupList] = useState([]);
 
@@ -89,6 +96,9 @@ export const VirtualLibraryMain = () => {
   const [loadOnce, setLoadOnce] = useState(false);
   const [btnClicked, setBtnClicked] = useState(false);
 
+  // toggling
+  const [toggledCategory, setToggledCategory] = useState('hidden');
+
   const { user } = useUser()
   const UserId = user?.id;
 
@@ -101,6 +111,10 @@ export const VirtualLibraryMain = () => {
     typeOfLearner: '',
     userImage: ''
   })
+
+  const toggleCategory = () => {
+    setToggledCategory(toggledCategory === 'hidden' ? '' : 'hidden');
+  }
 
   const getUserData = async () => {
     const userData = await fetchUserData(UserId);
@@ -983,270 +997,130 @@ export const VirtualLibraryMain = () => {
 
           <Sidebar currentPage={'library'} />
 
-          <div className={`lg:w-1/6 h-[100vh] flex flex-col items-center justify-between py-2 lg:mb-0 ${
-            window.innerWidth > 1020 ? '' :
-            window.innerWidth <= 768 ? 'hidden' : 'hidden'
-          } mbg-800`}></div>
+          <div className={`h-[100vh] flex flex-col items-center justify-between py-2 ${extraLargeDevices && 'w-1/6'} mbg-800`}></div>
+
 
   
           <div className='flex-1 my-5 p-8'>    
-            <p className='text-3xl font-medium w-2/3'><LabelIcon fontSize='large' className='mcolor-800-opacity' /> Virtual Library Room</p> 
+            <p className={`${(extraSmallDevice || smallDevice) ? 'text-xl w-full' : 'text-3xl  w-2/3'} font-medium`}><LabelIcon fontSize='large' className='mcolor-800-opacity' /> Virtual Library Room</p> 
 
 
             {/* <div className='border-hr my-5'></div>   */}
   
             <div className='mt-8 gap-8 w-full flex'>
   
-              <div className='w-2/3'>
+              <div className={`${(extraLargeDevices || largeDevices) ? 'w-2/3' : 'w-full'}`}>
+
+                <div className={`w-full flex items-center justify-end mb-4 ${(extraLargeDevices || largeDevices) && 'hidden'}`}>
+                  <button onClick={toggleCategory} className='mcolor-500 font-bold'>Categories</button>
+                </div>
   
-                <div className='mbg-800 py-1 px-4 rounded mcolor-100 flex items-center justify-between w-full gap-5'>
+                <div className={`mbg-800 gap-3 px-4 rounded mcolor-100 flex ${extraSmallDevice ? 'flex-col' : 'flex-row'} py-3 items-center justify-between w-full`}>
 
                   
-                  <div className='w-1/2'>
-                    <div className='my-3 border-medium-800 rounded'>
-                      <input type="text" placeholder='Search for material...' className='w-full py-2 rounded text-center mcolor-900 mbg-200' value={searchValue !== '' ? searchValue : ''} onChange={(event) => {
+                  <div className={`${extraSmallDevice ? 'w-full' : 'w-1/2'}`}>
+                    <div className='border-medium-800 rounded'>
+                      <input type="text" placeholder='Search for material...' className={`w-full py-2 rounded text-center mcolor-900 mbg-200 ${extraSmallDevice ? 'text-sm' : 'text-md'}`} value={searchValue !== '' ? searchValue : ''} onChange={(event) => {
                         handleSearchChange(event.target.value)
                         setSearchValue(event.target.value)
                       }} />
                     </div>
                   </div>
 
-                  <div className='w-1/2'>
-                    <button className='btn-primary py-2 w-full rounded' onClick={() => {
+                  <div className={`${extraSmallDevice ? 'w-full' : 'w-1/2'}`}>
+                    <button className={`btn-primary py-2 w-full rounded ${extraSmallDevice ? 'text-sm' : 'text-md'}`} onClick={() => {
                       setShowModal(true);
                       setShowPresentStudyMaterials(true);
-
                       }}>Share a Study Material</button>
                   </div>
                 </div>
     
   
-                <div className='flex items-center justify-between'>
-                  <p className='font-medium text-lg mb-2 mt-8'>Latest Shared Study Materials:</p>
-
-                  {(filteredStudyMaterialsByCategory.length !== 0 || searchValue !== '') && (
-                    <button className='btn-800 rounded px-4 py-1 my-3' onClick={() => {
-                      setFilteredStudyMaterialsByCategory([])
-                      setSearchValue('')
-                    }}>Clear Filter</button>
-                  )}
+                <div className={`${!extraSmallDevice && 'flex flex-row justify-between items-center'} mt-8`}>
+                  <p className={`font-medium ${extraSmallDevice ? 'text-sm' : 'text-lg'} mb-2`}>Latest Shared Study Materials:</p>
+                  
+                    {(filteredStudyMaterialsByCategory.length !== 0 || searchValue !== '') && (
+                    <div className={`${extraSmallDevice && 'w-full flex justify-end'}`}>
+                      <button className={`btn-800 rounded px-4 py-1 my-3 ${extraSmallDevice ? 'text-sm' : 'text-md'}`} onClick={() => {
+                        setFilteredStudyMaterialsByCategory([])
+                        setSearchValue('')
+                      }}>Clear Filter</button>
+                    </div>
+                    )}
                 </div>
-                <div className='grid grid-result gap-3'>
+
+
+                <div className={`grid ${(extraLargeDevices || largeDevices || mediumDevices) ? 'grid-cols-2' : 'grid-cols-1'} gap-3`}>
   
-                
-  
-  
-                {/* delete modal */}
-                {deleteModal && (
-                  <div className={`absolute top-0 modal-bg left-0 w-full h-full`}>
-                    <div className='flex items-center justify-center h-full'>
-                      <div className='relative mbg-input min-h-[30vh] w-1/3 z-10 relative py-5 px-5 rounded-[5px]' style={{overflowY: 'auto'}}>
-  
-                        <button className='absolute right-5 top-5 font-medium text-xl' onClick={(e) => {
-                          e.preventDefault()
-                          setDeleteModal(false)
-                        }}>&#10006;</button>
-  
-                        <div className='flex items-center justify-center h-full'>
-                          <div className='w-full'>
-                            <div>
-                              <div className='flex flex-col gap-4'>
-                                <br />
-                                <button className='btn-300 py-4 rounded text-md font-medium' onClick={removeFromLibraryOnly}>{btnClicked && currentMaterial === 'Removing' ? 'Removing...' : 'Remove From Library Only'}</button>
-                                <button className='btn-300 py-4 rounded text-md font-medium' onClick={() => {
-                                  deleteInAllRecords()
-                                }}>{btnClicked && currentMaterial === 'Deleting' ? 'Deleting...' : 'Delete in All Records'}</button>
+                  {/* delete modal */}
+                  {deleteModal && (
+                    <div className={`absolute top-0 modal-bg left-0 w-full h-full`}>
+                      <div className='flex items-center justify-center h-full'>
+                        <div className='relative mbg-input min-h-[30vh] w-1/3 z-10 relative py-5 px-5 rounded-[5px]' style={{overflowY: 'auto'}}>
+    
+                          <button className='absolute right-5 top-5 font-medium text-xl' onClick={(e) => {
+                            e.preventDefault()
+                            setDeleteModal(false)
+                          }}>&#10006;</button>
+    
+                          <div className='flex items-center justify-center h-full'>
+                            <div className='w-full'>
+                              <div>
+                                <div className='flex flex-col gap-4'>
+                                  <br />
+                                  <button className='btn-300 py-4 rounded text-md font-medium' onClick={removeFromLibraryOnly}>{btnClicked && currentMaterial === 'Removing' ? 'Removing...' : 'Remove From Library Only'}</button>
+                                  <button className='btn-300 py-4 rounded text-md font-medium' onClick={() => {
+                                    deleteInAllRecords()
+                                  }}>{btnClicked && currentMaterial === 'Deleting' ? 'Deleting...' : 'Delete in All Records'}</button>
+                                </div>
                               </div>
                             </div>
                           </div>
+    
+    
+    
                         </div>
-  
-  
-  
                       </div>
                     </div>
-                  </div>
-                )}
+                  )}
   
   
-            {((filteredStudyMaterialsByCategory && filteredStudyMaterialsByCategory.length === 0) && searchValue === '') && (
-              // Create an array of objects with material information and timestamp of the latest bookmark
-              sharedMaterials.map((material, index) => {
-                const category = sharedMaterialsCategory[index]?.category || 'Category not available';
-                const user = sharedMaterialsCategoryUsers[index]?.username || 'Deleted user';
-                const bookmarks = sharedMaterialsCategoryBookmarks[index] || [];
-  
-                // Find the latest bookmark timestamp or default to 0 if no bookmarks
-                const latestBookmarkTimestamp = Math.max(...bookmarks.map(bookmark => bookmark.timestamp), 0);
-  
-                return {
-                  index,
-                  material,
-                  category,
-                  user,
-                  bookmarksCount: bookmarks.length,
-                  latestBookmarkTimestamp
-                };
-              })
-              // Sort the array by the latest bookmark timestamp in descending order
-              .sort((a, b) => b.latestBookmarkTimestamp - a.latestBookmarkTimestamp)
-              .map(({ index, material, category, user, bookmarksCount }) => (
-                <div key={index} className='my-3 mbg-input border-thin-800 p-4 rounded flex justify-between items-center'>
-                  <div className='w-2/3'>
-                    <p className='font-medium text-lg'>Title: {material?.title}</p>
-                    <p className='text-sm mt-1'>Category: {category}</p>
-                    <p className='text-sm mt-1'>Uploader: {user}</p>
-                    <p className='text-sm mt-1'>Bookmark Count: {bookmarksCount}</p>
-                  </div>
-  
-                  <div className='gap-3 mt-5 flex-1'>
-                    {user === userData?.username && (
-                      <div className='flex justify-end'>
-                        <button onClick={() => {
-                          if (bookmarksCount > 0) {
-                            alert('This material has been bookmarked by others. You can no longer remove nor delete it.')
-                          } else {
-                            setDeleteModal(true)
-                            setMaterialIdToRemove(material.id)
-                            setMaterialIdToRemoveBookmarkCounts(bookmarksCount)
-                          }
-                        }}><DeleteIcon className='text-red'/></button>
-                      </div>
-                    )}
-  
-                    <button className='mbg-200 my-1 w-full mcolor-900 border-thin-800 px-5 py-2 rounded' disabled={buttonLoader} onClick={() => viewStudyMaterialDetails(index, 'shared', 'not filtered', category)}>
-                      {
-                        (buttonLoader && index === buttonLoaderIndex) ? (
-                          <div className="w-full flex items-center justify-center">
-                            <div className='btn-spinner'></div>
-                          </div>
-                          ) : (
-                          <div className='w-full'>View</div>
-                        )
-                      }
-                    </button>
-
-                    
-                    <button className='mbg-800-opacity w-full my-1 mcolor-100 px-5 py-2 rounded' onClick={() => {
-                      setShowBookmarkModal(true);
-                      setChooseRoom(true);
-                      setCurrentSharedMaterialIndex(index);
-                    }}>Bookmark</button>
-                  </div>
-                </div>
-              ))
-            )}
-  
-  
-  
-  
-  
-            {
-              (filteredStudyMaterialsByCategory && filteredStudyMaterialsByCategory.length > 0 && searchValue === '') &&
-                filteredStudyMaterialsByCategory.map((material, index) => {
-                  const category = currentFilteredCategory;
-                  const user = currentFilteredCategoryUsers[index]?.username || 'Deleted user';
-                  const bookmarks = currentFilteredCategoryBookmarks[index] || []; // Ensure bookmarks is an array
-  
-                  // Find the latest bookmark timestamp or default to 0 if no bookmarks
-                  const latestBookmarkTimestamp = Math.max(...bookmarks.map(bookmark => bookmark.timestamp), 0);
-  
-                  return {
-                    index,
-                    material,
-                    category,
-                    user,
-                    bookmarksCount: bookmarks.length,
-                    latestBookmarkTimestamp
-                  };
-                })
-                // Sort the array by the latest bookmark timestamp in descending order
-                .sort((a, b) => b.latestBookmarkTimestamp - a.latestBookmarkTimestamp)
-                .map(({ index, material, category, user, bookmarksCount }) => (
-                  <div key={index} className='my-3 mbg-input border-thin-800 p-4 rounded flex justify-between items-center'>
-                    <div className='w-2/3'>
-                      <p className='font-medium text-lg'>Title: {material?.title}</p>
-                      <p className='text-sm mt-1'>Category: {category}</p>
-                      <p className='text-sm mt-1'>Uploader: {user}</p>
-                      <p className='text-sm mt-1'>Bookmark Count: {bookmarksCount}</p>
-                    </div>
-    
-                    <div className='gap-3 mt-5 flex-1'>
-                      {user === userData?.username && (
-                        <div className='flex justify-end'>
-                          <button onClick={() => {
-                            if (bookmarksCount > 0) {
-                              alert('This material has been bookmarked by others. You can no longer remove nor delete it.')
-                            } else {
-                              setDeleteModal(true)
-                              setMaterialIdToRemove(material.id)
-                              setMaterialIdToRemoveBookmarkCounts(bookmarksCount)
-                            }
-                          }}><DeleteIcon className='text-red'/></button>
-                        </div>
-                      )}
-    
-                      <button className='mbg-200 my-1 w-full mcolor-900 border-thin-800 px-5 py-2 rounded' disabled={buttonLoader} onClick={() => viewStudyMaterialDetails(index, 'shared', 'not filtered', category)}>
-                        {
-                        (buttonLoader && index === buttonLoaderIndex) ? (
-                          <div className="w-full flex items-center justify-center">
-                              <div className='btn-spinner'></div>
-                            </div>
-                            ) : (
-                            <div className='w-full'>View</div>
-                          )
-                        }
-                      </button>
-
-                      
-                      <button className='mbg-800-opacity w-full my-1 mcolor-100 px-5 py-2 rounded' onClick={() => {
-                        setShowBookmarkModal(true);
-                        setChooseRoom(true);
-                        setCurrentSharedMaterialIndex(index);
-                      }}>Bookmark</button>
-                    </div>
-                  </div>
-                ))
-            }
-  
-  
-  
-  
-  
-                {
-                  searchValue !== '' &&
-                  searchedMaterials
-                    .map((material, index) => {
-                      const category = searchCategory[index]?.category || 'Category not available';
-                      const user = searchCategoryUsers[index]?.username || 'Deleted user';
-                      const bookmarks = searchCategoryBookmarks[index] || [];
-  
+                  {((filteredStudyMaterialsByCategory && filteredStudyMaterialsByCategory.length === 0) && searchValue === '') && (
+                    // Create an array of objects with material information and timestamp of the latest bookmark
+                    sharedMaterials.map((material, index) => {
+                      const category = sharedMaterialsCategory[index]?.category || 'Category not available';
+                      const user = sharedMaterialsCategoryUsers[index]?.username || 'Deleted user';
+                      const bookmarks = sharedMaterialsCategoryBookmarks[index] || [];
+        
+                      // Find the latest bookmark timestamp or default to 0 if no bookmarks
+                      const latestBookmarkTimestamp = Math.max(...bookmarks.map(bookmark => bookmark.timestamp), 0);
+        
                       return {
                         index,
                         material,
                         category,
                         user,
                         bookmarksCount: bookmarks.length,
+                        latestBookmarkTimestamp
                       };
                     })
-                    .filter(({ material, category, user, bookmarksCount }) =>
-                      material?.title.toLowerCase().includes(searchValue.toLowerCase()) ||
-                      category.toLowerCase().includes(searchValue.toLowerCase()) ||
-                      user.toLowerCase().includes(searchValue.toLowerCase())
-                    )
+                    // Sort the array by the latest bookmark timestamp in descending order
+                    .sort((a, b) => b.latestBookmarkTimestamp - a.latestBookmarkTimestamp)
                     .map(({ index, material, category, user, bookmarksCount }) => (
-                      <div key={index} className='my-3 mbg-input border-thin-800 p-4 rounded flex justify-between items-center'>
-                        <div className='w-2/3'>
-                          <p className='font-medium text-lg'>Title: {material?.title}</p>
-                          <p className='text-sm mt-1'>Category: {category}</p>
-                          <p className='text-sm mt-1'>Uploader: {user}</p>
-                          <p className='text-sm mt-1'>Bookmark Count: {bookmarksCount}</p>
+                      <div key={index} className={`my-3 mbg-input border-thin-800 p-4 rounded flex ${(extraLargeDevices || largeDevices || smallDevice) ? 'flex-row justify-between' : 'justify-center flex-col'} items-center`}>
+                        <div className={`${(extraLargeDevices || largeDevices || smallDevice) ? 'w-2/3' : 'w-full'}`}>
+
+                          <p className={`font-medium ${extraSmallDevice ? 'text-md' : 'text-lg'}`}>Title: <span className='font-medium'>{material?.title}</span></p>
+                          <p className={`${extraSmallDevice ? 'text-xs' : 'text-sm'} mt-1 mcolor-700`}>Category: <span className='font-medium mcolor-800'>{category}</span></p>
+                          <p className={`${extraSmallDevice ? 'text-xs' : 'text-sm'} mt-1 mcolor-700`}>Uploader: <span className='font-medium mcolor-800'>{user}</span></p>
+                          <p className={`${extraSmallDevice ? 'text-xs' : 'text-sm'} mt-1 mcolor-700`}>Bookmark Count: <span className='font-medium mcolor-800'>{bookmarksCount}</span></p>
                         </div>
         
-                        <div className='gap-3 mt-5 flex-1'>
+                        <div className={`gap-3 ${(extraLargeDevices || largeDevices || smallDevice) ? 'flex-1' : extraSmallDevice ? 'w-full flex flex-col mt-5' : 'w-full flex mt-3'}`}>
+
                           {user === userData?.username && (
-                            <div className='flex justify-end'>
-                              <button onClick={() => {
+                            <div className={`mbg-100 ${extraSmallDevice ? 'py-2' : 'my-1 py-1'} w-full mcolor-900 border-red-dark text-sm rounded`}>
+                              <button className={`w-full text-red ${mediumDevices ? 'text-xs' : 'text-sm'}`} onClick={() => {
                                 if (bookmarksCount > 0) {
                                   alert('This material has been bookmarked by others. You can no longer remove nor delete it.')
                                 } else {
@@ -1254,11 +1128,152 @@ export const VirtualLibraryMain = () => {
                                   setMaterialIdToRemove(material.id)
                                   setMaterialIdToRemoveBookmarkCounts(bookmarksCount)
                                 }
-                              }}><DeleteIcon className='text-red'/></button>
+                              }}>Delete</button>
                             </div>
                           )}
+
+                          <button className={`mbg-200 ${extraSmallDevice ? 'py-2' : 'my-1 py-1'} w-full mcolor-900 border-thin-800 ${mediumDevices ? 'text-xs' : 'text-sm'} rounded`} disabled={buttonLoader} onClick={() => viewStudyMaterialDetails(index, 'shared', 'not filtered', category)}>
+                            {
+                              (buttonLoader && index === buttonLoaderIndex) ? (
+                                <div className="w-full flex items-center justify-center">
+                                  <div className='btn-spinner'></div>
+                                </div>
+                                ) : (
+                                <div className='w-full'>View</div>
+                              )
+                            }
+                          </button>
+
+                          
+                          <button className={`mbg-800-opacity w-full ${extraSmallDevice ? 'py-2' : 'my-1 py-1'} mcolor-100 ${mediumDevices ? 'text-xs' : 'text-sm'} rounded`} onClick={() => {
+                            setShowBookmarkModal(true);
+                            setChooseRoom(true);
+                            setCurrentSharedMaterialIndex(index);
+                          }}>Bookmark</button>
+                        </div>
+                      </div>
+                    ))
+                  )}
+    
         
-                          <button className='mbg-200 my-1 w-full mcolor-900 border-thin-800 px-5 py-2 rounded' disabled={buttonLoader} onClick={() => viewStudyMaterialDetails(index, 'shared', 'not filtered', category)}>
+                  {
+                    (filteredStudyMaterialsByCategory && filteredStudyMaterialsByCategory.length > 0 && searchValue === '') &&
+                      filteredStudyMaterialsByCategory.map((material, index) => {
+                        const category = currentFilteredCategory;
+                        const user = currentFilteredCategoryUsers[index]?.username || 'Deleted user';
+                        const bookmarks = currentFilteredCategoryBookmarks[index] || []; // Ensure bookmarks is an array
+        
+                        // Find the latest bookmark timestamp or default to 0 if no bookmarks
+                        const latestBookmarkTimestamp = Math.max(...bookmarks.map(bookmark => bookmark.timestamp), 0);
+        
+                        return {
+                          index,
+                          material,
+                          category,
+                          user,
+                          bookmarksCount: bookmarks.length,
+                          latestBookmarkTimestamp
+                        };
+                      })
+                      // Sort the array by the latest bookmark timestamp in descending order
+                      .sort((a, b) => b.latestBookmarkTimestamp - a.latestBookmarkTimestamp)
+                      .map(({ index, material, category, user, bookmarksCount }) => (
+                        <div key={index} className={`my-3 mbg-input border-thin-800 p-4 rounded flex ${(extraLargeDevices || largeDevices || smallDevice) ? 'flex-row justify-between' : 'justify-center flex-col'} items-center`}>
+                        <div className={`${(extraLargeDevices || largeDevices || smallDevice) ? 'w-2/3' : 'w-full'}`}>
+                          <p className={`font-medium ${extraSmallDevice ? 'text-md' : 'text-lg'}`}>Title: <span className='font-medium'>{material?.title}</span></p>
+                          <p className={`${extraSmallDevice ? 'text-xs' : 'text-sm'} mt-1 mcolor-700`}>Category: <span className='font-medium mcolor-800'>{category}</span></p>
+                          <p className={`${extraSmallDevice ? 'text-xs' : 'text-sm'} mt-1 mcolor-700`}>Uploader: <span className='font-medium mcolor-800'>{user}</span></p>
+                          <p className={`${extraSmallDevice ? 'text-xs' : 'text-sm'} mt-1 mcolor-700`}>Bookmark Count: <span className='font-medium mcolor-800'>{bookmarksCount}</span></p>
+                          </div>
+          
+                          <div className={`gap-3 ${(extraLargeDevices || largeDevices || smallDevice) ? 'flex-1' : extraSmallDevice ? 'w-full flex flex-col mt-5' : 'w-full flex mt-3'}`}>
+                            {user === userData?.username && (
+                              <div className={`mbg-100 ${extraSmallDevice ? 'py-2' : 'my-1 py-1'} w-full mcolor-900 border-red-dark text-sm rounded`}>
+                                <button className={`w-full text-red ${mediumDevices ? 'text-xs' : 'text-sm'}`} onClick={() => {
+                                  if (bookmarksCount > 0) {
+                                    alert('This material has been bookmarked by others. You can no longer remove nor delete it.')
+                                  } else {
+                                    setDeleteModal(true)
+                                    setMaterialIdToRemove(material.id)
+                                    setMaterialIdToRemoveBookmarkCounts(bookmarksCount)
+                                  }
+                                }}>Delete</button>
+                              </div>
+                            )}
+          
+                            <button  className={`mbg-200 ${extraSmallDevice ? 'py-2' : 'my-1 py-1'} w-full mcolor-900 border-thin-800 ${mediumDevices ? 'text-xs' : 'text-sm'} rounded`} disabled={buttonLoader} onClick={() => viewStudyMaterialDetails(index, 'shared', 'not filtered', category)}>
+                              {
+                              (buttonLoader && index === buttonLoaderIndex) ? (
+                                <div className="w-full flex items-center justify-center">
+                                    <div className='btn-spinner'></div>
+                                  </div>
+                                  ) : (
+                                  <div className='w-full'>View</div>
+                                )
+                              }
+                            </button>
+
+                            
+                            <button className={`mbg-800-opacity w-full ${extraSmallDevice ? 'py-2' : 'my-1 py-1'} mcolor-100 ${mediumDevices ? 'text-xs' : 'text-sm'} rounded`} onClick={() => {
+                              setShowBookmarkModal(true);
+                              setChooseRoom(true);
+                              setCurrentSharedMaterialIndex(index);
+                            }}>Bookmark</button>
+                          </div>
+                        </div>
+                      ))
+                  }
+        
+
+
+
+                  {
+                    searchValue !== '' &&
+                    searchedMaterials
+                      .map((material, index) => {
+                        const category = searchCategory[index]?.category || 'Category not available';
+                        const user = searchCategoryUsers[index]?.username || 'Deleted user';
+                        const bookmarks = searchCategoryBookmarks[index] || [];
+    
+                        return {
+                          index,
+                          material,
+                          category,
+                          user,
+                          bookmarksCount: bookmarks.length,
+                        };
+                      })
+                      .filter(({ material, category, user, bookmarksCount }) =>
+                        material?.title.toLowerCase().includes(searchValue.toLowerCase()) ||
+                        category.toLowerCase().includes(searchValue.toLowerCase()) ||
+                        user.toLowerCase().includes(searchValue.toLowerCase())
+                      )
+                      .map(({ index, material, category, user, bookmarksCount }) => (
+                      <div key={index} className={`my-3 mbg-input border-thin-800 p-4 rounded flex ${(extraLargeDevices || largeDevices || smallDevice) ? 'flex-row justify-between' : 'justify-center flex-col'} items-center`}>
+                        <div className={`${(extraLargeDevices || largeDevices || smallDevice) ? 'w-2/3' : 'w-full'}`}>
+                          <p className={`font-medium ${extraSmallDevice ? 'text-md' : 'text-lg'}`}>Title: <span className='font-medium'>{material?.title}</span></p>
+                          <p className={`${extraSmallDevice ? 'text-xs' : 'text-sm'} mt-1 mcolor-700`}>Category: <span className='font-medium mcolor-800'>{category}</span></p>
+                          <p className={`${extraSmallDevice ? 'text-xs' : 'text-sm'} mt-1 mcolor-700`}>Uploader: <span className='font-medium mcolor-800'>{user}</span></p>
+                          <p className={`${extraSmallDevice ? 'text-xs' : 'text-sm'} mt-1 mcolor-700`}>Bookmark Count: <span className='font-medium mcolor-800'>{bookmarksCount}</span></p>
+                        </div>
+          
+                        <div className={`gap-3 ${(extraLargeDevices || largeDevices || smallDevice) ? 'flex-1' : extraSmallDevice ? 'w-full flex flex-col mt-5' : 'w-full flex mt-3'}`}>
+
+                          {user === userData?.username && (
+                            <div className={`mbg-100 ${extraSmallDevice ? 'py-2' : 'my-1 py-1'} w-full mcolor-900 border-red-dark text-sm rounded`}>
+                              <button className={`w-full text-red ${mediumDevices ? 'text-xs' : 'text-sm'}`} onClick={() => {
+                                if (bookmarksCount > 0) {
+                                  alert('This material has been bookmarked by others. You can no longer remove nor delete it.')
+                                } else {
+                                  setDeleteModal(true)
+                                  setMaterialIdToRemove(material.id)
+                                  setMaterialIdToRemoveBookmarkCounts(bookmarksCount)
+                                }
+                              }}>Delete</button>
+                            </div>
+                          )}
+          
+                          <button className={`mbg-200 ${extraSmallDevice ? 'py-2' : 'my-1 py-1'} w-full mcolor-900 border-thin-800 ${mediumDevices ? 'text-xs' : 'text-sm'} rounded`} disabled={buttonLoader} onClick={() => viewStudyMaterialDetails(index, 'shared', 'not filtered', category)}>
                             {
                               (buttonLoader && index === buttonLoaderIndex) ? (
                                 <div className="w-full flex items-center justify-center">
@@ -1270,8 +1285,8 @@ export const VirtualLibraryMain = () => {
                             }
                           </button>
       
-                          
-                          <button className='mbg-800-opacity w-full my-1 mcolor-100 px-5 py-2 rounded' onClick={() => {
+                            
+                          <button className={`mbg-800-opacity w-full ${extraSmallDevice ? 'py-2' : 'my-1 py-1'} mcolor-100 ${mediumDevices ? 'text-xs' : 'text-sm'} rounded`}  onClick={() => {
                             setShowBookmarkModal(true);
                             setChooseRoom(true);
                             setCurrentSharedMaterialIndex(index);
@@ -1279,18 +1294,18 @@ export const VirtualLibraryMain = () => {
                         </div>
                       </div>
                     ))
-                }
-  
-  
-  
-
-
-  
+                  }
+    
                 </div>
               </div>
 
-              <div className='flex-1 min-h-[70vh] pl-5' style={{ borderLeft: 'solid #627271 2px' }}>
-                <div className='mbg-800 mcolor-100 py-5 px-4 rounded'>  
+              <div className={`${(extraSmallDevice || smallDevice || mediumDevices) ? `w-full fixed top-0 left-0 min-h-[100vh] mbg-100 py-10 px-5 ${toggledCategory}` : 'flex-1 min-h-[70vh] pl-5'}`} style={{ borderLeft: 'solid #627271 2px' }}>
+                
+                <div className={`${(extraLargeDevices || largeDevices) && 'hidden'} w-full flex items-center justify-end mb-5 text-xl `}>
+                  <button onClick={toggleCategory}>&#10006;</button>
+                </div>
+
+                <div className={`mbg-800 mcolor-100 py-5 px-4 rounded`}>  
                   <p className='font-medium text-lg'>Search for category: </p>
                   <div className='my-3 border-medium-800 rounded'>
                     <input type="text" placeholder='Search for a category...' className='w-full py-2 rounded text-center mbg-input mcolor-900' value={searchCategoryValue !== '' ? searchCategoryValue : ''} onChange={(event) => {
@@ -1301,23 +1316,24 @@ export const VirtualLibraryMain = () => {
                 </div>
   
                 <div className='flex items-center justify-between mt-6'>
-                  <p className='font-medium text-lg'>Categories: </p>
+                  <p className={`font-medium ${extraSmallDevice ? 'text-sm' : 'text-lg'}`}>Categories: </p>
                   {(searchCategoryValue !== '') && (
-                    <button className='btn-800 rounded px-4 py-1' onClick={() => {
+                    <button className={`btn-800 rounded px-4 py-1 ${extraSmallDevice ? 'text-sm' : 'text-md'}`} onClick={() => {
                       setSearchCategoryValue('')
                     }}>Clear Filter</button>
                   )}
                 </div>
 
-                <div className='grid grid-result gap-3 my-3'>
+                <div className={`grid ${(extraSmallDevice) ? 'grid-cols-1' : mediumDevices ? 'grid-cols-3' : 'grid-cols-2'} gap-3 my-3`}>
                  
                 {searchCategoryValue === '' && (
                   filteredSharedCategories.map((material, index) => {
-                    return <div key={index} className='mbg-input border-thin-800 py-2 rounded flex items-center justify-center'>
+                    return <div key={index} className={`mbg-input border-thin-800 py-2 rounded flex items-center justify-center`}>
                         <button onClick={() => {
                           filterMaterial(material.category)
                           setSearchValue('')
                           setCurrentMaterialCategory(material.category)
+                          setToggledCategory('hidden')
                         }}>{material.category}</button>
                       </div>
                   })
@@ -1657,7 +1673,7 @@ export const VirtualLibraryMain = () => {
                                     <p className='mt-5 mb-1'>Choices: </p>
                                   )}
 
-                                  <ul className='grid-result gap-3' style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)' }}>
+                                  <ul className='grid-result gap-3 grid-cols-3'>
                                     {materialMCQChoices
                                       .filter((choice) => (choice.QuesAnId === material.id && material.quizType === 'MCQA'))
                                       .map((choice, index) => (
