@@ -1,10 +1,11 @@
 import axios from 'axios';
 import React, { useEffect, useRef, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom';
-import FavoriteIcon from '@mui/icons-material/Favorite';
 import { useUser } from '../../../../UserContext';
 import { fetchUserData } from '../../../../userAPI';
-import PersonIcon from '@mui/icons-material/Person';
+
+// icon imports
+import FavoriteIcon from '@mui/icons-material/Favorite';
 import FilterListIcon from '@mui/icons-material/FilterList';
 import EmojiObjectsIcon from '@mui/icons-material/EmojiObjects';
 import EditNoteIcon from '@mui/icons-material/EditNote';
@@ -23,10 +24,13 @@ import { VisualLearner } from '../../../../components/practices/VisualLearner';
 import { SERVER_URL } from '../../../../urlConfig';
 
 
-
+// responsive sizes
+import { useResponsiveSizes } from '../../../../components/useResponsiveSizes'; 
 
 
 export const PersonalReviewerStart = () => {
+
+  const { extraSmallDevice, smallDevice, mediumDevices, largeDevices, extraLargeDevices } = useResponsiveSizes();
 
 
   const { materialId } = useParams();
@@ -977,7 +981,7 @@ export const PersonalReviewerStart = () => {
   
         <div className={`${hidePomodoroModalBreak} absolute top-0 left-0 modal-bg w-full h-full`}>
           <div className='flex items-center justify-center h-full'>
-            <div className='mbg-100 min-h-[50vh] w-1/3 z-10 relative p-10 rounded-[5px] flex items-center justify-center relative' style={{ overflowY: 'auto' }}>
+            <div className={`mbg-100 min-h-[50vh] ${(extraLargeDevices || largeDevices) ? 'w-1/3' : mediumDevices ? 'w-1/2' : smallDevice ? 'w-2/3' : 'w-full mx-2'} z-10 relative p-10 rounded-[5px] flex items-center justify-center relative`} style={{ overflowY: 'auto' }}>
   
               <div className={`w-full`}>
                 <p className='mcolor-900 text-2xl text-center mb-5'><span className='font-bold'>{timeForBreak ? formatTime(seconds) : '00:00'}</span></p>

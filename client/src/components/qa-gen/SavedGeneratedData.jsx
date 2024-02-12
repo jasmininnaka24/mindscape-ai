@@ -3,9 +3,18 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useUser } from '../../UserContext';
 import { SERVER_URL } from '../../urlConfig';
+
+// icon imports
 import DeleteIcon from '@mui/icons-material/Delete';
 
+// responsive sizes
+import { useResponsiveSizes } from '../useResponsiveSizes'; 
+
+
 export const SavedGeneratedData = (props) => {
+
+  const { extraSmallDevice, smallDevice, mediumDevices, largeDevices, extraLargeDevices } = useResponsiveSizes();
+
 
   const [studyMaterialTitle, setStudyMaterialTitle] = useState("");
   const [isLoading, setIsLoading] = useState(false); 
@@ -575,8 +584,8 @@ export const SavedGeneratedData = (props) => {
       
       {modalAddCategory && (
         <div style={{ zIndex: 1000 }} className={`absolute flex items-center justify-center modal-bg w-full h-full`}>
-          <div className='flex justify-center'>
-            <div className='mbg-100 max-h-[80vh] w-[30vw] w-1/3 z-10 relative p-10 rounded-[5px]' style={{ overflowY: 'auto' }}>
+          <div className='flex justify-center w-full'>
+            <div className={`mbg-100 max-h-[80vh] ${(extraLargeDevices || largeDevices) ? 'w-1/3' : mediumDevices ? 'w-1/2' : smallDevice ? 'w-2/3' : 'w-full mx-2'} z-10 relative p-10 rounded-[5px]`} style={{ overflowY: 'auto' }}>
 
             <button className='absolute right-4 top-3 text-xl' onClick={() => {
               setModalAddCategory(false)

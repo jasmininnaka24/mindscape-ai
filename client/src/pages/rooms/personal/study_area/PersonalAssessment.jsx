@@ -1,15 +1,24 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import axios from 'axios';
-import CheckIcon from '@mui/icons-material/Check';
 import { useUser } from '../../../../UserContext';
+
 // chart
 import { BarChartForAnalysis } from '../../../../components/charts/BarChartForAnalysis';
 import { fetchUserData } from '../../../../userAPI';
 import { SERVER_URL } from '../../../../urlConfig';
 
+// icon imports
+import CheckIcon from '@mui/icons-material/Check';
+
+
+// responsive sizes
+import { useResponsiveSizes } from '../../../../components/useResponsiveSizes'; 
 
 export const PersonalAssessment = () => {
+
+  const { extraSmallDevice, smallDevice, mediumDevices, largeDevices, extraLargeDevices } = useResponsiveSizes();
+
 
   const { materialId } = useParams();
   const { user } = useUser()
@@ -651,38 +660,6 @@ export const PersonalAssessment = () => {
                     </div>
                   </div>
     
-    
-    
-                  {showSubmittedAnswerModal === true && (
-                    <div className={`absolute top-0 modal-bg left-0 w-full h-full`}>
-                      <div className='flex items-center justify-center h-full'>
-                        <div className='relative mbg-100 min-h-[40vh] w-1/2 z-10 relative p-10 rounded-[5px]'>
-    
-                        {showTexts === true ? (
-                          <div>
-                            <p className='text-center text-xl font-medium mcolor-800 mt-5'>Kindly be advised that the data analysis process by the system AI may require 2-3 minutes, depending on your internet speed. Would you be comfortable waiting for that duration?</p>
-    
-                            <div className='w-full absolute bottom-10 flex items-center justify-center left-0 gap-4'>
-    
-                              <button className='mbg-300 border-thin-800 px-5 py-2 rounded-[5px]' onClick={() => {
-                                setShowSubmittedAnswerModal(false);
-                                setIsRunning(false)
-                              }} >No</button>
-    
-    
-                              <button className='mbg-800 mcolor-100 border-thin-800 px-5 py-2 rounded-[5px]' onClick={() => generateAnalysis(analysisId)}>Yes</button>
-                            </div>
-                          </div>
-                        ) : (
-                          <div class="loading-container">
-                            <p class="loading-text mcolor-900">Analyzing data...</p>
-                            <div class="loading-spinner"></div>
-                          </div>                    
-                        )}
-                        </div>
-                      </div>
-                    </div>
-                  )}
                 </div>
               )}
             

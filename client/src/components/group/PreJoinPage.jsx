@@ -1,15 +1,15 @@
 import React, { useEffect, useState } from 'react'
-import { Navbar } from '../navbar/logged_navbar/navbar';
 import axios from 'axios';
 import io from 'socket.io-client';
 import { useUser } from '../../UserContext';
 import { fetchUserData } from '../../userAPI';
-import { Link, useNavigate, useParams } from 'react-router-dom';
-import PushPinIcon from '@mui/icons-material/PushPin';
+import { useNavigate, useParams } from 'react-router-dom';
 import { SERVER_URL } from '../../urlConfig';
 import { Sidebar } from '../sidebar/Sidebar';
 import { motion } from 'framer-motion';
 
+// icon imports
+import PushPinIcon from '@mui/icons-material/PushPin';
 
 // responsive sizes
 import { useResponsiveSizes } from '../useResponsiveSizes'; 
@@ -371,55 +371,55 @@ export const PreJoinPage = (props) => {
                       animate={{ opacity: 1 }}
                       exit={{ opacity: 0 }}
                     >
-                      <div className='flex justify-center'>
-                        <div className='mbg-100 min-h-[45vh] w-[30vw] w-1/3 z-10 relative p-10 rounded-[5px]'>
+                      <div className='flex justify-center w-full'>
+                        <div className={`mbg-100 min-h-[45vh] ${(extraLargeDevices || largeDevices) ? 'w-1/3' : mediumDevices ? 'w-1/2' : smallDevice ? 'w-2/3' : 'w-full mx-2'} z-10 relative p-10 rounded-[5px]`}>
 
-                        <button className='absolute right-4 top-3 text-xl' onClick={() => {
-                          setShowModal(false);
-                          setShowDeleteModal(false)
-                          setShowModifyModal(false)
-                          setShowAssessmentModalRem(false)
-                        }}>
-                          ✖
-                        </button>
-                        
-                        <div className='h-full flex justify-center items-center'>
-                          {showAssessmentModalRem && !showModifyModal && !showDeleteModal &&
-                            <div>
-                              <p className='mcolor-900 text-2xl font-medium text-center'>Reminder</p>
-                              <p className="text-center text-lg font-medium mcolor-800 mt-5">
-                                <PushPinIcon className="text-red-dark" />
-                                Once you opt to start the assessment alongside others, {userUploaderId === UserId ? "you will no longer be able to modify this study material" : "the creator of this study material will no longer be able to make alterations to it"}.
-                              </p>
+                          <button className='absolute right-4 top-3 text-xl' onClick={() => {
+                            setShowModal(false);
+                            setShowDeleteModal(false)
+                            setShowModifyModal(false)
+                            setShowAssessmentModalRem(false)
+                          }}>
+                            ✖
+                          </button>
+                          
+                          <div className='h-full flex justify-center items-center'>
+                            {showAssessmentModalRem && !showModifyModal && !showDeleteModal &&
+                              <div>
+                                <p className='mcolor-900 text-2xl font-medium text-center'>Reminder</p>
+                                <p className="text-center text-lg font-medium mcolor-800 mt-5">
+                                  <PushPinIcon className="text-red-dark" />
+                                  Once you opt to start the assessment alongside others, {userUploaderId === UserId ? "you will no longer be able to modify this study material" : "the creator of this study material will no longer be able to make alterations to it"}.
+                                </p>
 
-                              <button className='w-full py-2 btn-800 mcolor-100 rounded text-center mt-5' onClick={takeAssessmentBtn}>Continue</button>   
-                            </div>
-                          }
+                                <button className='w-full py-2 btn-800 mcolor-100 rounded text-center mt-5' onClick={takeAssessmentBtn}>Continue</button>   
+                              </div>
+                            }
 
-                          {showModifyModal && !showDeleteModal && !showAssessmentModalRem &&
-                            <div>
-                              <p className='mcolor-900 text-2xl font-medium text-center'>Reminder</p>
-                              <p className='text-center text-lg font-medium mcolor-800 mt-5'><PushPinIcon className='text-red-dark' />Modifications are only allowed by the individual who uploaded this material.</p>     
-                            </div>
-                          }
+                            {showModifyModal && !showDeleteModal && !showAssessmentModalRem &&
+                              <div>
+                                <p className='mcolor-900 text-2xl font-medium text-center'>Reminder</p>
+                                <p className='text-center text-lg font-medium mcolor-800 mt-5'><PushPinIcon className='text-red-dark' />Modifications are only allowed by the individual who uploaded this material.</p>     
+                              </div>
+                            }
 
-                          {!showModifyModal && !showAssessmentModalRem && showDeleteModal &&
-                            <div>
-                              <p className='mcolor-900 text-2xl font-medium text-center'>Reminder</p>
-                              <p className='text-center text-lg font-medium mcolor-800 mt-5'><PushPinIcon className='text-red-dark' />Only the person who uploaded this study material is permitted to delete it.</p>     
-                            </div>
-                          }
+                            {!showModifyModal && !showAssessmentModalRem && showDeleteModal &&
+                              <div>
+                                <p className='mcolor-900 text-2xl font-medium text-center'>Reminder</p>
+                                <p className='text-center text-lg font-medium mcolor-800 mt-5'><PushPinIcon className='text-red-dark' />Only the person who uploaded this study material is permitted to delete it.</p>     
+                              </div>
+                            }
 
 
-                          {!showModifyModal && !showDeleteModal && !showAssessmentModalRem && 
-                            <div>
-                              <p className='mcolor-900 text-2xl font-medium text-center'>Reminder</p>
-                              <p className='text-center text-lg font-medium mcolor-800 mt-8'><PushPinIcon className='text-red-dark' />You need to take the pre-assessment page first.</p>     
-                              <p className='text-center text-lg font-medium mcolor-800 mt-5'><PushPinIcon className='text-red-dark' />Once you start the study session, you won't be able to update the study material anymore.</p>     
-                            </div>
-                          }
+                            {!showModifyModal && !showDeleteModal && !showAssessmentModalRem && 
+                              <div>
+                                <p className='mcolor-900 text-2xl font-medium text-center'>Reminder</p>
+                                <p className='text-center text-lg font-medium mcolor-800 mt-8'><PushPinIcon className='text-red-dark' />You need to take the pre-assessment page first.</p>     
+                                <p className='text-center text-lg font-medium mcolor-800 mt-5'><PushPinIcon className='text-red-dark' />Once you start the study session, you won't be able to update the study material anymore.</p>     
+                              </div>
+                            }
 
-                        </div>
+                          </div>
 
                         </div>
                       </div>

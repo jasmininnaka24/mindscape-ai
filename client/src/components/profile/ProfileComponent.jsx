@@ -1320,7 +1320,7 @@ export const ProfileComponent = () => {
                     animate="visible"
                     exit="hidden"
                     >
-                    <div className='relative mbg-100 min-h-[30vh] max-h-[80vh] w-1/2 z-10 relative py-5 px-10 rounded-[5px]' style={{overflowY: 'auto'}}>
+                    <div className={`relative mbg-100 min-h-[30vh] max-h-[80vh] ${(extraLargeDevices || largeDevices) ? 'w-1/2' : (mediumDevices || smallDevice) ? 'w-2/3' : 'w-full mx-2'} z-10 relative py-5 px-10 rounded-[5px]`} style={{overflowY: 'auto'}}>
                       
                       <button className='absolute right-5 top-5 font-medium text-xl' onClick={() => {
                         setShowMaterialDetails(false)
@@ -1478,7 +1478,7 @@ export const ProfileComponent = () => {
                     animate="visible"
                     exit="hidden"
                     >
-                    <div className='relative mbg-100 min-h-[30vh] w-1/3 z-10 relative py-5 px-5 rounded-[5px]' style={{overflowY: 'auto'}}>
+                    <div className={`relative mbg-100 min-h-[30vh] ${(extraLargeDevices || largeDevices) ? 'w-1/3' : mediumDevices ? 'w-1/2' : smallDevice ? 'w-2/3' : 'w-full mx-2'} z-10 relative py-5 px-5 rounded-[5px]`} style={{overflowY: 'auto'}}>
 
                       <button className='absolute right-5 top-5 font-medium text-xl' onClick={() => {
                         setShowBookmarkModal(false)

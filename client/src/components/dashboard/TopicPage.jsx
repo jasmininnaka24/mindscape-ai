@@ -5,14 +5,18 @@ import { BarChart } from '../charts/BarChart';
 import { PieChart } from '../charts/PieChart';
 import { useUser } from '../../UserContext';
 import { useLocation } from 'react-router-dom';
-import { fetchUserData } from '../../userAPI';
 import { SERVER_URL } from '../../urlConfig';
 import { Sidebar } from '../sidebar/Sidebar';
 
 import EqualizerIcon from '@mui/icons-material/Equalizer';
 
+// responsive sizes
+import { useResponsiveSizes } from '../useResponsiveSizes'; 
 
 export const TopicPage = ({categoryFor}) => {
+
+  const { extraSmallDevice, smallDevice, mediumDevices, largeDevices, extraLargeDevices } = useResponsiveSizes();
+
 
   const { categoryID, materialID, groupId } = useParams();
   const navigate = useNavigate();
@@ -139,22 +143,6 @@ export const TopicPage = ({categoryFor}) => {
   
   }
 
-  const checkIFTheresRecordedAnalysis = (id, index) => {
-    
-    const analysis = studyMaterials[index].analysis;
-    if (analysis === 'No record of analysis yet.') {
-      setCurrectAnalysisId(id)
-      setCurrectIndex(index)
-      setShowModal(true)
-      setShowFirstText(true)
-    } else {
-      if (groupId !== undefined) {
-        navigate(`/main/group/dashboard/category-list/topic-list/topic-page/analysis/${groupId}/${categoryID}/${materialID}/${id}`)
-      } else {
-        navigate(`/main/personal/dashboard/category-list/topic-list/topic-page/analysis/${categoryID}/${materialID}/${id}`)
-      }
-    }
-  }
 
   return (
     <div className='poppins mcolor-900 mbg-200 relative flex'>
@@ -264,7 +252,7 @@ export const TopicPage = ({categoryFor}) => {
           {showModal === true && (
             <div className={`absolute top-0 modal-bg left-0 w-full h-full`}>
               <div className='flex items-center justify-center h-full'>
-                <div className='relative mbg-100 min-h-[40vh] w-1/2 z-10 relative p-10 rounded-[5px]'>
+                <div className={`relative mbg-100 min-h-[40vh] ${(extraLargeDevices || largeDevices) ? 'w-1/2' : (mediumDevices || smallDevice) ? 'w-2/3' : 'w-full mx-2'} z-10 relative p-10 rounded-[5px]`}>
                   
 
                   {showFirstText === true && (

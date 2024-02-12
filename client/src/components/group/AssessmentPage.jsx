@@ -10,6 +10,8 @@ import { SERVER_URL } from '../../urlConfig';
 // chart
 import { BarChartForAnalysis } from '../charts/BarChartForAnalysis';
 
+// responsive sizes
+import { useResponsiveSizes } from '../useResponsiveSizes'; 
 
 const socket = io(SERVER_URL, {
   credentials: true,
@@ -19,7 +21,10 @@ const socket = io(SERVER_URL, {
 
 export const AssessmentPage = (props) => {
 
-  const { groupId, materialId, username, userId, userListAssessment, setUserListAssessment, selectedAssessmentAnswer, setSelectedAssessmentAnswer, assessementRoom, isRunning, setIsRunning, seconds, setSeconds, setQA, extractedQA, shuffledChoices, setShuffledChoices, isSubmittedButtonClicked, setIsSubmittedButtonClicked, idOfWhoSubmitted, setIdOfWhoSubmitted, usernameOfWhoSubmitted, setUsernameOfWhoSubmitted, score, setScore, isSubmitted, setIsSubmitted, isAssessmentDone, setIsAssessmentDone, showSubmittedAnswerModal, setShowSubmittedAnswerModal, showTexts, setShowTexts, showAnalysis, setShowAnalysis, showAssessment, setShowAssessment, overAllItems, setOverAllItems, preAssessmentScore, setPreAssessmentScore, assessmentScore, setAssessmentScore, assessmentImp, setAssessmentImp, assessmentScorePerf, setAssessmentScorePerf, completionTime, setCompletionTime, confidenceLevel, setConfidenceLevel, overAllPerformance, setOverAllPerformance, assessmentCountMoreThanOne, setAssessmentCountMoreThanOne, generatedAnalysis, setGeneratedAnalysis, shuffledChoicesAssessment, setShuffledChoicesAssessment, extractedQAAssessment, setQAAssessment, assessmentUsersChoices, setAssessmentUsersChoices, message, setMessage, messageList, setMessageList,isStartAssessmentButtonStarted, setIsStartAssessmentButtonStarted, setShowPreJoin, setIsJoined, setShowAssessmentPage, inviteMembers, successfullyInvited, successfullyInviting } = props;
+  const { extraSmallDevice, smallDevice, mediumDevices, largeDevices, extraLargeDevices } = useResponsiveSizes();
+
+
+  const { groupId, materialId, username, userId, userListAssessment, setUserListAssessment, selectedAssessmentAnswer, setSelectedAssessmentAnswer, assessementRoom, isRunning, setIsRunning, seconds, setSeconds, isSubmittedButtonClicked, idOfWhoSubmitted, setIdOfWhoSubmitted, usernameOfWhoSubmitted, score, setScore, isSubmitted, setIsSubmitted, isAssessmentDone, setIsAssessmentDone, setShowSubmittedAnswerModal, setShowTexts, showAnalysis, setShowAnalysis, showAssessment, setShowAssessment, overAllItems, setOverAllItems, preAssessmentScore, setPreAssessmentScore, assessmentScore, setAssessmentScore, assessmentImp, setAssessmentImp, assessmentScorePerf, setAssessmentScorePerf, completionTime, setCompletionTime, confidenceLevel, setConfidenceLevel, overAllPerformance, setOverAllPerformance, assessmentCountMoreThanOne, setAssessmentCountMoreThanOne, generatedAnalysis, setGeneratedAnalysis, shuffledChoicesAssessment, extractedQAAssessment, setAssessmentUsersChoices, message, setMessage, messageList, setMessageList,isStartAssessmentButtonStarted, setIsStartAssessmentButtonStarted, setShowPreJoin, setIsJoined, setShowAssessmentPage, inviteMembers, successfullyInvited, successfullyInviting } = props;
 
   let studyProfeciencyTarget = 90;
 
@@ -692,7 +697,7 @@ export const AssessmentPage = (props) => {
 
                   <div className={`${hideModal} absolute top-0 left-0 modal-bg w-full h-full`} >
                     <div className='flex items-center justify-center h-full'>
-                      <div className='mbg-100 max-h-[60vh] w-1/3 z-10 relative p-10 rounded-[5px] flex items-center justify-center' style={{ overflowY: 'auto' }}>
+                      <div className={`mbg-100 max-h-[60vh] ${(extraLargeDevices || largeDevices) ? 'w-1/3' : mediumDevices ? 'w-1/2' : smallDevice ? 'w-2/3' : 'w-full mx-2'} z-10 relative p-10 rounded-[5px] flex items-center justify-center`} style={{ overflowY: 'auto' }}>
 
                         <button className='absolute right-4 top-3 text-xl' onClick={() => setHideModal('hidden')}>
                           ✖
@@ -854,40 +859,6 @@ export const AssessmentPage = (props) => {
                       </div>
                     </div>
 
-
-
-                    {showSubmittedAnswerModal && (
-                      <div className={`absolute top-0 modal-bg left-0 w-full h-full`}>
-                        <div className='flex items-center justify-center h-full'>
-                          <div className='relative mbg-100 min-h-[40vh] w-1/2 z-10 relative p-10 rounded-[5px]'>
-
-                          {showTexts ? (
-                            <div>
-                              <p className='text-center text-xl font-medium mcolor-800 mt-5'>Kindly be advised that the data analysis process by the system AI may require 2-3 minutes, depending on your internet speed. Would you be comfortable waiting for that duration?</p>
-
-                              <div className='w-full absolute bottom-10 flex items-center justify-center left-0 gap-4'>
-
-                                <button className='mbg-200 border-thin-800 px-5 py-2 rounded-[5px]' onClick={() => {
-                                  setShowSubmittedAnswerModal(false);
-                                  setIsRunning(false)
-                                  socket.emit('updated_show_submitted_answer_modal', {room: assessementRoom, showSubmittedAnswerModal: false});
-
-                                }} >No</button>
-
-
-                                <button className='mbg-800 mcolor-100 border-thin-800 px-5 py-2 rounded-[5px]' onClick={() => generateAnalysis(analysisId)}>Yes</button>
-                              </div>
-                            </div>
-                          ) : (
-                            <div class="loading-container">
-                              <p class="loading-text mcolor-900">Analyzing data...</p>
-                              <div class="loading-spinner"></div>
-                            </div>                    
-                          )}
-                          </div>
-                        </div>
-                      </div>
-                    )}
                   </div>
                 )}
                 <br /><br />

@@ -900,8 +900,8 @@ export const StudyAreaGP = (props) => {
         <div className={`flex-1 mbg-200 w-full pt-5 flex ${(smallDevice || extraSmallDevice) ? 'flex-col' : 'flex-row'}`}>
           {/* modal */}
           <div style={{ zIndex: 1000 }} className={`${hidden} absolute flex items-center justify-center modal-bg w-full h-full`}>
-            <div className='flex justify-center'>
-              <div className='mbg-100 max-h-[60vh] w-[40vw] w-1/3 z-10 relative p-10 rounded-[5px]' style={{ overflowY: 'auto' }}>
+            <div className='flex justify-center w-full'>
+              <div className={`mbg-100 max-h-[60vh] ${(extraLargeDevices || largeDevices) ? 'w-1/3 px-8' : mediumDevices ? 'w-1/2 px-8' : smallDevice ? 'w-2/3 px-5' : 'w-full mx-2 px-5'} z-10 relative py-10 rounded-[5px]`} style={{ overflowY: 'auto' }}>
     
               <button className='absolute right-4 top-3 text-xl' onClick={() => {
                 setHidden("hidden");
@@ -975,8 +975,8 @@ export const StudyAreaGP = (props) => {
     
                   <p className='mb-2 text-lg mcolor-900'>Group Code:</p>
                   <div className='w-full flex items-center'>
-                    <input type="text" value={code} disabled className='mbg-200 border-thin-800 text-center w-full py-2 rounded-[3px]' />
-                    <button onClick={copyGroupCode} className='px-7 py-2 mbg-800 mcolor-100 rounded-[3px] border-thin-800'>Copy</button>
+                    <input type="text" value={code} disabled className={`${extraSmallDevice ? 'px-5 text-sm' : 'px-7 text-md'} mbg-200 border-thin-800 text-center w-full py-2 rounded-[3px]`} />
+                    <button onClick={copyGroupCode} className={`${extraSmallDevice ? 'px-5 text-sm' : 'px-7 text-md'} py-2 mbg-800 mcolor-100 rounded-[3px] border-thin-800`}>Copy</button>
                   </div>
                   {isCodeCopied !== '' && (
                     <p className='text-center mcolor-700 mt-2'>{isCodeCopied}</p>
@@ -986,11 +986,11 @@ export const StudyAreaGP = (props) => {
                   <br />
                   <p className='mb-2 text-lg mcolor-900'>Group Name:</p>
                   <div className='flex items-center'>
-                    <input type="text" value={groupName} className={`border-thin-800 text-center w-full py-2 rounded-[3px] ${(msg !== '' || UserId !== userHostId) ? 'mbg-200' :  ''}`} disabled={msg !== '' || UserId !== userHostId} onChange={(event) => setGroupName(event.target.value)} />
+                    <input type="text" value={groupName} className={`${extraSmallDevice ? 'px-5 text-sm' : 'px-7 text-md'} border-thin-800 text-center w-full py-2 rounded-[3px] ${(msg !== '' || UserId !== userHostId) ? 'mbg-200' :  ''}`} disabled={msg !== '' || UserId !== userHostId} onChange={(event) => setGroupName(event.target.value)} />
     
                     <button
                       onClick={changeGroupName}
-                      className='px-4 py-2 mbg-800 mcolor-100 rounded-[3px] border-thin-800'
+                      className={`${extraSmallDevice ? 'px-5 text-sm' : 'px-7 text-md'} px-4 py-2 mbg-800 mcolor-100 rounded-[3px] border-thin-800`}
                       disabled={msg !== '' || UserId !== userHostId}
                     >
                       Change
@@ -999,17 +999,17 @@ export const StudyAreaGP = (props) => {
     
                   </div>
                   {isGroupNameChanged !== '' && (
-                    <p className='text-center mcolor-700 my-3'>{isGroupNameChanged}</p>
+                    <p className={`text-center mcolor-700 my-3 ${extraSmallDevice ? 'text-sm' : 'text-md'}`}>{isGroupNameChanged}</p>
                     )}
     
     
                   {msg === '' && (
                     (UserId === userHostId) ? (
-                      <button className='bg-red mcolor-100 rounded py-2 text-center my-5 w-full' onClick={(e) => deleteGroup(e)}>
+                      <button className={`bg-red mcolor-100 rounded py-2 text-center my-5 w-full ${extraSmallDevice ? 'text-sm' : 'text-md'}`} onClick={(e) => deleteGroup(e)}>
                         Delete Group
                       </button>
                     ) : ( 
-                      <button className='bg-red mcolor-100 rounded py-2 text-center my-5 w-full' onClick={(e) => leaveGroup(e)}>
+                      <button className={`bg-red mcolor-100 rounded py-2 text-center my-5 w-full ${extraSmallDevice ? 'text-sm' : 'text-md'}`} onClick={(e) => leaveGroup(e)}>
                         Leave Group
                       </button>
                     )
@@ -1118,13 +1118,21 @@ export const StudyAreaGP = (props) => {
                   setHidden("")
                   setCategoryModal("")
                   }}>Add Category</button>
-                {categoryFor === 'Group' && (
+                {categoryFor === 'Group' && !extraSmallDevice ? (
                   <button className='mcolor-800 py-2 rounded-[5px] font-medium font-lg' onClick={() => {
                     setHidden("")
                     setGroupMemberModal("")
-                    }}>
+                  }}>
                       <MoreVertIcon fontSize='medium' />
                   </button>
+                ) : (
+                  <div className='w-full flex items-center justify-end pr-1 mt-2'>
+                    <button className='mcolor-500 py-2 rounded-[5px] font-medium font-lg' onClick={() => {
+                      setHidden("")
+                      setGroupMemberModal("")
+                    }}>Group info
+                    </button>
+                  </div>
                 )}
               </div>
             </div>
@@ -1275,8 +1283,8 @@ export const StudyAreaGP = (props) => {
     
                         {editCategoryModal && (
                           <div style={{ zIndex: 1000 }} className={`absolute flex items-center justify-center modal-bg w-full h-full`}>
-                            <div className='flex justify-center'>
-                              <div className='mbg-100 max-h-[60vh] w-[30vw] w-1/3 z-10 relative p-10 rounded-[5px]' style={{ overflowY: 'auto' }}>
+                            <div className='flex justify-center w-full'>
+                              <div className={`mbg-100 max-h-[60vh] ${(extraLargeDevices || largeDevices) ? 'w-1/3' : mediumDevices ? 'w-1/2' : smallDevice ? 'w-2/3' : 'w-full mx-2'} z-10 relative p-10 rounded-[5px]`} style={{ overflowY: 'auto' }}>
     
                               <button className='absolute right-4 top-3 text-xl' onClick={() => {
                                 setEditCategoryModal(false);

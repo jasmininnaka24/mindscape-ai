@@ -280,8 +280,8 @@ export const PersonalReviewerPage = () => {
                       animate={{ opacity: 1 }}
                       exit={{ opacity: 0 }}
                     >
-                      <div className='flex justify-center'>
-                        <div className='mbg-input min-h-[45vh] w-[30vw] w-1/3 z-10 relative p-10 rounded-[5px]'>
+                      <div className='flex justify-center w-full'>
+                        <div className={`mbg-input min-h-[45vh] ${(extraLargeDevices || largeDevices) ? 'w-1/3' : mediumDevices ? 'w-1/2' : smallDevice ? 'w-2/3' : 'w-full mx-2'} z-10 relative p-10 rounded-[5px]`}>
 
                         <button className='absolute right-4 top-3 text-xl' onClick={() => {
                           setShowModal(false);

@@ -1056,7 +1056,7 @@ export const VirtualLibraryMain = () => {
                   {deleteModal && (
                     <div className={`absolute top-0 modal-bg left-0 w-full h-full`}>
                       <div className='flex items-center justify-center h-full'>
-                        <div className='relative mbg-input min-h-[30vh] w-1/3 z-10 relative py-5 px-5 rounded-[5px]' style={{overflowY: 'auto'}}>
+                        <div className={`relative mbg-input min-h-[30vh] ${(extraLargeDevices || largeDevices) ? 'w-1/3' : mediumDevices ? 'w-1/2' : smallDevice ? 'w-2/3' : 'w-full mx-2'} z-10 relative py-5 px-5 rounded-[5px]`} style={{overflowY: 'auto'}}>
     
                           <button className='absolute right-5 top-5 font-medium text-xl' onClick={(e) => {
                             e.preventDefault()
@@ -1357,11 +1357,11 @@ export const VirtualLibraryMain = () => {
             
   
   
-            {/* user choosing to bookmark */}
+            {/* user choosing where to bookmark */}
             {showBookmarkModal && (
               <div className={`absolute top-0 modal-bg left-0 w-full h-full`}>
                 <div className='flex items-center justify-center h-full'>
-                  <div className='relative mbg-input min-h-[30vh] w-1/3 z-10 relative py-5 px-5 rounded-[5px]' style={{overflowY: 'auto'}}>
+                  <div className={`relative mbg-input min-h-[30vh] ${(extraLargeDevices || largeDevices) ? 'w-1/3' : mediumDevices ? 'w-1/2' : smallDevice ? 'w-2/3' : 'w-full mx-2'} z-10 relative py-5 px-5 rounded-[5px]`} style={{overflowY: 'auto'}}>
 
                     <button className='absolute right-5 top-5 font-medium text-xl' disabled={btnClicked || buttonLoading} onClick={() => {
                       setShowBookmarkModal(false)
@@ -1436,13 +1436,13 @@ export const VirtualLibraryMain = () => {
 
                       {showCreateGroupInput === false && (
                         groupList.slice().sort((a, b) => b.id - a.id).map(({ id, groupName}) => (
-                          <div key={id} className='shadows mcolor-900 rounded-[5px] p-5 my-6 mbg-input flex items-center justify-between relative'>
+                          <div key={id} className={`shadows mcolor-900 rounded-[5px] p-5 my-6 mbg-input flex ${extraSmallDevice ? 'flex-col' : 'flex-row'} items-center justify-between relative`}>
 
 
                             <p className='px-1'>{groupName}</p>
               
 
-                            <button className={`${(buttonLoading && buttonClickedNumber === (id+'1')) ? 'mbg-200 mcolor-900 border-thin-800' : 'btn-700 mcolor-100'} px-5 py-2 rounded`} disabled={(!btnClicked && buttonLoading && buttonClickedNumber === (id+'1'))} onClick={() => bookmarkMaterial(currentSharedMaterialIndex, id, 'Group', (id+'1'))}>
+                            <button className={`${(buttonLoading && buttonClickedNumber === (id+'1')) ? 'mbg-200 mcolor-900 border-thin-800' : 'btn-700 mcolor-100'} px-5 py-2 rounded ${extraSmallDevice && 'mt-3 text-sm'}`} disabled={(!btnClicked && buttonLoading && buttonClickedNumber === (id+'1'))} onClick={() => bookmarkMaterial(currentSharedMaterialIndex, id, 'Group', (id+'1'))}>
                               {(buttonLoading && buttonClickedNumber === (id+'1')) ? (
                                 <div>Bookmarking...</div>
                               ) : (
@@ -1511,7 +1511,7 @@ export const VirtualLibraryMain = () => {
             {showModal && (
               <div className={`absolute top-0 modal-bg left-0 w-full h-full`}>
                 <div className='flex items-center justify-center h-full'>
-                  <div className='relative mbg-input h-[75vh] w-1/2 z-10 relative py-5 px-10 rounded-[5px]' style={{overflowY: 'auto'}}>
+                  <div className={`relative mbg-input h-[75vh] ${(extraLargeDevices || largeDevices) ? 'w-1/2 px-10' : (mediumDevices || smallDevice) ? 'w-2/3 px-10' : 'w-full mx-2 px-5'} z-10 relative py-5 rounded-[5px]`} style={{overflowY: 'auto'}}>
                     
                     <button className='absolute right-5 top-5 font-medium text-xl' disabled={btnClicked} onClick={() => {
                       setShowMaterialDetails(false)
@@ -1521,12 +1521,12 @@ export const VirtualLibraryMain = () => {
   
                     {showPresentStudyMaterials && (
                       <div>
-                        <p class='text-lg text-color-900 font-medium mb-5 mt-10 mcolor-900 text-center'>Materials that are present in your personal room and those you contributed within collaborative workspaces:</p>
+                        <p class={`${extraSmallDevice ? 'text-md' : 'text-sm'} text-color-900 mb-5 mt-10 mcolor-700 text-center`}>Materials that are present in your personal room and those you contributed within collaborative workspaces:</p>
   
                         <br />
                         <div className='flex items-center justify-center mb-2'>
                           <Link to={'/main/library/generate-quiz'}>
-                            <button disabled={btnClicked} className='btn-800 px-5 py-2 rounded border-thin-800'>Generate a new Study Material</button>
+                            <button disabled={btnClicked} className={`btn-800 px-5 py-2 rounded border-thin-800 ${extraSmallDevice ? 'text-sm' : 'text-md'}`}>Generate a new Study Material</button>
                           </Link>
                         </div>
                         <br />
@@ -1537,14 +1537,14 @@ export const VirtualLibraryMain = () => {
                         {personalStudyMaterials.map((material, index) => {
                           const category = personalStudyMaterialsCategory[index]?.category || 'Category not available';
   
-                          return <div key={index} className='flex justify-between my-3 mbg-200 border-thin-800 p-4 rounded '>
+                          return <div key={index} className={`flex ${(extraSmallDevice || smallDevice) ? 'flex-col' : 'flex-row'} justify-between my-3 mbg-200 border-thin-800 p-4 rounded `}>
                               <div>
-                                <p className='font-medium text-lg'>Title: {material?.title}</p>
-                                <p className='text-sm mt-1'>Category: {category}</p>
+                                <p className={`font-medium ${extraSmallDevice ? 'text-md' : 'text-lg'}`}>Title: {material?.title}</p>
+                                <p className={`mt-1 ${extraSmallDevice ? 'text-xs' : 'text-sm'}`}>Category: {category}</p>
                                 
                               </div>
   
-                              <div className='flex items-center gap-3'>
+                              <div className={`flex ${(smallDevice || extraSmallDevice) && 'mt-3'} ${extraSmallDevice ? 'flex-col' : 'flex-row'} items-center gap-3`}>
 
                                 <button className='mbg-input w-full my-1 mcolor-900 border-thin-800 px-5 py-2 rounded' disabled={buttonLoader || btnClicked} onClick={() => viewStudyMaterialDetails(index, 'personal', 'not filtered', category)}>
                                   {
@@ -1553,13 +1553,13 @@ export const VirtualLibraryMain = () => {
                                         <div className='btn-spinner'></div>
                                       </div>
                                       ) : (
-                                      <div>View</div>
+                                      <div className={`${extraSmallDevice ? 'text-sm' : 'text-md'}`}>View</div>
                                     )
                                   }
                                 </button>
 
 
-                                <button className='btn-700 mcolor-100 px-5 py-2 rounded' onClick={() => shareMaterial(index, 'personal', material?.title)}>{btnClicked && material?.title === currentMaterial ? 'Sharing...' : 'Share'}</button>
+                                <button className={`btn-700 mcolor-100 px-5 py-2 rounded w-full ${extraSmallDevice ? 'text-sm' : 'text-md'}`} onClick={() => shareMaterial(index, 'personal', material?.title)}>{btnClicked && material?.title === currentMaterial ? 'Sharing...' : 'Share'}</button>
                               </div>
                             </div>
                         })}
@@ -1571,14 +1571,14 @@ export const VirtualLibraryMain = () => {
                         {groupStudyMaterials.map((material, index) => {
                           const category = groupStudyMaterialsCategory[index]?.category || 'Category not available';
   
-                          return <div key={index} className='my-3 mbg-200 border-thin-800 p-4 rounded flex items-center justify-between'>
+                          return <div key={index} className={`flex ${(extraSmallDevice || smallDevice) ? 'flex-col' : 'flex-row'} justify-between my-3 mbg-200 border-thin-800 p-4 rounded `}>
                               <div>
-                                <p className='font-medium text-lg'>Title: {material?.title}</p>
-                                <p className='text-sm mt-1'>Category: {category}</p>
+                                <p className={`font-medium ${extraSmallDevice ? 'text-md' : 'text-lg'}`}>Title: {material?.title}</p>
+                                <p className={`mt-1 ${extraSmallDevice ? 'text-xs' : 'text-sm'}`}>Category: {category}</p>
   
                               </div>
   
-                              <div className='flex items-center gap-3'>
+                              <div className={`flex ${(smallDevice || extraSmallDevice) && 'mt-3'} ${extraSmallDevice ? 'flex-col' : 'flex-row'} items-center gap-3`}>
 
                                 <button className='mbg-input w-full my-1 mcolor-900 border-thin-800 px-5 py-2 rounded' disabled={buttonLoader || btnClicked} onClick={() => viewStudyMaterialDetails(index, 'group', 'not filtered', category)}>
                                   {
@@ -1587,12 +1587,12 @@ export const VirtualLibraryMain = () => {
                                         <div className='btn-spinner'></div>
                                       </div>
                                       ) : (
-                                      <div>View</div>
+                                      <div className={`${extraSmallDevice ? 'text-sm' : 'text-md'}`}>View</div>
                                     )
                                   }
                                 </button>
                                 
-                                <button className='btn-700 mcolor-100 px-5 py-2 rounded' onClick={() => shareMaterial(index, 'group', material?.title)}>{btnClicked && material?.title === currentMaterial ? 'Sharing...' : 'Share'}</button>
+                                <button className={`btn-700 mcolor-100 px-5 py-2 rounded w-full ${extraSmallDevice ? 'text-sm' : 'text-md'}`} onClick={() => shareMaterial(index, 'group', material?.title)}>{btnClicked && material?.title === currentMaterial ? 'Sharing...' : 'Share'}</button>
                               </div>
                             </div>
                         })}
@@ -1624,17 +1624,17 @@ export const VirtualLibraryMain = () => {
                           <p className='mcolor-900 text-center text-xl font-medium'>{currentMaterialTitle} from {currentMaterialCategory}</p>
                           
                           <div className='flex items-center justify-between my-5 gap-1'>
-                            <button className={`border-thin-800 w-full rounded py-2 ${showContext ? '' : 'btn-700 mcolor-100'}`} onClick={() => {
+                            <button className={`border-thin-800 w-full rounded py-2 ${showContext ? '' : 'btn-700 mcolor-100'} ${extraSmallDevice ? 'text-xs' : 'text-md'}`} onClick={() => {
                               setShowQuiz(false)
                               setShowNotes(false)
                               setShowContext(true)
                             }}>Context</button>
-                            <button className={`border-thin-800 w-full rounded py-2 ${showNotes ? '' : 'btn-700 mcolor-100'}`} onClick={() => {
+                            <button className={`border-thin-800 w-full rounded py-2 ${showNotes ? '' : 'btn-700 mcolor-100'} ${extraSmallDevice ? 'text-xs' : 'text-md'}`} onClick={() => {
                               setShowContext(false)
                               setShowQuiz(false)
                               setShowNotes(true)
                             }}>Notes</button>
-                            <button className={`border-thin-800 w-full rounded py-2 ${showQuiz ? '' : 'btn-700 mcolor-100'}`} onClick={() => {
+                            <button className={`border-thin-800 w-full rounded py-2 ${showQuiz ? '' : 'btn-700 mcolor-100'} ${extraSmallDevice ? 'text-xs' : 'text-md'}`} onClick={() => {
                             setShowContext(false)
                             setShowNotes(false)
                             setShowQuiz(true)
@@ -1643,16 +1643,16 @@ export const VirtualLibraryMain = () => {
 
 
                           {showContext && (
-                            <p className='text-justify my-5'>{context}</p>
+                            <p className={`text-justify my-5 ${extraSmallDevice ? 'text-xs' : smallDevice ? 'text-sm' : 'text-md'}`}>{context}</p>
                           )}
 
                           {showNotes && (
                             <div className='my-10'>
                               {materialNotes.map((material) => (
-                                <div className='my-5'>
-                                  <p className='font-medium color-primary'>Question: <span className='mcolor-900 font-medium mb-4'>{material.question}</span></p>
+                                <div className={`my-5 ${extraSmallDevice ? 'text-xs' : smallDevice ? 'text-sm font-medium' : 'text-md font-medium'}`}>
+                                  <p className='color-primary'>Question: <span className='mcolor-900 mb-4'>{material.question}</span></p>
                                   
-                                  <p className='font-medium color-primary mt-1'>Answer: <span className='mcolor-900 font-medium'>{material.answer}</span></p>
+                                  <p className='color-primary mt-1'>Answer: <span className='mcolor-900'>{material.answer}</span></p>
 
                                   <div className='border-hr my-5'></div>
                                 </div>
@@ -1665,15 +1665,15 @@ export const VirtualLibraryMain = () => {
                             <div className='mt-5'>
                               <br />
                               {materialMCQ.map((material, quesIndex) => (
-                                <div className={(material.quizType === 'MCQA' || material.quizType === 'Identification') ? 'mb-14' : material.quizType !== 'ToF' ? '' : ''} key={material.id}>
-                                  <p className='mt-2 color-primary font-bold'>Question: <span className='mcolor-800 font-medium ml-1'>{material.question}</span></p>
-                                  <p className='color-primary font-bold'>Answer: <span className='mcolor-800 font-medium ml-1'>{material.answer}</span></p>
+                                <div className={`${extraSmallDevice ? 'text-xs' : smallDevice ? 'text-sm font-medium' : 'text-md font-medium'} ${(material.quizType === 'MCQA' || material.quizType === 'Identification') ? 'mb-14' : material.quizType !== 'ToF' ? '' : ''}`} key={material.id}>
+                                  <p className='mt-2 color-primary'>Question: <span className='mcolor-800 font-medium ml-1'>{material.question}</span></p>
+                                  <p className='color-primary'>Answer: <span className='mcolor-800 font-medium ml-1'>{material.answer}</span></p>
 
                                   {material.quizType === 'MCQA' && (
                                     <p className='mt-5 mb-1'>Choices: </p>
                                   )}
 
-                                  <ul className='grid-result gap-3 grid-cols-3'>
+                                  <ul className={`grid grid-cols-${mediumDevices ? '2' : (smallDevice || extraSmallDevice) ? '1' : '3'} gap-3`}>
                                     {materialMCQChoices
                                       .filter((choice) => (choice.QuesAnId === material.id && material.quizType === 'MCQA'))
                                       .map((choice, index) => (

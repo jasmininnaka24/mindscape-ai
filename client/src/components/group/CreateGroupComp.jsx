@@ -247,7 +247,7 @@ export const CreateGroupComp = (props) => {
 
       <div className={`${hidden} absolute top-0 left-0 modal-bg w-full h-full`}>
         <div className='flex items-center justify-center h-full'>
-          <div className='mbg-100 min-h-[45vh] w-1/3 z-10 relative p-10 rounded-[5px] flex items-center justify-center'>
+          <div className={`mbg-100 min-h-[45vh] ${(extraLargeDevices || largeDevices) ? 'w-1/3' : mediumDevices ? 'w-1/2' : smallDevice ? 'w-2/3' : 'w-full mx-2'} z-10 relative p-10 rounded-[5px] flex items-center justify-center`}>
 
             <button className='absolute right-4 top-3 text-xl' onClick={() => {
               setHidden("hidden")

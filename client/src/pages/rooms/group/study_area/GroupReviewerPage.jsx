@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import io from 'socket.io-client';
 import { useParams } from 'react-router-dom';
-import WorkspacePremiumIcon from '@mui/icons-material/WorkspacePremium';
 import ScrollToBottom from "react-scroll-to-bottom";
 
 import seedrandom from 'seedrandom';
@@ -12,6 +11,12 @@ import { useUser } from '../../../../UserContext';
 import { fetchUserData } from '../../../../userAPI';
 import { CLIENT_URL, SERVER_URL } from '../../../../urlConfig';
 
+// icons import
+import WorkspacePremiumIcon from '@mui/icons-material/WorkspacePremium';
+
+// responsive sizes
+import { useResponsiveSizes } from '../../../../components/useResponsiveSizes'; 
+
 
 const socket = io(SERVER_URL, {
   credentials: true,
@@ -21,6 +26,8 @@ const socket = io(SERVER_URL, {
 
 
 export const GroupReviewerPage = () => {
+
+  const { extraSmallDevice, smallDevice, mediumDevices, largeDevices, extraLargeDevices } = useResponsiveSizes();
 
 
   const { user } = useUser();
@@ -952,8 +959,8 @@ export const GroupReviewerPage = () => {
 
 
                             <div className={`${hideModalReview} absolute top-0 left-0 modal-bg w-full h-full`} >
-                              <div className='flex items-center justify-center h-full'>
-                                <div className='mbg-100 max-h-[60vh] w-1/3 relative p-10 rounded-[5px] flex items-center justify-center' style={{ overflowY: 'auto' }}>
+                              <div className='flex items-center justify-center h-full w-full'>
+                                <div className={`mbg-100 max-h-[60vh] ${(extraLargeDevices || largeDevices) ? 'w-1/3' : mediumDevices ? 'w-1/2' : smallDevice ? 'w-2/3' : 'w-full mx-2'} relative p-10 rounded-[5px] flex items-center justify-center`} style={{ overflowY: 'auto' }}>
 
                                   <button className='absolute right-4 top-3 text-xl' onClick={() => setHideModalReview('hidden')}>
                                     ✖
@@ -1387,14 +1394,14 @@ export const GroupReviewerPage = () => {
                               {/* modal */}
                               {itemsLength === itemsDone && (
                                 <div className={`absolute top-0 modal-bg left-0 w-full h-full`}>
-                                  <div className='flex items-center justify-center h-full'>
-                                    <div className='relative mbg-100 min-h-[75vh] w-1/2 z-10 relative p-10 rounded-[5px]'>
+                                  <div className='flex items-center justify-center h-full w-full'>
+                                    <div className={`relative mbg-100 min-h-[75vh] ${(extraLargeDevices || largeDevices) ? 'w-1/2' : (mediumDevices || smallDevice) ? 'w-2/3' : 'w-full mx-2'} z-10 relative p-10 rounded-[5px]`}>
 
                                       <p className='text-lg mcolor-900 font-medium mb-5'>Leaderboard</p>  
 
-                                      <div className='flex items-center justify-between mb-5 gap-5'>
-                                        <button onClick={resetAndStudy} className='w-1/2 py-2 rounded mcolor-900 mbg-200 border-thin-800'>Reset Points & Study Again</button>
-                                        <button onClick={studyAgain} className='w-1/2 py-2 rounded mcolor-100 mbg-700'>Study Again</button>
+                                      <div className={`flex ${extraSmallDevice ? 'flex-col' : 'flex-row'} items-center justify-between mb-5 gap-5`}>
+                                        <button onClick={resetAndStudy} className={`${extraSmallDevice ? 'w-full' : 'w-1/2'} py-2 rounded mcolor-900 mbg-200 border-thin-800`}>Reset Points & Study Again</button>
+                                        <button onClick={studyAgain} className={`${extraSmallDevice ? 'w-full' : 'w-1/2'} py-2 rounded mcolor-100 mbg-700`}>Study Again</button>
                                       </div>
 
                                       <div className='flex items-center justify-between px-3 mb-3 mcolor-800'>
