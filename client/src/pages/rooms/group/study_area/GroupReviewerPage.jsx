@@ -947,7 +947,7 @@ export const GroupReviewerPage = () => {
               </div>
 
               {isJoined && (
-                <div className='poppins w-full flex flex-col items-center min-h-[100vh] mcolor-900'>
+                <div className='poppins w-full flex flex-col items-center h-[100vh] mcolor-900'>
 
                   {toggledChatInfo === 'hidden' && (
                     <div className={`${(extraLargeDevices || largeDevices) && 'hidden'} fixed bottom-5 right-5 btn-primary p-3 rounded-full`} style={{ zIndex: 60 }}>
@@ -955,12 +955,12 @@ export const GroupReviewerPage = () => {
                     </div>
                   )}
 
-                  <div className='w-full'>
+                  <div className='w-full h-full'>
                     <div className='flex justify-between'>
 
 
                     {/* chat functionality goes here */}
-                    <div className={`${(extraLargeDevices || largeDevices) ? 'w-1/2 relative' : `${(smallDevice || mediumDevices) ? 'w-2/3' : 'w-full'}`} ${(!extraLargeDevices && !largeDevices) ? `fixed ${toggledChatInfo}` : ''} mbg-100 shadows rounded min-h-[100vh]`} style={{ zIndex: 50 }}>
+                    <div className={`${(extraLargeDevices || largeDevices) ? 'w-1/2 relative' : `${(smallDevice || mediumDevices) ? 'w-2/3' : 'w-full'}`} ${(!extraLargeDevices && !largeDevices) ? `fixed ${toggledChatInfo}` : ''} mbg-100 shadows rounded h-[100vh]`} style={{ zIndex: 50 }}>
 
                       <div className={`${(extraLargeDevices || largeDevices) && 'hidden'} w-full flex items-center justify-end pr-4 py-3`} style={{ zIndex: 60 }}>
                         <button onClick={toggleChatInfo}><CloseIcon sx={{ fontSize: '30px' }} /></button>
