@@ -16,6 +16,7 @@ import GraphicEqIcon from '@mui/icons-material/GraphicEq';
 import seedrandom from 'seedrandom';
 import PauseIcon from '@mui/icons-material/Pause';
 import PlayArrowIcon from '@mui/icons-material/PlayArrow';
+import CloseIcon from '@mui/icons-material/Close';
 
 // component imports
 import { AuditoryLearner } from '../../../../components/practices/AuditoryLearner';
@@ -105,6 +106,9 @@ export const PersonalReviewerStart = () => {
   const [isDone, setIsDone] = useState(false);
   const [loading, setLoading] = useState(true);
 
+  // side info toggle
+  const [toggledSideInfo, setToggledSideInfo] = useState('hidden');
+
 
   const getUserData = async () => {
     const userData = await fetchUserData(UserId);
@@ -138,7 +142,9 @@ export const PersonalReviewerStart = () => {
 
 
 
-
+  const toggleSideInfo = () => {
+    setToggledSideInfo(toggledSideInfo === 'hidden' ? '' : 'hidden');
+  }
 
 
 
@@ -163,22 +169,6 @@ export const PersonalReviewerStart = () => {
     setDraggedBG('mbg-100')
   };
 
-
-  // const handleDropKinesthetic = (e, index) => {
-  //   e.preventDefault();
-
-  //   const droppedChoiceText = e.dataTransfer.getData('text/plain');
-
-  //   if (extractedQA[questionIndex].quizType !== 'ToF') {
-  //     const draggedAnswers = [...kinesthethicAnswers];
-  //     draggedAnswers[index] = droppedChoiceText;
-  //     setKinesthethicAnswers(draggedAnswers);
-  //     setSelectedChoice(draggedAnswers.join('').toLowerCase());
-  //   } else {
-  //     setSelectedChoice(droppedChoiceText)
-  //   }
-  //   setLastDraggedCharacter(droppedChoiceText)
-  // }
 
   
   
@@ -1003,10 +993,15 @@ export const PersonalReviewerStart = () => {
             </div>
           </div>
         </div>
+
+
   
-        <div className='w-1/6 mbg-800 h-[100vh] flex justify-between flex-col' style={{ borderRight: '1px solid #999' }}>
+
+        <div className={`${(extraLargeDevices) ? 'w-1/6 relative' : `${(smallDevice || mediumDevices) ? 'w-1/2' : largeDevices ? 'w-1/4' : 'w-full'}`} ${!extraLargeDevices ? `absolute ${toggledSideInfo}` : ''} mbg-800 h-[100vh] flex justify-between flex-col`} style={{ borderRight: '1px solid #999', zIndex: 80 }}>
+
+          <button className={`absolute top-3 right-3 mcolor-100 ${extraLargeDevices && 'hidden'}`} onClick={toggleSideInfo}><CloseIcon /></button>
   
-          <div className='px-5 pb-5 pt-10 font-bold mbg-800 mcolor-input text-center text-xl mx-5' style={{ borderBottom: '2px solid #f6f8f6' }}>{typeOfLearner} Learner</div>
+          <div className={`px-5 pb-5 pt-10 font-bold mbg-800 mcolor-input text-center ${!extraLargeDevices && 'mt-5'} mx-5`} style={{ borderBottom: '2px solid #f6f8f6' }}>{typeOfLearner} Learner</div>
 
           <div>
             {/* pomodoro time */}
@@ -1039,7 +1034,7 @@ export const PersonalReviewerStart = () => {
               {/* all filters */}
               <div className='mt-2'>
                 <select
-                  className="border-thin-800 px-3 py-1 rounded-[5px] outline-none border-none mcolor-900"
+                  className="border-thin-800 pl-3 py-1 rounded-[5px] outline-none border-none mcolor-900 w-full"
                   value={filteredDataValue}
                   onChange={(e) => {
                     setFilteredDataValue(e.target.value)
@@ -1098,9 +1093,13 @@ export const PersonalReviewerStart = () => {
         </div>
   
         <div className='flex-1'>
-  
-          <div className='flex justify-between'>
-            <div className='w-1/2 px-5 py-8 h-[100vh] mbg-input' style={{ borderLeft: '2px solid #e0dfdc', overflowY: 'auto' }}>
+
+          <div className={`fixed ${(!extraLargeDevices) ? '' : 'hidden'}`}>
+            <button className='mcolor-500' onClick={toggleSideInfo}>Open</button>
+          </div>
+
+          <div className={`flex ${(extraSmallDevice || smallDevice) ? 'flex-col-reverse' : 'flex-row'} justify-between`}>
+            <div className={`${(extraSmallDevice || smallDevice) ? 'w-full min-h-[100vh]' : 'w-1/2 h-[100vh]'} px-5 py-8 mbg-input`} style={{ borderLeft: '2px solid #e0dfdc',  overflowY: (extraSmallDevice || smallDevice) ? '' : 'auto' }}>
               <p className='text-center mcolor-800 text-3xl opacity-75 mb-10'>Generated Notes</p>
               
   
@@ -1256,7 +1255,7 @@ export const PersonalReviewerStart = () => {
   
             </div>
   
-            <div className='w-1/2 px-5 py-8 h-[100vh] mbg-input' style={{ borderLeft: '2px solid #e0dfdc', overflowY: 'auto' }}>
+            <div className={`${(extraSmallDevice || smallDevice) ? 'w-full min-h-[100vh]' : 'w-1/2 h-[100vh]'} px-5 py-8 mbg-input`} style={{ borderLeft: '2px solid #e0dfdc',  overflowY: (extraSmallDevice || smallDevice) ? '' : 'auto' }}>
   
   
               <p className='text-center mcolor-800 text-3xl opacity-75 mb-10'>Practice</p>

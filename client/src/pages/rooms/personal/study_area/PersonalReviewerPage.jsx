@@ -124,7 +124,7 @@ export const PersonalReviewerPage = () => {
 
   
   const takeAssessmentBtn = async () => {
-    navigate(`/main/personal/study-area/update-material/${materialId}`)
+    navigate(`/main/personal/study-area/personal-assessment/${materialId}`)
   }
 
 
@@ -165,6 +165,7 @@ export const PersonalReviewerPage = () => {
       navigate(`/main/personal/study-area/personal-review-start/${materialId}`);
     } else {
       setShowModal(true)
+      setShowModifyModal(true)
     }
 
 
@@ -239,31 +240,31 @@ export const PersonalReviewerPage = () => {
               <div className={`flex ${(extraLargeDevices || largeDevices) ? 'gap-10' : 'gap-2'} ${(extraSmallDevice) ? 'flex-col-reverse' : 'flex-row'} w-full`}>
                 <div className={`${extraSmallDevice ? 'w-full mt-5' : 'w-2/3'} rounded-[5px] py-3 px-5`}>
                   <div className='w-full'>
-                    <motion.p className={`${(extraLargeDevices || largeDevices) ? 'text-2xl' : extraSmallDevice ? 'text-xl' : 'text-lg'} font-medium quicksand`}
+                    <motion.p className={`${(extraLargeDevices || largeDevices) ? 'text-2xl' : extraSmallDevice ? 'text-sm' : 'text-lg'} font-medium quicksand`}
                       initial={{ opacity: 0, y: 50 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ duration: 0.3, delay: 0.2 }}
                     >You have been identified as a <span className='font-bold underline'>{userData.typeOfLearner} Learner</span></motion.p >
                     <br />
-                    <motion.p className={`mcolor-900 text-justify my-1 ${(extraLargeDevices || largeDevices) ? 'text-lg' : (mediumDevices || extraSmallDevice) ? 'text-sm' : 'text-xs'}`}
+                    <motion.p className={`mcolor-800 text-justify my-1 ${(extraLargeDevices || largeDevices) ? 'text-md' : (mediumDevices || extraSmallDevice) ? 'text-xs' : 'text-sm'}`}
                       initial={{ opacity: 0, y: 50 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ duration: 0.5, delay: 0.4 }}
                     ><PushPinIcon className={'text-red mr-1'} />The design and formatting of your study sessions will be tailored to suit your specific learner type. If you wish to explore design and format options for other learner types, you can modify your profile configuration.</motion.p >
                     <br />
-                    <motion.p className={`mcolor-900 text-justify my-1 ${(extraLargeDevices || largeDevices) ? 'text-lg' : (mediumDevices || extraSmallDevice) ? 'text-sm' : 'text-xs'}`}
+                    <motion.p className={`mcolor-800 text-justify my-1 ${(extraLargeDevices || largeDevices) ? 'text-md' : (mediumDevices || extraSmallDevice) ? 'text-xs' : 'text-sm'}`}
                       initial={{ opacity: 0, y: 50 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ duration: 0.8, delay: 0.7 }}
                     ><PushPinIcon className={'text-red mr-1'} />Study Session, which includes a Pomodoro technique, is designed to enhance your productivity and focus. The Pomodoro technique involves structured intervals of focused work, promoting efficient learning and concentration. Stay organized and make the most of your study time with this purposeful approach to learning.</motion.p >
                     <br />
-                    <motion.p className={`mcolor-900 text-justify my-1 ${(extraLargeDevices || largeDevices) ? 'text-lg' : (mediumDevices || extraSmallDevice) ? 'text-sm' : 'text-xs'}`}
+                    <motion.p className={`mcolor-800 text-justify my-1 ${(extraLargeDevices || largeDevices) ? 'text-md' : (mediumDevices || extraSmallDevice) ? 'text-xs' : 'text-sm'}`}
                       initial={{ opacity: 0, y: 50 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ duration: 1, delay: 0.9 }}
                     ><PushPinIcon className={'text-red mr-1'} />Upon completing an assessment, your performance data will be seamlessly integrated into the dashboard. This allows for a comprehensive view of your progress over time, facilitating a deeper understanding of your strengths and areas for improvement. Take advantage of this valuable insight to refine your learning strategy and achieve continuous growth.</motion.p >
                     <br />
-                    <motion.p className={`mcolor-900 text-justify my-1 ${(extraLargeDevices || largeDevices) ? 'text-lg' : (mediumDevices || extraSmallDevice) ? 'text-sm' : 'text-xs'}`}
+                    <motion.p className={`mcolor-800 text-justify my-1 ${(extraLargeDevices || largeDevices) ? 'text-md' : (mediumDevices || extraSmallDevice) ? 'text-xs' : 'text-sm'}`}
                       initial={{ opacity: 0, y: 50 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ duration: 1.3, delay: 1.2 }}
@@ -285,6 +286,8 @@ export const PersonalReviewerPage = () => {
 
                         <button className='absolute right-4 top-3 text-xl' onClick={() => {
                           setShowModal(false);
+                          setShowAssessmentModalRem(false)
+                          setShowModifyModal(false)
                         }}>
                           ✖
                         </button>
@@ -330,11 +333,11 @@ export const PersonalReviewerPage = () => {
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.3, delay: 0.2 }}
                   >
-                    <p className={`${(extraLargeDevices || largeDevices || extraSmallDevice) ? 'text-lg' : 'text-sm'} font-bold mb-4`}>Study Material Information:</p>
+                    <p className={`${(extraLargeDevices || largeDevices || extraSmallDevice) ? 'text-lg' : 'text-sm'} quicksand font-bold mb-4`}>Study Material Information:</p>
       
-                    <p className={`mt-1 ${(extraLargeDevices || largeDevices || extraSmallDevice) ? 'text-md' : 'text-xs'}`}>Category: <span className='font-bold'>{materialCategory}</span></p>
-                    <p className={`mt-1 ${(extraLargeDevices || largeDevices || extraSmallDevice) ? 'text-md' : 'text-xs'}`}>Material Title: <span className='font-bold'>{materialTitle}</span></p>
-                    <p className={`mt-1 ${(extraLargeDevices || largeDevices || extraSmallDevice) ? 'text-md' : 'text-xs'}`}>Number of Questions: <span className='font-bold'>{materialNumQues}</span></p>
+                    <p className={`mt-1 ${(extraLargeDevices || largeDevices || extraSmallDevice) ? 'text-md' : 'text-xs'} quicksand font-medium`}>Category: <span className='font-bold'>{materialCategory}</span></p>
+                    <p className={`mt-1 ${(extraLargeDevices || largeDevices || extraSmallDevice) ? 'text-md' : 'text-xs'} quicksand font-medium`}>Material Title: <span className='font-bold'>{materialTitle}</span></p>
+                    <p className={`mt-1 ${(extraLargeDevices || largeDevices || extraSmallDevice) ? 'text-md' : 'text-xs'} quicksand font-medium`}>Number of Questions: <span className='font-bold'>{materialNumQues}</span></p>
                   </motion.div>
 
                   <br />
@@ -353,14 +356,14 @@ export const PersonalReviewerPage = () => {
                       initial={{ opacity: 0, y: 50 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ duration: 0.5, delay: 0.4 }}>
-                      <button className={`w-full px-6 py-5 shadows rounded-[5px] ${(extraLargeDevices || largeDevices) ? 'text-lg' : 'text-sm'} btn-primary font-normal`} onClick={startStudySession}>Start Study Session</button>
+                      <button className={`w-full px-6 py-5 shadows rounded-[5px] ${(extraLargeDevices || largeDevices) ? 'text-md' : 'text-xs'} btn-primary font-normal`} onClick={startStudySession}>Start Study Session</button>
                     </motion.div>
                       
                     <motion.div className='w-full'
                         initial={{ opacity: 0, y: 50 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.8, delay: 0.7 }}>
-                        <button className={`w-full px-6 py-5 shadows rounded-[5px] ${(extraLargeDevices || largeDevices) ? 'text-lg' : 'text-sm'} mbg-800 mcolor-100 font-normal`}
+                        <button className={`w-full px-6 py-5 shadows rounded-[5px] ${(extraLargeDevices || largeDevices) ? 'text-md' : 'text-xs'} mbg-800 mcolor-100 font-normal`}
                         onClick={() => {
                           setShowModal(true)
                           setShowAssessmentModalRem(true)
@@ -368,7 +371,7 @@ export const PersonalReviewerPage = () => {
                         >Take {takeAssessment ? 'Assessment' : 'Pre-Assessment'}</button>
                     </motion.div>
 
-                      <motion.button className={`px-5 py-5 shadows w-full rounded-[5px] ${(extraLargeDevices || largeDevices) ? 'text-lg' : 'text-sm'} mbg-200 mcolor-800 border-medium-800 font-normal`}
+                      <motion.button className={`px-5 py-5 shadows w-full rounded-[5px] ${(extraLargeDevices || largeDevices) ? 'text-md' : 'text-xs'} mbg-200 mcolor-800 border-medium-800 font-normal`}
                       onClick={() => deleteStudyMaterial(materialId, materialTitle)}
                       initial={{ opacity: 0, y: 50 }}
                       animate={{ opacity: 1, y: 0 }}
@@ -377,7 +380,7 @@ export const PersonalReviewerPage = () => {
 
                     {!takeAssessment && (
                       <Link className='w-full' to={`/main/personal/study-area/update-material/${materialId}`}>
-                        <motion.button className={`px-5 py-5 shadows w-full rounded-[5px] ${(extraLargeDevices || largeDevices) ? 'text-lg' : 'text-sm'} mbg-200 mcolor-800 border-medium-800 font-normal`}
+                        <motion.button className={`px-5 py-5 shadows w-full rounded-[5px] ${(extraLargeDevices || largeDevices) ? 'text-md' : 'text-xs'} mbg-200 mcolor-800 border-medium-800 font-normal`}
                       initial={{ opacity: 0, y: 50 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ duration: 1.3, delay: 1.2 }}

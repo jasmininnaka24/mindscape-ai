@@ -13,6 +13,10 @@ import { CLIENT_URL, SERVER_URL } from '../../../../urlConfig';
 
 // icons import
 import WorkspacePremiumIcon from '@mui/icons-material/WorkspacePremium';
+import FiberManualRecordIcon from '@mui/icons-material/FiberManualRecord';
+import TextsmsRoundedIcon from '@mui/icons-material/TextsmsRounded';
+import CloseIcon from '@mui/icons-material/Close';
+
 
 // responsive sizes
 import { useResponsiveSizes } from '../../../../components/useResponsiveSizes'; 
@@ -140,6 +144,14 @@ export const GroupReviewerPage = () => {
   const [successfullyInviting, setSuccessfullyInviting] = useState(false);
 
   const [isDone, setIsDone] = useState(false);
+
+    // chat, user, leave toggle
+    const [toggledChatInfo, setToggledChatInfo] = useState('hidden');
+
+
+    const toggleChatInfo = () => {
+      setToggledChatInfo(toggledChatInfo === 'hidden' ? '' : 'hidden');
+    }
 
 
   const getUserData = async () => {
@@ -936,80 +948,105 @@ export const GroupReviewerPage = () => {
 
               {isJoined && (
                 <div className='poppins w-full flex flex-col items-center min-h-[100vh] mcolor-900'>
+
+                  {toggledChatInfo === 'hidden' && (
+                    <div className={`${(extraLargeDevices || largeDevices) && 'hidden'} fixed bottom-5 right-5 btn-primary p-3 rounded-full`} style={{ zIndex: 60 }}>
+                      <button onClick={toggleChatInfo}><TextsmsRoundedIcon sx={{ fontSize: '30px' }} /></button>
+                    </div>
+                  )}
+
                   <div className='w-full'>
                     <div className='flex justify-between'>
 
 
                     {/* chat functionality goes here */}
-                    <div className='w-1/2 relative fixed mbg-100 shadows rounded min-h-[100vh]'>
+                    <div className={`${(extraLargeDevices || largeDevices) ? 'w-1/2 relative' : `${(smallDevice || mediumDevices) ? 'w-2/3' : 'w-full'}`} ${(!extraLargeDevices && !largeDevices) ? `fixed ${toggledChatInfo}` : ''} mbg-100 shadows rounded min-h-[100vh]`} style={{ zIndex: 50 }}>
+
+                      <div className={`${(extraLargeDevices || largeDevices) && 'hidden'} w-full flex items-center justify-end pr-4 py-3`} style={{ zIndex: 60 }}>
+                        <button onClick={toggleChatInfo}><CloseIcon sx={{ fontSize: '30px' }} /></button>
+                      </div>
+
                       <div className='flex justify-center'>
-                        <div className='h-[65vh] mx-5 rounded fixed w-1/3'>
+                        <div className={`h-[65vh] rounded fixed ${(extraLargeDevices || largeDevices) ? 'w-1/3' : `${(smallDevice || mediumDevices) ? 'w-2/3 px-3' : 'w-full px-3'}`}`}>
                           <div>
-                            <div className='flex items-center justify-between w-full pb-4 pt-5'>
-                              <button className='mbg-200 px-2 py-2 rounded border-thin-800' onClick={() => setHideModalReview('')}>
+                            <div className={`flex ${(extraSmallDevice || smallDevice) ? 'flex-col justify-center items-center text-lg' : `${largeDevices ? 'text-xs' : 'text-md'} flex-row justify-between items-center pt-5`} w-full pb-4`}>
+
+                            <p className='font-medium'><i class="fa-regular fa-user ml-1 mr-2"></i><span className='font-bold text-emerald-500'>{userList[0]?.username === userData.username ? 'You' : userList[0]?.username}</span> - host</p>
+
+                            <div className={`flex items-center gap-3 ${(extraSmallDevice || smallDevice) ? `mt-5 w-full ${smallDevice ? 'flex-row' : 'flex-col'}` : ''}`}>
+
+                              <button className={`mbg-200 px-2 text-sm py-2 rounded border-thin-800 ${(extraSmallDevice || smallDevice) ? `${smallDevice ? isRunningReview ? 'w-1/2' : 'w-full' : 'w-full'}` : ''}`} onClick={() => setHideModalReview('')}>
                                 Users 
                                 <span className='ml-1 bg-red mcolor-100 px-2 rounded-full'>
                                   {userList.length >= 1000 ? `${(userList.length / 1000).toFixed(0)}k` : userList.length}
                                 </span>
                               </button>
                               {isStartStudyButtonStarted && (
-                                <button className='bg-red mcolor-100 px-4 py-2 rounded' onClick={leaveReviewerPageRoom}>Leave Room</button>
+                                <button className={`bg-red mcolor-100 px-4 py-2 rounded text-sm ${(extraSmallDevice || smallDevice) ? `${smallDevice ? 'w-1/2' : 'w-full'}` : ''}`} onClick={leaveReviewerPageRoom}>Leave Room</button>
                               )}
+
                             </div>
+                          </div>
 
 
-                            <div className={`${hideModalReview} absolute top-0 left-0 modal-bg w-full h-full`} >
-                              <div className='flex items-center justify-center h-full w-full'>
-                                <div className={`mbg-100 max-h-[60vh] ${(extraLargeDevices || largeDevices) ? 'w-1/3' : mediumDevices ? 'w-1/2' : smallDevice ? 'w-2/3' : 'w-full mx-2'} relative p-10 rounded-[5px] flex items-center justify-center`} style={{ overflowY: 'auto' }}>
+                          <div className={`${hideModalReview} absolute top-0 left-0 modal-bg w-full h-full`} >
+                            <div className='flex items-center justify-center h-full w-full'>
+                              <div className={`mbg-100 max-h-[60vh] ${(extraLargeDevices || largeDevices) ? 'w-1/3' : mediumDevices ? 'w-1/2' : smallDevice ? 'w-2/3' : 'w-full mx-2'} relative p-10 rounded-[5px] flex items-center justify-center`} style={{ overflowY: 'auto' }}>
 
-                                  <button className='absolute right-4 top-3 text-xl' onClick={() => setHideModalReview('hidden')}>
-                                    ✖
-                                  </button>
+                                <button className='absolute right-4 top-3 text-xl' onClick={() => setHideModalReview('hidden')}>
+                                  ✖
+                                </button>
 
-                                  <div className={`w-full`}>
-                                    <p className='text-center text-2xl font-medium mcolor-800 mb-5'>Connected Users:</p>
+                                <div className={`w-full`}>
+                                  <p className='text-center text-2xl font-medium mcolor-800 mb-5'>Connected Users:</p>
 
-                                    <ul className='grid grid-results col-6 gap-5'>
-                                      {userList.map(user => (
-                                        <li key={user?.userId} className='shadows flex items-center justify-center py-4 rounded'>
-                                          <p><i className="fa-solid fa-circle text-green-500 mr-1"></i> {user?.username.charAt(0).toUpperCase() + user?.username.slice(1)}</p>
-                                        </li>
-                                      ))}
-                                    </ul>
-                                  </div>
+                                  <ul className='grid grid-results col-6 gap-5'>
+                                    {userList.map(user => (
+                                      <li key={user?.userId} className='shadows flex items-center justify-center py-4 rounded'>
+                                        <p><i className="fa-solid fa-circle text-green-500 mr-1"></i> {user?.username.charAt(0).toUpperCase() + user?.username.slice(1)}</p>
+                                      </li>
+                                    ))}
+                                  </ul>
                                 </div>
                               </div>
                             </div>
                           </div>
+                        </div>
                           
-                          {/* chat functionality */}
-                          <div className="chat-window">
-                            <div className="chat-header">
-                              <p className='px-5'>Live Chat</p>
-                            </div>
-                            <div className="chat-body">
-                              <ScrollToBottom className="message-container">
-                                {messageListReview.map((messageContent) => {
-                                  return (
-                                    <div
-                                      className="message"
-                                      id={userData?.username === messageContent.author ? "you" : "other"}
-                                    >
-                                      <div>
-                                        <div className="message-content">
-                                          <p>{messageContent.message}</p>
-                                        </div>
-                                        <div className="message-meta">
-                                          <p id="time">{messageContent.time}</p>
-                                          <p id="author" className='capitalize'>{messageContent.author}</p>
-                                        </div>
+                        {/* chat functionality */}
+
+                        <div className={`relative border-medium-700 rounded`}>
+                          <div className="mbg-700 flex items-center justify-between px-5">
+                            <p className='py-2 mcolor-100'><FiberManualRecordIcon className='text-light-green' /> Live Chat</p>
+                          </div>
+                          <div className={`chat-body h-[${(extraLargeDevices || largeDevices) ? !isRunningReview ? '78' : '75' : mediumDevices ? !isRunningReview ? '70' : '68' : smallDevice ? !isRunningReview ? '65' : '60' : !isRunningReview ? '60' : '55'}vh] pb-10`} style={{overflowY: 'auto'}}>
+
+                            
+
+                            <ScrollToBottom className="message-container">
+                              {messageListReview.map((messageContent) => {
+                                return (
+                                  <div
+                                    className="message"
+                                    id={userData?.username === messageContent.author ? "you" : "other"}
+                                    key={messageContent.id} // Assuming there's an 'id' property for each message
+                                  >
+                                    <div>
+                                    <div className="message-content py-2 px-3">
+                                        <p className={`${extraSmallDevice ? 'text-xs' : 'text-sm'}`}>{messageContent.message}</p>
+                                      </div>
+                                      <div className="message-meta">
+                                        <p id="time" className={`${extraSmallDevice ? 'text-xs' : 'text-sm'}`}>{messageContent.time}</p>
+                                        <p className={`${extraSmallDevice ? 'text-xs' : 'text-sm'} ml-5 font-medium capitalize`}>{messageContent.author}</p>
                                       </div>
                                     </div>
-                                  );
-                                })}
-                              </ScrollToBottom>
-                            </div>
-                            <div className="chat-footer">
+                                  </div>
+                                );
+                              })}
+                            </ScrollToBottom>
+                          </div>
+                          <div className='w-full mbg-input absolute bottom-0 right-0 rounded flex items-center' style={{ zIndex: 80, borderTop: '2px solid #627271' }}>
+                            <div className='w-full px-5 py-2'>
                               <input
                                 type="text"
                                 placeholder="Hey..."
@@ -1020,13 +1057,15 @@ export const GroupReviewerPage = () => {
                                 onKeyPress={(event) => {
                                   event.key === "Enter" && sendMessageReview();
                                 }}
+                                className="flex-85 bg-transparent w-full" // Adjust this class based on your CSS setup for input width
                               />
-                              <button onClick={sendMessageReview}>&#9658;</button>
                             </div>
+                            <button className="w-1/6 mbg-700 py-2 mcolor-100" onClick={sendMessageReview}>&#9658;</button>
                           </div>
-              
                         </div>
+            
                       </div>
+                    </div>
 
             
                     </div>
@@ -1035,7 +1074,7 @@ export const GroupReviewerPage = () => {
    
                     {/* userlist */}
                     {userList.length > 0 && (
-                      <div className={'w-3/4 mx-10 min-h-[100vh] mt-5 mb-16'}>
+                      <div className={`${(extraLargeDevices || largeDevices) ? 'w-3/4' : 'w-full'} px-10 py-10`}>
                         {(userList.length > 1 && isStartStudyButtonStarted) ? 
                           (
 
@@ -1043,12 +1082,12 @@ export const GroupReviewerPage = () => {
                               <div>
                                 {(userList.length > 0 && userList[userTurn]?.userId === userId) ? (
                                   <div>
-                                    <p className={`mbg-200 mcolor-800 px-5 py-3 rounded-[5px] text-center text-xl ${(userList.length > 0 && userList[userTurn]?.userId === userId) ? 'font-bold' : 'font-bold'}`}>{userList[userTurn]?.userId !== userId ? `${userList[userTurn]?.username.charAt(0).toUpperCase() + userList[userTurn]?.username.slice(1)}'s turn`: 'YOUR TURN'}</p>
+                                    <p className={`px-5 py-3 rounded-[5px] text-center ${(extraLargeDevices || largeDevices) ? 'text-xl' : extraSmallDevice ? 'text-md' : 'text-sm'} ${(userList.length > 0 && userList[userTurn]?.userId === userId) ? 'font-bold mcolor-100 mbg-800-opacity' : 'font-bold mbg-200 mcolor-800'}`}>{userList[userTurn]?.userId !== userId ? `${userList[userTurn]?.username.charAt(0).toUpperCase() + userList[userTurn]?.username.slice(1)}'s turn`: 'YOUR TURN'}</p>
 
 
     
                                     {(isRunningReview === true) && (
-                                      <div className='timer-container px-10 py-3'>
+                                      <div className={`${extraSmallDevice ? 'text-center text-xs px-5' : 'text-sm px-10'} timer-container mbg-input pt-1 pb-1`} style={{ zIndex: 55 }}>
                                         <div className='rounded-[5px]' style={{ height: "5px", backgroundColor: "#B3C5D4" }}>
                                           <div
                                             className='rounded-[5px]'
@@ -1071,9 +1110,9 @@ export const GroupReviewerPage = () => {
                                       <div>
 
                                         {/* question */}
-                                        <div className='flex items-center justify-between gap-4 mt-4 pb-8 text-center text-xl font-medium text-xl mcolor-900'>
-                                        <div className={`w-full mbg-300 mcolor-900 px-10 pt-5 pb-8 w-full rounded-[5px] mcolor-800`} >
-                                            <p className='mcolor-800 text-lg font-medium text-start'>Type: {
+                                        <div className={`flex items-center justify-between gap-4 mt-4 pb-8 text-center font-medium  ${(extraLargeDevices || largeDevices) ? 'text-xl' : (mediumDevices || smallDevice) ? 'text-md' : 'text-sm'} mcolor-900`}>
+                                        <div className={`w-full mbg-300 mcolor-900 ${(extraSmallDevice || smallDevice) ? 'px-5' : 'px-10'} pt-5 pb-8 w-full rounded-[5px] mcolor-800`} >
+                                            <p className={`mcolor-800 ${(extraLargeDevices || largeDevices) ? 'text-md' : extraSmallDevice ? 'text-xs' : 'text-sm'} font-medium text-start`}>Type: {
                                               (extractedQA[questionIndex].quizType === 'ToF' && 'True or False') ||
                                               (extractedQA[questionIndex].quizType === 'FITB' && 'Fill In The Blanks') ||
                                               (extractedQA[questionIndex].quizType === 'Identification' && 'Identification') ||
@@ -1090,15 +1129,15 @@ export const GroupReviewerPage = () => {
                                             {/* questions */}
                                             {extractedQA[questionIndex].quizType === 'ToF' ? (
 
-                                              <p className='p-10'>{extractedQA[questionIndex].question}</p>
+                                              <p className={` ${extraSmallDevice ? 'text-sm' : 'text-md'} p-10`}>{extractedQA[questionIndex].question}</p>
                                               
                                             ) : (
-                                              <p className='p-10'>{extractedQA[questionIndex].question}</p>
+                                              <p className={`${extraSmallDevice ? 'text-sm' : 'text-md'} p-10`}>{extractedQA[questionIndex].question}</p>
                                             )}
 
                                             <div className='flex justify-center'>
                                               <div
-                                                className={`dragHere w-1/2 h-[12vh] rounded-[5px] bottom-14 flex justify-center items-center px-10 mbg-100 ${borderMedium}`}
+                                                className={`dragHere ${(extraSmallDevice || smallDevice) ? 'w-full px-5 h-[8vh] text-sm' : 'w-1/2 px-10 h-[12vh] text-md'} rounded-[5px] bottom-14 flex justify-center items-center mbg-100 ${borderMedium}`}
                                                 onDrop={handleDrop}
                                                 onDragOver={handleDragOver}
                                               >
@@ -1137,15 +1176,15 @@ export const GroupReviewerPage = () => {
                                       <div>
             
                                         {(failCount === 2 || failCount === 1 || failCount === 0) && lostPoints === true && (
-                                          <div className='text-red text-lg text-center mb-3'>{selectedChoice === '' ? 'No answer.' : (extractedQA[questionIndex].quizType !== 'MCQA' && userList[userTurn]?.points > 0) ? 'Wrong. You lost 3 points' : 'Wrong answer.'}</div>
+                                          <div className={`text-red  ${(extraLargeDevices || largeDevices) ? 'text-lg' : (mediumDevices || smallDevice) ? 'text-sm' : 'text-xs'} quicksand font-bold text-center mb-3`}>{selectedChoice === '' ? 'No answer.' : (extractedQA[questionIndex].quizType !== 'MCQA' && userList[userTurn]?.points > 0) ? 'Wrong. You lost 3 points' : 'Wrong answer.'}</div>
                                         )}
 
                                         {gainedPoints === true && (
-                                          <div className='text-emerald-500 text-lg text-center mb-1'>Correct! You earned 5 points</div>
+                                          <div className={`text-emerald-500  ${(extraLargeDevices || largeDevices) ? 'text-lg' : (mediumDevices || smallDevice) ? 'text-sm' : 'text-xs'} text-center mb-1`}>Correct! You earned 5 points</div>
                                         )}
 
                                         {(failCount < 2 && (extractedQA[questionIndex].quizType === 'Identification' || extractedQA[questionIndex].quizType === 'FITB')) && lostPoints === false && gainedPoints === false && (
-                                          <p className='pb-5 pt-2 text-center font-normal text-lg mcolor-800'>{userList[userTurn]?.userId !== userId ? `${userList[userTurn]?.username.charAt(0).toUpperCase() + userList[userTurn]?.username.slice(1)}`: 'You'} submitted a wrong answer. {failCount} chance left
+                                          <p className={`pb-5 pt-2 text-center font-normal  ${(extraLargeDevices || largeDevices) ? 'text-lg' : (mediumDevices || smallDevice) ? 'text-sm' : 'text-xs'} mcolor-800`}>{userList[userTurn]?.userId !== userId ? `${userList[userTurn]?.username.charAt(0).toUpperCase() + userList[userTurn]?.username.slice(1)}`: 'You'} submitted a wrong answer. {failCount} chance left
                                           </p>
                                         )}
 
@@ -1158,7 +1197,7 @@ export const GroupReviewerPage = () => {
                                             )} */}
                                             
                                             {failCount < 2 && extractedQA[questionIndex].quizType !== 'ToF' && lostPoints === false && gainedPoints === false && (
-                                              <p className='pb-5 pt-4 text-center font-normal text-lg mcolor-800'>{userList[userTurn]?.userId !== userId ? `${userList[userTurn]?.username.charAt(0).toUpperCase() + userList[userTurn]?.username.slice(1)}`: 'You'} selected <span className='font-bold'>{selectedChoice}</span> - {failCount} chance left
+                                              <p className={`pb-5 pt-4 text-center font-normal  ${(extraLargeDevices || largeDevices) ? 'text-lg' : (mediumDevices || smallDevice) ? 'text-sm' : 'text-xs'} mcolor-800`}>{userList[userTurn]?.userId !== userId ? `${userList[userTurn]?.username.charAt(0).toUpperCase() + userList[userTurn]?.username.slice(1)}`: 'You'} selected <span className='font-bold'>{selectedChoice}</span> - {failCount} chance left
                                               </p>
                                             )}
                                             
@@ -1168,7 +1207,7 @@ export const GroupReviewerPage = () => {
                                         }
 
                                         {extractedQA[questionIndex].quizType === 'MCQA' && (
-                                          <form className='grid-result gap-4'>
+                                          <form className={`grid ${extraSmallDevice ? 'grid-cols-1' : 'grid-cols-2'} gap-4`}>
                                             {shuffledChoices && shuffledChoices[questionIndex].map((choice, index) => {
                                               return (
                                                 <div
@@ -1184,7 +1223,7 @@ export const GroupReviewerPage = () => {
                                                     onChange={handleRadioChange}
                                                     checked={selectedChoice === choice} 
                                                   />
-                                                  <label htmlFor={`choice${index}`} className='ml-1 cursor-pointer'>{choice}</label>
+                                                  <label htmlFor={`choice${index}`} className={`mr-5 pt-1 cursor-pointer ${(extraLargeDevices || largeDevices) ? 'text-lg' : (mediumDevices || smallDevice) ? 'text-sm' : 'text-xs'} quicksand font-bold`}>{choice}</label>
                                                 </div>
                                               );
                                             })}
@@ -1192,7 +1231,7 @@ export const GroupReviewerPage = () => {
                                         )}
 
                                         {extractedQA[questionIndex].quizType === 'ToF' && (
-                                          <form className='grid-result gap-4'>
+                                          <form className={`grid ${extraSmallDevice ? 'grid-cols-1' : 'grid-cols-2'} gap-4`}>
                                             <div
                                               key={1}
                                               className='flex justify-center mbg-200 px-5 py-3 text-xl text-center mcolor-800 choice border-thin-800 rounded-[5px]'
@@ -1206,7 +1245,7 @@ export const GroupReviewerPage = () => {
                                                 onChange={handleRadioChange}
                                                 checked={selectedChoice === 'True'} 
                                               />
-                                              <label htmlFor={`choice${1}`} className='ml-1 cursor-pointer'>{'True'}</label>
+                                              <label htmlFor={`choice${1}`} className={`mr-5 pt-1 cursor-pointer ${(extraLargeDevices || largeDevices) ? 'text-lg' : (mediumDevices || smallDevice) ? 'text-sm' : 'text-xs'} quicksand font-bold`}>{'True'}</label>
                                             </div>
                                             <div
                                               key={2}
@@ -1221,14 +1260,14 @@ export const GroupReviewerPage = () => {
                                                 onChange={handleRadioChange}
                                                 checked={selectedChoice === 'False'} 
                                               />
-                                              <label htmlFor={`choice${2}`} className='ml-1 cursor-pointer'>{'False'}</label>
+                                              <label htmlFor={`choice${2}`} className={`mr-5 pt-1 cursor-pointer ${(extraLargeDevices || largeDevices) ? 'text-lg' : (mediumDevices || smallDevice) ? 'text-sm' : 'text-xs'} quicksand font-bold`}>{'False'}</label>
                                             </div>
                                           </form>
                                         )}
 
                                         {disableSubmitButton === false && (
-                                          <div className='flex justify-center mt-8'>
-                                            <button className='w-1/2 py-2 px-5 mbg-700 rounded-[5px] mcolor-100 text-lg' onClick={submitAnswer}>Submit Answer</button>
+                                          <div className='flex justify-center my-8'>
+                                            <button className={`w-1/2 py-2 px-5 mbg-800 rounded-[5px] mcolor-100  ${(extraLargeDevices || largeDevices) ? 'text-lg' : (mediumDevices || smallDevice) ? 'text-sm' : 'text-xs'}`} onClick={submitAnswer}>SUBMIT</button>
                                           </div>
                                         )}
                                       </div>
@@ -1241,8 +1280,8 @@ export const GroupReviewerPage = () => {
 
 
                                     {(isRunningReview === true) && (
-                                      <div className='timer-container px-10 py-3'>
-                                        <div className='rounded-[5px]' style={{ height: "15px", backgroundColor: "#B3C5D4" }}>
+                                      <div className={`${extraSmallDevice ? 'text-center text-xs px-5' : 'text-sm px-10'} timer-container mbg-input pt-3 pb-1`} style={{ zIndex: 55 }}>
+                                        <div className='rounded-[5px]' style={{ height: "5px", backgroundColor: "#B3C5D4" }}>
                                           <div
                                             className='rounded-[5px]'
                                             style={{
@@ -1253,7 +1292,7 @@ export const GroupReviewerPage = () => {
                                             />
                                         </div>
 
-                                        <h1 className='mcolor-900 text-lg pt-3'>
+                                        <h1 className='mcolor-900 text-sm'>
                                           Remaining time:{' '}
                                           {secondsReview} seconds
                                         </h1>
@@ -1264,9 +1303,9 @@ export const GroupReviewerPage = () => {
                                       <div>
 
                                         {/* question */}
-                                        <div className='flex items-center justify-between gap-4 mt-4 pb-8 text-center text-xl font-medium text-xl mcolor-900'>
+                                        <div className={`flex items-center justify-between gap-4 mt-4 pb-8 text-center font-medium  ${(extraLargeDevices || largeDevices) ? 'text-xl' : (mediumDevices || smallDevice) ? 'text-md' : 'text-sm'} mcolor-900`}>
                                           <div className={`w-full mbg-300 mcolor-900 px-10 pt-5 pb-8 w-full rounded-[5px] mcolor-800`} >
-                                            <p className='mcolor-800 text-lg font-medium text-start'>Type: {
+                                            <p className={`mcolor-800 ${(extraLargeDevices || largeDevices) ? 'text-md' : extraSmallDevice ? 'text-xs' : 'text-sm'} font-medium text-start`}>Type: {
                                               (extractedQA[questionIndex].quizType === 'ToF' && 'True or False') ||
                                               (extractedQA[questionIndex].quizType === 'FITB' && 'Fill In The Blanks') ||
                                               (extractedQA[questionIndex].quizType === 'Identification' && 'Identification') ||
@@ -1278,15 +1317,15 @@ export const GroupReviewerPage = () => {
                                             {/* questions */}
                                             {extractedQA[questionIndex].quizType === 'ToF' ? (
 
-                                              <p className='p-10'>{extractedQA[questionIndex].question}</p>
+                                              <p className={` ${extraSmallDevice ? 'text-sm' : 'text-md'} p-10`}>{extractedQA[questionIndex].question}</p>
                                               
                                             ) : (
-                                              <p className='p-10'>{extractedQA[questionIndex].question}</p>
+                                              <p className={` ${extraSmallDevice ? 'text-sm' : 'text-md'} p-10`}>{extractedQA[questionIndex].question}</p>
                                             )}
 
                                             <div className='flex justify-center'>
                                               <div
-                                                className={`dragHere w-1/2 h-[12vh] rounded-[5px] flex justify-center items-center px-10 mbg-100 ${borderMedium}`}
+                                                className={`dragHere ${(extraSmallDevice || smallDevice) ? 'w-full px-5 h-[8vh] text-sm' : 'w-1/2 px-10 h-[12vh] text-md'} rounded-[5px] flex justify-center items-center px-10 mbg-100 ${borderMedium}`}
                                                 onDrop={handleDrop}
                                                 onDragOver={handleDragOver}
                                               >
@@ -1316,20 +1355,20 @@ export const GroupReviewerPage = () => {
                                         </div>
 
                                         {(failCount === 2 || failCount === 1 || failCount === 0) && lostPoints === true && (
-                                          <div className='text-emerald-500 text-lg text-center mb-1'>
+                                          <div className={`text-emerald-500  ${(extraLargeDevices || largeDevices) ? 'text-lg' : (mediumDevices || smallDevice) ? 'text-sm' : 'text-xs'} text-center mb-1`}>
                                             You have gained 5 points as a result of {userList[userTurn]?.username}'s incorrect answer.
                                           </div>
                                         )}
 
                                         {gainedPoints === true && (
-                                          <div className='text-emerald-500 text-lg text-center mb-1'>{userList[userTurn]?.username} earned 5 points</div>
+                                          <div className={`text-emerald-500  ${(extraLargeDevices || largeDevices) ? 'text-lg' : (mediumDevices || smallDevice) ? 'text-sm' : 'text-xs'} text-center mb-1`}>{userList[userTurn]?.username} earned 5 points</div>
                                         )}
 
                                         {(selectedChoice !== "" && (extractedQA[questionIndex].quizType === 'MCQA' || extractedQA[questionIndex].quizType === 'ToF')) && 
                                           <div>
       
                                             {failCount < 2 && extractedQA[questionIndex].quizType === 'MCQA' && lostPoints === false && gainedPoints === false && (
-                                              <p className='pb-5 pt-4 text-center font-normal text-lg mcolor-800'>{userList[userTurn]?.userId !== userId ? `${userList[userTurn]?.username.charAt(0).toUpperCase() + userList[userTurn]?.username.slice(1)}`: 'You'} selected <span className='font-bold'>{selectedChoice}</span> - {failCount} chance left
+                                              <p className={`pb-5 pt-4 text-center font-normal  ${(extraLargeDevices || largeDevices) ? 'text-lg' : (mediumDevices || smallDevice) ? 'text-sm' : 'text-xs'} mcolor-800`}>{userList[userTurn]?.userId !== userId ? `${userList[userTurn]?.username.charAt(0).toUpperCase() + userList[userTurn]?.username.slice(1)}`: 'You'} selected <span className='font-bold'>{selectedChoice}</span> - {failCount} chance left
                                               </p>
                                             )}
                                           
@@ -1342,17 +1381,17 @@ export const GroupReviewerPage = () => {
                                         )}
 
                                         {(failCount < 2 && (extractedQA[questionIndex].quizType === 'Identification' || extractedQA[questionIndex].quizType === 'FITB')) && lostPoints === false && gainedPoints === false && (
-                                          <p className='pb-5 pt-2 text-center font-normal text-lg mcolor-800'>{userList[userTurn]?.userId !== userId ? `${userList[userTurn]?.username.charAt(0).toUpperCase() + userList[userTurn]?.username.slice(1)}`: 'You'} submitted a wrong answer. {failCount} chance left
+                                          <p className={`pb-5 pt-2 text-center font-normal  ${(extraLargeDevices || largeDevices) ? 'text-lg' : (mediumDevices || smallDevice) ? 'text-sm' : 'text-xs'} mcolor-800`}>{userList[userTurn]?.userId !== userId ? `${userList[userTurn]?.username.charAt(0).toUpperCase() + userList[userTurn]?.username.slice(1)}`: 'You'} submitted a wrong answer. {failCount} chance left
                                           </p>
                                         )}
                                             
 
                                         {extractedQA[questionIndex].quizType === 'MCQA' && (
-                                          <ul className='grid-result gap-4'>
+                                          <ul className={`grid ${extraSmallDevice ? 'grid-cols-1' : 'grid-cols-2'} gap-4`}>
                                             {shuffledChoices && shuffledChoices[questionIndex].map((choice, index) => {
                                               return (
                                                 <li
-                                                  className={`${choice === selectedChoice ? choice === extractedQA[questionIndex].answer ? 'mbg-700 mcolor-100' : 'bg-red mcolor-100' : "mbg-200 mcolor-800"} px-5 py-3 text-xl text-center choice border-thin-800 rounded-[5px]`}
+                                                  className={`${choice === selectedChoice ? choice === extractedQA[questionIndex].answer ? 'mbg-700 mcolor-100' : 'bg-red mcolor-100' : "mbg-200 mcolor-800"} px-5 py-3  ${(extraLargeDevices || largeDevices) ? 'text-lg' : (mediumDevices || smallDevice) ? 'text-sm' : 'text-xs'} quicksand font-bold text-center choice border-thin-800 rounded-[5px]`}
                                                   key={index}
                                                 >
                                                   {choice}
@@ -1363,15 +1402,15 @@ export const GroupReviewerPage = () => {
                                         )}
 
                                         {extractedQA[questionIndex].quizType === 'ToF' && (
-                                          <ul className='grid-result gap-4'>
+                                          <ul className={`grid ${extraSmallDevice ? 'grid-cols-1' : 'grid-cols-2'} gap-4`}>
                                             <li
-                                              className={`${'True' === selectedChoice ? 'True' === extractedQA[questionIndex].answer ? 'mbg-700 mcolor-100' : 'bg-red mcolor-100' : "mbg-200 mcolor-800"} px-5 py-3 text-xl text-center choice border-thin-800 rounded-[5px]`}
+                                              className={`${'True' === selectedChoice ? 'True' === extractedQA[questionIndex].answer ? 'mbg-700 mcolor-100' : 'bg-red mcolor-100' : "mbg-200 mcolor-800"} px-5 py-3  ${(extraLargeDevices || largeDevices) ? 'text-lg' : (mediumDevices || smallDevice) ? 'text-sm' : 'text-xs'} quicksand font-bold text-center choice border-thin-800 rounded-[5px]`}
                                               key={1}
                                             >
                                               {'True'}
                                             </li>
                                             <li
-                                              className={`${'False' === selectedChoice ? 'False' === extractedQA[questionIndex].answer ? 'mbg-700 mcolor-100' : 'bg-red mcolor-100' : "mbg-200 mcolor-800"} px-5 py-3 text-xl text-center choice border-thin-800 rounded-[5px]`}
+                                              className={`${'False' === selectedChoice ? 'False' === extractedQA[questionIndex].answer ? 'mbg-700 mcolor-100' : 'bg-red mcolor-100' : "mbg-200 mcolor-800"} px-5 py-3  ${(extraLargeDevices || largeDevices) ? 'text-lg' : (mediumDevices || smallDevice) ? 'text-sm' : 'text-xs'} quicksand font-bold text-center choice border-thin-800 rounded-[5px]`}
                                               key={1}
                                             >
                                               {'False'}
@@ -1383,7 +1422,7 @@ export const GroupReviewerPage = () => {
 
                                       </div>
                                       ) : (
-                                        <p className='text-center my-5 text-xl mcolor-500'>Nothing to show</p>
+                                        <p className={`text-center my-5  ${(extraLargeDevices || largeDevices) ? 'text-lg' : (mediumDevices || smallDevice) ? 'text-sm' : 'text-xs'} quicksand font-bold mcolor-500`}>Nothing to show</p>
                                       )
                                     }
 
@@ -1397,7 +1436,7 @@ export const GroupReviewerPage = () => {
                                   <div className='flex items-center justify-center h-full w-full'>
                                     <div className={`relative mbg-100 min-h-[75vh] ${(extraLargeDevices || largeDevices) ? 'w-1/2' : (mediumDevices || smallDevice) ? 'w-2/3' : 'w-full mx-2'} z-10 relative p-10 rounded-[5px]`}>
 
-                                      <p className='text-lg mcolor-900 font-medium mb-5'>Leaderboard</p>  
+                                      <p className={` ${(extraLargeDevices || largeDevices) ? 'text-lg' : (mediumDevices || smallDevice) ? 'text-sm' : 'text-xs'} mcolor-900 font-bold mb-5`}>Leaderboard</p>  
 
                                       <div className={`flex ${extraSmallDevice ? 'flex-col' : 'flex-row'} items-center justify-between mb-5 gap-5`}>
                                         <button onClick={resetAndStudy} className={`${extraSmallDevice ? 'w-full' : 'w-1/2'} py-2 rounded mcolor-900 mbg-200 border-thin-800`}>Reset Points & Study Again</button>
@@ -1428,7 +1467,7 @@ export const GroupReviewerPage = () => {
                                                 <p className={`mbg-200 shadows p-3 flex justify-between items-center font-medium rounded mcolor-800`}>
                                                   <span>
                                                     <WorkspacePremiumIcon fontSize="large" className={`mr-3 ${user.points !== 0 ? medalClass : ''}`} />
-                                                    <span className='text-xl pt-3'>
+                                                    <span className={` ${(extraLargeDevices || largeDevices) ? 'text-lg' : (mediumDevices || smallDevice) ? 'text-sm' : 'text-xs'} quicksand font-bold pt-3`}>
                                                       {user.username.charAt(0).toUpperCase() + user.username.slice(1)}:{" "}
                                                     </span>
                                                   </span>
@@ -1458,31 +1497,31 @@ export const GroupReviewerPage = () => {
                           ) : (
 
                             <div className='w-full'>
-
-                              {userListAssessment[0]?.userId === userId && 
-                                <button className='mt-5 px-5 py-2 rounded border-thin-800 mbg-100 shadows' disabled={successfullyInviting || successfullyInvited} onClick={() => inviteMembers("study session")} >{successfullyInviting ? `Sending an invitation link...` : successfullyInvited ? `Successfully sent an invitation link` : `Invite other members to join`}</button>
-                              }
+                              
+                              <div>
+                                {userList && userList.length > 1 && userList[0] && userList[0].userId === userId && 
+                                  <button className='mt-5 px-5 py-2 rounded border-thin-800 mbg-100 shadows' disabled={successfullyInviting || successfullyInvited} onClick={() => inviteMembers("study session")} >{successfullyInviting ? `Sending an invitation link...` : successfullyInvited ? `Successfully sent an invitation link` : `Invite other members to join`}</button>
+                                }
+                              </div>
                               
                           
 
-                              <div className='flex items-center justify-between mt-8'>
+                              <div className={`flex ${(extraSmallDevice || smallDevice) ? 'flex-col justify-start text-sm' : 'text-md flex-row justify-between items-center'} mt-8`}>
                                 
 
-                                <p className='text-xl text-center mcolor-800 py-3'>Waiting for other users to join...</p>
+                                <p className={`text-center mcolor-700 py-3`}>Waiting for other users to join...</p>
 
-
-
-                                <div className='flex justify-center'>
+                                <div className={`flex ${extraSmallDevice ? 'flex-col text-sm' : 'flex-row text-md'} justify-center gap-3`}>
                                 {userList && userList.length > 1 && userList[0] && userList[0].userId === userId && (
                                   <button className='mbg-700 mcolor-100 px-4 py-2 rounded' onClick={startStudySessionBtn}>Start Assessment</button>
                                   )}
                                   {!isStartStudyButtonStarted && (
-                                    <button className='bg-red mcolor-100 px-4 py-2 rounded ml-3' onClick={leaveReviewerPageRoom}>Leave Room</button>
+                                    <button className='bg-red mcolor-100 px-4 py-2 rounded' onClick={leaveReviewerPageRoom}>Leave Room</button>
                                   )}
                                 </div>
                               </div>
                               <div className='my-5'>
-                                <ul className='grid grid-cols-3 gap-5'>
+                                <ul className={`grid ${(extraLargeDevices || largeDevices) ? 'grid-cols-3' : extraSmallDevice ? 'grid-cols-1' : 'grid-cols-2'} gap-5`}>
                                   {userList && userList.map(user => (
                                     <li key={user?.userId} className={`text-xl text-center ${user?.userId === userList[0]?.userId ? 'mbg-700 mcolor-100' : 'mcolor-900 '} shadows p-5 rounded`}>
                                       <i className={`fa-solid fa-user ${user?.userId === userList[0]?.userId ? 'mbg-700 mcolor-100' : 'mcolor-700'}`} style={{ fontSize: '35px' }}></i> 

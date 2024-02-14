@@ -1001,7 +1001,7 @@ export const VirtualLibraryMain = () => {
 
 
   
-          <div className='flex-1 my-5 p-8'>    
+          <div className={`flex-1 my-5 py-8 ${extraSmallDevice ? 'px-3' : 'px-8'}`}>    
             <p className={`${(extraSmallDevice || smallDevice) ? 'text-xl w-full' : 'text-3xl  w-2/3'} font-medium`}><LabelIcon fontSize='large' className='mcolor-800-opacity' /> Virtual Library Room</p> 
 
 

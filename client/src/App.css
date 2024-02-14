@@ -1,7 +1,7 @@
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@100;200;300;400;500;600;700;800;900&family=Quicksand:wght@300;400;500;600;700&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,600;0,700;1,400;1,500;1,600;1,700&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&display=swap');
-
+@import url('https://fonts.googleapis.com/css2?family=Quicksand:wght@300..700&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -22,6 +22,9 @@ html {
 }
 .lato{
   font-family: 'Lato', sans-serif;
+}
+.quicksand{
+  font-family: 'Quicksand', sans-serif;
 }
 
 body {
@@ -377,6 +380,9 @@ input:focus{
 }
 .text-greenn{
   color: #476c50;
+}
+.text-light-green{
+  color: #30f55e;
 }
 .bg-red-500{
   background-color: rgb(247, 215, 215);

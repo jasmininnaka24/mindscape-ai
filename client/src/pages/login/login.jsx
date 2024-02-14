@@ -78,6 +78,8 @@ export const Login = () => {
     e.preventDefault();
     setSignInBtnClicked(true);
     setBtnMsg("Please wait...");
+
+    await axios.get(`${SERVER_URL}/users`);
   
     const data = {
       email: emailLogVal,
@@ -93,6 +95,9 @@ export const Login = () => {
   const handleCallBackResponse = async (response) => {
     setSignInBtnClicked(true);
     setBtnMsg("Please wait...");
+
+    await axios.get(`${SERVER_URL}/users`);
+
   
     let userObject;
     try {

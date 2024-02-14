@@ -208,7 +208,7 @@ export const PersonalAssessment = () => {
 
     }
 
-    if(isAssessmentDone === false) {
+    if(!isAssessmentDone) {
       fetchData();
     }
 
@@ -628,10 +628,10 @@ export const PersonalAssessment = () => {
     return (
       <div className='poppins mbg-200 mcolor-900 flex flex-col justify-center items-center' id='currSec'>
         
-        <div className='flex items-center justify-between w-3/4 pt-12 pb-8'>
-          <p className='text-center text-3xl font-medium mcolor-input mcolor-800'>Assessment for {materialTitle} of {materialCategory}</p>
+        <div className={`flex items-center justify-between ${(extraSmallDevice || smallDevice) ? 'w-full flex-col' : 'w-3/4 flex-row'} pt-12 pb-8`}>
+          <p className={`text-center ${(extraLargeDevices || largeDevices) ? 'text-2xl' : extraSmallDevice ? 'text-sm' : 'text-lg'} font-medium mcolor-input mcolor-800`}>Assessment for {materialTitle} of {materialCategory}</p>
 
-          <button className='mbg-700 mcolor-100 px-8 py-2 rounded'
+          <button className={`mbg-800-opacity mcolor-100 px-8 py-2 rounded ${ (extraSmallDevice || smallDevice) ? 'text-sm mt-3' : 'text-md'}`}
             onClick={() => {
               navigate(`/main/personal/study-area/personal-review/${materialId}`)
             }}
@@ -639,31 +639,29 @@ export const PersonalAssessment = () => {
         </div>
   
         <div className='flex items-center justify-center'>
-          {showAssessment === true && (
-            <div className='w-3/4 mbg-200 border-medium-800 rounded-[.8rem] p-11' id='assessmentSection'>
+          {showAssessment && (
+            <div className={`${(extraSmallDevice || smallDevice) ? 'w-full mx-1 p-5' : 'w-3/4 p-10'} mbg-100 border-medium-800 rounded`} id='assessmentSection'>
               
               <br />
-              {(showAnalysis === false && isAssessmentDone === true) && (
+              {(!showAnalysis && isAssessmentDone) && (
                 <div>
                   <div>
-                    <p className='text-center mcolor-800-opacity font-medium mb-8 text-xl'>Your score is: </p>
-                    <p className='text-center text-6xl font-bold mcolor-800 mb-8'>{score}/{extractedQA.length}</p>
+                    <p className={`text-center mcolor-800-opacity font-medium mb-8 ${extraSmallDevice ? 'text-sm' : 'text-lg'}`}>Your score is: </p>
+                    <p className={`text-center ${(extraLargeDevices || largeDevices) ? 'text-6xl' : extraSmallDevice ? 'text-2xl' : 'text-4xl'} font-bold mcolor-800 mb-8`}>{score}/{extractedQA.length}</p>
     
                     <div className='mb-16 flex items-center justify-center gap-5'>
     
-                   
-    
-                      <Link to={`/main/personal/study-area/personal-review/${materialId}`} className='border-thin-800 px-5 py-3 rounded-[5px] w-1/4 text-center btn-primary'>
-                        <button>Back to Study Area</button>
+                      <Link to={`/main/personal/study-area/personal-review/${materialId}`} className='border-thin-800 py-2 rounded-[5px] px-5 text-center btn-primary'>
+                        <button className={`${extraSmallDevice ? 'text-sm' : 'text-md'}`}>Back to Study Area</button>
                       </Link>
     
                     </div>
                   </div>
     
                 </div>
-              )}
+              )} 
             
-              {isRunning === true && (
+              {isRunning && (
                 <div className='timer-container px-10 pt-3 pb-1 mbg-200'>
                   <div className='rounded-[5px] mbg-500' style={{ height: "8px" }}>
                     <div
@@ -683,18 +681,19 @@ export const PersonalAssessment = () => {
                   </h1>
                 </div>
               )}
-      
+
+
               {Array.isArray(extractedQA) && shuffledChoices.length > 0 && extractedQA.map((item, index) => (
                 <div key={index} className='mb-12'>
-                  <p className='mcolor-900 text-xl mb-8'>{index + 1}. {item.question}</p>
-                  <ul className='grid-result gap-4 mcolor-800'>
+                  <p className={`mcolor-900 ${(extraLargeDevices || largeDevices) ? 'text-lg' : extraSmallDevice ? 'text-sm' : 'text-md'} mb-8`}>{index + 1}. {item.question}</p>
+                  <ul className={`grid ${(extraSmallDevice || smallDevice) ? 'grid-cols-1' : 'grid-cols-2'} gap-4 mcolor-800`}>
                     {item.quizType === 'MCQA' && (
                       shuffledChoices[index].map((choice, choiceIndex) => (
                         <div
                         key={choiceIndex}
                         className={`flex items-center justify-center px-5 py-3 text-center choice rounded-[5px] mbg-input
-                        ${(isSubmitted === true && extractedQA[index].answer === choice) ? 'border-thin-800-correct' : 
-                        (isSubmitted === true && selectedChoice[index] !== extractedQA[index].answer && selectedChoice[index] === choice) ? 'border-thin-800-wrong' : 'border-thin-800'}`}
+                        ${(isSubmitted && extractedQA[index].answer === choice) ? 'border-thin-800-correct' : 
+                        (isSubmitted && selectedChoice[index] !== extractedQA[index].answer && selectedChoice[index] === choice) ? 'border-thin-800-wrong' : 'border-thin-800'}`}
                         >
     
                           <input
@@ -710,7 +709,7 @@ export const PersonalAssessment = () => {
     
                           <div className=''>
                             <div className={`flex items-center`}>
-                              <label htmlFor={`choice-${choiceIndex}-${index}`} className={`mr-5 pt-1 cursor-pointer text-xl`}>
+                              <label htmlFor={`choice-${choiceIndex}-${index}`} className={`mr-5 pt-1 cursor-pointer ${(extraLargeDevices || largeDevices) ? 'text-lg' : extraSmallDevice ? 'text-sm' : 'text-md'} quicksand`}>
                                 {choice}
                               </label>
                             </div>
@@ -720,12 +719,12 @@ export const PersonalAssessment = () => {
                       )}
                   </ul>
                   {item.quizType === 'ToF' && (
-                    <div className='grid-result gap-4 mcolor-800'>
-                        <div
+                  <div className={`grid ${(extraSmallDevice || smallDevice) ? 'grid-cols-1' : 'grid-cols-2'} gap-4 mcolor-800`}>
+                      <div
                           key={1}
                           className={`flex items-center justify-center px-5 py-3 text-center choice rounded-[5px] mbg-input
-                          ${(isSubmitted === true && extractedQA[index].answer === 'True') ? 'border-thin-800-correct' : 
-                          (isSubmitted === true && selectedChoice[index] !== extractedQA[index].answer && selectedChoice[index] === 'True') ? 'border-thin-800-wrong' : 'border-thin-800'}`}
+                          ${(isSubmitted && extractedQA[index].answer === 'True') ? 'border-thin-800-correct' : 
+                          (isSubmitted && selectedChoice[index] !== extractedQA[index].answer && selectedChoice[index] === 'True') ? 'border-thin-800-wrong' : 'border-thin-800'}`}
                           >
     
                         <input
@@ -742,7 +741,7 @@ export const PersonalAssessment = () => {
     
                         <div className=''>
                           <div className={`flex items-center`}>
-                            <label htmlFor={`choice-${1}-${index}`} className={`mr-5 pt-1 cursor-pointer text-xl`}>
+                            <label htmlFor={`choice-${1}-${index}`}className={`mr-5 pt-1 cursor-pointer ${(extraLargeDevices || largeDevices) ? 'text-lg' : extraSmallDevice ? 'text-sm' : 'text-md'} quicksand`}>
                               {'True'}
                             </label>
                           </div>
@@ -752,8 +751,8 @@ export const PersonalAssessment = () => {
                       <div
                           key={2}
                           className={`flex items-center justify-center px-5 py-3 text-center choice rounded-[5px] mbg-input
-                          ${(isSubmitted === true && extractedQA[index].answer === 'False') ? 'border-thin-800-correct' : 
-                          (isSubmitted === true && selectedChoice[index] !== extractedQA[index].answer && selectedChoice[index] === 'False') ? 'border-thin-800-wrong' : 'border-thin-800'}`}
+                          ${(isSubmitted && extractedQA[index].answer === 'False') ? 'border-thin-800-correct' : 
+                          (isSubmitted && selectedChoice[index] !== extractedQA[index].answer && selectedChoice[index] === 'False') ? 'border-thin-800-wrong' : 'border-thin-800'}`}
                           >
     
                           <input
@@ -770,7 +769,7 @@ export const PersonalAssessment = () => {
     
                           <div className=''>
                             <div className={`flex items-center`}>
-                              <label htmlFor={`choice-${2}-${index}`} className={`mr-5 pt-1 cursor-pointer text-xl`}>
+                              <label htmlFor={`choice-${2}-${index}`} className={`mr-5 pt-1 cursor-pointer ${(extraLargeDevices || largeDevices) ? 'text-lg' : extraSmallDevice ? 'text-sm' : 'text-md'} quicksand`}>
                                 {'False'}
                               </label>
                             </div>
@@ -781,7 +780,7 @@ export const PersonalAssessment = () => {
                   {(item.quizType === 'Identification' || item.quizType === 'FITB') && (
                     <div>
                       <input
-                        className={`mb-5 w-full px-5 py-5 text-lg text-center choice rounded-[5px] shadows mbg-input ${
+                        className={`mb-5 w-full px-5 py-5 ${(extraLargeDevices || largeDevices) ? 'text-lg' : extraSmallDevice ? 'text-sm' : 'text-md'} quicksand text-center choice rounded-[5px] shadows mbg-input font-bold ${
                           isSubmitted && selectedChoice[index] && extractedQA[index] &&
                           selectedChoice[index].toLowerCase() === extractedQA[index].answer.toLowerCase()
                             ? 'border-thin-800-correct'
@@ -799,7 +798,7 @@ export const PersonalAssessment = () => {
                       />
     
                       <p className='correct-color text-center text-xl'>
-                        {isSubmitted === true &&
+                        {isSubmitted &&
                         selectedChoice[index] &&
                         extractedQA[index] &&
                         selectedChoice[index].toLowerCase() !== extractedQA[index].answer.toLowerCase() 
@@ -814,9 +813,9 @@ export const PersonalAssessment = () => {
                 </div>
               ))}
     
-              {(showAnalysis === false && isAssessmentDone === false) && (
+              {(!showAnalysis && !isAssessmentDone) && (
                 <div className='flex justify-center'>
-                  <button className='w-1/2 py-2 px-5 btn-800 rounded-[5px] mcolor-100 text-lg' onClick={() => submitAnswer()}>Submit Answers</button>
+                  <button className={`w-1/2 py-2 px-5 btn-800 rounded-[5px] mcolor-100 ${extraSmallDevice ? 'text-sm' : 'text-md'} outline-none`} onClick={() => submitAnswer()}>SUBMIT</button>
                 </div>
               )}
     
@@ -824,7 +823,7 @@ export const PersonalAssessment = () => {
             </div>
           )}
     
-          {showAnalysis === true && (
+          {showAnalysis && (
             <div className='mcolor-800 container'>
     
               <div className='mt-14 flex items-center justify-between'>
@@ -835,7 +834,7 @@ export const PersonalAssessment = () => {
     
                   <div className='flex items-center justify-center'>
                     <div className='w-full ml-14'>
-                      {assessmentCountMoreThanOne === true ? (
+                      {assessmentCountMoreThanOne ? (
                         <BarChartForAnalysis labelSet={["Pre-Assessment", "Last Assessment", "Latest Assessment"]} dataGathered={[preAssessmentScore, lastAssessmentScore, assessmentScore]} maxBarValue={extractedQA.length} />
                         ) : (
                         <BarChartForAnalysis labelSet={["Pre-Assessment", "Latest Assessment"]} dataGathered={[preAssessmentScore, assessmentScore]} maxBarValue={extractedQA.length} />
@@ -843,7 +842,7 @@ export const PersonalAssessment = () => {
                     </div>
                     <div className='w-full ml-12'>
     
-                      <p className='text-2xl'>{assessmentCountMoreThanOne === true ? 'Last Assessment' : 'Pre-assessment'} score: {assessmentCountMoreThanOne === true ? lastAssessmentScore : preAssessmentScore}/{extractedQA.length}</p>
+                      <p className='text-2xl'>{assessmentCountMoreThanOne ? 'Last Assessment' : 'Pre-assessment'} score: {assessmentCountMoreThanOne ? lastAssessmentScore : preAssessmentScore}/{extractedQA.length}</p>
                       <p className='text-2xl'>Assessment score: {assessmentScore}/{extractedQA.length}</p>
                       <p className='text-2xl font-bold'>Assessment improvement: {assessmentImp}%</p>
                       <p className='text-2xl font-bold'>Assessment score performance: {assessmentScorePerf}%</p>

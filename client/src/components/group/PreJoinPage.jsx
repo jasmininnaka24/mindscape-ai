@@ -330,35 +330,35 @@ export const PreJoinPage = (props) => {
               <div className={`flex ${(extraLargeDevices || largeDevices) ? 'gap-10' : 'gap-2'} ${(extraSmallDevice) ? 'flex-col-reverse' : 'flex-row'} w-full`}>
                 <div className={`${extraSmallDevice ? 'w-full mt-5' : 'w-2/3'} rounded-[5px] py-3 px-5`}>
                   <div className='w-full'>
-                    <motion.p className={`${(extraLargeDevices || largeDevices) ? 'text-2xl' : extraSmallDevice ? 'text-xl' : 'text-lg'} font-medium quicksand`}
+                    <motion.p className={`${(extraLargeDevices || largeDevices) ? 'text-2xl' : extraSmallDevice ? 'text-sm' : 'text-lg'} font-bold quicksand`}
                       initial={{ opacity: 0, y: 50 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ duration: 0.3, delay: 0.2 }}
                     >Group Learning Collaboration</motion.p >
                     <br />
-                    <motion.p className={`mcolor-900 text-justify my-1 ${(extraLargeDevices || largeDevices) ? 'text-lg' : (mediumDevices || extraSmallDevice) ? 'text-sm' : 'text-xs'}`}
+                    <motion.p className={`mcolor-800 text-justify my-1 ${(extraLargeDevices || largeDevices) ? 'text-md' : (mediumDevices || extraSmallDevice) ? 'text-xs' : 'text-sm'}`}
                       initial={{ opacity: 0, y: 50 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ duration: 0.5, delay: 0.4 }}
                     ><PushPinIcon className='text-red mr-1' />Your study sessions will be designed and formatted to accommodate the needs of group learners. If you want to explore design and format options tailored for other learning styles, you can adjust your profile configuration accordingly.</motion.p >
                     <br />
-                    <motion.p className={`mcolor-900 text-justify my-1 ${(extraLargeDevices || largeDevices) ? 'text-lg' : (mediumDevices || extraSmallDevice) ? 'text-sm' : 'text-xs'}`}
+                    <motion.p className={`mcolor-800 text-justify my-1 ${(extraLargeDevices || largeDevices) ? 'text-md' : (mediumDevices || extraSmallDevice) ? 'text-xs' : 'text-sm'}`}
                       initial={{ opacity: 0, y: 50 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ duration: 0.8, delay: 0.7 }}
                     ><PushPinIcon className='text-red mr-1' />Study Session, incorporating the Pomodoro technique, is meticulously crafted to amplify group productivity and focus. Through the Pomodoro technique's structured intervals of concentrated work, we foster efficient learning and collective concentration. Embrace this purposeful approach to learning, enhancing organization and maximizing study time within your group.</motion.p >
                     <br />
-                    <motion.p className={`mcolor-900 text-justify my-1 ${(extraLargeDevices || largeDevices) ? 'text-lg' : (mediumDevices || extraSmallDevice) ? 'text-sm' : 'text-xs'}`}
+                    <motion.p className={`mcolor-800 text-justify my-1 ${(extraLargeDevices || largeDevices) ? 'text-md' : (mediumDevices || extraSmallDevice) ? 'text-xs' : 'text-sm'}`}
                       initial={{ opacity: 0, y: 50 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ duration: 1, delay: 0.9 }}
                     ><PushPinIcon className='text-red mr-1' />After finishing an assessment, your group's performance data will seamlessly merge into the dashboard. This feature enables a comprehensive group overview of progress over time, fostering a deeper understanding of collective strengths and areas for improvement. Leverage this valuable insight to refine your group's learning strategy and pursue continuous growth together.</motion.p >
                     <br />
-                    <motion.p className={`mcolor-900 text-justify my-1 ${(extraLargeDevices || largeDevices) ? 'text-lg' : (mediumDevices || extraSmallDevice) ? 'text-sm' : 'text-xs'}`}
+                    <motion.p className={`mcolor-800 text-justify my-1 ${(extraLargeDevices || largeDevices) ? 'text-md' : (mediumDevices || extraSmallDevice) ? 'text-xs' : 'text-sm'}`}
                       initial={{ opacity: 0, y: 50 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ duration: 1.3, delay: 1.2 }}
-                    ><PushPinIcon className='text-red mr-1' />Please note that only the uploader of study materials has the authority to delete or update data. Be mindful that these actions are irreversible. Exercise caution when making changes to ensure the accuracy and completeness of your information. Prioritize data integrity to maintain a reliable and consistent record of your learning activities within the system.</motion.p >
+                    ><PushPinIcon className='text-red mr-1' />Please note that only the uploader of study materials has the authority to delete or update data. Be mindful that these actions are irreversible. Exercise caution when making changes to ensure the accuracy and completeness of your information. Prioritize data integrity to maintain a reliable and consistent record of your learning activities within the system.</motion.p>
                   </div>
 
                   {/* modal */}
@@ -431,16 +431,16 @@ export const PreJoinPage = (props) => {
                 <motion.div
                   className={`flex flex-col ${extraSmallDevice ? 'w-full mt-5' : 'w-1/3'} items-center`}>
 
-                  <motion.div className='btn-light mcolor-700 w-full p-5 rounded shadows'
+                  <motion.div className='btn-light mcolor-800 w-full p-5 rounded shadows'
                     initial={{ opacity: 0, y: 50 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.3, delay: 0.2 }}
                   >
-                    <p className={`${(extraLargeDevices || largeDevices || extraSmallDevice) ? 'text-lg' : 'text-sm'} font-bold mb-4`}>Study Material Information:</p>
+                    <p className={`${(extraLargeDevices || largeDevices || extraSmallDevice) ? 'text-lg' : 'text-sm'} quicksand font-bold mb-4`}>Study Material Information:</p>
       
-                    <p className={`mt-1 ${(extraLargeDevices || largeDevices || extraSmallDevice) ? 'text-md' : 'text-xs'}`}>Category: <span className='font-bold'>{materialCategory}</span></p>
-                    <p className={`mt-1 ${(extraLargeDevices || largeDevices || extraSmallDevice) ? 'text-md' : 'text-xs'}`}>Material Title: <span className='font-bold'>{materialTitle}</span></p>
-                    <p className={`mt-1 ${(extraLargeDevices || largeDevices || extraSmallDevice) ? 'text-md' : 'text-xs'}`}>Number of Questions: <span className='font-bold'>{materialNumQues}</span></p>
+                    <p className={`mt-1 ${(extraLargeDevices || largeDevices || extraSmallDevice) ? 'text-md' : 'text-xs'} quicksand font-medium`}>Category: <span className='font-bold'>{materialCategory}</span></p>
+                    <p className={`mt-1 ${(extraLargeDevices || largeDevices || extraSmallDevice) ? 'text-md' : 'text-xs'} quicksand font-medium`}>Material Title: <span className='font-bold'>{materialTitle}</span></p>
+                    <p className={`mt-1 ${(extraLargeDevices || largeDevices || extraSmallDevice) ? 'text-md' : 'text-xs'} quicksand font-medium`}>Number of Questions: <span className='font-bold'>{materialNumQues}</span></p>
                   </motion.div>
 
                   <br />
@@ -459,7 +459,7 @@ export const PreJoinPage = (props) => {
                       initial={{ opacity: 0, y: 50 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ duration: 0.5, delay: 0.4 }}>
-                      <button className={`w-full px-6 py-5 shadows rounded-[5px] ${(extraLargeDevices || largeDevices) ? 'text-lg' : 'text-sm'} btn-primary font-normal`} onClick={startStudySession}>Join Study Session</button>
+                      <button className={`w-full px-6 py-5 shadows rounded-[5px] ${(extraLargeDevices || largeDevices) ? 'text-md' : 'text-xs'} btn-primary font-normal`} onClick={startStudySession}>Join Study Session</button>
                     </motion.div>
                       
                     <motion.div className='w-full'
@@ -471,12 +471,12 @@ export const PreJoinPage = (props) => {
                         setShowAssessmentModalRem(true)
                       }}
                       >
-                      <button className={`w-full px-6 py-5 shadows rounded-[5px] ${(extraLargeDevices || largeDevices) ? 'text-lg' : 'text-sm'} mbg-800 mcolor-100 font-normal`} onClick={() => {
+                      <button className={`w-full px-6 py-5 shadows rounded-[5px] ${(extraLargeDevices || largeDevices) ? 'text-md' : 'text-xs'} mbg-800 mcolor-100 font-normal`} onClick={() => {
                         setShowAssessmentModalRem(true)
                       }}>Take {takeAssessment ? 'Assessment' : 'Pre-Assessment'}</button>
                     </motion.div>
 
-                      <motion.button className={`px-5 py-5 shadows w-full rounded-[5px] ${(extraLargeDevices || largeDevices) ? 'text-lg' : 'text-sm'} mbg-200 mcolor-800 border-medium-800 font-normal`}
+                      <motion.button className={`px-5 py-5 shadows w-full rounded-[5px] ${(extraLargeDevices || largeDevices) ? 'text-md' : 'text-xs'} mbg-200 mcolor-800 border-medium-800 font-normal`}
                       onClick={() => deleteStudyMaterial(materialId, materialTitle)}
                       initial={{ opacity: 0, y: 50 }}
                       animate={{ opacity: 1, y: 0 }}
@@ -485,7 +485,7 @@ export const PreJoinPage = (props) => {
                       >Delete Material</motion.button>
 
                     {!takeAssessment && (
-                      <motion.button className={`px-5 py-5 shadows w-full rounded-[5px] ${(extraLargeDevices || largeDevices) ? 'text-lg' : 'text-sm'} mbg-200 mcolor-800 border-medium-800 font-normal`}
+                      <motion.button className={`px-5 py-5 shadows w-full rounded-[5px] ${(extraLargeDevices || largeDevices) ? 'text-md' : 'text-xs'} mbg-200 mcolor-800 border-medium-800 font-normal`}
                       initial={{ opacity: 0, y: 50 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ duration: 1.3, delay: 1.2 }}

@@ -13,6 +13,9 @@ import EqualizerIcon from '@mui/icons-material/Equalizer';
 // responsive sizes
 import { useResponsiveSizes } from '../useResponsiveSizes'; 
 
+
+
+
 export const TopicPage = ({categoryFor}) => {
 
   const { extraSmallDevice, smallDevice, mediumDevices, largeDevices, extraLargeDevices } = useResponsiveSizes();

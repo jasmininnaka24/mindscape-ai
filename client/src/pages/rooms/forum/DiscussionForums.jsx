@@ -314,7 +314,7 @@ export const DiscussionForums = () => {
 
 
       {showRooms && (
-        <div className='flex-1 mbg-200 w-full pt-5 px-8 min-h-[100vh]'>
+        <div className={`flex-1 mbg-200 w-full pt-5 ${extraSmallDevice ? 'px-3' : 'px-8'} min-h-[100vh]`}>
       
           <div>
             <div className='h-[2vh]'></div>
@@ -559,7 +559,7 @@ export const DiscussionForums = () => {
 
 
       {showJoinedRooms && (
-        <div className='flex-1 mbg-200 w-full pt-5 px-8 min-h-[100vh]'>
+        <div className={`flex-1 mbg-200 w-full pt-5 ${extraSmallDevice ? 'px-3' : 'px-8'} min-h-[100vh]`}>
 
           <div>
             <div className='h-[2vh]'></div>
@@ -662,7 +662,7 @@ export const DiscussionForums = () => {
                     </div>
                   )}
                 </div>
-                <div className="chat-body">
+                <div className="chat-body h-[75vh]" style={{overflowY: 'auto'}}>
                   {roomList && roomList.length > 0 && roomList[currentIndex]?.users?.some((userr) => userr.userId === user?.id) && (
                     roomList[currentIndex] && (
                       <ScrollToBottom className="message-container">
@@ -679,7 +679,7 @@ export const DiscussionForums = () => {
                                 </div>
                                 <div className="message-meta">
                                   <p id="time" className={`${extraSmallDevice ? 'text-xs' : 'text-sm'}`}>{messageContent.time}</p>
-                                  <p id="author" className={`capitalize ${extraSmallDevice ? 'text-xs' : 'text-sm'}`}>{messageContent.username}</p>
+                                  <p id="author" className={`${extraSmallDevice ? 'text-xs' : 'text-sm'} ml-5 font-medium capitalize`}>{messageContent.username}</p>
                                 </div>
                               </div>
                             </div>

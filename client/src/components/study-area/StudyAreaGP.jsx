@@ -973,10 +973,10 @@ export const StudyAreaGP = (props) => {
                     </div>
                   )}
     
-                  <p className='mb-2 text-lg mcolor-900'>Group Code:</p>
+                  <p className={`mb-2 ${extraSmallDevice ? 'text-xs' : 'text-md'} mcolor-900`}>Group Code:</p>
                   <div className='w-full flex items-center'>
-                    <input type="text" value={code} disabled className={`${extraSmallDevice ? 'px-5 text-sm' : 'px-7 text-md'} mbg-200 border-thin-800 text-center w-full py-2 rounded-[3px]`} />
-                    <button onClick={copyGroupCode} className={`${extraSmallDevice ? 'px-5 text-sm' : 'px-7 text-md'} py-2 mbg-800 mcolor-100 rounded-[3px] border-thin-800`}>Copy</button>
+                    <input type="text" value={code} disabled className={`${extraSmallDevice ? 'px-5 text-xs' : 'px-7 text-sm'} mbg-200 border-thin-800 text-center w-full py-2 rounded-[3px]`} />
+                    <button onClick={copyGroupCode} className={`${extraSmallDevice ? 'px-5 text-xs' : 'px-7 text-sm'} py-2 mbg-800 mcolor-100 rounded-[3px] border-thin-800`}>Copy</button>
                   </div>
                   {isCodeCopied !== '' && (
                     <p className='text-center mcolor-700 mt-2'>{isCodeCopied}</p>
@@ -984,13 +984,13 @@ export const StudyAreaGP = (props) => {
     
     
                   <br />
-                  <p className='mb-2 text-lg mcolor-900'>Group Name:</p>
+                  <p className={`mb-2 ${extraSmallDevice ? 'text-sm' : 'text-md'} mcolor-900`}>Group Name:</p>
                   <div className='flex items-center'>
-                    <input type="text" value={groupName} className={`${extraSmallDevice ? 'px-5 text-sm' : 'px-7 text-md'} border-thin-800 text-center w-full py-2 rounded-[3px] ${(msg !== '' || UserId !== userHostId) ? 'mbg-200' :  ''}`} disabled={msg !== '' || UserId !== userHostId} onChange={(event) => setGroupName(event.target.value)} />
+                    <input type="text" value={groupName} className={`${extraSmallDevice ? 'px-5 text-xs' : 'px-7 text-sm'} border-thin-800 text-center w-full py-2 rounded-[3px] ${(msg !== '' || UserId !== userHostId) ? 'mbg-200' :  ''}`} disabled={msg !== '' || UserId !== userHostId} onChange={(event) => setGroupName(event.target.value)} />
     
                     <button
                       onClick={changeGroupName}
-                      className={`${extraSmallDevice ? 'px-5 text-sm' : 'px-7 text-md'} px-4 py-2 mbg-800 mcolor-100 rounded-[3px] border-thin-800`}
+                      className={`${extraSmallDevice ? 'px-5 text-xs' : 'px-7 text-sm'} px-4 py-2 mbg-800 mcolor-100 rounded-[3px] border-thin-800`}
                       disabled={msg !== '' || UserId !== userHostId}
                     >
                       Change
@@ -1005,85 +1005,76 @@ export const StudyAreaGP = (props) => {
     
                   {msg === '' && (
                     (UserId === userHostId) ? (
-                      <button className={`bg-red mcolor-100 rounded py-2 text-center my-5 w-full ${extraSmallDevice ? 'text-sm' : 'text-md'}`} onClick={(e) => deleteGroup(e)}>
+                      <button className={`bg-red mcolor-100 rounded py-2 text-center my-5 w-full ${extraSmallDevice ? 'text-xs' : 'text-sm'}`} onClick={(e) => deleteGroup(e)}>
                         Delete Group
                       </button>
                     ) : ( 
-                      <button className={`bg-red mcolor-100 rounded py-2 text-center my-5 w-full ${extraSmallDevice ? 'text-sm' : 'text-md'}`} onClick={(e) => leaveGroup(e)}>
+                      <button className={`bg-red mcolor-100 rounded py-2 text-center my-5 w-full ${extraSmallDevice ? 'text-xs' : 'text-sm'}`} onClick={(e) => leaveGroup(e)}>
                         Leave Group
                       </button>
                     )
                   )}
     
                   <br /><br />
-                  <p className='mb-2 text-lg mcolor-900'>Group Host:</p>
-                  <div className='flex justify-between my-2'>
+                  <p className={`mb-2 ${extraSmallDevice ? 'text-sm' : 'text-md'} mcolor-900`}>Group Host:</p>
+                  <div className={`flex justify-between my-2 ${extraSmallDevice ? 'text-xs' : 'text-sm'}`}>
                     <span>
                       <i className="fa-regular fa-user mr-3"></i>{`@${userHost}` || 'Deleted User'}
                     </span>
                   </div>
     
-                    <br />
+                  <br />
     
     
     
-                    {/* add group member */}
-                    <p className='mb-1'>Add a group member: </p>
-                    <div className='relative'>
-                      <SearchFunctionality data={data} onSearch={handleSearch} setSearchTermApp={setSearchTermApp} setSelectedDataId={setSelectedDataId} filteredData={filteredData} setFilteredData={setFilteredData} searchTermApp={searchTermApp} searchAssetFor={'search-username-for-group-creation'} />
-                      <button className='absolute right-5 top-1 text-3xl' onClick={addToChosenData}>+</button>
-                    </div>
+                  {/* add group member */}
+                  <p className={`mb-1 ${extraSmallDevice ? 'text-sm' : 'text-md'}`}>Add a group member: </p>
+                  <div className={`relative ${extraSmallDevice ? 'text-xs' : 'text-sm'}`}>
+                    <SearchFunctionality data={data} onSearch={handleSearch} setSearchTermApp={setSearchTermApp} setSelectedDataId={setSelectedDataId} filteredData={filteredData} setFilteredData={setFilteredData} searchTermApp={searchTermApp} searchAssetFor={'search-username-for-group-creation'} />
+                    <button className={`absolute right-5 top-1 ${extraSmallDevice ? 'text-lg' : 'text-2xl'}`} onClick={addToChosenData}>+</button>
+                  </div>
+  
     
-    
-    
-                    <br />
-                    <p className='mcolor-900 my-3'>Group Members:</p>
-                    <ul className='mt-5'>
-                    {Array.isArray(groupMemberIndex) &&
-                      groupMemberIndex.map((user, indexGroup) => {
-                        let targetValue = user.UserId;
-                        let filteredData = tempUserList.filter(item => item.id === targetValue);
-    
-                        // Check if the user is found in tempUserList
-                        if (!filteredData[0]) {
-                          // User not found, skip rendering this list item
-                          return null;
-                        }
-    
-                        return (
-                          <li key={indexGroup} className='flex justify-between my-2'>
-                            <span>
-                              <i className="fa-regular fa-user mr-3"></i>@{filteredData[0]?.username}
-                            </span>
-    
-                            {(msg !== '' || UserId === userHostId) && (
-                              <button
-                                onClick={() => {
-                                  if (window.confirm('Are you sure you want to delete this user?')) {
-                                    removeSelectedUser(filteredData[0]?.id, groupNameId);
-                                  }
-                                }}
-                                className='text-lg'
-                              >
-                                <i className="fa-solid fa-xmark"></i>
-                              </button>
-                            )}
-                          </li>
-                        );
-                      })}
-    
-    
-    
-                    </ul>
-                    {/* {userList !== tempUserList && (
-                      <div>
-                        <button onClick={updateUserList} className='mt-2 mbg-800 mcolor-100 w-full py-2 rounded-[5px]'>Update User List</button>
-    
-                        {isUserListUpdated !== "" && (
-                          <p className='text-center mcolor-700 my-3'>{isUserListUpdated}</p>
-                        )}
-                      </div>
-                    )} */}
+  
+                  <br />
+                  <p className={`mcolor-900 my-3 ${extraSmallDevice ? 'text-sm' : 'text-md'}`}>Group Members:</p>
+                  <ul className={`mt-5 ${extraSmallDevice ? 'text-xs' : 'text-sm'}`}>
+                  {Array.isArray(groupMemberIndex) &&
+                    groupMemberIndex.map((user, indexGroup) => {
+                      let targetValue = user.UserId;
+                      let filteredData = tempUserList.filter(item => item.id === targetValue);
+  
+                      // Check if the user is found in tempUserList
+                      if (!filteredData[0]) {
+                        // User not found, skip rendering this list item
+                        return null;
+                      }
+  
+                      return (
+                        <li key={indexGroup} className='flex justify-between my-2'>
+                          <span>
+                            <i className="fa-regular fa-user mr-3"></i>@{filteredData[0]?.username}
+                          </span>
+  
+                          {(msg !== '' || UserId === userHostId) && (
+                            <button
+                              onClick={() => {
+                                if (window.confirm('Are you sure you want to delete this user?')) {
+                                  removeSelectedUser(filteredData[0]?.id, groupNameId);
+                                }
+                              }}
+                              className={`${extraSmallDevice ? 'text-xs' : 'text-sm'}`}
+                            >
+                              <i className="fa-solid fa-xmark"></i>
+                            </button>
+                          )}
+                        </li>
+                      );
+                    })}
+  
+  
+  
+                  </ul>
                 </div>
     
               )}
@@ -1103,7 +1094,7 @@ export const StudyAreaGP = (props) => {
 
               <div className={`${(!extraLargeDevices || !largeDevices) && 'mt-4'}`}>
 
-                <button className='rounded-[8px] px-6 py-2 font-medium font-lg btn-primary' onClick={() => {
+                <button className={`rounded-[8px] py-2 font-medium ${extraSmallDevice ? 'text-xs px-4' : 'text-md px-6'} btn-primary`} onClick={() => {
                   materialCategories.length > 0
                     ? navigate(`/main/${categoryForToLower}/study-area/qa-gen/${categoryFor === 'Group' ? groupNameId : ''}`, {
                         state: {
@@ -1114,7 +1105,7 @@ export const StudyAreaGP = (props) => {
                 }}>Create Reviewer</button>
 
 
-                <button className='mx-1 mbg-800 mcolor-100 px-6 py-2 rounded-[5px] font-medium text-md' onClick={() => {
+                <button className={`mx-1 mbg-800 mcolor-100 py-2 rounded-[5px] font-medium ${extraSmallDevice ? 'text-xs px-4' : 'text-md px-6'}`} onClick={() => {
                   setHidden("")
                   setCategoryModal("")
                   }}>Add Category</button>
@@ -1126,13 +1117,15 @@ export const StudyAreaGP = (props) => {
                       <MoreVertIcon fontSize='medium' />
                   </button>
                 ) : (
+                  categoryFor === 'Group' && extraSmallDevice && (
                   <div className='w-full flex items-center justify-end pr-1 mt-2'>
-                    <button className='mcolor-500 py-2 rounded-[5px] font-medium font-lg' onClick={() => {
+                    <button className={`mcolor-500 py-2 rounded-[5px] font-medium ${extraSmallDevice ? 'text-xs' : 'text-md'}`} onClick={() => {
                       setHidden("")
                       setGroupMemberModal("")
                     }}>Group info
                     </button>
                   </div>
+                  )
                 )}
               </div>
             </div>
@@ -1154,25 +1147,25 @@ export const StudyAreaGP = (props) => {
               {lastMaterial !== null ? (
                 <div className='mbg-100 shadows px-5 py-5 rounded'>
                   <div className='relative'>
-                    <p className='text-xl mcolor-900 mb-5 font-medium'>Last Uploaded Reviewer: {lastMaterial.title} from {materialCategory}</p>
+                    <p className={`${extraSmallDevice ? 'text-md' : 'text-xl'} mcolor-700 mb-5`}>Last Uploaded Reviewer: <span className='font-bold quicksand mcolor-800'>{lastMaterial.title} from {materialCategory}</span></p>
       
                     <section className={`${extraSmallDevice ? '' : 'border'} scroll-box mbg-100 max-h-[68vh] min-h-[68vh]`}>
                       <div className={`gap-2 flex justify-between items-start ${extraSmallDevice ? 'mx-2' : 'mx-5'} my-8 ${(extraLargeDevices || largeDevices) ? 'flex-row' : 'flex-col'}`}>
                         <button
                           onClick={() => showContent(1)}
-                          className={`w-full py-2 rounded text-lg ${activeButton === 1 ? 'border-medium-800 mcolor-800 font-bold' : 'border-medium-700 mcolor-700 font-medium'}`}
+                          className={`w-full py-2 rounded ${extraSmallDevice ? 'text-sm' : 'text-md'} ${activeButton === 1 ? 'border-medium-800 mcolor-800 font-bold' : 'border-medium-700 mcolor-700 font-medium'}`}
                         >
                           Lesson
                         </button>
 
                         <button
                           onClick={() => showContent(3)}
-                          className={`w-full py-2 rounded text-lg ${activeButton === 3 ? 'border-medium-800 mcolor-800 font-bold' : 'border-medium-700 mcolor-700 font-medium'}`}
+                          className={`w-full py-2 rounded ${extraSmallDevice ? 'text-sm' : 'text-md'} ${activeButton === 3 ? 'border-medium-800 mcolor-800 font-bold' : 'border-medium-700 mcolor-700 font-medium'}`}
                         >
                           Notes Reviewer
                         </button>
 
-                        <Link to={`/main/${categoryForToLower}/study-area/${categoryFor.toLowerCase()}-review/${groupNameId !== undefined ? groupNameId + '/' : ''}${lastMaterial.id}`} className='mbg-800 mcolor-100 w-full py-2 rounded text-lg text-center border-medium-800'>
+                        <Link to={`/main/${categoryForToLower}/study-area/${categoryFor.toLowerCase()}-review/${groupNameId !== undefined ? groupNameId + '/' : ''}${lastMaterial.id}`} className={`mbg-800 mcolor-100 w-full py-2 rounded ${extraSmallDevice ? 'text-sm' : 'text-md'} text-center border-medium-800`}>
                           <button>
                             View Reviewer
                           </button>
@@ -1183,8 +1176,8 @@ export const StudyAreaGP = (props) => {
                         {showLesson && lastMaterial && <div>
                           
                           <p className='mbg-200 p-5 border-thin-800 rounded my-5'>
-                            <h3 className='font-medium mcolor-700 text-2xl text-center pt-3 pb-5'><span className='font-bold my-5 mcolor-800'>{lastMaterial.title}</span></h3>
-                            <p>
+                            <h3 className={`mcolor-700 ${extraSmallDevice ? 'text-lg' : 'text-2xl'} capitalize text-center pt-3 pb-5`}><span className='font-bold my-5 mcolor-800'>{lastMaterial.title}</span></h3>
+                            <p className={`${extraSmallDevice ? 'text-xs' : 'text-sm'}`}>
                               {lastMaterial.body}
                             </p>
                           </p>
@@ -1198,7 +1191,7 @@ export const StudyAreaGP = (props) => {
                             <h3 className='font-medium mcolor-700 text-2xl text-center my-8'><span className='font-bold mcolor-800'>Key Points</span></h3>
 
                             {materialRev && Array.isArray(materialRev) && materialRev.map((material) => (
-                              <div className='mb-10 mt-2 p-5 mbg-200 border-thin-800 rounded' key={material.question}>
+                              <div className={`mb-10 mt-2 p-5 mbg-200 border-thin-800 rounded ${extraSmallDevice ? 'text-xs' : 'text-sm'}`} key={material.question}>
                                 <p className='my-1 font-medium'><span className='mbg-700 mcolor-100 px-2 rounded'>Question:</span> <span className='mcolor-800 font-medium'>{material.question}</span></p>
                                 <p className='border-hr my-2'></p>
                                 <p className='font-medium'><span className='mbg-700 mcolor-100 px-2 rounded'>Answer:</span> <span className='mcolor-800 font-medium'>{material.answer}</span></p>
@@ -1227,18 +1220,18 @@ export const StudyAreaGP = (props) => {
           <div className={`flex flex-col justify-between ${(extraLargeDevices || largeDevices) ? 'w-1/4 p-5' : (smallDevice || extraSmallDevice) ? 'w-full px-10 mt-5' : 'w-1/3 p-5'} h-[95vh] sidebar mbg-800 mcolor-100 rounded`} style={{ overflowY: 'auto' }}>
             <div className="my-5 shelf-categories">
               
-              <p className="text-2xl mb-10 font-bold text-center opacity-90">{categoryFor === 'Group' ? `${groupName.toUpperCase()}'S ` : 'PERSONAL'} SHELF</p>
+              <p className={`${extraSmallDevice ? 'text-lg' : 'text-2xl'} mb-10 font-bold text-center opacity-90`}>{categoryFor === 'Group' ? `${groupName.toUpperCase()}'S ` : 'PERSONAL'} SHELF</p>
               
               <div>
                 {materialCategories.length > 0 ? (
-                  <div className='mbg-100 mcolor-900 rounded px-4 py-2 mb-2'>
+                  <div className={`${extraSmallDevice ? 'text-md' : 'text-lglg'} mbg-100 mcolor-900 rounded px-4 py-2 mb-2`}>
                     <span>{categoryFor === 'Personal' ? 'My' : 'Our'} Study Material</span>
                     <button onClick={toggleExpand} className='ml-2'>{!isExpanded ? <i className="fa-solid fa-chevron-down"></i> : <i className="fa-solid fa-chevron-up"></i>}</button>
                   </div>
                   ) : (
                     <p className='text-center mcolor-100 opacity-50'>No materials saved.</p>
                   )}
-                <div className={`expandable-container ${isExpanded ? 'expanded' : ''}`}>
+                <div className={`expandable-container ${extraSmallDevice ? 'text-xs' : 'text-sm'} ${isExpanded ? 'expanded' : ''}`}>
                   {materialCategories.length > 0 && (
                     isExpanded && materialCategories.map((category) => (
                     <div className="shelf-category my-2" key={category.id}>

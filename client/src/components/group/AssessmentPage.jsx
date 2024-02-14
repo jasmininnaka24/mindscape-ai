@@ -13,6 +13,13 @@ import { BarChartForAnalysis } from '../charts/BarChartForAnalysis';
 // responsive sizes
 import { useResponsiveSizes } from '../useResponsiveSizes'; 
 
+// icon imports
+import FiberManualRecordIcon from '@mui/icons-material/FiberManualRecord';
+import TextsmsRoundedIcon from '@mui/icons-material/TextsmsRounded';
+import CloseIcon from '@mui/icons-material/Close';
+
+
+
 const socket = io(SERVER_URL, {
   credentials: true,
   transports: ['websocket'],
@@ -40,7 +47,15 @@ export const AssessmentPage = (props) => {
   const [hideModal, setHideModal] = useState('hidden')
   const [isDone, setIsDone] = useState(false);
 
-  
+  // chat, user, leave toggle
+  const [toggledChatInfo, setToggledChatInfo] = useState('hidden');
+
+
+  const toggleChatInfo = () => {
+    setToggledChatInfo(toggledChatInfo === 'hidden' ? '' : 'hidden');
+  }
+
+
   
   const UserId = 1;
   
@@ -670,26 +685,36 @@ export const AssessmentPage = (props) => {
   return (
     <div className='poppins mbg-100 mcolor-900 min-h-[100vh]' id='currSec'>
 
+      {toggledChatInfo === 'hidden' && (
+        <div className={`${(extraLargeDevices || largeDevices) && 'hidden'} fixed bottom-5 right-5 btn-primary p-3 rounded-full`} style={{ zIndex: 60 }}>
+          <button onClick={toggleChatInfo}><TextsmsRoundedIcon sx={{ fontSize: '30px' }} /></button>
+        </div>
+      )}
+
       {showAssessment && (
         <div className='flex justify-betweeen'>
 
           {/* chat functionality goes here */}
-          <div className='w-1/2 relative fixed mbg-100 shadows rounded min-h-[100vh]'>
+          <div className={`${(extraLargeDevices || largeDevices) ? 'w-1/2 relative' : `${(smallDevice || mediumDevices) ? 'w-2/3' : 'w-full'}`} ${(!extraLargeDevices && !largeDevices) ? `fixed ${toggledChatInfo}` : ''} mbg-100 shadows rounded min-h-[100vh]`} style={{ zIndex: 50 }}>
+
+          <div className={`${(extraLargeDevices || largeDevices) && 'hidden'} w-full flex items-center justify-end pr-4 py-3`} style={{ zIndex: 60 }}>
+            <button onClick={toggleChatInfo}><CloseIcon sx={{ fontSize: '30px' }} /></button>
+          </div>
 
             <div className='flex justify-center'>
-              <div className='h-[65vh] mx-5  rounded fixed w-1/3'>
+              <div className={`h-[65vh] rounded fixed ${(extraLargeDevices || largeDevices) ? 'w-1/3' : `${(smallDevice || mediumDevices) ? 'w-2/3 px-3' : 'w-full px-3'}`}`}>
                 <div>
-                  <div className='flex items-center justify-between w-full pb-4 pt-5'>
+                  <div className={`flex ${(extraSmallDevice || smallDevice) ? 'flex-col justify-center items-center text-lg' : `${largeDevices ? 'text-xs' : 'text-md'} flex-row justify-between items-center pt-5`} w-full pb-4`}>
                     <p className='font-medium'><i class="fa-regular fa-user ml-1 mr-2"></i><span className='font-bold text-emerald-500'>{userListAssessment[0]?.username === username ? 'You' : userListAssessment[0]?.username}</span> - host</p>
-                    <div className='flex items-center'>
-                      <button className='mbg-200 px-2 py-2 rounded border-thin-800' onClick={() => setHideModal('')}>
+                    <div className={`flex items-center gap-3 ${(extraSmallDevice || smallDevice) ? `mt-5 w-full ${smallDevice ? 'flex-row' : 'flex-col'}` : ''}`}>
+                      <button className={`mbg-200 px-2 py-2 rounded border-thin-800 ${(extraSmallDevice || smallDevice) ? `${smallDevice ? isRunning ? 'w-1/2' : 'w-full' : 'w-full'}` : ''}`} onClick={() => setHideModal('')}>
                         Users 
                         <span className='ml-1 bg-red mcolor-100 px-2 rounded-full'>
                           {userListAssessment.length >= 1000 ? `${(userListAssessment.length / 1000).toFixed(0)}k` : userListAssessment.length}
                         </span>
                       </button>
                       {isStartAssessmentButtonStarted && (
-                        <button className='bg-red mcolor-100 px-4 py-2 rounded ml-3' onClick={leaveAssessmentPageRoom}>Leave Room</button>
+                        <button className={`bg-red mcolor-100 px-4 py-2 rounded ${(extraSmallDevice || smallDevice) ? `${smallDevice ? 'w-1/2' : 'w-full'}` : ''}`} onClick={leaveAssessmentPageRoom}>Leave Room</button>
                       )}
                     </div>
                   </div>
@@ -720,33 +745,37 @@ export const AssessmentPage = (props) => {
                 </div>
                 
                 {/* chat functionality */}
-                <div className="chat-window">
-                  <div className="chat-header">
-                    <p className='px-5'>Live Chat</p>
-                  </div>
-                  <div className="chat-body">
-                    <ScrollToBottom className="message-container">
-                      {messageList.map((messageContent) => {
-                        return (
-                          <div
-                            className="message"
-                            id={username === messageContent.author ? "you" : "other"}
-                          >
-                            <div>
-                              <div className="message-content">
-                                <p>{messageContent.message}</p>
-                              </div>
-                              <div className="message-meta">
-                                <p id="time">{messageContent.time}</p>
-                                <p id="author" className='capitalize'>{messageContent.author}</p>
-                              </div>
+
+              <div className={`relative border-medium-700 rounded ${(!extraLargeDevices && !largeDevices) && `h-[${isRunning ? smallDevice ? '65' : extraSmallDevice ? '58' : '70' : smallDevice ? '76' : extraSmallDevice ? '60' : '78'}vh]`}`}>
+                <div className="mbg-700 flex items-center justify-between px-5">
+                  <p className='py-2 mcolor-100'><FiberManualRecordIcon className='text-light-green' /> Live Chat</p>
+                </div>
+                <div className={`chat-body ${(!extraLargeDevices && !largeDevices) ? `h-[${isRunning ? '55' : '68'}vh]` : `h-[${isRunning ? '68' : '75'}vh]` } pb-10`} style={{overflowY: 'auto'}}>
+                  <ScrollToBottom className="message-container">
+                    {messageList.map((messageContent) => {
+                      return (
+                        <div
+                          className="message"
+                          id={username === messageContent.author ? "you" : "other"}
+                          key={messageContent.id} // Assuming there's an 'id' property for each message
+                        >
+                          <div>
+                            <div className="message-content py-2 px-3">
+                              <p className={`${extraSmallDevice ? 'text-xs' : 'text-sm'}`}>{messageContent.message}</p>
+                            </div>
+                            <div className="message-meta">
+                              <p id="time" className={`${extraSmallDevice ? 'text-xs' : 'text-sm'}`}>{messageContent.time}</p>
+                              <p className={`${extraSmallDevice ? 'text-xs' : 'text-sm'} ml-5 font-medium capitalize`}>{messageContent.author}</p>
                             </div>
                           </div>
-                        );
-                      })}
-                    </ScrollToBottom>
-                  </div>
-                  <div className="chat-footer">
+                        </div>
+                      );
+                    })}
+                  </ScrollToBottom>
+                </div>
+
+                <div className='w-full mbg-input absolute bottom-0 right-0 rounded flex items-center' style={{ zIndex: 80, borderTop: '2px solid #627271' }}>
+                  <div className='w-full px-5 py-2'>
                     <input
                       type="text"
                       placeholder="Hey..."
@@ -757,10 +786,12 @@ export const AssessmentPage = (props) => {
                       onKeyPress={(event) => {
                         event.key === "Enter" && sendMessage();
                       }}
+                      className="flex-85 bg-transparent w-full" // Adjust this class based on your CSS setup for input width
                     />
-                    <button onClick={sendMessage}>&#9658;</button>
                   </div>
+                  <button onClick={sendMessage} className="w-1/6 mbg-700 py-2 mcolor-100">&#9658;</button> {/* You can add your CSS class for button styling */}
                 </div>
+              </div>
      
               </div>
             </div>
@@ -769,31 +800,33 @@ export const AssessmentPage = (props) => {
           </div>
 
           {/* Assessment goes here */}
-          <div className='w-3/4 px-10 py-10' id='assessmentSection'>
+          <div className={`${(extraLargeDevices || largeDevices) ? 'w-3/4' : 'w-full'} px-10 py-10`} id='assessmentSection'>
             <div className='flex items-center justify-center opacity-50'>
-              <p className='text-center w-3/4'>Only the host can start the assessment, and select or input the answers collectively decided upon by the group.</p>
+              <p className={`text-center ${extraSmallDevice ? 'text-xs w-full px-5' : 'text-sm w-3/4'}`}>Only the host can start the assessment, and select or input the answers collectively decided upon by the group.</p>
             </div>
 
             {!isStartAssessmentButtonStarted ? (
               <div className='w-full'>
 
                 {userListAssessment[0]?.userId === userId && 
+                <div className={`flex items-center justify-center w-full`}>
                   <button className='mt-5 px-5 py-2 rounded border-thin-800 mbg-100 shadows' disabled={successfullyInviting || successfullyInvited} onClick={() => inviteMembers("assessment")} >{successfullyInviting ? `Sending an invitation link...` : successfullyInvited ? `Successfully sent an invitation link` : `Invite other members to join`}</button>
+                </div>
                 }
 
-                <div className='flex items-center justify-between mt-8'>
-                  <p className='text-xl text-center mcolor-800 py-3'>Waiting for other users to join...</p>
-                    <div className='flex justify-center'>
-                      {userListAssessment && userListAssessment.length > 1 && userListAssessment[0] && userListAssessment[0].userId === userId && (
-                        <button className='mbg-700 mcolor-100 px-4 py-2 rounded' onClick={startAssessmentBtn}>Start Assessment</button>
-                      )}
-                    <button className='bg-red mcolor-100 px-4 py-2 rounded ml-3' onClick={leaveAssessmentPageRoom}>Leave Room</button>
-                  </div>
+                <div className={`flex ${(extraSmallDevice || smallDevice) ? 'flex-col justify-start text-sm' : 'text-md flex-row justify-between items-center'} mt-8`}>
+                  <p className={`text-center mcolor-700 py-3`}>Waiting for other users to join...</p>
+                  <div className={`flex ${extraSmallDevice ? 'flex-col' : 'flex-row'} justify-center gap-3`}>
+                    {userListAssessment && userListAssessment.length > 1 && userListAssessment[0] && userListAssessment[0].userId === userId && (
+                      <button className='mbg-700 mcolor-100 px-4 py-2 rounded' onClick={startAssessmentBtn}>Start Assessment</button>
+                    )}
+                  <button className='bg-red mcolor-100 px-4 py-2 rounded' onClick={leaveAssessmentPageRoom}>Leave Room</button>
                 </div>
-                <div className='my-5'>
-                  <ul className='grid grid-cols-3 gap-5'>
+                </div>
+                <div className={`${extraSmallDevice ? 'my-10' : 'my-5'}`}>
+                  <ul className={`grid ${(extraLargeDevices || largeDevices) ? 'grid-cols-3 text-md' : extraSmallDevice ? 'grid-cols-1 text-xs' : 'grid-cols-2 text-sm'} gap-5`}>
                     {userListAssessment && userListAssessment.map(user => (
-                      <li key={user?.userId} className={`text-xl text-center ${user?.userId === userListAssessment[0]?.userId ? 'mbg-700 mcolor-100' : 'mcolor-900 '} shadows p-5 rounded`}>
+                      <li key={user?.userId} className={`text-center ${user?.userId === userListAssessment[0]?.userId ? 'mbg-700 mcolor-100' : 'mcolor-900 '} shadows p-5 rounded`}>
                         <i className={`fa-solid fa-user ${user?.userId === userListAssessment[0]?.userId ? 'mbg-700 mcolor-100' : 'mcolor-700'}`} style={{ fontSize: '35px' }}></i> 
                         <p>{user?.username.charAt(0).toUpperCase() + user?.username.slice(1)}</p>
                       </li>
@@ -804,7 +837,7 @@ export const AssessmentPage = (props) => {
 
             ) : (
               <div>
-                <p className='text-center text-3xl font-medium mcolor-700 pt-10'>Assessment for {materialTitle} of {materialCategory}</p>
+                <p className={`text-center ${(extraLargeDevices || largeDevices) ? 'text-3xl' : (mediumDevices || smallDevice) ? 'text-xl' : 'text-lg'} font-medium mcolor-700 pt-10`}>Assessment for {materialTitle} of {materialCategory}</p>
 
                 {(!showAnalysis && isAssessmentDone) && (
                   <div>
@@ -864,7 +897,7 @@ export const AssessmentPage = (props) => {
                 <br /><br />
 
                 {isRunning && (
-                  <div className='timer-container mbg-input px-10 py-3'>
+                  <div className={`${extraSmallDevice ? 'text-center text-xs px-5' : 'text-sm px-10'} timer-container mbg-input py-3`} style={{ zIndex: 55 }}>
                     <div className='rounded-[5px]' style={{ height: "8px", backgroundColor: "#B3C5D4" }}>
                       <div
                         className='rounded-[5px]'
@@ -880,7 +913,7 @@ export const AssessmentPage = (props) => {
                     <h1 className='mcolor-900 text-sm pt-1'>
                       Remaining time:{' '}
                       {hours > 0 && String(hours).padStart(2, "0") + " hours and "}
-                      {(hours > 0 || minutes > 0) && String(minutes).padStart(2, "0") + " minutes and "}{String(remainingSeconds).padStart(2, "0") + " seconds"}
+                      {(hours > 0 || minutes > 0) && String(minutes).padStart(2, "0") + " mins and "}{String(remainingSeconds).padStart(2, "0") + " seconds"}
                     </h1>
                   </div>
                 )}
@@ -889,8 +922,8 @@ export const AssessmentPage = (props) => {
 
                 {Array.isArray(extractedQAAssessment) && shuffledChoicesAssessment.length > 0 && extractedQAAssessment.map((item, index) => (
                   <div key={index} className='mb-20'>
-                    <p className='mcolor-900 text-xl mb-8'>{index + 1}. {item.question}</p>
-                    <ul className='grid-result gap-4 mcolor-800'>
+                    <p className={`mcolor-900 text-justify ${(extraLargeDevices || largeDevices) ? 'text-lg' : (mediumDevices || smallDevice) ? 'text-sm' : 'text-xs'} mb-8`}>{index + 1}. {item.question}</p>
+                    <ul className={`grid ${extraSmallDevice ? 'grid-cols-1' : 'grid-cols-2'} gap-4 mcolor-800`}>
                       {item.quizType === 'MCQA' && (
                         shuffledChoicesAssessment[index].map((choice, choiceIndex) => (
                           userListAssessment && userListAssessment.length > 0 && userListAssessment[0] && userListAssessment[0]?.userId === userId) ? (
@@ -915,7 +948,7 @@ export const AssessmentPage = (props) => {
                                   disabled={isAssessmentDone}
                                 />
                                   <div className={`flex items-center `}>
-                                    <label htmlFor={`choice-${choiceIndex}-${index}`} className={`mr-5 pt-1 cursor-pointer text-xl`}>
+                                    <label htmlFor={`choice-${choiceIndex}-${index}`} className={`mr-5 pt-1 cursor-pointer ${(extraLargeDevices || largeDevices) ? 'text-lg' : (mediumDevices || smallDevice) ? 'text-sm' : 'text-xs'} quicksand font-bold`}>
                                       {choice}
                                     </label>
                                   </div>
@@ -952,7 +985,7 @@ export const AssessmentPage = (props) => {
                                 }
 
                                 <div className={`flex items-center `}>
-                                  <label htmlFor={`choice-${choiceIndex}-${index}`} className={`mr-5 pt-1 cursor-pointer text-xl`}>
+                                  <label htmlFor={`choice-${choiceIndex}-${index}`} className={`mr-5 pt-1 cursor-pointer ${(extraLargeDevices || largeDevices) ? 'text-lg' : (mediumDevices || smallDevice) ? 'text-sm' : 'text-xs'} quicksand font-bold`}>
                                     {choice}
                                   </label>
                                 </div>
@@ -992,7 +1025,7 @@ export const AssessmentPage = (props) => {
 
                           <div className=''>
                             <div className={`flex items-center`}>
-                              <label htmlFor={`choice-${1}-${index}`} className={`mr-5 pt-1 cursor-pointer text-xl`}>
+                              <label htmlFor={`choice-${1}-${index}`} className={`mr-5 pt-1 cursor-pointer ${(extraLargeDevices || largeDevices) ? 'text-lg' : (mediumDevices || smallDevice) ? 'text-sm' : 'text-xs'} quicksand font-bold`}>
                                 {'True'}
                               </label>
                             </div>
@@ -1022,7 +1055,7 @@ export const AssessmentPage = (props) => {
 
                           <div className=''>
                             <div className={`flex items-center`}>
-                              <label htmlFor={`choice-${1}-${index}`} className={`mr-5 pt-1 cursor-pointer text-xl`}>
+                              <label htmlFor={`choice-${1}-${index}`} className={`mr-5 pt-1 cursor-pointer ${(extraLargeDevices || largeDevices) ? 'text-lg' : (mediumDevices || smallDevice) ? 'text-sm' : 'text-xs'} quicksand font-bold`}>
                                 {'True'}
                               </label>
                             </div>
@@ -1061,7 +1094,7 @@ export const AssessmentPage = (props) => {
 
                           <div className=''>
                             <div className={`flex items-center`}>
-                              <label htmlFor={`choice-${2}-${index}`} className={`mr-5 pt-1 cursor-pointer text-xl`}>
+                              <label htmlFor={`choice-${2}-${index}`} className={`mr-5 pt-1 cursor-pointer ${(extraLargeDevices || largeDevices) ? 'text-lg' : (mediumDevices || smallDevice) ? 'text-sm' : 'text-xs'} quicksand font-bold`}>
                                 {'False'}
                               </label>
                             </div>
@@ -1091,7 +1124,7 @@ export const AssessmentPage = (props) => {
 
                           <div className=''>
                             <div className={`flex items-center`}>
-                              <label htmlFor={`choice-${2}-${index}`} className={`mr-5 pt-1 cursor-pointer text-xl`}>
+                              <label htmlFor={`choice-${2}-${index}`} className={`mr-5 pt-1 cursor-pointer ${(extraLargeDevices || largeDevices) ? 'text-lg' : (mediumDevices || smallDevice) ? 'text-sm' : 'text-xs'} quicksand font-bold`}>
                                 {'False'}
                               </label>
                             </div>
@@ -1108,7 +1141,7 @@ export const AssessmentPage = (props) => {
 
 
                         <input
-                          className={`mb-5 w-full px-5 py-5 text-lg text-center choice rounded-[5px] box-shadoww ${
+                          className={`mb-5 w-full px-5 py-5 ${(extraLargeDevices || largeDevices) ? 'text-lg' : (mediumDevices || smallDevice) ? 'text-sm' : 'text-xs'} quicksand font-bold text-center choice rounded-[5px] box-shadoww ${
                             isSubmitted && selectedAssessmentAnswer[index] && extractedQAAssessment[index] &&
                             selectedAssessmentAnswer[index].toLowerCase() === extractedQAAssessment[index].answer.toLowerCase()
                               ? 'border-thin-800-correct'
@@ -1127,7 +1160,7 @@ export const AssessmentPage = (props) => {
                         />
 
 
-                        <p className='correct-color text-center text-xl'>
+                        <p className={`correct-color text-center ${(extraLargeDevices || largeDevices) ? 'text-lg' : (mediumDevices || smallDevice) ? 'text-sm' : 'text-xs'} font-bold`}>
                           {isSubmitted &&
                           selectedAssessmentAnswer[index] &&
                           extractedQAAssessment[index] &&
@@ -1167,7 +1200,7 @@ export const AssessmentPage = (props) => {
                       style={{ cursor: isSubmittedButtonClicked && idOfWhoSubmitted !== userId && usernameOfWhoSubmitted !== username ? 'not-allowed' : 'pointer' }}
                     >
                       {isSubmittedButtonClicked ? 
-                        (idOfWhoSubmitted === userId ? 'Confirm Submission' : `${usernameOfWhoSubmitted} clicks the submit button`) : 'Submit Answers'
+                        (idOfWhoSubmitted === userId ? 'Confirm Submission' : `${usernameOfWhoSubmitted} clicks the submit button`) : 'SUBMIT'
                       }
                     </button>
                   </div>
@@ -1192,121 +1225,6 @@ export const AssessmentPage = (props) => {
             )}
                   
           </div>
-        </div>
-      )}
-
-      {showAnalysis && (
-        <div className='mcolor-800 container'>
-
-          <div className='pt-14 flex items-center justify-between'>
-            <div>
-              <p className='text-center mx-10 mb-16 text-2xl'>You have a substantial <span className='font-bold'>{overAllPerformance.toFixed(2)}%</span> probability of success of taking the real-life exam and that the analysis classifies that you are <span className='font-bold'>{overAllPerformance.toFixed(2) >= 90 ? 'ready' : 'not yet ready'}</span> to take it as to your preference study profeciency target is <span className='font-bold'>90%</span>.</p>
-
-              <br /><br />
-
-              <div className='flex items-center justify-center'>
-                <div className='w-full ml-14'>
-                  {assessmentCountMoreThanOne ? (
-                    <BarChartForAnalysis labelSet={["Pre-Assessment", "Last Assessment", "Latest Assessment"]} dataGathered={[preAssessmentScore, lastAssessmentScore, assessmentScore]} maxBarValue={extractedQAAssessment.length} />
-                    ) : (
-                    <BarChartForAnalysis labelSet={["Pre-Assessment", "Latest Assessment"]} dataGathered={[preAssessmentScore, assessmentScore]} maxBarValue={extractedQAAssessment.length} />
-                  )}
-                </div>
-                <div className='w-full ml-12'>
-
-                  <p className='text-2xl'>{assessmentCountMoreThanOne ? 'Last Assessment' : 'Pre-assessment'} score: {assessmentCountMoreThanOne ? lastAssessmentScore : preAssessmentScore}/{extractedQAAssessment.length}</p>
-                  <p className='text-2xl'>Assessment score: {assessmentScore}/{extractedQAAssessment.length}</p>
-                  <p className='text-2xl font-bold'>Assessment improvement: {assessmentImp}%</p>
-                  <p className='text-2xl font-bold'>Assessment score performance: {assessmentScorePerf}%</p>
-
-                  <br /><br />
-                  <p className='text-2xl'>Completion time: {completionTime}</p>
-                  <p className='text-2xl font-bold'>Confidence level: {confidenceLevel}%</p>
-
-                </div>
-              </div>
-            </div>
-          </div>
-
-
-
-          {generatedAnalysis !== '' && (
-            <div>
-              <div className='mt-24'>
-                <p className='mb-5 font-bold text-2xl text-center'>ANALYSIS</p>
-                <p className='text-center text-xl mb-10'>{generatedAnalysis}</p>
-              </div>
-              {
-                (
-                  (completionTime && completionTime.match(/(\d+)\s*min/) ? parseInt(completionTime.match(/(\d+)\s*min/)[1], 10) : 0) >= Math.floor(extractedQAAssessment.length / 2) ||
-                  assessmentImp < studyProfeciencyTarget ||
-                  assessmentScorePerf < studyProfeciencyTarget
-                ) && (
-                  <div className='mt-20'>
-                    <p className='mb-5 font-bold text-2xl text-center'>Recommendations</p>
-
-                    {(completionTime && completionTime.match(/(\d+)\s*min/) ? parseInt(completionTime.match(/(\d+)\s*min/)[1], 10) : 0) >= Math.floor(extractedQAAssessment.length / 2) && (
-                      <p className='text-center text-xl mb-4'>
-                        <CheckIcon className='mr-2' />
-                        Challenge yourself to finish the assessment under{' '}
-                        <span className='font-bold'>
-                          {`${Math.floor(overAllItems / 120) > 0 ? (Math.floor(overAllItems / 120) === 1 ? '1 hour' : Math.floor(overAllItems / 120) + ' hours') + ' ' : ''}${Math.floor((overAllItems % 120) / 2) > 0 ? (Math.floor((overAllItems % 120) / 2) === 1 ? '1 min' : Math.floor((overAllItems % 120) / 2) + ' mins') + ' ' : ''}${((overAllItems % 2) * 30) > 0 ? ((overAllItems % 2) * 30) + ' second' + (((overAllItems % 2) * 30) !== 1 ? 's' : '') : ''}`}
-                        </span>
-                        {' '}
-                        to increase the confidence level until it gets to 100%.
-                      </p>
-                    )}
-
-                    {assessmentImp < studyProfeciencyTarget && (
-                      <p className='text-center text-xl mb-4'>
-                        <CheckIcon className='mr-2' />
-                        You may consider revisiting the lesson/quiz practice to enhance your understanding, which will lead to an increase in your <span className='font-bold'>Assessment Improvement</span> when you retake the quiz.
-                      </p>
-                    )}
-
-                    {assessmentScorePerf < studyProfeciencyTarget && (
-                      <p className='text-center text-xl mb-4'>
-                        <CheckIcon className='mr-2' />
-                        You can aim for a quiz score of 90% or higher, which will significantly enhance your overall <span className='font-bold'>Assessment Performance</span> reaching the 90% benchmark.
-                      </p>
-                    )}
-                  </div>
-                )
-              }
-
-
-
-            </div>
-          )}
-
-
-
-
-
-
-
-          <div className='mt-32 flex items-center justify-center gap-5'>
-            {/* <button className='border-thin-800 px-5 py-3 rounded-[5px] w-1/4' onClick={() => {
-              setShowAssessment(true)
-              setShowAnalysis(false)
-              setIsRunning(false)
-            }}>Review Answers</button> */}
-            
-            {groupId !== undefined ? (
-
-              <Link to={`/main/group/study-area/group-review/${groupId}/${materialId}`} className='border-thin-800 px-5 py-3 rounded-[5px] w-1/4 text-center'>
-              <button>Back to Study Area</button>
-            </Link>      
-            ) : (
-              <Link to={`/main/personal/study-area/personal-review/${materialId}`} className='border-thin-800 px-5 py-3 rounded-[5px] w-1/4 text-center'>
-              <button>Back to Study Area</button>
-            </Link>      
-            )}
-
-
-          </div>
-          <br />
-          <br />
         </div>
       )}
 

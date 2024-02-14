@@ -93,7 +93,7 @@ export const Sidebar = ({currentPage}) => {
             </div>
 
             <ul className='mcolor-100 w-full' style={{marginTop: `${
-              extraLargeDevices ? '-15rem' :
+              extraLargeDevices ? '-8rem' :
               (largeDevices || mediumDevices) ? '-8rem' :
               (smallDevice || extraSmallDevice) ? '-5rem' : '-8rem'
             }`}}>
