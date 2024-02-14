@@ -1015,11 +1015,11 @@ export const GroupReviewerPage = () => {
                           
                         {/* chat functionality */}
 
-                        <div className={`relative border-medium-700 rounded h-full`}>
+                        <div className={`relative border-medium-700 rounded h-[${(extraLargeDevices || largeDevices) ? !isRunningReview ? '78' : '85' : mediumDevices ? !isRunningReview ? '70' : '68' : smallDevice ? !isRunningReview ? '65' : '60' : !isRunningReview ? '60' : '55'}vh]`}>
                           <div className="mbg-700 flex items-center justify-between px-5">
                             <p className='py-2 mcolor-100'><FiberManualRecordIcon className='text-light-green' /> Live Chat</p>
                           </div>
-                          <div className={`chat-body h-[${(extraLargeDevices || largeDevices) ? !isRunningReview ? '78' : '75' : mediumDevices ? !isRunningReview ? '70' : '68' : smallDevice ? !isRunningReview ? '65' : '60' : !isRunningReview ? '60' : '55'}vh] pb-10`} style={{overflowY: 'auto'}}>
+                          <div className={`chat-body pb-10 h-full`} style={{overflowY: 'auto'}}>
 
                             
 
