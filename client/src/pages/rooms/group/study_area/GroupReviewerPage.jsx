@@ -1015,7 +1015,7 @@ export const GroupReviewerPage = () => {
                           
                         {/* chat functionality */}
 
-                        <div className={`relative border-medium-700 rounded`}>
+                        <div className={`relative border-medium-700 rounded h-full`}>
                           <div className="mbg-700 flex items-center justify-between px-5">
                             <p className='py-2 mcolor-100'><FiberManualRecordIcon className='text-light-green' /> Live Chat</p>
                           </div>

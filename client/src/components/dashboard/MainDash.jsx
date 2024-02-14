@@ -3,15 +3,23 @@ import React, { useEffect, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { useUser } from '../../UserContext'
 import { DateTime, Interval } from 'luxon';
+import { SERVER_URL } from '../../urlConfig';
+import { Sidebar } from '../sidebar/Sidebar';
+
+// icon imports
+import EqualizerIcon from '@mui/icons-material/Equalizer';
 import PushPinIcon from '@mui/icons-material/PushPin';
 import WatchLaterIcon from '@mui/icons-material/WatchLater';
 import PendingActionsIcon from '@mui/icons-material/PendingActions';
-import { SERVER_URL } from '../../urlConfig';
-import { Sidebar } from '../sidebar/Sidebar';
-import EqualizerIcon from '@mui/icons-material/Equalizer';
+
+// responsive sizes
+import { useResponsiveSizes } from '../useResponsiveSizes'; 
 
 
 export const MainDash = ({categoryFor}) => {
+
+  const { extraSmallDevice, smallDevice, mediumDevices, largeDevices, extraLargeDevices } = useResponsiveSizes();
+
 
   const categoryForLowerCase = categoryFor.toLowerCase();
 
@@ -316,10 +324,8 @@ export const MainDash = ({categoryFor}) => {
 
         <Sidebar currentPage={categoryFor === 'Personal' ? 'personal-study-area' : 'group-study-area'} />
 
-        <div className={`lg:w-1/6 h-[100vh] flex flex-col items-center justify-between py-2 lg:mb-0 ${
-          window.innerWidth > 1020 ? '' :
-          window.innerWidth <= 768 ? 'hidden' : 'hidden'
-        } mbg-800`}></div>
+        <div className={`h-[100vh] flex flex-col items-center justify-between py-2 ${extraLargeDevices && 'w-1/6'} mbg-800`}></div>
+
 
 
         <div className='flex-1 mbg-200 w-full p-5'>
