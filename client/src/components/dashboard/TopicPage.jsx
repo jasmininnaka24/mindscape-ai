@@ -8,12 +8,12 @@ import { useLocation } from 'react-router-dom';
 import { SERVER_URL } from '../../urlConfig';
 import { Sidebar } from '../sidebar/Sidebar';
 
+
+// icon imports
 import EqualizerIcon from '@mui/icons-material/Equalizer';
 
 // responsive sizes
 import { useResponsiveSizes } from '../useResponsiveSizes'; 
-
-
 
 
 export const TopicPage = ({categoryFor}) => {
@@ -50,48 +50,61 @@ export const TopicPage = ({categoryFor}) => {
   const [currentAnalysisId, setCurrectAnalysisId] = useState(0);
   const [currentIndex, setCurrectIndex] = useState(0);
   const [fetchedID, setFetchedID] = useState(0)
+  const [isDone, setIsDone] = useState(false);
+
+
+  const fetchData = async () => {
+    const extractedData = await axios.get(`${SERVER_URL}/DashForPersonalAndGroup/get-assessments/${materialID}`);
+
+    setStudyMaterials(extractedData.data)
+    const fetchedData = extractedData.data;
+    const fetchedId = fetchedData.map((item) => item.id).pop();
+
+    setFetchedID(fetchedId);
+
+
+    let data = extractedData.data;
+    
+    let preparedLength = 0;
+    let unpreparedLength = 0;
+    
+    data.forEach(item => {
+      const assessmentImp = parseFloat(item.assessmentImp);
+      const assessmentScorePerf = parseFloat(item.assessmentScorePerf);
+      const confidenceLevel = parseFloat(item.confidenceLevel);
+    
+      const totalScore = (assessmentImp + assessmentScorePerf + confidenceLevel) / 3;
+    
+      if (totalScore >= 90.00) {
+        preparedLength += 1;
+      } else {
+        unpreparedLength += 1;
+      }
+    });
+    
+
+    setPreparedLength(preparedLength)
+    setUnpreparedLength(unpreparedLength)
+    
+    
+  }
 
 
   useEffect(() => {
-    const fetchData = async () => {
-      const extractedData = await axios.get(`${SERVER_URL}/DashForPersonalAndGroup/get-assessments/${materialID}`);
 
-      setStudyMaterials(extractedData.data)
-      const fetchedData = extractedData.data;
-      const fetchedId = fetchedData.map((item) => item.id).pop();
-
-      setFetchedID(fetchedId);
-
-
-      let data = extractedData.data;
-      
-      let preparedLength = 0;
-      let unpreparedLength = 0;
-      
-      data.forEach(item => {
-        const assessmentImp = parseFloat(item.assessmentImp);
-        const assessmentScorePerf = parseFloat(item.assessmentScorePerf);
-        const confidenceLevel = parseFloat(item.confidenceLevel);
-      
-        const totalScore = (assessmentImp + assessmentScorePerf + confidenceLevel) / 3;
-      
-        if (totalScore >= 90.00) {
-          preparedLength += 1;
-        } else {
-          unpreparedLength += 1;
-        }
-      });
-      
-
-      setPreparedLength(preparedLength)
-      setUnpreparedLength(unpreparedLength)
-      
-      
-    }
-
-    fetchData();
     
-  }, [materialID])
+    if (!isDone) {
+      setIsDone(true)
+    }
+  
+  }, [UserId]);
+  
+  useEffect(() => {
+    if (isDone) {
+      fetchData(filter);
+      setIsDone(false)
+    }
+  }, [isDone, materialID])
 
 
 
@@ -152,20 +165,18 @@ export const TopicPage = ({categoryFor}) => {
 
       <Sidebar currentPage={categoryFor === 'Personal' ? 'personal-study-area' : 'group-study-area'} />
 
-      <div className={`lg:w-1/6 h-[100vh] flex flex-col items-center justify-between py-2 lg:mb-0 ${
-        window.innerWidth > 1020 ? '' :
-        window.innerWidth <= 768 ? 'hidden' : 'hidden'
-      } mbg-800`}></div>
+      <div className={`h-[100vh] flex flex-col items-center justify-between py-2 ${extraLargeDevices && 'w-1/6'} mbg-800`}></div>
 
 
-        <div className='flex-1 mbg-200 w-full h-full p-8'>
-        {/* navbar */}
 
-        <div className='flex items-center mt-2'>
+      <div className={`flex-1 mbg-200 w-full ${extraSmallDevice ? 'px-1' : 'px-5'} py-5 h-full`}>
+      {/* navbar */}
+
+        <div className='flex items-center mt-6'>
           <EqualizerIcon sx={{ fontSize: 38 }} className='mr-1 mb-1 mcolor-700' />
           <div className='mcolor-900 flex justify-between items-center'>
             <div className='flex justify-between items-start'>
-              <div className='flex gap-3 items-center text-2xl'>
+              <div className={`flex gap-3 items-center ${(extraLargeDevices || largeDevices) ? 'text-2xl' : extraSmallDevice ? 'text-lg' : 'text-xl'}`}>
                 <button onClick={() => {
                   let linkBack = ''
                   if (categoryFor === 'Personal') {
@@ -193,7 +204,7 @@ export const TopicPage = ({categoryFor}) => {
 
 
         <div className='flex flex-col'>
-          <div className='mt-6 w-full flex items-center justify-center mbg-input rounded border-medium-800 py-6'>
+          <div className={`my-6 w-full flex ${(extraLargeDevices) ? 'flex-row' : 'flex-col-reverse'} items-center justify-center mbg-input rounded border-medium-800 py-4`}>
             <div className='w-full'>
               <p className='text-center mcolor-800 mb-2 font-bold'>Overall Performance</p>
               <BarChart
@@ -210,19 +221,19 @@ export const TopicPage = ({categoryFor}) => {
             </div>
           </div>
 
-          <div className='border-medium-800 rounded-[5px] overflow-x-auto overflow-container mt-5 mb-3' style={{ height: '100%' }}>
-            <table className='w-full rounded-[5px] text-center mbg-100'>
+          <div className='mbg-input border-medium-800 min-h-[40vh] rounded-[5px] mt-7 overflow-x-auto'>
+            <table className={`w-full rounded-[5px] ${extraSmallDevice ? 'text-sm' : 'text-md'}`}>
               <thead className='mbg-800 mcolor-100'>
                 <tr>
-                  <td className='text-center py-3 font-medium'>#</td>
-                  <td className='text-center py-3 font-medium'>Date</td>
-                  <td className='text-center py-3 font-medium'>Pre-Assessment <br />Score</td>
-                  <td className='text-center py-3 font-medium'>Assessment <br /> Score</td>
-                  <td className='text-center py-3 font-medium'>Completion <br /> Time</td>
-                  <td className='text-center py-3 font-medium'>Improvement</td>
-                  <td className='text-center py-3 font-medium'>Score <br /> Performance</td>
-                  <td className='text-center py-3 font-medium'>Confidence <br /> Level</td>
-                  <td className='text-center py-3 font-medium'>Preparation <br /> Status</td>
+                  <td className='text-center py-3 px-5 font-medium'>#</td>
+                  <td className='text-center py-3 px-5 font-medium'>Date</td>
+                  <td className='text-center py-3 px-5 font-medium'>Pre-Assessment <br />Score</td>
+                  <td className='text-center py-3 px-5 font-medium'>Assessment <br /> Score</td>
+                  <td className='text-center py-3 px-5 font-medium'>Completion <br /> Time</td>
+                  <td className='text-center py-3 px-5 font-medium'>Improvement</td>
+                  <td className='text-center py-3 px-5 font-medium'>Score <br /> Performance</td>
+                  <td className='text-center py-3 px-5 font-medium'>Confidence <br /> Level</td>
+                  <td className='text-center py-3 px-5 font-medium'>Preparation <br /> Status</td>
                 </tr>
               </thead>
               <tbody>

@@ -10,8 +10,9 @@ import PersonPinOutlinedIcon from '@mui/icons-material/PersonPinOutlined';
 import PeopleAltOutlinedIcon from '@mui/icons-material/PeopleAltOutlined';
 import LocalLibraryOutlinedIcon from '@mui/icons-material/LocalLibraryOutlined';
 import QuestionAnswerOutlinedIcon from '@mui/icons-material/QuestionAnswerOutlined';
-import SpaIcon from '@mui/icons-material/Spa';
 import AccountCircleOutlinedIcon from '@mui/icons-material/AccountCircleOutlined';
+import MenuOpenIcon from '@mui/icons-material/MenuOpen';
+import SpaIcon from '@mui/icons-material/Spa';
 
 // responsive sizes
 import { useResponsiveSizes } from '../useResponsiveSizes'; 
@@ -55,13 +56,13 @@ export const Sidebar = ({currentPage}) => {
   return (
     <div>
       <motion.button
-        className='fixed left-0 top-0'
+        className='fixed left-0 top-0 px-3 py-1 mbg-800 mcolor-100 mb-3 rounded-[1px]'
         onClick={toggleSidebar}
         initial={{ opacity: 0, y: -50 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.2 }}
       >
-        Open
+        <MenuOpenIcon />
       </motion.button>
 
       {/* Sidebar */}

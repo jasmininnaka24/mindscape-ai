@@ -1,9 +1,15 @@
 import React, { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom';
-import LogoutIcon from '@mui/icons-material/Logout';
 import { fetchUserData } from '../../../userAPI';
 import { useUser } from '../../../UserContext';
+
+// responsive sizes
+import { useResponsiveSizes } from '../../useResponsiveSizes'; 
+
 export const Navbar = (props) => {
+
+  const { extraSmallDevice, largeDevices, extraLargeDevices } = useResponsiveSizes();
+
 
   const { linkBack, linkBackName, currentPageName, username } = props;
   const [openLogoutModal, setOpenLogoutModal] = useState(false);
@@ -66,7 +72,7 @@ export const Navbar = (props) => {
   return (
     <div className='mcolor-900 flex justify-between items-center relative'>
       <div className='flex justify-between items-start'>
-        <div className='flex gap-3 items-center text-2xl'>
+        <div className={`flex gap-3 items-center ${(extraLargeDevices || largeDevices) ? 'text-2xl' : extraSmallDevice ? 'text-lg' : 'text-xl'}`}>
           <Link className='font-medium' to={linkBack}>{linkBackName}</Link>
           <i class="fa-solid fa-chevron-right"></i>
           <p className='font-bold'>{currentPageName}</p>
