@@ -697,7 +697,7 @@ export const AssessmentPage = (props) => {
           {/* chat functionality goes here */}
           <div className={`${(extraLargeDevices || largeDevices) ? 'w-1/2 relative' : `${(smallDevice || mediumDevices) ? 'w-2/3' : 'w-full'}`} ${(!extraLargeDevices && !largeDevices) ? `fixed ${toggledChatInfo}` : ''} mbg-100 shadows rounded min-h-[100vh]`} style={{ zIndex: 50 }}>
 
-          <div className={`${(extraLargeDevices || largeDevices) && 'hidden'} w-full flex items-center justify-end pr-4 py-3`} style={{ zIndex: 60 }}>
+          <div className={`${(extraLargeDevices || largeDevices) && 'hidden'} w-full flex items-center justify-end pr-4 pt-3`} style={{ zIndex: 60 }}>
             <button onClick={toggleChatInfo}><CloseIcon sx={{ fontSize: '30px' }} /></button>
           </div>
 
@@ -746,11 +746,11 @@ export const AssessmentPage = (props) => {
                 
                 {/* chat functionality */}
 
-              <div className={`relative border-medium-700 rounded ${(!extraLargeDevices && !largeDevices) && `h-[${isRunning ? smallDevice ? '65' : extraSmallDevice ? '58' : '70' : smallDevice ? '76' : extraSmallDevice ? '60' : '78'}vh]`}`}>
+              <div className={`relative border-medium-700 rounded`}>
                 <div className="mbg-700 flex items-center justify-between px-5">
                   <p className='py-2 mcolor-100'><FiberManualRecordIcon className='text-light-green' /> Live Chat</p>
                 </div>
-                <div className={`chat-body ${(!extraLargeDevices && !largeDevices) ? `h-[${isRunning ? '55' : '68'}vh]` : `h-[${isRunning ? '68' : '75'}vh]` } pb-10`} style={{overflowY: 'auto'}}>
+                <div className={`chat-body h-[${(extraLargeDevices || largeDevices) ? !isRunning ? '78' : '75' : mediumDevices ? !isRunning ? '70' : '68' : smallDevice ? !isRunning ? '65' : '60' : !isRunning ? '60' : '55'}vh] pb-10`} style={{overflowY: 'auto'}}>
                   <ScrollToBottom className="message-container">
                     {messageList.map((messageContent) => {
                       return (
@@ -897,7 +897,7 @@ export const AssessmentPage = (props) => {
                 <br /><br />
 
                 {isRunning && (
-                  <div className={`${extraSmallDevice ? 'text-center text-xs px-5' : 'text-sm px-10'} timer-container mbg-input py-3`} style={{ zIndex: 55 }}>
+                  <div className={`${extraSmallDevice ? 'text-center text-xs px-5' : 'text-sm px-10'} timer-container mbg-input pt-1 pb-1`} style={{ zIndex: 55 }}>
                     <div className='rounded-[5px]' style={{ height: "8px", backgroundColor: "#B3C5D4" }}>
                       <div
                         className='rounded-[5px]'
