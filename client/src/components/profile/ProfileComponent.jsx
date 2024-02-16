@@ -796,7 +796,7 @@ export const ProfileComponent = () => {
                     .map((material, index) => {
                       const category = sharedMaterialsCategory[index]?.category || 'Category not available';
                       const user = sharedMaterialsCategoryUsers[index]?.username || 'Deleted user';
-                      const userIdMaterial = sharedMaterialsCategoryUsers[index]?.UserId || 'Deleted user';
+                      const userIdMaterial = material?.UserId || 'Deleted user';
                       const bookmarks = sharedMaterialsCategoryBookmarks[index] || [];
 
                       // Find the latest bookmark timestamp or default to 0 if no bookmarks

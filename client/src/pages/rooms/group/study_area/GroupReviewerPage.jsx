@@ -1015,7 +1015,7 @@ export const GroupReviewerPage = () => {
                           
                         {/* chat functionality */}
 
-                        <div className={`relative border-medium-700 rounded h-[${(extraLargeDevices || largeDevices) ? !isRunningReview ? '78' : '85' : mediumDevices ? !isRunningReview ? '70' : '68' : smallDevice ? !isRunningReview ? '65' : '60' : !isRunningReview ? '60' : '55'}vh]`}>
+                        <div className={`relative border-medium-700 rounded ${(extraLargeDevices || largeDevices) ? isRunning ? 'h-[78vh]' : 'h-[85vh]' : mediumDevices ? isRunning ? 'h-[68vh]' : 'h-[70vh]' : smallDevice ? isRunning ? 'h-[60vh]' : 'h-[65vh]' : isRunning ? 'h-[55vh]' : 'h-[60vh]'}`}>
                           <div className="mbg-700 flex items-center justify-between px-5">
                             <p className='py-2 mcolor-100'><FiberManualRecordIcon className='text-light-green' /> Live Chat</p>
                           </div>
@@ -1513,7 +1513,7 @@ export const GroupReviewerPage = () => {
 
                                 <div className={`flex ${extraSmallDevice ? 'flex-col text-sm' : 'flex-row text-md'} justify-center gap-3`}>
                                 {userList && userList.length > 1 && userList[0] && userList[0].userId === userId && (
-                                  <button className='mbg-700 mcolor-100 px-4 py-2 rounded' onClick={startStudySessionBtn}>Start Assessment</button>
+                                  <button className='mbg-700 mcolor-100 px-4 py-2 rounded' onClick={startStudySessionBtn}>Start Study Session</button>
                                   )}
                                   {!isStartStudyButtonStarted && (
                                     <button className='bg-red mcolor-100 px-4 py-2 rounded' onClick={leaveReviewerPageRoom}>Leave Room</button>

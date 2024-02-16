@@ -6,10 +6,17 @@ import './studyArea.css';
 
 import { QA_AI_API } from '../../urlConfig';
 
+// responsive sizes
+import { useResponsiveSizes } from '../useResponsiveSizes'; 
+
+
 
 pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.js`;
 
 export const DropZoneComponent = (props) => {
+
+  const { extraSmallDevice, smallDevice, mediumDevices, largeDevices, extraLargeDevices } = useResponsiveSizes();
+
 
   const mammoth = require('mammoth');
 
@@ -125,6 +132,7 @@ export const DropZoneComponent = (props) => {
   };
 
   const intervalRef = useRef(null);
+
   const handleGenerateClick = async (event) => {
     event.preventDefault();
 
@@ -192,7 +200,7 @@ export const DropZoneComponent = (props) => {
   }, [pdfDetails, setPDFDetails])
 
   return (
-    <div className='w-full '>
+    <div className='w-full'>
       <form className="pdf-form px-16">
         <div className="form-group">
           <div

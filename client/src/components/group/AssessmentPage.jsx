@@ -746,7 +746,7 @@ export const AssessmentPage = (props) => {
                 
                 {/* chat functionality */}
 
-              <div className={`relative border-medium-700 rounded h-[${(extraLargeDevices || largeDevices) ? !isRunning ? '78' : '85' : mediumDevices ? !isRunning ? '70' : '68' : smallDevice ? !isRunning ? '65' : '60' : !isRunning ? '60' : '55'}vh]`}>
+              <div className={`relative border-medium-700 rounded ${(extraLargeDevices || largeDevices) ? isRunning ? 'h-[78vh]' : 'h-[85vh]' : mediumDevices ? isRunning ? 'h-[68vh]' : 'h-[70vh]' : smallDevice ? isRunning ? 'h-[60vh]' : 'h-[65vh]' : isRunning ? 'h-[55vh]' : 'h-[60vh]'}`}>
                 <div className="mbg-700 flex items-center justify-between px-5">
                   <p className='py-2 mcolor-100'><FiberManualRecordIcon className='text-light-green' /> Live Chat</p>
                 </div>

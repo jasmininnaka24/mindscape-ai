@@ -579,7 +579,7 @@ export const UpdateQAGen = ({ groupId, categoryFor }) => {
                 className={`mbg-800 mcolor-100 py-2 ${extraSmallDevice ? 'text-sm px-5 w-full my-2 text-md' : smallDevice ? 'text-md px-5' : 'text-lg px-10'} font-medium rounded-[5px] ${isLoading ? 'wrong-bg' : ''}`}
                 disabled={isLoading} 
               >
-                {isLoading ? 'Saving...' : 'Update Data'}
+                {isLoading ? 'Updating...' : 'Update Data'}
               </button>
             </form>
           </div>

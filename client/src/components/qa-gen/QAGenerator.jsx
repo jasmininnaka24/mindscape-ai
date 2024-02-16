@@ -13,10 +13,18 @@ import { SERVER_URL } from '../../urlConfig';
 
 import AccountTreeIcon from '@mui/icons-material/AccountTree';
 
+// responsive sizes
+import { useResponsiveSizes } from '../useResponsiveSizes'; 
+
+
+
 export const PDFDetails = createContext();
 export const GeneratedQAResult = createContext();
 
 export const QAGenerator = (props) => {
+
+
+  const { extraSmallDevice, smallDevice, mediumDevices, largeDevices, extraLargeDevices } = useResponsiveSizes();
 
 
   const { materialFor, groupNameId } = props;  
@@ -61,67 +69,71 @@ export const QAGenerator = (props) => {
   const fetchData = async () => {
 
     let studyMaterialCategoryLink = '';
+    let studyMaterialResponse = '';
 
     if (materialFor === 'Personal') {
       studyMaterialCategoryLink = `${SERVER_URL}/studyMaterialCategory/personal-study-material/${materialFor}/${UserId}`;
 
       
-      await axios.get(studyMaterialCategoryLink);
+      studyMaterialResponse = await axios.get(studyMaterialCategoryLink);
 
 
     } else if (materialFor === 'Group') {
       studyMaterialCategoryLink = `${SERVER_URL}/studyMaterialCategory/${materialFor}/${groupNameId}`;
 
-      await axios.get(studyMaterialCategoryLink);
+      studyMaterialResponse = await axios.get(studyMaterialCategoryLink);
 
     } else {
 
       // studyMaterialLink = `${SERVER_URL}/studyMaterial/study-material-group-category/${categoryFor}/${groupNameId}`;
-      const sharedStudyMaterialResponse = await axios.get(`${SERVER_URL}/studyMaterialCategory/shared-categories`);
-      console.log('API Response:', sharedStudyMaterialResponse.data);
+      studyMaterialResponse = await axios.get(`${SERVER_URL}/studyMaterialCategory/shared-categories`);
+      console.log('API Response:', studyMaterialResponse.data);
       
-      // Check if sharedStudyMaterialResponse.data is an array before using map
-      if (Array.isArray(sharedStudyMaterialResponse.data)) {
-        const uniqueCategories = [...new Set(sharedStudyMaterialResponse.data.map(item => item.category))];
-        
-        // Sort the unique categories alphabetically
-        const sortedCategories = uniqueCategories.sort((a, b) => a.localeCompare(b));
-        
-        // Create an array of promises for each unique category
-        const promiseArray = sortedCategories.map(async (category) => {
-          // Find the first occurrence of the category in the original array
-          const firstOccurrence = sharedStudyMaterialResponse.data.find(item => item.category === category);
-        
-          // Simulate an asynchronous operation (replace with your actual asynchronous operation)
-          await new Promise(resolve => setTimeout(resolve, 100));
-        
-          // Return a new object with the category details
-          return {
-            id: firstOccurrence.id,
-            category: category,
-            categoryFor: firstOccurrence.categoryFor,
-            studyPerformance: firstOccurrence.studyPerformance,
-            createdAt: firstOccurrence.createdAt,
-            updatedAt: firstOccurrence.updatedAt,
-            StudyGroupId: firstOccurrence.StudyGroupId,
-            UserId: firstOccurrence.UserId
-          };
-        });
-        
-        // Use Promise.all to wait for all promises to resolve
-        const sortedCategoryObjects = await Promise.all(promiseArray);
-        console.log(sortedCategoryObjects);
-        setStudyMaterialCategories(sortedCategoryObjects);
-        
-        if (sortedCategoryObjects.length > 0) {
-          setStudyMaterialCategoryId(sortedCategoryObjects[0].id);
-        }
-      } else {
-        console.error("sharedStudyMaterialResponse.data is not an array");
-      }
-      
+
     }
 
+
+
+    // Check if studyMaterialResponse.data is an array before using map
+    if (Array.isArray(studyMaterialResponse.data)) {
+      const uniqueCategories = [...new Set(studyMaterialResponse.data.map(item => item.category))];
+      
+      // Sort the unique categories alphabetically
+      const sortedCategories = uniqueCategories.sort((a, b) => a.localeCompare(b));
+      
+      // Create an array of promises for each unique category
+      const promiseArray = sortedCategories.map(async (category) => {
+        // Find the first occurrence of the category in the original array
+        const firstOccurrence = studyMaterialResponse.data.find(item => item.category === category);
+      
+        // Simulate an asynchronous operation (replace with your actual asynchronous operation)
+        await new Promise(resolve => setTimeout(resolve, 100));
+      
+        // Return a new object with the category details
+        return {
+          id: firstOccurrence.id,
+          category: category,
+          categoryFor: firstOccurrence.categoryFor,
+          studyPerformance: firstOccurrence.studyPerformance,
+          createdAt: firstOccurrence.createdAt,
+          updatedAt: firstOccurrence.updatedAt,
+          StudyGroupId: firstOccurrence.StudyGroupId,
+          UserId: firstOccurrence.UserId
+        };
+      });
+      
+      // Use Promise.all to wait for all promises to resolve
+      const sortedCategoryObjects = await Promise.all(promiseArray);
+      console.log(sortedCategoryObjects);
+      setStudyMaterialCategories(sortedCategoryObjects);
+      
+      if (sortedCategoryObjects.length > 0) {
+        setStudyMaterialCategoryId(sortedCategoryObjects[0].id);
+      }
+    } else {
+      console.error("studyMaterialResponse.data is not an array");
+    }
+    
     
 
   }
@@ -389,10 +401,8 @@ export const QAGenerator = (props) => {
 
       <Sidebar currentPage={materialFor === 'Personal' ? 'personal-study-area' : 'group-study-area'} />
 
-      <div className={`lg:w-1/6 h-[100vh] flex flex-col items-center justify-between py-2 lg:mb-0 ${
-        window.innerWidth > 1020 ? '' :
-        window.innerWidth <= 768 ? 'hidden' : 'hidden'
-      } mbg-800`}></div>
+      <div className={`h-[100vh] flex flex-col items-center justify-between py-2 ${extraLargeDevices && 'w-1/6'} mbg-800`}></div>
+
 
 
       <div className='flex-1 mbg-200 w-full p-8'>
@@ -412,7 +422,7 @@ export const QAGenerator = (props) => {
             
 
             <div className='poppins mcolor-900 my-4'>
-              <div className="border-medium-800 gen-box flex justify-between items-center rounded shadows">
+              <div className="border-medium-800 gen-box flex justify-between items-center rounded my-3 h-[80vh]">
                 <div className='box1 mbg-100 border-box w-1/2'>
                   <div className='flex justify-center items-center dropzone'>
                     <DropZoneComponent numInp={numInp} setNumInp={setNumInp} setPDFDetails={setPDFDetails} pdfDetails={pdfDetails}  />
