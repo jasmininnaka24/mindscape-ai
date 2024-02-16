@@ -41,6 +41,7 @@ export const MainDash = ({categoryFor}) => {
   const [performanceStatusArr, setPerformanceStatusArr] = useState([])
   const [loading, setLoading] = useState(true);
   const [isDone, setIsDone] = useState(false);
+  const [switchbtnClicked, setSwitchbtnClicked] = useState(false);
 
 
   const { groupId } = useParams()
@@ -51,6 +52,18 @@ export const MainDash = ({categoryFor}) => {
 
   
   async function fetchLatestMaterialStudied() {
+
+    let currentTag = tag;
+
+    if (!switchbtnClicked) {
+      setTag('Own Record')
+      setSwitchbtnClicked(true);
+    } else {
+      currentTag = tag === 'Own Record' ? 'Bookmarked' : 'Own Record'
+      setTag(currentTag)
+    }
+
+
     try {  
 
       let renderLink = ''
@@ -106,7 +119,7 @@ export const MainDash = ({categoryFor}) => {
 
 
 
-      if (tag === 'Own Record') {
+      if (currentTag === 'Own Record') {
       
         if (ownRecordMaterials.length > 0) {
           fetchedStudyMaterialsCategory = await Promise.all(
@@ -300,6 +313,7 @@ export const MainDash = ({categoryFor}) => {
     }
 
     setLoading(false)
+
   }
 
 
@@ -438,8 +452,8 @@ export const MainDash = ({categoryFor}) => {
                   <div className='absolute bottom-0 right-0 w-full mbg-input'>
                     <div className={`flex justify-end py-2  ${extraSmallDevice ? 'px-2' : 'px-5'}`}>
                       <Link to={`/main/${groupId === undefined ? 'personal' : 'group'}/tasks/${groupId === undefined ? '' : groupId}`}>
-                        <button className='px-4 py-1 text-sm mbg-800 mcolor-100 rounded'>
-                          View All Tasks
+                        <button className='px-4 py-2 text-sm mbg-800 mcolor-100 rounded'>
+                          Go to Task Page
                         </button>
                       </Link>
                     </div>
@@ -490,9 +504,9 @@ export const MainDash = ({categoryFor}) => {
                     {materialCategory && (
                       <div className='absolute bottom-0 right-0 w-full mbg-input'>
                         <div className={`flex justify-end py-2  ${extraSmallDevice ? 'px-2' : 'px-5'}`}>
-                          <Link to={`/main/${categoryForLowerCase}/study-area/${categoryForLowerCase}-review-start/${materialId}`}>
-                            <button className='px-4 py-1 text-sm mbg-800 mcolor-100 rounded'>
-                              View Reviewer
+                          <Link to={`/main/${categoryForLowerCase}/study-area`}>
+                            <button className='px-4 py-2 text-sm mbg-800 mcolor-100 rounded'>
+                              Go to Study Area
                             </button>
                           </Link>
                         </div>
@@ -510,10 +524,10 @@ export const MainDash = ({categoryFor}) => {
 
             <div className={`w-full border-medium-800 rounded-[5px] ${extraSmallDevice ? 'px-2' : 'px-5'} py-5 min-h-[${extraSmallDevice ? '50' : '80'}vh] relative mbg-input`}>
       
-              <div className={`flex ${extraSmallDevice ? 'flex-col' : 'flex-row'} items-center justify-between mt-2 gap-2`}>
-                <p className={`font-medium ${extraSmallDevice ? 'text-md' : 'text-xl'} mcolor-800`}>{tag === 'Own Record' ? 'Own Material' : 'Bookmarked'} Records</p>
+            <div className={`flex ${extraSmallDevice ? 'flex-col' : 'flex-row'} items-center justify-between mt-2 gap-2`}>
+                <p className={`font-medium ${extraSmallDevice ? 'text-md' : 'text-xl'} mcolor-800`}>{tag === 'Own Record' ? 'Own Record' : 'Bookmarked'} Records</p>
                 <button className={`mbg-700 px-4 py-2 mcolor-100 rounded ${extraSmallDevice ? 'text-xs' : 'text-sm'}`} onClick={() =>{
-                  setTag(tag === 'Own Record' ? 'Bookmarked' : 'Own Record')
+                  fetchLatestMaterialStudied()
                 }}>Switch to {tag === 'Own Record' ? 'Bookmarked' : 'Own Record'} Records</button>
               </div>
       
@@ -553,11 +567,10 @@ export const MainDash = ({categoryFor}) => {
                 </tbody>
               </table>
               
-
               <div className='absolute bottom-0 right-0 w-full mbg-input'>
                 <div className={`flex justify-end py-2  ${extraSmallDevice ? 'px-2' : 'px-5'}`}>
                   {materialCategories.length > 0 && (groupId !== undefined ? (
-                    <button className='px-4 py-1 text-sm mbg-800 mcolor-100 rounded' onClick={() => {
+                    <button className='px-4 py-2 text-sm mbg-800 mcolor-100 rounded' onClick={() => {
                       navigate(`/main/group/dashboard/category-list/${groupId}`, {
                       state: {
                         tag: tag
@@ -565,7 +578,7 @@ export const MainDash = ({categoryFor}) => {
                     })
                     }}>View All Subjects</button>
                   ) : (
-                      <button className='px-4 py-1 text-sm mbg-800 mcolor-100 rounded' onClick={() => {
+                      <button className='px-4 py-2 text-sm mbg-800 mcolor-100 rounded' onClick={() => {
                         navigate('/main/personal/dashboard/category-list', {
                           state: {
                             tag: tag

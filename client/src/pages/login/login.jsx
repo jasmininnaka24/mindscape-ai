@@ -56,7 +56,7 @@ export const Login = () => {
           if (isGroupSession) {
             navigate(`/main/group/study-area/group-review/${groupId}/${materialId}`);
           } else {
-            navigate('/main');
+            navigate('/main/personal/dashboard');
           }
         }, 2000);
       }, 100);
