@@ -11,7 +11,7 @@ export const LEARNER_TYPE_API = "http://127.0.0.1:8000";
 
 
 // export const CLIENT_URL = "http://localhost:3000";
-export const SERVER_URL = "https://ec2-52-65-157-12.ap-southeast-2.compute.amazonaws.com:3001";
+export const SERVER_URL = "https://mindscapeai.online:3001";
 
 // NOT HOSTED
 export const CLIENT_ID = "18641853465-5fifaj11js27u2friocstqne8kt6977q.apps.googleusercontent.com";
