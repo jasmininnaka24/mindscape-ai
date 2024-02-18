@@ -28,6 +28,7 @@ export const CreateGroupComp = (props) => {
   const [listedData, setListedData] = useState([]);
   const [searchTermApp, setSearchTermApp] = useState('');
   const [groupNameInp, setGroupNameInp] = useState('');
+  const [groupStudyProf, setGroupStudyProf] = useState(90);
   const [enteredCodeRoom, setEnteredCodeRoom] = useState('')
   const [errorMessage, setErrorMessage] = useState();
   const [successfullyJoinedMessage, setSuccessfullyJoinedMessage] = useState();
@@ -120,6 +121,7 @@ export const CreateGroupComp = (props) => {
           groupName: groupNameInp,
           role: 'Super Admin',
           code: generateRandomString(),
+          studyProfTarget: groupStudyProf,
           UserId: UserId,
         };
     
@@ -266,6 +268,34 @@ export const CreateGroupComp = (props) => {
                  onChange={((e) => {setGroupNameInp(e.target.value)})} className='border-medium-800-scale px-5 py-2 w-full rounded-[5px]' />
 
                 <br />
+
+                <p className='mb-3'>Set Study Profeciency Target</p>
+
+                <select
+                  name=""
+                  id=""
+                  className='border-medium-800 w-full py-2 rounded px-5'
+                  value={groupStudyProf || ''}
+                  onChange={(event) => setGroupStudyProf(event.target.value) || ''}
+                >
+                  {/* Dynamic default option based on studyProfTarget */}
+                  {groupStudyProf && (
+                    <option key={groupStudyProf} value={groupStudyProf}>
+                      {groupStudyProf}
+                    </option>
+                  )}
+
+                  {/* Other options excluding the default value */}
+                  {[100, 95, 90, 85, 80, 75].map((option) => (
+                    option !== groupStudyProf && (
+                      <option key={option} value={option}>
+                        {option}
+                      </option>
+                    )
+                  ))}
+                </select>
+
+                <br />
                 <p className='mb-3'>Add group members:</p>
                 <div className='relative'>
                   <SearchFunctionality data={data} onSearch={handleSearch} setSearchTermApp={setSearchTermApp} setSelectedDataId={setSelectedDataId} searchTermApp={searchTermApp} searchAssetFor={'search-username-for-group-creation'} />
@@ -292,6 +322,7 @@ export const CreateGroupComp = (props) => {
                     </div>
                   }
                 </div>
+                
                 <button onClick={createGroupBtn} className='mbg-800 mcolor-100 py-2 rounded-[5px]'>Create</button>
               </div>
             </div>

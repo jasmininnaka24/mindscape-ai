@@ -14,6 +14,11 @@ module.exports = (sequelize) => {
       type: DataTypes.TEXT,
       allowNull: false,
     },
+    studyProfTarget: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      defaultValue: 90, 
+    },
   });
 
   StudyGroup.associate = (models) => {

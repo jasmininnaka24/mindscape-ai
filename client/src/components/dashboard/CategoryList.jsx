@@ -29,6 +29,7 @@ export const CategoryList = ({categoryFor}) => {
   const [materialCategories, setMaterialCategories] = useState([])
   const [bookmarkedStudyMaterials, setBookmarkedStudyMaterials] = useState([]);
   const [ownRecordStudyMaterials, setOwnRecordStudyMaterials] = useState([]);
+  const [preferredStudyProf, setPreferredtudyProf] = useState(90);
 
   const [showCategories, setShowCategories] = useState(true)
 
@@ -51,15 +52,26 @@ export const CategoryList = ({categoryFor}) => {
       let ownRecordMaterials = [];
       let bookmarkedMaterials = [];
       let fetchedStudyMaterialsCategory = [];
+      let studyProf = [];
 
       try {
 
         if (groupId === undefined) {
           studyMaterialResponse = await axios.get(`${SERVER_URL}/studyMaterial/study-material-category/Personal/${UserId}`);
 
+          const fetchedPreferredStudyProf = await axios.get(`${SERVER_URL}/studyGroup/extract-all-group/${groupId}`);
+
+          studyProf = fetchedPreferredStudyProf.data.studyProfTarget;
+  
         } else {
           studyMaterialResponse = await axios.get(`${SERVER_URL}/studyMaterial/study-material-group-category/Group/${groupId}`);
+
+          const fetchedPreferredStudyProf = await axios.get(`${SERVER_URL}/users/get-user/${UserId}`);
+
+          studyProf = fetchedPreferredStudyProf.data.studyProfTarget;
         }
+
+        setPreferredtudyProf(studyProf)
 
         const allStudyMaterials = studyMaterialResponse.data;
     
@@ -270,7 +282,7 @@ export const CategoryList = ({categoryFor}) => {
                   <tr className='border-bottom-thin-gray rounded-[5px]' key={index}>
                     <td className='text-center py-3 mcolor-800'>{item.category}</td>
                     <td className='text-center py-3 mcolor-800 w-1/4'>{performanceStatusArr[index]}%</td>
-                    <td className='text-center py-3 mcolor-800'>{performanceStatusArr[index] >= 90 ? 'Passing' : 'Requires Improvement'}</td>
+                    <td className='text-center py-3 mcolor-800'>{performanceStatusArr[index] >= preferredStudyProf ? 'Passing' : 'Requires Improvement'}</td>
                     <td className='text-center py-3 mcolor-800'>
                       {(tag === 'Own Record' || tag === 'Shared') ? (
                         (() => {

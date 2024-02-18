@@ -26,6 +26,7 @@ export const TopicList = ({categoryFor}) => {
   const [preparedLength, setPreparedLength] = useState(0)
   const [unpreparedLength, setUnpreparedLength] = useState(0)
   const [isDone, setIsDone] = useState(false);
+  const [preferredStudyProf, setPreferredtudyProf] = useState(90);
 
   const location = useLocation();
 
@@ -44,11 +45,18 @@ export const TopicList = ({categoryFor}) => {
 
       let extractedStudyMaterials = [];
       let uniqueIds = new Set();
+      let studyProf = [];
 
       if (groupId === undefined) {
         // Use Promise.all to wait for all promises to resolve
         await Promise.all(filter.map(async (material, index) => {
           try {
+
+            const fetchedPreferredStudyProf = await axios.get(`${SERVER_URL}/studyGroup/extract-all-group/${groupId}`);
+
+            studyProf = fetchedPreferredStudyProf.data.studyProfTarget;
+  
+            
             let materialResponse = await axios.get(`${SERVER_URL}/studyMaterial/all-study-material-personal/${UserId}/${material.id}`);
             // Check if the ID is already in the set
             if (!uniqueIds.has(material.id)) {
@@ -61,6 +69,10 @@ export const TopicList = ({categoryFor}) => {
         }));
       } else {
 
+        const fetchedPreferredStudyProf = await axios.get(`${SERVER_URL}/users/get-user/${UserId}`);
+
+        studyProf = fetchedPreferredStudyProf.data.studyProfTarget;
+
         // Use Promise.all to wait for all promises to resolve
         await Promise.all(filter.map(async (material, index) => {
           let materialResponse = await axios.get(`${SERVER_URL}/studyMaterial/all-study-material-group/${groupId}/${material.id}`);
@@ -69,7 +81,7 @@ export const TopicList = ({categoryFor}) => {
 
       }
 
-      
+      setPreferredtudyProf(studyProf)
       setStudyMaterials(extractedStudyMaterials.flat());
       
       let extractedStudyMaterialsResponse = extractedStudyMaterials.flat();
@@ -100,7 +112,7 @@ export const TopicList = ({categoryFor}) => {
   
       extractedStudyMaterialsResponse.forEach(item => {
 
-        if (item.studyPerformance >= 90.00) {
+        if (item.studyPerformance >= preferredStudyProf) {
           preparedCount += 1;
         } else {
           unpreparedCount += 1;
@@ -188,9 +200,9 @@ export const TopicList = ({categoryFor}) => {
 
 
             <div className={`${(extraLargeDevices  || largeDevices || mediumDevices) ? 'w-1/2 text-xl' : 'w-full text-center text-md mb-3 px-4'}`}>
-              <p className={`${(extraLargeDevices  || largeDevices || mediumDevices) ? 'mt-3' : 'mt-1'} mcolor-800 font-medium`}>Performance Status: <span className='font-bold color-primary'>{performanceStatus >= 90 ? 'Passing' : 'Requires Improvement'}</span></p>
+              <p className={`${(extraLargeDevices  || largeDevices || mediumDevices) ? 'mt-3' : 'mt-1'} mcolor-800 font-medium`}>Performance Status: <span className='font-bold color-primary'>{performanceStatus >= preferredStudyProf ? 'Passing' : 'Requires Improvement'}</span></p>
               <p className={`${(extraLargeDevices  || largeDevices || mediumDevices) ? 'mt-3' : 'mt-1'} mcolor-800 font-medium`}>Performance in percentile: <span className='font-bold color-primary'>{performanceStatus}%</span></p>
-              <p className={`${(extraLargeDevices  || largeDevices || mediumDevices) ? 'mt-3' : 'mt-1'} mcolor-800 font-medium`}>Target Performance: <span className='font-bold color-primary'>90%</span></p>
+              <p className={`${(extraLargeDevices  || largeDevices || mediumDevices) ? 'mt-3' : 'mt-1'} mcolor-800 font-medium`}>Target Performance: <span className='font-bold color-primary'>{preferredStudyProf}%</span></p>
             </div>
           </div>
 
@@ -255,7 +267,7 @@ export const TopicList = ({categoryFor}) => {
                       <td className='text-center py-3 mcolor-800'>{assessmentImp === 'none' ? 0 : assessmentScorePerf}%</td>
                       <td className='text-center py-3 mcolor-800'>{assessmentImp === 'none' ? 0 : confidenceLevel}%</td>
                       <td className='text-center py-3 mcolor-800'>{assessmentImp === 'none' ? 0 : assessmentImp}%</td>
-                      <td className='text-center py-3 mcolor-800'>{item.studyPerformance >= 90 ? 'Prepared' : 'Unprepared'}</td>
+                      <td className='text-center py-3 mcolor-800'>{item.studyPerformance >= preferredStudyProf ? 'Prepared' : 'Unprepared'}</td>
                       <td className='text-center py-3 mcolor-800'>
                         {(assessmentImp !== 'none' ) ? (
                           groupId !== undefined ? (

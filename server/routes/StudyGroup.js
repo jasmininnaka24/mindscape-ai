@@ -58,6 +58,23 @@ router.put('/update-group/:id', async (req, res) => {
   }
 });
 
+// updating group study Profeciency
+router.put('/update-study-prof/:id', async (req, res) => {
+  const groupId = req.params.id;
+  const { studyProfTarget } = req.body;
+
+  try {
+    const updatedStudyProfTarget = await StudyGroup.findByPk(groupId);
+    updatedStudyProfTarget.studyProfTarget = studyProfTarget; // Assign the new groupName value here
+
+    await updatedStudyProfTarget.save();
+    res.json(updatedStudyProfTarget);
+  } catch (error) {
+    console.error('Error updating group name:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
 
 // deleting a group
 router.delete('/delete-group/:id', async (req, res) => {

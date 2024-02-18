@@ -448,17 +448,15 @@ export const MainDash = ({categoryFor}) => {
                     })}
                 </div>
                 
-                {listOfTasks.length > 0 && (
-                  <div className='absolute bottom-0 right-0 w-full mbg-input'>
-                    <div className={`flex justify-end py-2  ${extraSmallDevice ? 'px-2' : 'px-5'}`}>
-                      <Link to={`/main/${groupId === undefined ? 'personal' : 'group'}/tasks/${groupId === undefined ? '' : groupId}`}>
-                        <button className='px-4 py-2 text-sm mbg-800 mcolor-100 rounded'>
-                          Go to Task Page
-                        </button>
-                      </Link>
-                    </div>
+                <div className='absolute bottom-0 right-0 w-full mbg-input'>
+                  <div className={`flex justify-end py-2  ${extraSmallDevice ? 'px-2' : 'px-5'}`}>
+                    <Link to={`/main/${groupId === undefined ? 'personal' : 'group'}/tasks/${groupId === undefined ? '' : groupId}`}>
+                      <button className='px-4 py-2 text-sm mbg-800 mcolor-100 rounded'>
+                        Go to Task Page
+                      </button>
+                    </Link>
                   </div>
-                )}
+                </div>
               </div>
       
               <div className={`w-full border-medium-800 min-h-[${extraSmallDevice ? '56' : '37'}vh] h-full rounded-[5px] ${extraSmallDevice ? 'pb-16 pt-5' : 'py-5'} px-6 relative mbg-input`}>
@@ -501,17 +499,15 @@ export const MainDash = ({categoryFor}) => {
                       <p className='mt-1 mcolor-800-opacity text-sm'>Study Performance</p>
                     </div>
       
-                    {materialCategory && (
-                      <div className='absolute bottom-0 right-0 w-full mbg-input'>
-                        <div className={`flex justify-end py-2  ${extraSmallDevice ? 'px-2' : 'px-5'}`}>
-                          <Link to={`/main/${categoryForLowerCase}/study-area`}>
-                            <button className='px-4 py-2 text-sm mbg-800 mcolor-100 rounded'>
-                              Go to Study Area
-                            </button>
-                          </Link>
-                        </div>
+                    <div className='absolute bottom-0 right-0 w-full mbg-input'>
+                      <div className={`flex justify-end py-2  ${extraSmallDevice ? 'px-2' : 'px-5'}`}>
+                        <Link to={`/main/${categoryForLowerCase}/study-area`}>
+                          <button className='px-4 py-2 text-sm mbg-800 mcolor-100 rounded'>
+                            Go to Study Area
+                          </button>
+                        </Link>
                       </div>
-                    )}
+                    </div>
                   </div>
                 </div>
       

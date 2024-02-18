@@ -51,6 +51,7 @@ export const TopicPage = ({categoryFor}) => {
   const [currentIndex, setCurrectIndex] = useState(0);
   const [fetchedID, setFetchedID] = useState(0)
   const [isDone, setIsDone] = useState(false);
+  const [preferredStudyProf, setPreferredtudyProf] = useState(90);
 
 
   const fetchData = async () => {
@@ -75,7 +76,7 @@ export const TopicPage = ({categoryFor}) => {
     
       const totalScore = (assessmentImp + assessmentScorePerf + confidenceLevel) / 3;
     
-      if (totalScore >= 90.00) {
+      if (totalScore >= preferredStudyProf) {
         preparedLength += 1;
       } else {
         unpreparedLength += 1;
@@ -86,7 +87,22 @@ export const TopicPage = ({categoryFor}) => {
     setPreparedLength(preparedLength)
     setUnpreparedLength(unpreparedLength)
     
-    
+    let studyProf = [];
+
+    if (groupId === undefined) {
+
+      const fetchedPreferredStudyProf = await axios.get(`${SERVER_URL}/studyGroup/extract-all-group/${groupId}`);
+
+      studyProf = fetchedPreferredStudyProf.data.studyProfTarget;
+
+    } else {
+
+      const fetchedPreferredStudyProf = await axios.get(`${SERVER_URL}/users/get-user/${UserId}`);
+
+      studyProf = fetchedPreferredStudyProf.data.studyProfTarget;
+    }
+
+    setPreferredtudyProf(studyProf)
   }
 
 
@@ -125,8 +141,8 @@ export const TopicPage = ({categoryFor}) => {
       assessment_imp: studyMaterials[index].assessmentImp,
       confidence_level: studyMaterials[index].confidenceLevel,
       prediction_val: ((parseFloat(studyMaterials[index].assessmentImp) + parseFloat(studyMaterials[index].assessmentScorePerf) + parseFloat(studyMaterials[index].confidenceLevel)) / 3).toFixed(2),
-      prediction_text: ((parseFloat(studyMaterials[index].assessmentImp) + parseFloat(studyMaterials[index].assessmentScorePerf) + parseFloat(studyMaterials[index].confidenceLevel)) / 3).toFixed(2) >= 90 ? 'ready' : 'not yet ready',
-      target: 90,
+      prediction_text: ((parseFloat(studyMaterials[index].assessmentImp) + parseFloat(studyMaterials[index].assessmentScorePerf) + parseFloat(studyMaterials[index].confidenceLevel)) / 3).toFixed(2) >= preferredStudyProf ? 'ready' : 'not yet ready',
+      target: preferredStudyProf,
     };
     
     if (studyMaterials.length > 1) {
@@ -255,7 +271,7 @@ export const TopicPage = ({categoryFor}) => {
 
                     <td className='text-center py-3 mcolor-800'>{item.assessmentScorePerf}%</td>
                     <td className='text-center py-3 mcolor-800'>{item.confidenceLevel}%</td>
-                    <td className='text-center py-3 mcolor-800'>{((parseFloat(item.assessmentImp) + parseFloat(item.assessmentScorePerf) + parseFloat(item.confidenceLevel)) / 3).toFixed(2) >= 90 ? 'Prepared' : 'Unprepared'}</td>
+                    <td className='text-center py-3 mcolor-800'>{((parseFloat(item.assessmentImp) + parseFloat(item.assessmentScorePerf) + parseFloat(item.confidenceLevel)) / 3).toFixed(2) >= preferredStudyProf ? 'Prepared' : 'Unprepared'}</td>
 
                   </tr>
                 })}

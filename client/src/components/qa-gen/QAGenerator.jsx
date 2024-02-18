@@ -461,12 +461,12 @@ export const QAGenerator = (props) => {
 
                     {/* tabs */}
                     <br />
-                    <div className='flex justify-center items-center mb-12 rounded-[5px]'>
-                      <button className={`w-full text-center py-3 ${activeButton === 1 ? 'mbg-100 rounded-[5px] border-medium-800' : 'border-bottom-medium border-r border-solid border-gray-500'}`} onClick={() => showContent(1)}>MCQAs</button>
-                      <button className={`w-full text-center py-3 ${activeButton === 2 ? 'mbg-100 rounded-[5px] border-medium-800' : 'border-bottom-medium border-r border-solid border-gray-500'}`} onClick={() => showContent(2)}>Notes Reviewer</button>
-                      <button className={`w-full text-center py-3 ${activeButton === 3 ? 'mbg-100 rounded-[5px] border-medium-800' : 'border-bottom-medium border-r border-solid border-gray-500'}`} onClick={() => showContent(3)}>True  Sentences</button>
-                      <button className={`w-full text-center py-3 ${activeButton === 4 ? 'mbg-100 rounded-[5px] border-medium-800' : 'border-bottom-medium'}`} onClick={() => showContent(4)}>Fill In The Blank</button>
-                      <button className={`w-full text-center py-3 ${activeButton === 5 ? 'mbg-100 rounded-[5px] border-medium-800' : 'border-bottom-medium'}`} onClick={() => showContent(5)}>Identification</button>
+                    <div className={`${(mediumDevices || smallDevice) ? 'grid grid-cols-3' : extraSmallDevice ? 'grid grid-cols-1' : 'flex justify-center items-center'} mb-12 rounded-[5px]`}>
+                      <button className={`w-full text-center py-3 ${activeButton === 1 ? 'mbg-100 rounded-[5px] border-medium-800' : 'border-bottom-medium border-r border-solid'} ${(extraSmallDevice || smallDevice) ? 'text-sm' : 'text-md'}`} onClick={() => showContent(1)}>MCQAs</button>
+                      <button className={`w-full text-center py-3 ${activeButton === 2 ? 'mbg-100 rounded-[5px] border-medium-800' : 'border-bottom-medium border-r border-solid'} ${(extraSmallDevice || smallDevice) ? 'text-sm' : 'text-md'}`} onClick={() => showContent(2)}>Notes Reviewer</button>
+                      <button className={`w-full text-center py-3 ${activeButton === 3 ? 'mbg-100 rounded-[5px] border-medium-800' : 'border-bottom-medium border-r border-solid'} ${(extraSmallDevice || smallDevice) ? 'text-sm' : 'text-md'}`} onClick={() => showContent(3)}>True  Sentences</button>
+                      <button className={`w-full text-center py-3 ${activeButton === 4 ? 'mbg-100 rounded-[5px] border-medium-800' : 'border-bottom-medium'} ${(extraSmallDevice || smallDevice) ? 'text-sm' : 'text-md'}`} onClick={() => showContent(4)}>Fill In The Blank</button>
+                      <button className={`w-full text-center py-3 ${activeButton === 5 ? 'mbg-100 rounded-[5px] border-medium-800' : 'border-bottom-medium'} ${(extraSmallDevice || smallDevice) ? 'text-sm' : 'text-md'}`} onClick={() => showContent(5)}>Identification</button>
                     </div>
 
 
@@ -479,18 +479,18 @@ export const QAGenerator = (props) => {
                         {activeBtnMCQAs === true && 
                         <div>
                           <button onClick={() => {
-                            setActiveBtnMCQAs(activeBtnMCQAs === false ? true : false)
+                            setActiveBtnMCQAs(!activeBtnMCQAs ? true : false)
                           }} className='mcolor-900 border-thin-800 px-5 py-1 rounded-[5px]'>Add Item</button>
                         </div>
                       }
 
                       
-                      {activeBtnMCQAs === false && 
+                      {!activeBtnMCQAs && 
                         <div>
                           <div className='my-2'>
                             <div className='flex justify-end text-4xl'>
                               <button onClick={() => {
-                                setActiveBtnMCQAs(activeBtnMCQAs === false ? true : false)
+                                setActiveBtnMCQAs(!activeBtnMCQAs ? true : false)
 
                                 setAddedQuestionStr("");
                                 setAddedAnswerStr("");
@@ -523,96 +523,96 @@ export const QAGenerator = (props) => {
                                 />
                               </li>
             
-                                  {/* Choices */}
-                                  {addedChoices.map((item, index) => {
-                                    return (
-                                    <li className="relative wrong-bg rounded-[5px] text-center my-2 flex">
-                                      <input
-                                        type="text"
-                                        className='w-full py-4 bg-transparent border-transparent text-center'
-                                        value={item}
-                                        onChange={(event) => {
-                                          const val = event.target.value;
-                                          setAddedChoices((prevChoices) => {
-                                            const updatedChoices = [...prevChoices];
-                                            updatedChoices[index] = val;
-                                            return updatedChoices;
-                                          });
-                                        }}
-                                      />
-                                      <div className='absolute right-5 top-3 mbg-100 px-2 rounded-[20px]'>
-                                        <button
-                                          className='mcolor-900 deleteChoiceBtn relative text-3xl'
-                                          onClick={() => handleDeleteChoice(index)}
-                                          >
-                                          ×
-                                        </button>
-                                      </div>
-                                    </li>
-                                    )
-                                  })}
-            
-                                  {/* Add a choice */}
-                                  <div className='my-2 relative '>
-                                    <input
-                                      type="text"
-                                      className='brd-btn border-bottom-thin addAChoice w-full py-4 bg-transparent border-transparent text-center rounded-[5px]'
-                                      placeholder='Add a choice'
-                                      onChange={(event) => {
-                                        setAddedChoice(event.target.value);
-                                      }}
-                                      value={addedChoice}
-                                      required
-                                    />
-            
-                                    <div className='absolute right-5 top-3 mbg-100 px-2 rounded-[20px]'>
-                                      <button
-                                        className='deleteChoiceBtn relative text-3xl'
-                                        onClick={() => {
-                                          if(addedChoice !== ""){
-                                            setAddedChoices([...addedChoices, addedChoice])
-                                            setAddedChoice("");
-                                          } else {
-                                            alert("Cannot add an empty field.")
-                                          }
-                                        }}
+                              {/* Choices */}
+                              {addedChoices.map((item, index) => {
+                                return (
+                                <li className="relative wrong-bg rounded-[5px] text-center my-2 flex">
+                                  <input
+                                    type="text"
+                                    className='w-full py-4 bg-transparent border-transparent text-center'
+                                    value={item}
+                                    onChange={(event) => {
+                                      const val = event.target.value;
+                                      setAddedChoices((prevChoices) => {
+                                        const updatedChoices = [...prevChoices];
+                                        updatedChoices[index] = val;
+                                        return updatedChoices;
+                                      });
+                                    }}
+                                  />
+                                  <div className='absolute right-5 top-3 mbg-100 px-2 rounded-[20px]'>
+                                    <button
+                                      className='mcolor-900 deleteChoiceBtn relative text-3xl'
+                                      onClick={() => handleDeleteChoice(index)}
                                       >
-                                        +
-                                      </button>
-                                    </div>
+                                      ×
+                                    </button>
                                   </div>
-                                </ul>
+                                </li>
+                                )
+                              })}
+        
+                              {/* Add a choice */}
+                              <div className='my-2 relative '>
+                                <input
+                                  type="text"
+                                  className='brd-btn border-bottom-thin addAChoice w-full py-4 bg-transparent border-transparent text-center rounded-[5px]'
+                                  placeholder='Add a choice'
+                                  onChange={(event) => {
+                                    setAddedChoice(event.target.value);
+                                  }}
+                                  value={addedChoice}
+                                  required
+                                />
+        
+                                <div className='absolute right-5 top-3 mbg-100 px-2 rounded-[20px]'>
+                                  <button
+                                    className='deleteChoiceBtn relative text-3xl'
+                                    onClick={() => {
+                                      if(addedChoice !== ""){
+                                        setAddedChoices([...addedChoices, addedChoice])
+                                        setAddedChoice("");
+                                      } else {
+                                        alert("Cannot add an empty field.")
+                                      }
+                                    }}
+                                  >
+                                    +
+                                  </button>
+                                </div>
                               </div>
+                            </ul>
+                          </div>
 
-                              <div className='flex justify-end mt-5'>
-                                
-                              <button className='mbg-800 mcolor-100 py-2 px-16 rounded-[5px] '
-                                onClick={() => {
-            
-                                  let updatedChoices = addedChoices.filter((item) => {
-                                    return item !== "";
-                                  })
-            
-                                  if(addedAnswerStr !== "" && addedQuestionStr !== ""){
-                                    generatedQA.question_answer_pairs.unshift({ question: addedQuestionStr, answer: addedAnswerStr, distractors: updatedChoices })
-              
-                                    setGeneratedQA({ ...generatedQA  });
-                                    setAddedQuestionStr("");
-                                    setAddedAnswerStr("");
-                                    setAddedChoice("");
-                                    setAddedChoices([]);
-                                  } else {
-                                    alert("Fill out the empty fields.");
-                                  }
-                                }}
-                                >
-                                  Add
-                                </button>
+                          <div className='flex justify-end mt-5'>
+                            
+                          <button className='mbg-800 mcolor-100 py-2 px-16 rounded-[5px] '
+                            onClick={() => {
+        
+                              let updatedChoices = addedChoices.filter((item) => {
+                                return item !== "";
+                              })
+        
+                              if(addedAnswerStr !== "" && addedQuestionStr !== ""){
+                                generatedQA.question_answer_pairs.unshift({ question: addedQuestionStr, answer: addedAnswerStr, distractors: updatedChoices })
+          
+                                setGeneratedQA({ ...generatedQA  });
+                                setAddedQuestionStr("");
+                                setAddedAnswerStr("");
+                                setAddedChoice("");
+                                setAddedChoices([]);
+                              } else {
+                                alert("Fill out the empty fields.");
+                              }
+                            }}
+                            >
+                              Add
+                            </button>
 
-                              </div>
-                            </div>
-                          }
+                          </div>
                         </div>
+                      }
+                    </div>
         
                         {Array.isArray(generatedQA.question_answer_pairs) && generatedQA.question_answer_pairs.length > 0 && generatedQA.question_answer_pairs.filter((pair) => pair.distractors.length > 0).length > 0 ? (
                           (generatedQA.question_answer_pairs).map((pair, index) => (
@@ -641,9 +641,9 @@ export const QAGenerator = (props) => {
 
                                 <div className='my-2'>
                                   {/* Input for the question */}
-                                  <input
+                                  <textarea 
                                     type="text"
-                                    className='mb-4 brd-btn border-bottom-thin  addAChoice w-full bg-transparent border-transparent text-center py-3'
+                                    className={`mb-4 brd-btn border-bottom-thin addAChoice w-full bg-transparent border-transparent text-center py-3 ${extraSmallDevice ? 'text-xs' : 'text-sm'}`} 
                                     value={pair.question}
                                     onChange={(event) => {
                                       let val = event.target.value;
@@ -662,11 +662,14 @@ export const QAGenerator = (props) => {
                                         };
                                       });
                                     }}
-                                  />
+                                    rows={Math.ceil((pair.question ? pair.question.length : 0) / 50)}
+                                  >
+
+                                  </textarea>
                                 </div>
 
                                 {/* You can add the distractors here */}
-                                <ul className="grid-result gap-4">
+                                <ul className={`grid ${(extraSmallDevice) ? 'text-xs grid-cols-1' : 'grid-cols-2'} ${smallDevice && 'text-xs'} gap-3`}>
                                   {/* Input for the answer */}
                                   <li className="correct-bg rounded-[5px] text-center my-2">
                                     <input
@@ -720,7 +723,7 @@ export const QAGenerator = (props) => {
                                         />
                                         <div className='absolute right-5 top-3 mbg-100 px-2 rounded-[20px]'>
                                           <button
-                                            className='mcolor-900 deleteChoiceBtn relative text-3xl'
+                                            className={`mcolor-900 deleteChoiceBtn relative ${(extraSmallDevice || smallDevice) ? 'text-xl' : 'text-3xl'}`}
                                             onClick={() => {
                                               const updatedDistractors = generatedQA.question_answer_pairs[index].distractors.filter((distractor, idx) => {
                                                 return idx !== distractorIndex;
@@ -853,7 +856,7 @@ export const QAGenerator = (props) => {
                             <div className='flex justify-end my-5'>
                               <button onClick={() => deleteRevQues(index)} className='bg-red mcolor-100 px-5 py-1 rounded-[5px]'>Delete</button>
                             </div>
-                            <ul className="grid-result gap-2">
+                            <ul className={`grid ${(extraSmallDevice) ? 'text-xs grid-cols-1' : 'grid-cols-2'} ${smallDevice && 'text-xs'} gap-2`}>
                               <div className='flex items-center'>
                                 <textarea
                                   className='py-5 px-2 outline-none addAChoice w-full h-full wrong-bg brd-btn rounded-[5px] text-center overflow-auto resize-none'
@@ -893,19 +896,19 @@ export const QAGenerator = (props) => {
                         {activeBtnMCQAs === true && 
                           <div>
                             <button onClick={() => {
-                              setActiveBtnMCQAs(activeBtnMCQAs === false ? true : false)
+                              setActiveBtnMCQAs(!activeBtnMCQAs ? true : false)
                             }} className='mcolor-900 border-thin-800 px-5 py-1 rounded-[5px]'>Add Item</button>
                           </div>
                         }
 
                         <br />
                           
-                        {activeBtnMCQAs === false && 
+                        {!activeBtnMCQAs && 
                           <div>
                             <div className='my-2'>
                               <div className='flex justify-end text-4xl'>
                                 <button onClick={() => {
-                                  setActiveBtnMCQAs(activeBtnMCQAs === false ? true : false)
+                                  setActiveBtnMCQAs(!activeBtnMCQAs ? true : false)
 
                                   setAddedQuestionStr("");
                                   setAddedAnswerStr("");
@@ -1045,7 +1048,7 @@ export const QAGenerator = (props) => {
                         {generatedQA.true_or_false_sentences && generatedQA.true_or_false_sentences.length > 0 ? (
                           <table className='w-full'>
                             <thead>
-                              <tr className='text-lg'>
+                            <tr className={`${extraSmallDevice ? 'text-sm' : 'text-md'}`}>
                                 <th className='pr-5 text-start'>#</th>
                                 <th className='text-start w-full'>Sentence</th>
                                 <th className='w-1/3'>Action</th>
@@ -1062,20 +1065,22 @@ export const QAGenerator = (props) => {
                                         key={index}
                                         value={item.sentence || ''}
                                         onChange={(event) => trueSentenceChange(event, index)}
-                                        className='mt-10 w-full px-5 pt-4 text-start correct-bg mcolor-800 text-lg rounded-[5px]'
+                                        className={`mt-10 w-full text-start correct-bg mcolor-800 ${(extraLargeDevices || largeDevices) ? 'text-md p-5' : (extraSmallDevice) ? 'text-xs p-2' : 'text-sm p-3'} rounded-[5px]`}
+                                        rows={Math.ceil((item.question ? item.question.length : 0) / 50) + 1}
                                       ></textarea>
-                                      <span className='mx-8 mt-6'>True</span>
+                                      <span className={`${(extraLargeDevices || largeDevices) ? 'text-md mx-8' : (extraSmallDevice) ? 'text-xs mx-2' : 'text-sm mx-4'} mt-6`}>True</span>
                                     </div>
                                     {item.distractors.map((distractor, distractorIndex) => (
                                       <div className='flex items-center my-3' key={distractorIndex}>
                                         <textarea
                                           value={distractor || ''}
                                           onChange={(event) => distractorChange(event, distractorIndex, index)}
-                                          className='w-full px-5 pt-4 text-start wrong-bg mcolor-800 text-lg rounded-[5px]'
+                                          className={`w-full text-start wrong-bg mcolor-800 text-md rounded-[5px] ${(extraLargeDevices || largeDevices) ? 'text-md p-5' : (extraSmallDevice) ? 'text-xs p-2' : 'text-sm p-3'}`}
+                                          rows={Math.ceil((item.question ? item.question.length : 0) / 50) + 1}
                                         ></textarea>
-                                        <span className='ml-3'>False</span>
+                                        <span className={`ml-3 ${(extraLargeDevices || largeDevices) ? 'text-md' : (extraSmallDevice) ? 'text-xs' : 'text-sm'}`}>False</span>
                                         <button
-                                          className='ml-3 text-center text-lg mcolor-800 mbg-200 border-thin-800 px-3 py-1 rounded-[5px]'
+                                          className={`ml-3 text-center ${(extraLargeDevices || largeDevices) ? 'text-md' : (extraSmallDevice) ? 'text-xs' : 'text-sm'} mcolor-800 mbg-200 border-thin-800 px-3 py-1 rounded-[5px]`}
                                           onClick={() => {
                                             deleteTrueDistractorItem(index, distractorIndex);
                                           }}
@@ -1088,7 +1093,7 @@ export const QAGenerator = (props) => {
 
                                   <td className='flex justify-center pt-6'>
                                     <button
-                                      className='mt-6 text-center text-lg bg-red mcolor-100 px-4 py-1 rounded-[5px]'
+                                      className={`mt-8 text-center ${(extraLargeDevices || largeDevices) ? 'text-md px-4' : (extraSmallDevice) ? 'text-xs px-2' : 'text-sm px-3'} bg-red mcolor-100 py-1 rounded-[5px]`}
                                       onClick={() => {
                                         deleteTrueSentenceItem(index);
                                       }}
@@ -1133,40 +1138,76 @@ export const QAGenerator = (props) => {
                         </div>
 
                         {generatedQA && generatedQA.fill_in_the_blanks && generatedQA.fill_in_the_blanks.sentences && generatedQA.fill_in_the_blanks.sentences.length > 0 ? (
-                          <table className='w-full'>
-                            <thead>
-                              <tr className='text-lg'>
-                                <th className='pr-5 text-start'>#</th>
-                                <th className='pr-5 text-start px-5'>Sentence</th>
-                                <th className='pb-5 text-start px-3'>Answer</th>
-                              </tr>
-                            </thead>
-                            {Array.isArray(generatedQA.fill_in_the_blanks.sentences) &&
-                              generatedQA.fill_in_the_blanks.sentences.map((item, index) => (
-                                <tr key={index}>
-                                  <td className='pr-5'>{index + 1}</td>
-                                  <td className='pr-5 w-3/4 text-justify text-start mcolor-800 text-lg pb-5 px-5'>
-                                    <textarea
-                                      key={index}
-                                      value={item || ''}
-                                      onChange={(event) => fillInTheBlankSentenceChange(event, index)}
-                                      className='w-full px-5 pt-4 text-start mcolor-800 text-lg mbg-200 rounded border-thin-800'
-                                      rows={Math.ceil((item || '').length / 50) + 1}
-                                    ></textarea>
-                                  </td>
-                                  <td className='text-center mcolor-800 text-lg flex gap-5'>
-                                    <input
-                                      key={index}
-                                      type="text"
-                                      value={generatedQA.fill_in_the_blanks.answer && generatedQA.fill_in_the_blanks.answer[index] || ''}
-                                      onChange={(event) => fillInTheBlankAnswerChange(event, index)}
-                                      className='text-center mbg-200 rounded border-thin-800'
-                                    />
-                                    <button className='text-center text-lg bg-red mcolor-100 px-4 py-1 rounded-[5px]' onClick={() => { deleteFITBItem(index) }}>Remove</button>
-                                  </td>
+                          <div>
+                            <table className={`${(extraSmallDevice || smallDevice) && 'hidden'} w-full`}>
+                              <thead>
+                                <tr className={`${extraSmallDevice ? 'text-sm' : 'text-md'}`}>
+                                  <th className='pr-5 text-start'>#</th>
+                                  <th className='pr-5 text-start px-5'>Sentence</th>
+                                  <th className='pb-5 text-start px-3'>Answer</th>
                                 </tr>
-                              )).reverse() /* Use reverse() to display items in reverse order */}
-                          </table>
+                              </thead>
+                              {Array.isArray(generatedQA.fill_in_the_blanks.sentences) &&
+                                generatedQA.fill_in_the_blanks.sentences.map((item, index) => (
+                                  <tr key={index}>
+                                    <td className='pr-5'>{index + 1}</td>
+                                    <td className='pr-5 w-3/4 text-justify text-start mcolor-800 text-lg pb-5 px-5'>
+                                      <textarea
+                                        key={index}
+                                        value={item || ''}
+                                        onChange={(event) => fillInTheBlankSentenceChange(event, index)}
+                                        className={`w-full px-5 pt-4 text-start mcolor-800 ${(extraLargeDevices || largeDevices || mediumDevices) ? 'text-md' : (extraSmallDevice) ? 'text-xs' : 'text-sm'} mbg-input border-thin-800 rounded`}
+                                        rows={Math.ceil((item || '').length / 50) + 1}
+                                      ></textarea>
+                                    </td>
+                                    <td className='text-center mcolor-800 text-lg flex gap-5'>
+                                      <input
+                                        key={index}
+                                        type="text"
+                                        value={(generatedQA.fill_in_the_blanks.answer && generatedQA.fill_in_the_blanks.answer[index]) || ''}
+                                        onChange={(event) => fillInTheBlankAnswerChange(event, index)}
+                                        className='text-center mbg-200 rounded border-thin-800'
+                                      />
+                                      <button className='text-center text-md bg-red mcolor-100 px-4 py-1 rounded-[5px]' onClick={() => { deleteFITBItem(index) }}>Remove</button>
+                                    </td>
+                                  </tr>
+                                )).reverse() /* Use reverse() to display items in reverse order */}
+                            </table>
+
+
+                            <div className={`${(extraSmallDevice || smallDevice) ? '' : 'hidden'} w-full`}>
+                            {Array.isArray(generatedQA.fill_in_the_blanks.sentences) && generatedQA.fill_in_the_blanks.sentences.reverse().map((item, index) => (
+                              <div key={index} className='w-full mb-7'>
+                                <div className='flex items-center justify-end'>
+                                  <button className={`text-center ${(extraLargeDevices || largeDevices || mediumDevices) ? 'text-md' : (extraSmallDevice) ? 'text-xs' : 'text-sm'} bg-red mcolor-100 px-4 py-1 rounded-[5px]`} onClick={() => {deleteFITBItem(item.id)}}>Remove</button>
+                                </div>
+
+                                <div className='text-justify text-start mcolor-800 w-full'>
+                                  <p className={`font-medium mb-1 ${extraSmallDevice ? 'text-sm' : 'text-md'}`}>Question: </p>
+                                  <textarea
+                                    key={index}
+                                    value={item.question || ''} 
+                                    onChange={(e) => fillInTheBlankSentenceChange(item.id, e.target.value, 'FITB')}
+                                    className={`w-full px-5 pt-4 text-start mcolor-800 ${(extraLargeDevices || largeDevices || mediumDevices) ? 'text-md' : (extraSmallDevice) ? 'text-xs' : 'text-sm'} mbg-input border-thin-800 rounded`}
+                                    rows={Math.ceil((item.question ? item.question.length : 0) / 50) + 1}
+                                  ></textarea>
+                                </div>
+                                <div className='text-justify text-start mcolor-800 w-full'>
+                                <p className={`font-medium mb-1 ${extraSmallDevice ? 'text-sm' : 'text-md'}`}>Answer: </p>
+                                  <input
+                                    key={index} 
+                                    type="text" 
+                                    value={item.answer || ''}
+                                    onChange={(e) => fillInTheBlankAnswerChange(item.id, e.target.value, 'FITB')}
+                                    className={`text-center border-thin-800 mbg-input rounded w-full ${(extraLargeDevices || largeDevices || mediumDevices) ? 'text-md' : (extraSmallDevice) ? 'text-xs' : 'text-sm'}`}
+                                  />
+                                </div>
+                                <div className='border-bottom-thin-gray mt-7'></div>
+                              </div>
+                            ))}
+                            </div>
+
+                          </div>
                         ) : (
                           <div className='text-center text-lg font-medium mcolor-500'>No records found</div>
                         )}
@@ -1176,7 +1217,7 @@ export const QAGenerator = (props) => {
 
 
 
-
+                  
 
 
 

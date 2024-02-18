@@ -1279,8 +1279,9 @@ export const UpdateQAGen = ({ groupId, categoryFor }) => {
                                 value={item.question || ''} 
                                 onChange={(e) => handleQuestionChange(item.id, e.target.value, 'FITB')}
                                 className={`w-full px-5 pt-4 text-start mcolor-800 ${(extraLargeDevices || largeDevices || mediumDevices) ? 'text-md' : (extraSmallDevice) ? 'text-xs' : 'text-sm'} mbg-input border-thin-800 rounded`}
-                                rows={Math.ceil((item.question ? item.question.length : 0) / 50) + 1}
-                              ></textarea>
+                                // rows={Math.ceil((item.question ? item.question.length : 0) / 50) + 1}
+                                rows={Math.ceil((item || '').length / 50) + 1}
+                                ></textarea>
                               </td>
                               <td className='text-center mcolor-800 text-md flex gap-5'>   
                                 <input

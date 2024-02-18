@@ -89,11 +89,13 @@ export const StudyAreaGP = (props) => {
   const [userHostId, setUserHostId] = useState("");
   const [isCodeCopied, setIsCodeCopied] = useState("");
   const [isGroupNameChanged, setIsGroupNameChanged] = useState("");
+  const [isStudyProfeciencyChanged, setIsStudyProfeciencyChanged] = useState("");
   const [prevGroupName, setPrevGroupName] = useState("");
   const [savedGroupNotif, setSavedGroupNotif] = useState('hidden');
   const [userList, setUserList] = useState([]);
   const [tempUserList, setTempUserList] = useState([]);
   const [groupMemberIndex, setGroupMemberIndex] = useState("");
+  const [groupStudyProf, setGroupStudyProf] = useState(90);
 
   const [isExpanded, setIsExpanded] = useState(false);
   const [isBookmarkExpanded, setIsBookmarkExpanded] = useState(false);
@@ -287,6 +289,32 @@ export const StudyAreaGP = (props) => {
     }
   };
 
+  const updateStudyProfeciency = () => {
+    const updateGroupName = async () => {
+      let groupId = groupNameId;
+      try {
+        const response = await axios.put(`${SERVER_URL}/studyGroup/update-study-prof/${groupId}`, {
+          studyProfTarget: groupStudyProf,
+        });
+        setGroupStudyProf(response.data.studyProfTarget);        
+
+
+        setTimeout(() => {
+          setIsStudyProfeciencyChanged(`Study Profeciency value is changed to ${response.data.studyProfTarget}`);
+        }, 500);
+        
+        setTimeout(() => {
+          setIsStudyProfeciencyChanged('');
+        }, 1800);
+        
+      } catch (error) {
+        console.error('Error updating study profeciency value:', error);
+        // Handle error if needed
+      }
+    };
+    updateGroupName();
+  };
+
   const removeSelectedUser = async (itemId, groupNameId) => {
     const updatedTempUserList = tempUserList.filter(user => user.id !== itemId);
 
@@ -396,6 +424,8 @@ export const StudyAreaGP = (props) => {
         setCode(groupResponse.data.code);
         setGroupName(groupResponse.data.groupName);
         setPrevGroupName(groupResponse.data.groupName);
+        setGroupStudyProf(groupResponse.data.studyProfTarget)
+
 
         console.log(groupResponse.data.UserId);
 
@@ -998,11 +1028,54 @@ export const StudyAreaGP = (props) => {
     
     
                   </div>
+
+                  <br />
+                  <p className={`mb-2 ${extraSmallDevice ? 'text-sm' : 'text-md'} mcolor-900`}>Update Study Profeciency:</p>
+                  <div className='flex items-center'>
+
+                    
+                    <select
+                      name=""
+                      id=""
+                      className={`${extraSmallDevice ? 'text-xs' : 'text-sm'} border-thin-800 text-center w-full py-2 rounded-[3px] outline-none ${(msg !== '' || UserId !== userHostId) ? 'mbg-200' :  ''}`} disabled={msg !== '' || UserId !== userHostId}
+                      value={groupStudyProf || ''}
+                      onChange={(event) => setGroupStudyProf(event.target.value)}
+                    >
+                      {/* Dynamic default option based on studyProfTarget */}
+                      {groupStudyProf && (
+                        <option key={groupStudyProf} value={groupStudyProf}>
+                          {groupStudyProf}
+                        </option>
+                      )}
+
+                      {/* Other options excluding the default value */}
+                      {[100, 95, 90, 85, 80, 75].map((option) => (
+                        option !== groupStudyProf && (
+                          <option key={option} value={option}>
+                            {option}
+                          </option>
+                        )
+                      ))}
+                    </select>
+    
+                    <button
+                      onClick={updateStudyProfeciency}
+                      className={`${extraSmallDevice ? 'px-5 text-xs' : 'px-7 text-sm'} px-4 py-2 mbg-800 mcolor-100 rounded-[3px] border-thin-800`}
+                      disabled={msg !== '' || UserId !== userHostId}
+                    >
+                      Update
+                    </button>
+    
+    
+                  </div>
                   {isGroupNameChanged !== '' && (
                     <p className={`text-center mcolor-700 my-3 ${extraSmallDevice ? 'text-sm' : 'text-md'}`}>{isGroupNameChanged}</p>
                     )}
+                  {isStudyProfeciencyChanged !== '' && (
+                    <p className={`text-center mcolor-700 my-3 ${extraSmallDevice ? 'text-sm' : 'text-md'}`}>{isStudyProfeciencyChanged}</p>
+                    )}
     
-    
+                  <br />
                   {msg === '' && (
                     (UserId === userHostId) ? (
                       <button className={`bg-red mcolor-100 rounded py-2 text-center my-5 w-full ${extraSmallDevice ? 'text-xs' : 'text-sm'}`} onClick={(e) => deleteGroup(e)}>
