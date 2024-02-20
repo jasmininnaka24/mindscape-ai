@@ -538,7 +538,7 @@ export const UpdateQAGen = ({ groupId, categoryFor }) => {
             <div className='h-[70vh] w-full border-none'>
               <textarea
                 onChange={(event) => handleBodyChange(event.target.value)}
-                className={`w-full mcolor-800 h-full ${extraSmallDevice ? 'p-3' : 'p-5'} mbg-200 border-thin-800 ${(extraLargeDevices || largeDevices) ? 'text-md' : (mediumDevices || extraSmallDevice) ? 'text-xs' : 'text-sm'} text-justify`}
+                className={`w-full mcolor-800 h-full ${extraSmallDevice ? 'p-3' : 'p-5'} mbg-200 border-thin-800 ${(extraLargeDevices || largeDevices) ? 'text-md' : (mediumDevices || extraSmallDevice) ? 'text-sm' : 'text-md'} text-justify`}
                 style={{ resize: 'none', outline: 'none' }}
                 value={pdfDetails}
               ></textarea>
@@ -808,13 +808,13 @@ export const UpdateQAGen = ({ groupId, categoryFor }) => {
 
 
                       <textarea  
-                        className={`mb-4 brd-btn border-bottom-thin addAChoice w-full bg-transparent border-transparent text-center py-3 ${extraSmallDevice ? 'text-xs' : 'text-sm'}`} 
+                        className={`mb-4 brd-btn border-bottom-thin addAChoice w-full bg-transparent border-transparent text-center py-3 ${extraSmallDevice ? 'text-sm' : 'text-md'}`} 
                         value={item.question}
                         rows={Math.ceil((item.question ? item.question.length : 0) / 50)}
                         onChange={(e) => handleQuestionChange(item.id, e.target.value, 'MCQA')}
                       ></textarea>
 
-                      <ul className={`grid ${(extraSmallDevice) ? 'text-xs grid-cols-1' : 'grid-cols-2'} ${smallDevice && 'text-xs'} gap-3`}>
+                      <ul className={`grid ${(extraSmallDevice) ? 'text-sm grid-cols-1' : 'grid-cols-2'} ${smallDevice && 'text-sm'} gap-3`}>
                         <li className="correct-bg rounded-[5px] text-center my-2">
                           <input
                             type="text"
@@ -905,7 +905,7 @@ export const UpdateQAGen = ({ groupId, categoryFor }) => {
                         <button onClick={() => deleteRevQues(material.id)} className='bg-red mcolor-100 px-5 py-1 rounded-[5px]'>Delete</button>
                       </div>
 
-                      <ul className={`grid ${(extraSmallDevice) ? 'text-xs grid-cols-1' : 'grid-cols-2'} ${smallDevice && 'text-xs'} gap-2`}>
+                      <ul className={`grid ${(extraSmallDevice) ? 'text-sm grid-cols-1' : 'grid-cols-2'} ${smallDevice && 'text-sm'} gap-2`}>
                         <div className='flex items-center'>
                           <textarea
                             className='py-5 px-2 outline-none addAChoice w-full h-full wrong-bg brd-btn rounded-[5px] text-center overflow-auto resize-none'
@@ -1147,10 +1147,10 @@ export const UpdateQAGen = ({ groupId, categoryFor }) => {
                             key={index}
                             value={item.question || ''}
                             onChange={(event) => handleQuestionChange(item.id, event.target.value, 'ToF')}
-                            className={`mt-10 w-full text-start correct-bg mcolor-800 ${(extraLargeDevices || largeDevices) ? 'text-md p-5' : (extraSmallDevice) ? 'text-xs p-2' : 'text-sm p-3'} rounded-[5px]`}
+                            className={`mt-10 w-full text-start correct-bg mcolor-800 ${(extraLargeDevices || largeDevices) ? 'text-md p-5' : (extraSmallDevice) ? 'text-sm p-2' : 'text-sm p-3'} rounded-[5px]`}
                             rows={Math.ceil((item.question ? item.question.length : 0) / 50) + 1}
                           ></textarea>
-                          <span className={`${(extraLargeDevices || largeDevices) ? 'text-md mx-8' : (extraSmallDevice) ? 'text-xs mx-2' : 'text-sm mx-4'} mt-6`}>True</span>
+                          <span className={`${(extraLargeDevices || largeDevices) ? 'text-md mx-8' : (extraSmallDevice) ? 'text-sm mx-2' : 'text-sm mx-4'} mt-6`}>True</span>
                         </div>
                         {materialMCQChoices
                           .filter(choice => item.id === choice.QuesAnId)
@@ -1158,13 +1158,13 @@ export const UpdateQAGen = ({ groupId, categoryFor }) => {
                             <div className='flex items-center my-3' key={choiceIndex}>
                               <textarea
                                 value={choice.choice || ''}
-                                className={`w-full text-start wrong-bg mcolor-800 text-md rounded-[5px] ${(extraLargeDevices || largeDevices) ? 'text-md p-5' : (extraSmallDevice) ? 'text-xs p-2' : 'text-sm p-3'}`}
+                                className={`w-full text-start wrong-bg mcolor-800 text-md rounded-[5px] ${(extraLargeDevices || largeDevices) ? 'text-md p-5' : (extraSmallDevice) ? 'text-sm p-2' : 'text-sm p-3'}`}
                                 onChange={(event) => handleChoiceChange(choice.id, event.target.value)}
                                 rows={Math.ceil((item.question ? item.question.length : 0) / 50) + 1}
                               ></textarea>
-                              <span className={`ml-3 ${(extraLargeDevices || largeDevices) ? 'text-md' : (extraSmallDevice) ? 'text-xs' : 'text-sm'}`}>False</span>
+                              <span className={`ml-3 ${(extraLargeDevices || largeDevices) ? 'text-md' : (extraSmallDevice) ? 'text-sm' : 'text-md'}`}>False</span>
                               <button
-                                className={`ml-3 text-center ${(extraLargeDevices || largeDevices) ? 'text-md' : (extraSmallDevice) ? 'text-xs' : 'text-sm'} mcolor-800 mbg-200 border-thin-800 px-3 py-1 rounded-[5px]`}
+                                className={`ml-3 text-center ${(extraLargeDevices || largeDevices) ? 'text-md' : (extraSmallDevice) ? 'text-sm' : 'text-md'} mcolor-800 mbg-200 border-thin-800 px-3 py-1 rounded-[5px]`}
                                 onClick={() => handleDeleteChoice(choice.choice, choice.id, 'ToF')}
                               >
                                 x
@@ -1175,7 +1175,7 @@ export const UpdateQAGen = ({ groupId, categoryFor }) => {
 
                       <td className='flex justify-center pt-6'>
                         <button
-                          className={`mt-8 text-center ${(extraLargeDevices || largeDevices) ? 'text-md px-4' : (extraSmallDevice) ? 'text-xs px-2' : 'text-sm px-3'} bg-red mcolor-100 py-1 rounded-[5px]`}
+                          className={`mt-8 text-center ${(extraLargeDevices || largeDevices) ? 'text-md px-4' : (extraSmallDevice) ? 'text-sm px-2' : 'text-sm px-3'} bg-red mcolor-100 py-1 rounded-[5px]`}
                           onClick={() => handleDeleteMaterialMCQItem(item.id)}
                         >
                           Remove all items
@@ -1278,7 +1278,7 @@ export const UpdateQAGen = ({ groupId, categoryFor }) => {
                                 key={index}
                                 value={item.question || ''} 
                                 onChange={(e) => handleQuestionChange(item.id, e.target.value, 'FITB')}
-                                className={`w-full px-5 pt-4 text-start mcolor-800 ${(extraLargeDevices || largeDevices || mediumDevices) ? 'text-md' : (extraSmallDevice) ? 'text-xs' : 'text-sm'} mbg-input border-thin-800 rounded`}
+                                className={`w-full px-5 pt-4 text-start mcolor-800 ${(extraLargeDevices || largeDevices || mediumDevices) ? 'text-md' : (extraSmallDevice) ? 'text-sm' : 'text-md'} mbg-input border-thin-800 rounded`}
                                 // rows={Math.ceil((item.question ? item.question.length : 0) / 50) + 1}
                                 rows={Math.ceil((item || '').length / 50) + 1}
                                 ></textarea>
@@ -1305,7 +1305,7 @@ export const UpdateQAGen = ({ groupId, categoryFor }) => {
                       .map((item, index) => (
                         <div key={index} className='w-full mb-7'>
                           <div className='flex items-center justify-end'>
-                            <button className={`text-center ${(extraLargeDevices || largeDevices || mediumDevices) ? 'text-md' : (extraSmallDevice) ? 'text-xs' : 'text-sm'} bg-red mcolor-100 px-4 py-1 rounded-[5px]`} onClick={() => {handleDeleteMaterialMCQItem(item.id)}}>Remove</button>
+                            <button className={`text-center ${(extraLargeDevices || largeDevices || mediumDevices) ? 'text-md' : (extraSmallDevice) ? 'text-sm' : 'text-md'} bg-red mcolor-100 px-4 py-1 rounded-[5px]`} onClick={() => {handleDeleteMaterialMCQItem(item.id)}}>Remove</button>
                           </div>
 
                           <div className='text-justify text-start mcolor-800 w-full'>
@@ -1314,7 +1314,7 @@ export const UpdateQAGen = ({ groupId, categoryFor }) => {
                               key={index}
                               value={item.question || ''} 
                               onChange={(e) => handleQuestionChange(item.id, e.target.value, 'FITB')}
-                              className={`w-full px-5 pt-4 text-start mcolor-800 ${(extraLargeDevices || largeDevices || mediumDevices) ? 'text-md' : (extraSmallDevice) ? 'text-xs' : 'text-sm'} mbg-input border-thin-800 rounded`}
+                              className={`w-full px-5 pt-4 text-start mcolor-800 ${(extraLargeDevices || largeDevices || mediumDevices) ? 'text-md' : (extraSmallDevice) ? 'text-sm' : 'text-md'} mbg-input border-thin-800 rounded`}
                               rows={Math.ceil((item.question ? item.question.length : 0) / 50) + 1}
                             ></textarea>
                           </div>
@@ -1325,7 +1325,7 @@ export const UpdateQAGen = ({ groupId, categoryFor }) => {
                               type="text" 
                               value={item.answer || ''}
                               onChange={(e) => handleAnswerChange(item.id, e.target.value, 'FITB')}
-                              className={`text-center border-thin-800 mbg-input rounded w-full ${(extraLargeDevices || largeDevices || mediumDevices) ? 'text-md' : (extraSmallDevice) ? 'text-xs' : 'text-sm'}`}
+                              className={`text-center border-thin-800 mbg-input rounded w-full ${(extraLargeDevices || largeDevices || mediumDevices) ? 'text-md' : (extraSmallDevice) ? 'text-sm' : 'text-md'}`}
                             />
                           </div>
                           <div className='border-bottom-thin-gray mt-7'></div>
@@ -1427,7 +1427,7 @@ export const UpdateQAGen = ({ groupId, categoryFor }) => {
                               key={index}
                               value={item.question || ''} 
                               onChange={(e) => handleQuestionChange(item.id, e.target.value, 'Identification')}
-                              className={`w-full px-5 pt-4 text-start mcolor-800 ${(extraLargeDevices || largeDevices || mediumDevices) ? 'text-md' : (extraSmallDevice) ? 'text-xs' : 'text-sm'} mbg-input border-thin-800 rounded`}
+                              className={`w-full px-5 pt-4 text-start mcolor-800 ${(extraLargeDevices || largeDevices || mediumDevices) ? 'text-md' : (extraSmallDevice) ? 'text-sm' : 'text-md'} mbg-input border-thin-800 rounded`}
                               rows={Math.ceil((item.question ? item.question.length : 0) / 50) + 1}
                             ></textarea>
                             </td>
@@ -1453,7 +1453,7 @@ export const UpdateQAGen = ({ groupId, categoryFor }) => {
                     .map((item, index) => (
                       <div key={index} className='w-full mb-7'>
                         <div className='flex items-center justify-end'>
-                          <button className={`text-center ${(extraLargeDevices || largeDevices || mediumDevices) ? 'text-md' : (extraSmallDevice) ? 'text-xs' : 'text-sm'} bg-red mcolor-100 px-4 py-1 rounded-[5px]`} onClick={() => {handleDeleteMaterialMCQItem(item.id)}}>Remove</button>
+                          <button className={`text-center ${(extraLargeDevices || largeDevices || mediumDevices) ? 'text-md' : (extraSmallDevice) ? 'text-sm' : 'text-md'} bg-red mcolor-100 px-4 py-1 rounded-[5px]`} onClick={() => {handleDeleteMaterialMCQItem(item.id)}}>Remove</button>
                         </div>
 
                         <div className='text-justify text-start mcolor-800 w-full'>
@@ -1462,7 +1462,7 @@ export const UpdateQAGen = ({ groupId, categoryFor }) => {
                             key={index}
                             value={item.question || ''} 
                             onChange={(e) => handleQuestionChange(item.id, e.target.value, 'Identification')}
-                            className={`w-full px-5 pt-4 text-start mcolor-800 ${(extraLargeDevices || largeDevices || mediumDevices) ? 'text-md' : (extraSmallDevice) ? 'text-xs' : 'text-sm'} mbg-input border-thin-800 rounded`}
+                            className={`w-full px-5 pt-4 text-start mcolor-800 ${(extraLargeDevices || largeDevices || mediumDevices) ? 'text-md' : (extraSmallDevice) ? 'text-sm' : 'text-md'} mbg-input border-thin-800 rounded`}
                             rows={Math.ceil((item.question ? item.question.length : 0) / 50) + 1}
                           ></textarea>
                         </div>
@@ -1473,7 +1473,7 @@ export const UpdateQAGen = ({ groupId, categoryFor }) => {
                             type="text" 
                             value={item.answer || ''}
                             onChange={(e) => handleAnswerChange(item.id, e.target.value, 'Identification')}
-                            className={`text-center border-thin-800 mbg-input rounded w-full ${(extraLargeDevices || largeDevices || mediumDevices) ? 'text-md' : (extraSmallDevice) ? 'text-xs' : 'text-sm'}`}
+                            className={`text-center border-thin-800 mbg-input rounded w-full ${(extraLargeDevices || largeDevices || mediumDevices) ? 'text-md' : (extraSmallDevice) ? 'text-sm' : 'text-md'}`}
                           />
                         </div>
                         <div className='border-bottom-thin-gray mt-7'></div>

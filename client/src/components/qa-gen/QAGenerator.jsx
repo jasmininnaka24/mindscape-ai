@@ -405,12 +405,12 @@ export const QAGenerator = (props) => {
 
 
 
-      <div className='flex-1 mbg-200 w-full p-8'>
+      <div className={`flex-1 mbg-200 w-full py-8 ${extraSmallDevice ? 'px-3' : 'px-8'}`}>
         <PDFDetails.Provider value={{ setPDFDetails }}>
           <GeneratedQAResult.Provider value={{ setGeneratedQA, generatedQA }}>
 
             <div className='flex items-center mt-4'>
-              <AccountTreeIcon sx={{ fontSize: 30 }} className='mr-2 mb-1 mcolor-700' />
+              <AccountTreeIcon sx={{ fontSize: 30 }} className='mb-1 mr-3 mcolor-700' />
 
               {materialFor !== 'Everyone' ? (
                 <Navbar linkBack={`/main/${materialFor === 'Personal' ? 'personal' : 'group'}/study-area/${materialFor === 'Personal' ? '' : groupNameId}`} linkBackName={`Study Area`} currentPageName={'Generate Reviewer'} />
@@ -422,13 +422,13 @@ export const QAGenerator = (props) => {
             
 
             <div className='poppins mcolor-900 my-4'>
-              <div className="border-medium-800 gen-box flex justify-between items-center rounded my-3 h-[80vh]">
-                <div className='box1 mbg-100 border-box w-1/2'>
+              <div className={`border-medium-800 gen-box flex ${(extraSmallDevice || smallDevice) ? 'flex-col h-[160vh]' : 'flex-row h-[80vh]'} justify-between items-center rounded my-3`}>
+                <div className={`box1 mbg-100 border-box ${(extraSmallDevice || smallDevice) ? 'h-[80vh] w-full' : 'w-1/2'}`}>
                   <div className='flex justify-center items-center dropzone'>
                     <DropZoneComponent numInp={numInp} setNumInp={setNumInp} setPDFDetails={setPDFDetails} pdfDetails={pdfDetails}  />
                   </div>
                 </div>
-                <div className='box2 mbg-100 border-box w-1/2'>
+                <div className={`box2 mbg-100 border-box ${(extraSmallDevice || smallDevice) ? 'h-[80vh] w-full' : 'w-1/2'}`}>
                   <div className='h-full border-none'>
                   <textarea
                     onChange={(event) => {
@@ -449,7 +449,7 @@ export const QAGenerator = (props) => {
 
 
             <div id='generated-data' className='mcolor-900 generated-box flex justify-center'>
-            <ol className="poppins pl-6 w-full">
+            <ol className="poppins w-full">
 
                 <>
                   <div>
@@ -643,7 +643,7 @@ export const QAGenerator = (props) => {
                                   {/* Input for the question */}
                                   <textarea 
                                     type="text"
-                                    className={`mb-4 brd-btn border-bottom-thin addAChoice w-full bg-transparent border-transparent text-center py-3 ${extraSmallDevice ? 'text-xs' : 'text-sm'}`} 
+                                    className={`mb-4 brd-btn border-bottom-thin addAChoice w-full bg-transparent border-transparent text-center py-3 ${extraSmallDevice ? 'text-sm' : 'text-md'}`} 
                                     value={pair.question}
                                     onChange={(event) => {
                                       let val = event.target.value;
@@ -669,7 +669,7 @@ export const QAGenerator = (props) => {
                                 </div>
 
                                 {/* You can add the distractors here */}
-                                <ul className={`grid ${(extraSmallDevice) ? 'text-xs grid-cols-1' : 'grid-cols-2'} ${smallDevice && 'text-xs'} gap-3`}>
+                                <ul className={`grid ${(extraSmallDevice) ? 'text-sm grid-cols-1' : 'grid-cols-2'} ${smallDevice && 'text-sm'} gap-3`}>
                                   {/* Input for the answer */}
                                   <li className="correct-bg rounded-[5px] text-center my-2">
                                     <input
@@ -856,7 +856,7 @@ export const QAGenerator = (props) => {
                             <div className='flex justify-end my-5'>
                               <button onClick={() => deleteRevQues(index)} className='bg-red mcolor-100 px-5 py-1 rounded-[5px]'>Delete</button>
                             </div>
-                            <ul className={`grid ${(extraSmallDevice) ? 'text-xs grid-cols-1' : 'grid-cols-2'} ${smallDevice && 'text-xs'} gap-2`}>
+                            <ul className={`grid ${(extraSmallDevice) ? 'text-sm grid-cols-1' : 'grid-cols-2'} ${smallDevice && 'text-sm'} gap-2`}>
                               <div className='flex items-center'>
                                 <textarea
                                   className='py-5 px-2 outline-none addAChoice w-full h-full wrong-bg brd-btn rounded-[5px] text-center overflow-auto resize-none'
@@ -1065,22 +1065,22 @@ export const QAGenerator = (props) => {
                                         key={index}
                                         value={item.sentence || ''}
                                         onChange={(event) => trueSentenceChange(event, index)}
-                                        className={`mt-10 w-full text-start correct-bg mcolor-800 ${(extraLargeDevices || largeDevices) ? 'text-md p-5' : (extraSmallDevice) ? 'text-xs p-2' : 'text-sm p-3'} rounded-[5px]`}
-                                        rows={Math.ceil((item.question ? item.question.length : 0) / 50) + 1}
+                                        className={`mt-10 w-full text-start correct-bg mcolor-800 ${(extraLargeDevices || largeDevices) ? 'text-md p-5' : (extraSmallDevice) ? 'text-sm p-2' : 'text-sm p-3'} rounded-[5px]`}
+                                        rows={Math.ceil((item.sentence ? item.sentence.length : 0) / 50) + 1}
                                       ></textarea>
-                                      <span className={`${(extraLargeDevices || largeDevices) ? 'text-md mx-8' : (extraSmallDevice) ? 'text-xs mx-2' : 'text-sm mx-4'} mt-6`}>True</span>
+                                      <span className={`${(extraLargeDevices || largeDevices) ? 'text-md mx-8' : (extraSmallDevice) ? 'text-sm mx-2' : 'text-sm mx-4'} mt-6`}>True</span>
                                     </div>
                                     {item.distractors.map((distractor, distractorIndex) => (
                                       <div className='flex items-center my-3' key={distractorIndex}>
                                         <textarea
                                           value={distractor || ''}
                                           onChange={(event) => distractorChange(event, distractorIndex, index)}
-                                          className={`w-full text-start wrong-bg mcolor-800 text-md rounded-[5px] ${(extraLargeDevices || largeDevices) ? 'text-md p-5' : (extraSmallDevice) ? 'text-xs p-2' : 'text-sm p-3'}`}
-                                          rows={Math.ceil((item.question ? item.question.length : 0) / 50) + 1}
+                                          className={`w-full text-start wrong-bg mcolor-800 text-md rounded-[5px] ${(extraLargeDevices || largeDevices) ? 'text-md p-5' : (extraSmallDevice) ? 'text-sm p-2' : 'text-sm p-3'}`}
+                                          rows={Math.ceil((distractor ? distractor.length : 0) / 50) + 1}
                                         ></textarea>
-                                        <span className={`ml-3 ${(extraLargeDevices || largeDevices) ? 'text-md' : (extraSmallDevice) ? 'text-xs' : 'text-sm'}`}>False</span>
+                                        <span className={`ml-3 ${(extraLargeDevices || largeDevices) ? 'text-md' : (extraSmallDevice) ? 'text-sm' : 'text-md'}`}>False</span>
                                         <button
-                                          className={`ml-3 text-center ${(extraLargeDevices || largeDevices) ? 'text-md' : (extraSmallDevice) ? 'text-xs' : 'text-sm'} mcolor-800 mbg-200 border-thin-800 px-3 py-1 rounded-[5px]`}
+                                          className={`ml-3 text-center ${(extraLargeDevices || largeDevices) ? 'text-md' : (extraSmallDevice) ? 'text-sm' : 'text-md'} mcolor-800 mbg-200 border-thin-800 px-3 py-1 rounded-[5px]`}
                                           onClick={() => {
                                             deleteTrueDistractorItem(index, distractorIndex);
                                           }}
@@ -1093,7 +1093,7 @@ export const QAGenerator = (props) => {
 
                                   <td className='flex justify-center pt-6'>
                                     <button
-                                      className={`mt-8 text-center ${(extraLargeDevices || largeDevices) ? 'text-md px-4' : (extraSmallDevice) ? 'text-xs px-2' : 'text-sm px-3'} bg-red mcolor-100 py-1 rounded-[5px]`}
+                                      className={`mt-8 text-center ${(extraLargeDevices || largeDevices) ? 'text-md px-4' : (extraSmallDevice) ? 'text-sm px-2' : 'text-sm px-3'} bg-red mcolor-100 py-1 rounded-[5px]`}
                                       onClick={() => {
                                         deleteTrueSentenceItem(index);
                                       }}
@@ -1156,7 +1156,7 @@ export const QAGenerator = (props) => {
                                         key={index}
                                         value={item || ''}
                                         onChange={(event) => fillInTheBlankSentenceChange(event, index)}
-                                        className={`w-full px-5 pt-4 text-start mcolor-800 ${(extraLargeDevices || largeDevices || mediumDevices) ? 'text-md' : (extraSmallDevice) ? 'text-xs' : 'text-sm'} mbg-input border-thin-800 rounded`}
+                                        className={`w-full px-5 pt-4 text-start mcolor-800 ${(extraLargeDevices || largeDevices || mediumDevices) ? 'text-md' : (extraSmallDevice) ? 'text-sm' : 'text-md'} mbg-input border-thin-800 rounded`}
                                         rows={Math.ceil((item || '').length / 50) + 1}
                                       ></textarea>
                                     </td>
@@ -1179,17 +1179,17 @@ export const QAGenerator = (props) => {
                             {Array.isArray(generatedQA.fill_in_the_blanks.sentences) && generatedQA.fill_in_the_blanks.sentences.reverse().map((item, index) => (
                               <div key={index} className='w-full mb-7'>
                                 <div className='flex items-center justify-end'>
-                                  <button className={`text-center ${(extraLargeDevices || largeDevices || mediumDevices) ? 'text-md' : (extraSmallDevice) ? 'text-xs' : 'text-sm'} bg-red mcolor-100 px-4 py-1 rounded-[5px]`} onClick={() => {deleteFITBItem(item.id)}}>Remove</button>
+                                  <button className={`text-center ${(extraLargeDevices || largeDevices || mediumDevices) ? 'text-md' : (extraSmallDevice) ? 'text-sm' : 'text-md'} bg-red mcolor-100 px-4 py-1 rounded-[5px]`} onClick={() => {deleteFITBItem(index)}}>Remove</button>
                                 </div>
 
                                 <div className='text-justify text-start mcolor-800 w-full'>
                                   <p className={`font-medium mb-1 ${extraSmallDevice ? 'text-sm' : 'text-md'}`}>Question: </p>
                                   <textarea
                                     key={index}
-                                    value={item.question || ''} 
-                                    onChange={(e) => fillInTheBlankSentenceChange(item.id, e.target.value, 'FITB')}
-                                    className={`w-full px-5 pt-4 text-start mcolor-800 ${(extraLargeDevices || largeDevices || mediumDevices) ? 'text-md' : (extraSmallDevice) ? 'text-xs' : 'text-sm'} mbg-input border-thin-800 rounded`}
-                                    rows={Math.ceil((item.question ? item.question.length : 0) / 50) + 1}
+                                    value={item || ''} 
+                                    onChange={(event) => fillInTheBlankSentenceChange(event, index)}
+                                    className={`w-full px-5 pt-4 text-start mcolor-800 ${(extraLargeDevices || largeDevices || mediumDevices) ? 'text-md' : (extraSmallDevice) ? 'text-sm' : 'text-md'} mbg-input border-thin-800 rounded`}
+                                    rows={Math.ceil((item || '').length / 50) + 1}
                                   ></textarea>
                                 </div>
                                 <div className='text-justify text-start mcolor-800 w-full'>
@@ -1197,9 +1197,9 @@ export const QAGenerator = (props) => {
                                   <input
                                     key={index} 
                                     type="text" 
-                                    value={item.answer || ''}
-                                    onChange={(e) => fillInTheBlankAnswerChange(item.id, e.target.value, 'FITB')}
-                                    className={`text-center border-thin-800 mbg-input rounded w-full ${(extraLargeDevices || largeDevices || mediumDevices) ? 'text-md' : (extraSmallDevice) ? 'text-xs' : 'text-sm'}`}
+                                    value={(generatedQA.fill_in_the_blanks.answer && generatedQA.fill_in_the_blanks.answer[index]) || ''}
+                                    onChange={(event) => fillInTheBlankAnswerChange(event, index)}
+                                    className={`text-center border-thin-800 mbg-input rounded w-full ${(extraLargeDevices || largeDevices || mediumDevices) ? 'text-md' : (extraSmallDevice) ? 'text-sm' : 'text-md'}`}
                                   />
                                 </div>
                                 <div className='border-bottom-thin-gray mt-7'></div>
@@ -1268,94 +1268,176 @@ export const QAGenerator = (props) => {
                         </div>
 
                         {Array.isArray(generatedQA.question_answer_pairs) && generatedQA.question_answer_pairs.length > 0 && generatedQA.question_answer_pairs.filter((pair) => pair.distractors.length === 0).length > 0 ? (
-                          <table className='w-full'>
-                            <thead>
-                              <tr className='text-lg'>
-                                <th className='pr-5 text-start'>#</th>
-                                <th className='text-start pl-5'>Question</th>
-                                <th className='text-start pb-5'>Answer</th>
-                              </tr>
-                            </thead>
-                            <tbody>
-                              {shuffleArray(generatedQA.question_answer_pairs)
-                                .filter((pair) => pair.distractors.length === 0)
-                                .map((pair, index) => (
-                                  <tr key={index}>
-                                    <td className='pr-5'>{index + 1}</td>
-                                    <td className='pr-5 w-3/4 text-justify text-start mcolor-800 text-lg pb-5 px-5'>
-                                      <textarea
-                                        type="text"
-                                        className='w-full px-5 pt-4 text-start mcolor-800 text-lg mbg-200 rounded border-thin-800'
-                                        value={pair.question}
-                                        rows={Math.ceil((pair.question || '').length / 50) + 1}
-                                        onChange={(event) => {
-                                          let val = event.target.value;
-                                          setGeneratedQA((prevGeneratedQA) => {
-                                            const updatedPairs = Array.isArray(prevGeneratedQA.question_answer_pairs)
-                                              ? [...prevGeneratedQA.question_answer_pairs]
-                                              : [];
-                                            const pairToUpdate = updatedPairs.find((p) => p === pair);
-                                            if (pairToUpdate) {
-                                              const itemIndex = updatedPairs.indexOf(pairToUpdate);
-                                              const updatedItem = { ...pairToUpdate };
-                                              updatedItem.question = val;
-                                              updatedPairs[itemIndex] = updatedItem;
-                                            }
-                                            return {
-                                              ...prevGeneratedQA,
-                                              question_answer_pairs: updatedPairs,
-                                            };
-                                          });
-                                        }}
-                                      ></textarea>
-                                    </td>
-                                    <td className='text-center mcolor-800 text-lg flex gap-5'>
-                                      <input
-                                        type="text"
-                                        className='text-center mbg-200 rounded border-thin-800'
-                                        value={pair.answer}
-                                        onChange={(event) => {
-                                          let val = event.target.value;
-                                          setGeneratedQA((prevGeneratedQA) => {
-                                            const updatedPairs = Array.isArray(prevGeneratedQA.question_answer_pairs)
-                                              ? [...prevGeneratedQA.question_answer_pairs]
-                                              : [];
-                                            const pairToUpdate = updatedPairs.find((p) => p === pair);
-                                            if (pairToUpdate) {
-                                              const itemIndex = updatedPairs.indexOf(pairToUpdate);
-                                              const updatedItem = { ...pairToUpdate };
-                                              updatedItem.answer = val;
-                                              updatedPairs[itemIndex] = updatedItem;
-                                            }
-                                            return {
-                                              ...prevGeneratedQA,
-                                              question_answer_pairs: updatedPairs,
-                                            };
-                                          });
-                                        }}
-                                      />
+                          <div>
+                            <table className={`${(extraSmallDevice || smallDevice) && 'hidden'} w-full`}>
+                              <thead>
+                                <tr className={`${extraSmallDevice ? 'text-sm' : 'text-md'}`}>
+                                  <th className='pr-5 text-start'>#</th>
+                                  <th className='text-start pl-5'>Question</th>
+                                  <th className='text-start pb-5'>Answer</th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                {shuffleArray(generatedQA.question_answer_pairs)
+                                  .filter((pair) => pair.distractors.length === 0)
+                                  .map((pair, index) => (
+                                    <tr key={index}>
+                                      <td className='pr-5'>{index + 1}</td>
+                                      <td className='pr-5 w-3/4 text-justify text-start mcolor-800 text-lg pb-5 px-5'>
+                                        <textarea
+                                          type="text"
+                                          className={`w-full px-5 pt-4 text-start mcolor-800 ${(extraLargeDevices || largeDevices || mediumDevices) ? 'text-md' : (extraSmallDevice) ? 'text-sm' : 'text-md'} mbg-input border-thin-800 rounded`}
+                                          value={pair.question}
+                                          rows={Math.ceil((pair.question || '').length / 50) + 1}
+                                          onChange={(event) => {
+                                            let val = event.target.value;
+                                            setGeneratedQA((prevGeneratedQA) => {
+                                              const updatedPairs = Array.isArray(prevGeneratedQA.question_answer_pairs)
+                                                ? [...prevGeneratedQA.question_answer_pairs]
+                                                : [];
+                                              const pairToUpdate = updatedPairs.find((p) => p === pair);
+                                              if (pairToUpdate) {
+                                                const itemIndex = updatedPairs.indexOf(pairToUpdate);
+                                                const updatedItem = { ...pairToUpdate };
+                                                updatedItem.question = val;
+                                                updatedPairs[itemIndex] = updatedItem;
+                                              }
+                                              return {
+                                                ...prevGeneratedQA,
+                                                question_answer_pairs: updatedPairs,
+                                              };
+                                            });
+                                          }}
+                                        ></textarea>
+                                      </td>
+                                      <td className='text-center mcolor-800 text-lg flex gap-5'>
+                                        <input
+                                          type="text"
+                                          className={`text-center border-thin-800 mbg-input rounded w-full ${(extraLargeDevices || largeDevices || mediumDevices) ? 'text-md' : (extraSmallDevice) ? 'text-sm' : 'text-md'}`}
+                                          value={pair.answer}
+                                          onChange={(event) => {
+                                            let val = event.target.value;
+                                            setGeneratedQA((prevGeneratedQA) => {
+                                              const updatedPairs = Array.isArray(prevGeneratedQA.question_answer_pairs)
+                                                ? [...prevGeneratedQA.question_answer_pairs]
+                                                : [];
+                                              const pairToUpdate = updatedPairs.find((p) => p === pair);
+                                              if (pairToUpdate) {
+                                                const itemIndex = updatedPairs.indexOf(pairToUpdate);
+                                                const updatedItem = { ...pairToUpdate };
+                                                updatedItem.answer = val;
+                                                updatedPairs[itemIndex] = updatedItem;
+                                              }
+                                              return {
+                                                ...prevGeneratedQA,
+                                                question_answer_pairs: updatedPairs,
+                                              };
+                                            });
+                                          }}
+                                        />
 
-                                      <button
-                                        className='bg-red mcolor-100 py-1 px-5 rounded-[5px]'
-                                        onClick={() => {
-                                          setGeneratedQA((prevGeneratedQA) => {
-                                            const updatedPairs = Array.isArray(prevGeneratedQA.question_answer_pairs)
-                                              ? prevGeneratedQA.question_answer_pairs.filter((p) => p !== pair)
-                                              : [];
-                                            return {
-                                              ...prevGeneratedQA,
-                                              question_answer_pairs: updatedPairs,
-                                            };
-                                          });
-                                        }}
-                                      >
-                                        Delete
-                                      </button>
-                                    </td>
-                                  </tr>
-                                ))}
-                            </tbody>
-                          </table>
+                                        <button
+                                          className='bg-red mcolor-100 py-1 px-5 rounded-[5px]'
+                                          onClick={() => {
+                                            setGeneratedQA((prevGeneratedQA) => {
+                                              const updatedPairs = Array.isArray(prevGeneratedQA.question_answer_pairs)
+                                                ? prevGeneratedQA.question_answer_pairs.filter((p) => p !== pair)
+                                                : [];
+                                              return {
+                                                ...prevGeneratedQA,
+                                                question_answer_pairs: updatedPairs,
+                                              };
+                                            });
+                                          }}
+                                        >
+                                          Delete
+                                        </button>
+                                      </td>
+                                    </tr>
+                                  ))}
+                              </tbody>
+                            </table>
+
+                            <div className={`${(extraSmallDevice || smallDevice) ? '' : 'hidden'} w-full`}>
+                              {Array.isArray(generatedQA.question_answer_pairs) && generatedQA.question_answer_pairs.length > 0 && generatedQA.question_answer_pairs.filter(item => item.quizType === 'Identification')
+                              .reverse()
+                              .map((item, index) => (
+                                <div key={index} className='w-full mb-7'>
+                                  <div className='flex items-center justify-end'>
+                                    <button className={`text-center ${(extraLargeDevices || largeDevices || mediumDevices) ? 'text-md' : (extraSmallDevice) ? 'text-sm' : 'text-md'} bg-red mcolor-100 px-4 py-1 rounded-[5px]`}                                           onClick={() => {
+                                      setGeneratedQA((prevGeneratedQA) => {
+                                        const updatedPairs = Array.isArray(prevGeneratedQA.question_answer_pairs)
+                                          ? prevGeneratedQA.question_answer_pairs.filter((p) => p !== item)
+                                          : [];
+                                        return {
+                                          ...prevGeneratedQA,
+                                          question_answer_pairs: updatedPairs,
+                                        };
+                                      });
+                                    }}>Delete</button>
+                                  </div>
+
+                                  <div className='text-justify text-start mcolor-800 w-full'>
+                                    <p className={`font-medium mb-1 ${extraSmallDevice ? 'text-sm' : 'text-md'}`}>Question: </p>
+                                    <textarea
+                                      key={index}
+                                      className={`w-full px-5 pt-4 text-start mcolor-800 ${(extraLargeDevices || largeDevices || mediumDevices) ? 'text-md' : (extraSmallDevice) ? 'text-sm' : 'text-md'} mbg-input border-thin-800 rounded`}
+                                      value={item.question}
+                                      rows={Math.ceil((item.question || '').length / 50) + 1}
+                                      onChange={(event) => {
+                                        let val = event.target.value;
+                                        setGeneratedQA((prevGeneratedQA) => {
+                                          const updatedPairs = Array.isArray(prevGeneratedQA.question_answer_pairs)
+                                            ? [...prevGeneratedQA.question_answer_pairs]
+                                            : [];
+                                          const pairToUpdate = updatedPairs.find((p) => p === item);
+                                          if (pairToUpdate) {
+                                            const itemIndex = updatedPairs.indexOf(pairToUpdate);
+                                            const updatedItem = { ...pairToUpdate };
+                                            updatedItem.question = val;
+                                            updatedPairs[itemIndex] = updatedItem;
+                                          }
+                                          return {
+                                            ...prevGeneratedQA,
+                                            question_answer_pairs: updatedPairs,
+                                          };
+                                        });
+                                      }}
+                                    ></textarea>
+                                  </div>
+                                  <div className='text-justify text-start mcolor-800 w-full'>
+                                    <p className={`font-medium mb-1 ${extraSmallDevice ? 'text-sm' : 'text-md'}`}>Answer: </p>
+                                    <input
+                                      key={index} 
+                                      type="text" 
+                                      className={`text-center border-thin-800 mbg-input rounded w-full ${(extraLargeDevices || largeDevices || mediumDevices) ? 'text-md' : (extraSmallDevice) ? 'text-sm' : 'text-md'}`}
+                                      value={item.answer}
+                                      onChange={(event) => {
+                                        let val = event.target.value;
+                                        setGeneratedQA((prevGeneratedQA) => {
+                                          const updatedPairs = Array.isArray(prevGeneratedQA.question_answer_pairs)
+                                            ? [...prevGeneratedQA.question_answer_pairs]
+                                            : [];
+                                          const pairToUpdate = updatedPairs.find((p) => p === item);
+                                          if (pairToUpdate) {
+                                            const itemIndex = updatedPairs.indexOf(pairToUpdate);
+                                            const updatedItem = { ...pairToUpdate };
+                                            updatedItem.answer = val;
+                                            updatedPairs[itemIndex] = updatedItem;
+                                          }
+                                          return {
+                                            ...prevGeneratedQA,
+                                            question_answer_pairs: updatedPairs,
+                                          };
+                                        });
+                                      }}
+                                    />
+                                  </div>
+                                  <div className='border-bottom-thin-gray mt-7'></div>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
                         ) : (
                           <div className='text-center text-lg font-medium mcolor-500'>No records found</div>
                         )}

@@ -44,8 +44,8 @@ export const Tasks = ({room, groupId}) => {
 
   // Modals Functionalities
   const [isButtonClicked, setIsButtonClicked] = useState(false)
-  const dynamicClassNameForHidden = isButtonClicked ? "mt-10 mr-4 ml-6 flex justify-center" : "hidden mt-10 mx-4 flex justify-center";
-  const dynamicClassNameForUnhide = isButtonClicked ? "hidden mt-10 mx-4 flex justify-center" : "mt-10 mx-4 flex justify-center";
+  const dynamicClassNameForHidden = isButtonClicked ? "flex justify-center" : "hidden flex justify-center";
+  const dynamicClassNameForUnhide = isButtonClicked ? "hidden flex justify-center" : "flex justify-center";
 
 
   const openModal = (taskId, task, taskDueDate) => {
@@ -53,6 +53,7 @@ export const Tasks = ({room, groupId}) => {
     setTaskID(taskId);
     setTask(task);
     setDueDate(taskDueDate);
+    setShowAddTaskModal(false)
   }
 
   const closeModal = () => {
@@ -105,37 +106,44 @@ export const Tasks = ({room, groupId}) => {
         <div className={`min-h-[100vh] flex flex-col items-center justify-between py-2 ${extraLargeDevices && 'w-1/6'} mbg-800`}></div>
 
 
-        <div className='flex-1 mbg-200 w-full p-6'>
-          <p className='text-3xl mb-5 font-medium flex items-center mcolor-900'>
+        <div className={`flex-1 mbg-200 w-full py-5 ${extraSmallDevice ? 'px-3' : 'px-8'}`}>
+          <p className='mt-5 text-3xl mb-5 font-medium flex items-center mcolor-900'>
             <AddTaskIcon className='mr-1 mcolor-700' fontSize='large' />
             <p>Tasks</p>
           </p>
 
           <div className={`border-medium-800 flex ${(extraLargeDevices || largeDevices) ? 'flex-row gen-box' : 'flex-col'} justify-between items-center rounded`}>
             <div className={`min-h-[80vh] box1 mbg-input border-box ${(extraLargeDevices || largeDevices) ? 'w-1/2' : 'w-full'}`}>
-              <div className='scroll-box p-7'>
+              <div className='p-7'>
                 <div className={`flex ${extraSmallDevice ? 'flex-col-reverse' : 'flex-row  items-center justify-between'}`}>
-                  <p className={`${extraSmallDevice ? 'text-sm' : 'text-xl'} font-normal`}>List of Tasks</p>
+                  <p className={`${extraSmallDevice ? 'text-sm' : 'text-xl'} font-normal`}>{!showAddTaskModal ? 'List of Tasks' : 'Add a Task'}</p>
                   <div className='flex items-center justify-end inline'>
-                    {!showAddTaskModal ? (
-                      <button className={`py-1 ${extraSmallDevice ? 'text-sm px-2' : 'text-lg px-7'} mbg-800 mcolor-100 rounded`} onClick={() => setShowAddTaskModal(true)}>Add Task</button>
-                      ) : (
-                      <button className={`px-7 py-1 text-4xl rounded`} onClick={() => setShowAddTaskModal(false)}>&times;</button>
-                    )}
+                    {!isButtonClicked && (
+                      !showAddTaskModal ? (
+                        <button className={`py-1 ${extraSmallDevice ? 'text-sm px-2' : 'text-md px-4'} mbg-800 mcolor-100 rounded`} onClick={() => setShowAddTaskModal(true)
+                        
+                        }>Add Task</button>
+                        ) : (
+                        <button className={`px-4 py-1 text-4xl rounded`} onClick={() => setShowAddTaskModal(false)}>&times;</button>
+                      )
+                    )
+                    }
                   </div>
                 </div>
   
                 {showAddTaskModal && (
-                  <div>
+                  <div className='w-full'>
                     {/* Adding a task form */}
-                    <AddingTask unhideModal={dynamicClassNameForUnhide} task={task} setTask={setTask} dueDate={dueDate} setDueDate={setDueDate} room={room} setTaskID={setTaskID} listOfTasks={listOfTasks} setListOfTasks={setListOfTasks} UserId={UserId} groupId={groupId} />
+                    <AddingTask unhideModal={dynamicClassNameForUnhide} task={task} setTask={setTask} dueDate={dueDate} setDueDate={setDueDate} room={room} setTaskID={setTaskID} listOfTasks={listOfTasks} setListOfTasks={setListOfTasks} UserId={UserId} groupId={groupId} setShowAddTaskModal={setShowAddTaskModal} />
                   </div>
                 )}
   
   
   
                 {/* Updating a task form */}
-                <UpdateTasks task={task} dueDate={dueDate} room={room} taskID={taskID} listOfTasks={listOfTasks} setListOfTasks={setListOfTasks} setTask={setTask} setDueDate={setDueDate} setTaskID={setTaskID} hideModal={dynamicClassNameForHidden} closeModal={closeModal} setIsButtonClicked={setIsButtonClicked} UserId={UserId} groupId={groupId} />
+                <div className='w-full mt-5'>
+                  <UpdateTasks task={task} dueDate={dueDate} room={room} taskID={taskID} listOfTasks={listOfTasks} setListOfTasks={setListOfTasks} setTask={setTask} setDueDate={setDueDate} setTaskID={setTaskID} hideModal={dynamicClassNameForHidden} closeModal={closeModal} setIsButtonClicked={setIsButtonClicked} UserId={UserId} groupId={groupId} />
+                </div>
   
                 
                 {listOfTasks
@@ -147,90 +155,89 @@ export const Tasks = ({room, groupId}) => {
                 {/* Unaccomplished Tasks */}
                 <div className='my-5'>
                   {/* List of tasks that are need to be accomplished */}
-                  {listOfTasks
-                    .filter(task => task.completedTask === 'Uncompleted' && task.id !== taskID) 
-                    .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)) 
-                    .map((task, key) => {
-                      const currentDateTime = DateTime.now();
-                      const dueDateTime = DateTime.fromISO(task.dueDate);
-                      const timeDifference = Interval.fromDateTimes(currentDateTime, dueDateTime);
-  
-                      // Calculate the time difference in days, hours, and minutes
-                      const { days, hours, minutes } = timeDifference.toDuration(['days', 'hours', 'minutes']).toObject();
-  
-                      // Round off hours and minutes
-                      const roundedHours = Math.round(hours);
-                      const roundedMinutes = Math.round(minutes);
-  
-                      // Check if the task is overdue
-                      const isOverdue = timeDifference.isPast;
-  
-                      // Create an array to store the time parts to include
-                      const timeParts = [];
-  
-                      // Conditionally include "days" if days > 0
-                      if (days > 0) {
-                        timeParts.push(`${days} day${days > 1 ? 's' : ''}`);
-                      }
-  
-                      // Conditionally include "hours" if roundedHours > 0
-                      if (roundedHours > 0) {
-                        timeParts.push(`${roundedHours} hour${roundedHours > 1 ? 's' : ''}`);
-                      }
-  
-                      // Conditionally include "minutes" if roundedMinutes > 0
-                      if (roundedMinutes > 0) {
-                        timeParts.push(`${roundedMinutes} minute${roundedMinutes > 1 ? 's' : ''}`);
-                      }
-  
-                      // Format the time difference based on included time parts and overdue status
-                      let formattedTimeDifference = '';
-  
-                      if (isOverdue) {
-                        formattedTimeDifference = 'On time';
-                      } else if (timeParts.length === 0) {
-                        // Handle case when all time components are zero
-                        formattedTimeDifference = `Overdue`;
-                      } else {
-                        // Handle case when the task is not overdue
-                        formattedTimeDifference = `${timeParts.join(' ')} from now`;
-                      }
-  
-                      const dueDate = new Date(task.dueDate);
-  
-                      // Format the date as "Month Day, Year"
-                      const formattedDueDate = dueDate.toLocaleDateString('en-US', {
-                        year: 'numeric',
-                        month: 'long',
-                        day: 'numeric',
-                      });
-  
-                      const formattedTime = dueDate.toLocaleTimeString('en-US', {
-                        hour: '2-digit',
-                        minute: '2-digit',
-                      });
-  
-  
-                      const abbreviatedMonth = formattedDueDate.slice(0, 3);
-                      const formattedDueDateAbbreviated = `${abbreviatedMonth} ${dueDate.getDate()}, ${dueDate.getFullYear()}`;
-  
-            
-                      return (
-                        <div key={key} className='flex items-start justify-between w-full mbg-200 px-4 py-3 border-thin-800 rounded my-5'>
-                          <div className='w-3/4'  style={{ whiteSpace: 'pre-wrap' }}>
-                            <div><PushPinIcon className='text-red-dark' /> {task.task}</div>
-                            <div className='mt-3'><WatchLaterIcon sx={{ fontSize: '22px' }} /> {formattedDueDateAbbreviated}, {formattedTime}</div>
-                            <div className={`mt-2`}><PendingActionsIcon/> <span className={`${formattedTimeDifference === 'Overdue' ? 'text-red-dark' : ''}`}>{formattedTimeDifference}</span></div>
-                          </div>
-                          <div className='mt-1 flex items-center justify-end w-1/4'>
-                            <CompletedTask listOfTasks={listOfTasks} setListOfTasks={setListOfTasks} setTask={setTask} setDueDate={setDueDate} setTaskID={setTaskID} taskId={task.id} UserId={UserId} groupId={groupId} />
-                            <DeleteTask taskId={task.id} listOfTasks={listOfTasks} setListOfTasks={setListOfTasks} UserId={UserId} groupId={groupId} />
-                            <button className='py-1' onClick={() => openModal(task.id, task.task, task.dueDate)}><EditIcon UserId={UserId} groupId={groupId} /></button>
-                          </div>
-                        <br />
-                      </div>
-                      )
-                    })}
+                  {!showAddTaskModal && (
+                    listOfTasks
+                      .filter(task => task.completedTask === 'Uncompleted' && task.id !== taskID) 
+                      .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)) 
+                      .map((task, key) => {
+                        const currentDateTime = new Date(); // Get the current date and time
+                        const dueDateTime = new Date(task.dueDate); // Convert the due date string to a Date object
+                        
+                        const timeDifference = dueDateTime.getTime() - currentDateTime.getTime(); // Calculate the time difference in milliseconds
+                        
+                        // Convert the time difference to days, hours, and minutes
+                        const days = Math.floor(timeDifference / (1000 * 60 * 60 * 24));
+                        const hours = Math.floor((timeDifference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                        const minutes = Math.floor((timeDifference % (1000 * 60 * 60)) / (1000 * 60));
+                        
+                        // Check if the task is overdue
+                        const isOverdue = timeDifference < 0;
+                        
+                        // Create an array to store the time parts to include
+                        const timeParts = [];
+                        
+                        // Conditionally include "days" if days > 0
+                        if (days > 0) {
+                            timeParts.push(`${days} day${days > 1 ? 's' : ''}`);
+                        }
+                        
+                        // Conditionally include "hours" if hours > 0
+                        if (hours > 0) {
+                            timeParts.push(`${hours} hour${hours > 1 ? 's' : ''}`);
+                        }
+                        
+                        // Conditionally include "minutes" if minutes > 0
+                        if (minutes > 0) {
+                            timeParts.push(`${minutes} minute${minutes > 1 ? 's' : ''}`);
+                        }
+                        
+                        // Format the time difference based on included time parts and overdue status
+                        let formattedTimeDifference = '';
+                        
+                        if (isOverdue) {
+                            formattedTimeDifference = 'Overdue';
+                        } else if (timeParts.length === 0) {
+                            formattedTimeDifference = 'Due now';
+                        } else {
+                            formattedTimeDifference = `Due in ${timeParts.join(', ')}`;
+                        }
+                        
+                        // Format the due date
+                        const formattedDueDate = dueDateTime.toLocaleDateString(undefined, {
+                            year: 'numeric',
+                            month: 'long',
+                            day: 'numeric',
+                        });
+                        
+                        // Format the due time
+                        const formattedTime = dueDateTime.toLocaleTimeString(undefined, {
+                            hour: '2-digit',
+                            minute: '2-digit',
+                        });
+                        
+                        // Create an abbreviated month
+                        const abbreviatedMonth = formattedDueDate.slice(0, 3);
+                        const formattedDueDateAbbreviated = `${abbreviatedMonth} ${dueDateTime.getDate()}, ${dueDateTime.getFullYear()}`;                       
+    
+              
+                        return (
+                          <div key={key} className='flex items-start justify-between w-full mbg-200 px-4 py-3 border-thin-800 rounded my-5'>
+                            <div className='w-3/4'  style={{ whiteSpace: 'pre-wrap' }}>
+                              <div><PushPinIcon className='text-red-dark' /> {task.task}</div>
+                              <div className='mt-3'><WatchLaterIcon sx={{ fontSize: '22px' }} /> {formattedDueDateAbbreviated}, {formattedTime}</div>
+                              <div className={`mt-2`}><PendingActionsIcon/> <span className={`${formattedTimeDifference === 'Overdue' ? 'text-red-dark' : ''}`}>{formattedTimeDifference}</span></div>
+                            </div>
+                            <div className='mt-1 flex items-center justify-end w-1/4'>
+                              <CompletedTask listOfTasks={listOfTasks} setListOfTasks={setListOfTasks} setTask={setTask} setDueDate={setDueDate} setTaskID={setTaskID} taskId={task.id} UserId={UserId} groupId={groupId} />
+                              <DeleteTask taskId={task.id} listOfTasks={listOfTasks} setListOfTasks={setListOfTasks} UserId={UserId} groupId={groupId} />
+                              <button className='py-1' onClick={() => openModal(task.id, task.task, task.dueDate)}><EditIcon UserId={UserId} groupId={groupId} /></button>
+                            </div>
+                          <br />
+                        </div>
+                        )
+                      })
+                    )
+                  }
                 </div>
   
               </div>

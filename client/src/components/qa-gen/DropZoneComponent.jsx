@@ -201,7 +201,7 @@ export const DropZoneComponent = (props) => {
 
   return (
     <div className='w-full'>
-      <form className="pdf-form px-16">
+      <form className={`pdf-form ${(extraSmallDevice || smallDevice || mediumDevices) ? 'px-8' : 'px-16'}`}>
         <div className="form-group">
           <div
             id="drop-area"

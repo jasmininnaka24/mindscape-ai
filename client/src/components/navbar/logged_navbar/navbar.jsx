@@ -72,7 +72,7 @@ export const Navbar = (props) => {
   return (
     <div className='mcolor-900 flex justify-between items-center relative'>
       <div className='flex justify-between items-start'>
-        <div className={`flex gap-3 items-center ${(extraLargeDevices || largeDevices) ? 'text-2xl' : extraSmallDevice ? 'text-lg' : 'text-xl'}`}>
+        <div className={`flex gap-3 items-center ${(extraLargeDevices || largeDevices) ? 'text-2xl' : extraSmallDevice ? 'text-sm' : 'text-md'}`}>
           <Link className='font-medium' to={linkBack}>{linkBackName}</Link>
           <i class="fa-solid fa-chevron-right"></i>
           <p className='font-bold'>{currentPageName}</p>

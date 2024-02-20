@@ -76,20 +76,30 @@ export const Login = () => {
   
   const loginAccount = async (e) => {
     e.preventDefault();
-    setSignInBtnClicked(true);
-    setBtnMsg("Please wait...");
 
-    await axios.get(`${SERVER_URL}/users`);
+    if (emailLogVal.trim() === "" || passwordLogVal.trim() === "") {
+      setError(true);
+      setMsg("Input fields cannot be empty.");
+    } else {
+
+      setSignInBtnClicked(true);
+      setBtnMsg("Please wait...");
   
-    const data = {
-      email: emailLogVal,
-      password: passwordLogVal,
-      url_host: CLIENT_URL
-    };
-  
-    if (data.email && data.password) {
-      await loginUser(data);
+      await axios.get(`${SERVER_URL}/users`);
+    
+      const data = {
+        email: emailLogVal.trim(),
+        password: passwordLogVal,
+        url_host: CLIENT_URL
+      };
+    
+      if (data.email && data.password) {
+        await loginUser(data);
+      }
+
     }
+
+
   };
   
   const handleCallBackResponse = async (response) => {

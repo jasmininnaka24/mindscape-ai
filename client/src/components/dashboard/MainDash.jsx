@@ -565,23 +565,23 @@ export const MainDash = ({categoryFor}) => {
               
               <div className='absolute bottom-0 right-0 w-full mbg-input'>
                 <div className={`flex justify-end py-2  ${extraSmallDevice ? 'px-2' : 'px-5'}`}>
-                  {materialCategories.length > 0 && (groupId !== undefined ? (
-                    <button className='px-4 py-2 text-sm mbg-800 mcolor-100 rounded' onClick={() => {
-                      navigate(`/main/group/dashboard/category-list/${groupId}`, {
-                      state: {
-                        tag: tag
-                      }
-                    })
+                {materialCategories.length > 0 && (groupId !== undefined ? (
+                  <button className='absolute bottom-5 right-5 mbg-800 mcolor-100 px-5 py-2 rounded-[5px]' onClick={() => {
+                    navigate(`/main/group/dashboard/category-list/${groupId}`, {
+                    state: {
+                      tag: tag
+                    }
+                  })
+                  }}>View All Subjects</button>
+                ) : (
+                    <button className='absolute bottom-5 right-5 mbg-800 mcolor-100 px-5 py-2 rounded-[5px]' onClick={() => {
+                      navigate('/main/personal/dashboard/category-list', {
+                        state: {
+                          tag: tag
+                        }
+                      })
                     }}>View All Subjects</button>
-                  ) : (
-                      <button className='px-4 py-2 text-sm mbg-800 mcolor-100 rounded' onClick={() => {
-                        navigate('/main/personal/dashboard/category-list', {
-                          state: {
-                            tag: tag
-                          }
-                        })
-                      }}>View All Subjects</button>
-                  ))}
+                ))}
                 </div>
               </div>
             </div>

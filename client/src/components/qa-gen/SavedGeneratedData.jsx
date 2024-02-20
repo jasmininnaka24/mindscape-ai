@@ -543,17 +543,13 @@ export const SavedGeneratedData = (props) => {
 
   return (
 
-    <div>
-      <form>
-        <input required type="text" onChange={(event) => {setStudyMaterialTitle(event.target.value)}} placeholder='Title...' className='border-medium-800 rounded-[5px] py-2 px-5' />
-
-
-
-        
+    <div className='w-full flex items-center justify-center'>
+      <form className={`flex ${extraSmallDevice ? 'flex-col w-full' : 'flex-row gap-3'}`}>
+        <input required type="text" onChange={(event) => {setStudyMaterialTitle(event.target.value)}} placeholder='Title...' className={`border-medium-800 rounded-[5px] py-2 px-5 ${extraSmallDevice ? 'w-full my-2 text-sm' : 'text-md'}`} />    
 
         <select
           required
-          className='border-medium-800 rounded-[5px] py-2 px-2 mx-3 outline-none'
+          className={`border-medium-800 rounded-[5px] py-2 px-2 outline-none ${extraSmallDevice ? 'text-sm w-full my-2' : 'text-md'}`}
           onChange={(event) => setStudyMaterialCategoryId(event.target.value)}
         >
           {studyMaterialCategories.map((category) => (
@@ -565,7 +561,8 @@ export const SavedGeneratedData = (props) => {
         
 
         {materialFor === 'Everyone' && (
-          <button className='mbg-300 mr-2 border-medium-800 px-4 py-2 rounded' onClick={(e) => {
+          <button className={`border-medium-800 rounded-[5px] py-2 px-2 outline-none ${extraSmallDevice ? 'text-sm w-full my-2' : 'text-md'}`}
+          onClick={(e) => {
             e.preventDefault();
             setModalAddCategory(true);
           }}>
@@ -575,7 +572,7 @@ export const SavedGeneratedData = (props) => {
 
         <button
           onClick={saveGeneratedDataBtn}
-          className={`mbg-800 mcolor-100 px-10 py-2 text-xl font-bold rounded-[5px] ${isLoading ? 'wrong-bg' : ''}`}
+          className={`mbg-800 mcolor-100 py-2 ${extraSmallDevice ? 'text-sm px-5 w-full my-2 text-md' : smallDevice ? 'text-md px-5' : 'text-lg px-10'} font-medium rounded-[5px] ${isLoading ? 'wrong-bg' : ''}`}
           disabled={isLoading} 
         >
           {isLoading ? 'Saving...' : 'Save Data'}

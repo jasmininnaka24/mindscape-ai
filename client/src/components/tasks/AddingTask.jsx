@@ -2,10 +2,15 @@ import axios from 'axios';
 import React from 'react';
 import { DateTime } from 'luxon';  // Import Luxon DateTime for date manipulation
 import { SERVER_URL } from '../../urlConfig';
+import { useResponsiveSizes } from '../useResponsiveSizes'; 
 
 
 export const AddingTask = (props) => {
-  const { task, dueDate, room, listOfTasks, setListOfTasks, setTask, setDueDate, unhideModal, UserId, groupId } = props;
+
+  const { extraSmallDevice, smallDevice, mediumDevices, largeDevices, extraLargeDevices } = useResponsiveSizes();
+
+
+  const { task, dueDate, room, listOfTasks, setListOfTasks, setTask, setDueDate, unhideModal, UserId, groupId, setShowAddTaskModal } = props;
 
 
   // Adding task to the database
@@ -36,6 +41,7 @@ export const AddingTask = (props) => {
 
     setTask("");
     setDueDate("");
+    setShowAddTaskModal(false)
   };
 
   function getCurrentDateTime() {
@@ -54,8 +60,8 @@ export const AddingTask = (props) => {
   
 
   return (
-    <form className={unhideModal} onSubmit={addTask}>
-      <input
+    <form className={`${unhideModal} flex flex-col w-full gap-2`} onSubmit={addTask}>
+      <textarea 
         required
         type="text"
         placeholder='Task...'
@@ -63,21 +69,23 @@ export const AddingTask = (props) => {
         onChange={(event) => {
           setTask(event.target.value);
         }}
-        className='px-4 py-1 border-thin-800 rounded mx-1 w-1/2'
-      />
+        className='px-4 w-full py-2 text-sm border-thin-800 rounded mx-1 w-1/2'
+      ></textarea>
 
       <input
         required
         type="datetime-local"
         value={dueDate}
-        className='mx-1 border-thin-800 rounded px-4'
+        className='mx-1 text-sm border-thin-800 rounded px-4 py-2 w-full'
         onChange={(event) => {
           setDueDate(event.target.value);
         }}
         min={getCurrentDateTime()}
       />
 
-      <button type='submit' className='px-4 py-1 rounded mbg-700 mcolor-100'>Add Task</button>
+      <div className='flex items-center justify-end gap-1'>
+        <button type='submit' className='px-5 text-sm py-2 rounded-[5px] mbg-800 mcolor-100 '>Add Task</button>
+      </div>
     </form>
   );
 };
