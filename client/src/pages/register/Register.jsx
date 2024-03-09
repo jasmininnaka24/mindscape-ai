@@ -122,7 +122,7 @@ export const Register = () => {
     }
   };
 
-  return !showResetPasswordUI ? (
+  return showResetPasswordUI ? (
     <div className="poppins flex justify-center items-center mcolor-900 w-full h-[100vh] mbg-200">
       <div
         className={`mbg-100 ${
