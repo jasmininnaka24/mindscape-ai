@@ -1,4 +1,4 @@
-const { DataTypes } = require('sequelize');
+const { DataTypes } = require("sequelize");
 
 module.exports = (sequelize) => {
   const QuesAns = sequelize.define("QuesAns", {
@@ -17,23 +17,23 @@ module.exports = (sequelize) => {
     response_state: {
       type: DataTypes.TEXT,
       allowNull: false,
-      defaultValue: 'Unattempted',
+      defaultValue: "Unattempted",
     },
     stoppedAt: {
       type: DataTypes.TEXT,
       allowNull: false,
-      defaultValue: '0',
+      defaultValue: "0",
     },
     bgColor: {
       type: DataTypes.TEXT,
       allowNull: false,
-      defaultValue: 'none',
+      defaultValue: "none",
     },
   });
 
   QuesAns.associate = (models) => {
     QuesAns.hasMany(models.QuesAnsChoices, {
-      onDelete: 'cascade',
+      onDelete: "cascade",
     });
   };
 

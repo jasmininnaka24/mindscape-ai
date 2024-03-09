@@ -1,4 +1,4 @@
-const { DataTypes } = require('sequelize');
+const { DataTypes } = require("sequelize");
 
 module.exports = (sequelize) => {
   const StudyGroup = sequelize.define("StudyGroup", {
@@ -17,27 +17,27 @@ module.exports = (sequelize) => {
     studyProfTarget: {
       type: DataTypes.INTEGER,
       allowNull: false,
-      defaultValue: 90, 
+      defaultValue: 90,
     },
   });
 
   StudyGroup.associate = (models) => {
     StudyGroup.belongsTo(models.User, {
       foreignKey: {
-        name: 'UserId',
+        name: "UserId",
         allowNull: true,
-        onDelete: 'SET NULL',
+        onDelete: "SET NULL",
       },
     });
 
     StudyGroup.hasMany(models.StudyGroupMembers, {
-      onDelete: 'cascade',
+      onDelete: "cascade",
     });
     StudyGroup.hasMany(models.DashForPersonalAndGroup, {
-      onDelete: 'cascade',
+      onDelete: "cascade",
     });
     StudyGroup.hasMany(models.Tasks, {
-      onDelete: 'cascade',
+      onDelete: "cascade",
     });
   };
 

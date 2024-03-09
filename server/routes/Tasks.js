@@ -1,34 +1,34 @@
-const express = require('express');
+const express = require("express");
 const router = express.Router();
-const { Tasks } = require('../models')
+const { Tasks } = require("../models");
 
-router.get('/personal/:userId', async (req, res) => {
+router.get("/personal/:userId", async (req, res) => {
   const { userId } = req.params;
   const listofTasks = await Tasks.findAll({
     where: {
-      UserId: userId
-    }
+      UserId: userId,
+    },
   });
-  res.json(listofTasks);  
-})
+  res.json(listofTasks);
+});
 
-router.get('/group/:groupId', async (req, res) => {
+router.get("/group/:groupId", async (req, res) => {
   const { groupId } = req.params;
   const listofTasks = await Tasks.findAll({
     where: {
-      StudyGroupId: groupId
-    }
+      StudyGroupId: groupId,
+    },
   });
-  res.json(listofTasks);  
-})
+  res.json(listofTasks);
+});
 
-router.post('/', async (req, res) => {
+router.post("/", async (req, res) => {
   const task = req.body;
-  const createdTask = await Tasks.create(task); 
-  res.json(createdTask)
-})
+  const createdTask = await Tasks.create(task);
+  res.json(createdTask);
+});
 
-router.put('/:id', async (req, res) => {
+router.put("/:id", async (req, res) => {
   const taskId = req.params.id;
   const { task, dueDate, completedTask } = req.body;
 
@@ -40,10 +40,9 @@ router.put('/:id', async (req, res) => {
 
   await existingTask.save();
   res.json(existingTask);
+});
 
-})
-
-router.put('/completed/:id', async (req, res) => {
+router.put("/completed/:id", async (req, res) => {
   const taskId = req.params.id;
 
   const existingTask = await Tasks.findByPk(taskId);
@@ -52,14 +51,13 @@ router.put('/completed/:id', async (req, res) => {
 
   await existingTask.save();
   res.json(existingTask);
+});
 
-})
-
-router.delete('/:id', async (req, res) => {
+router.delete("/:id", async (req, res) => {
   const taskId = req.params.id;
   const task = await Tasks.findByPk(taskId);
   await task.destroy();
   res.json(task);
-})
+});
 
 module.exports = router;

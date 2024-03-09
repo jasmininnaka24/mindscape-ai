@@ -1,4 +1,4 @@
-const { DataTypes } = require('sequelize');
+const { DataTypes } = require("sequelize");
 
 module.exports = (sequelize) => {
   const DashForPersonalAndGroup = sequelize.define("DashForPersonalAndGroup", {
@@ -19,27 +19,27 @@ module.exports = (sequelize) => {
     assessmentScore: {
       type: DataTypes.TEXT,
       allowNull: false,
-      defaultValue: 'none',
+      defaultValue: "none",
     },
     assessmentImp: {
       type: DataTypes.TEXT,
       allowNull: false,
-      defaultValue: 'none',
+      defaultValue: "none",
     },
     assessmentScorePerf: {
       type: DataTypes.TEXT,
       allowNull: false,
-      defaultValue: 'none',
+      defaultValue: "none",
     },
     completionTime: {
       type: DataTypes.TEXT,
       allowNull: false,
-      defaultValue: 'none',
+      defaultValue: "none",
     },
     confidenceLevel: {
       type: DataTypes.TEXT,
       allowNull: false,
-      defaultValue: 'none',
+      defaultValue: "none",
     },
     numOfTakes: {
       type: DataTypes.INTEGER,
@@ -49,16 +49,16 @@ module.exports = (sequelize) => {
     analysis: {
       type: DataTypes.TEXT,
       allowNull: false,
-      defaultValue: 'No record of analysis yet.',
+      defaultValue: "No record of analysis yet.",
     },
   });
 
   DashForPersonalAndGroup.associate = (models) => {
     DashForPersonalAndGroup.belongsTo(models.User, {
       foreignKey: {
-        name: 'UserId',
+        name: "UserId",
         allowNull: true,
-        onDelete: 'SET NULL',
+        onDelete: "SET NULL",
       },
     });
   };

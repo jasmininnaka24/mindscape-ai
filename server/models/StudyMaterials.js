@@ -1,4 +1,4 @@
-const { DataTypes } = require('sequelize');
+const { DataTypes } = require("sequelize");
 
 module.exports = (sequelize) => {
   const StudyMaterials = sequelize.define("StudyMaterials", {
@@ -25,17 +25,17 @@ module.exports = (sequelize) => {
     isStarted: {
       type: DataTypes.STRING, // Corrected data type
       allowNull: false,
-      defaultValue: 'false',
+      defaultValue: "false",
     },
     studyPerformance: {
       type: DataTypes.FLOAT,
       allowNull: false,
-      defaultValue: 0.00,
+      defaultValue: 0.0,
     },
     tag: {
       type: DataTypes.TEXT,
       allowNull: false,
-      defaultValue: 'Own Record',
+      defaultValue: "Own Record",
     },
     bookmarkedBy: {
       type: DataTypes.INTEGER,
@@ -45,42 +45,46 @@ module.exports = (sequelize) => {
     codeDashTrackingNum: {
       type: DataTypes.STRING,
       allowNull: false,
-      defaultValue: 'Tracking Num',
+      defaultValue: "Tracking Num",
     },
   });
 
   StudyMaterials.associate = (models) => {
     StudyMaterials.belongsTo(models.User, {
       foreignKey: {
-        name: 'UserId',
+        name: "UserId",
         allowNull: true,
-        onDelete: 'cascade',
+        onDelete: "cascade",
       },
     });
 
     StudyMaterials.belongsTo(models.StudyGroup, {
       foreignKey: {
-        name: 'StudyGroupId',
+        name: "StudyGroupId",
         allowNull: true,
-        onDelete: 'cascade',
+        onDelete: "cascade",
       },
     });
 
     StudyMaterials.hasMany(models.QuesAns, {
-      onDelete: 'cascade',
+      onDelete: "cascade",
     });
     StudyMaterials.hasMany(models.QuesAnsChoices, {
-      onDelete: 'cascade',
+      onDelete: "cascade",
     });
     StudyMaterials.hasMany(models.QuesRev, {
-      onDelete: 'cascade',
+      onDelete: "cascade",
     });
     StudyMaterials.hasMany(models.DashForPersonalAndGroup, {
-      onDelete: 'cascade',
+      onDelete: "cascade",
     });
 
     StudyMaterials.beforeDestroy(async (instance, options) => {
-      if (instance.bookmarkedBy !== 0 || instance.materialFor === 'Group' || instance.tag === 'Shared') {
+      if (
+        instance.bookmarkedBy !== 0 ||
+        instance.materialFor === "Group" ||
+        instance.tag === "Shared"
+      ) {
         options.cascade = false;
       }
     });

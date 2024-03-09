@@ -1,4 +1,4 @@
-const { DataTypes } = require('sequelize');
+const { DataTypes } = require("sequelize");
 
 module.exports = (sequelize) => {
   const User = sequelize.define("User", {
@@ -17,34 +17,34 @@ module.exports = (sequelize) => {
     typeOfLearner: {
       type: DataTypes.STRING,
       allowNull: false,
-      defaultValue: 'Unclassified', 
+      defaultValue: "Unclassified",
     },
     studyProfTarget: {
       type: DataTypes.INTEGER,
       allowNull: false,
-      defaultValue: 90, 
+      defaultValue: 90,
     },
     userImage: {
       type: DataTypes.STRING,
       allowNull: true,
-      defaultValue: 'user.png', 
+      defaultValue: "user.png",
     },
     isVerified: {
       type: DataTypes.BOOLEAN,
       allowNull: true,
-      defaultValue: false, 
+      defaultValue: false,
     },
   });
 
   User.associate = (models) => {
     User.hasMany(models.Tasks, {
-      onDelete: 'cascade',
+      onDelete: "cascade",
     });
     User.hasMany(models.Token, {
-      onDelete: 'cascade',
+      onDelete: "cascade",
     });
     User.hasMany(models.StudyGroupMembers, {
-      onDelete: 'cascade',
+      onDelete: "cascade",
     });
   };
 
