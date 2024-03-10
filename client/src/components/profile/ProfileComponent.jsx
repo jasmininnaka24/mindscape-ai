@@ -746,79 +746,6 @@ export const ProfileComponent = () => {
                     exit={{ opacity: 0, y: -20 }}
                     transition={{ duration: 0.5, delay: 0.2 }}
                   >
-                    <form
-                      className={`flex ${
-                        extraSmallDevice ? "flex-col" : "flex-row"
-                      } items-center justify-center px-8 gap-8 pt-5`}
-                    >
-                      <div
-                        className="p-2 rounded-full"
-                        {...getRootProps()}
-                        style={{
-                          width: "220px",
-                          cursor: "pointer",
-                          border: "3px dashed #888",
-                        }}
-                      >
-                        <input {...getInputProps()} name="image" type="file" />
-                        {acceptedFiles.length === 0 ? (
-                          <img
-                            src={`${SERVER_URL}/images/${userData.userImage}`}
-                            className="rounded-full"
-                            style={{
-                              width: "200px",
-                              objectFit: "cover",
-                              height: "200px",
-                            }}
-                            alt=""
-                          />
-                        ) : (
-                          <>
-                            <img
-                              src={URL.createObjectURL(acceptedFiles[0])}
-                              className="rounded-full"
-                              style={{
-                                width: "200px",
-                                objectFit: "cover",
-                                height: "200px",
-                              }}
-                              alt=""
-                            />
-                          </>
-                        )}
-                      </div>
-
-                      <div
-                        className={`${
-                          extraSmallDevice ? "text-center" : "text-start"
-                        }`}
-                      >
-                        <p className="text-2xl mb-1 font-medium mcolor-800">
-                          Upload a new photo
-                        </p>
-                        <p className="text-sm opacity-70 mb-4">
-                          Drag and drop an image to the photo or click to select
-                          one.
-                        </p>
-
-                        <button
-                          className={`${
-                            buttonLoading && buttonClickedNumber === 1
-                              ? "mbg-200 mcolor-900 border-thin-800"
-                              : "btn-primary mcolor-100"
-                          } px-10 py-2 rounded`}
-                          disabled={buttonLoading && buttonClickedNumber === 1}
-                          onClick={(e) => updateUserImage(e, 1)}
-                        >
-                          {buttonLoading && buttonClickedNumber === 1 ? (
-                            <div>Updating...</div>
-                          ) : (
-                            <div>Update</div>
-                          )}
-                        </button>
-                      </div>
-                    </form>
-
                     {!error && msg !== "" && (
                       <div className="green-bg text-center mt-5 rounded py-3 w-full">
                         {msg}
@@ -1982,41 +1909,12 @@ export const ProfileComponent = () => {
                   : extraSmallDevice
                   ? "flex-col"
                   : "w-full flex-row gap-7"
-              } mbg-800 rounded mcolor-100 py-8 min-h-[20vh] max-h-[50vh]`}
+              } mbg-800 rounded mcolor-100 py-8 h-[40vh] max-h-[40vh]`}
               initial={{ opacity: 0, y: -20 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20 }}
               transition={{ duration: 0.5 }}
             >
-              <motion.div
-                className={`flex items-center justify-center ${
-                  extraLargeDevices || largeDevices ? "w-full" : ""
-                }`}
-                initial={{ opacity: 0, y: -20 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -20 }}
-                transition={{ duration: 0.5, delay: 0.2 }}
-              >
-                <motion.div
-                  style={{ width: "150px" }}
-                  initial={{ opacity: 0, scale: 0.8 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.8 }}
-                  transition={{ duration: 0.5, delay: 0.4 }}
-                >
-                  <img
-                    src={`${SERVER_URL}/images/${userData.userImage}`}
-                    className="rounded-full"
-                    style={{
-                      width: "150px",
-                      objectFit: "cover",
-                      height: "150px",
-                    }}
-                    alt=""
-                  />
-                </motion.div>
-              </motion.div>
-
               <motion.div
                 className={`${
                   extraLargeDevices || largeDevices || extraSmallDevice

@@ -112,12 +112,10 @@ router.post("/", async (req, res) => {
 
     await sendEmail(savedUserData.email, "Verify Email", verificationMessage);
 
-    res
-      .status(201)
-      .send({
-        message:
-          "An email has been sent to your gmail account. Kindly check for verification.",
-      });
+    res.status(201).send({
+      message:
+        "An email has been sent to your gmail account. Kindly check for verification.",
+    });
   } catch (error) {
     console.error("Registration error:", error);
     res.status(500).send({ message: "Internal Server Error" });
