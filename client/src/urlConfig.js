@@ -4,7 +4,7 @@ export const SERVER_URL = "https://mindscape-server.onrender.com";
 export const QA_AI_API = "https://ntrq36-8000.csb.app";
 export const LEARNER_TYPE_API = "https://ntrq36-8000.csb.app";
 
-HOSTED;
+// HOSTED
 export const CLIENT_ID =
   "297365768139-c7dlrq4824plefemh00rqtmbqbe3dir0.apps.googleusercontent.com";
 
