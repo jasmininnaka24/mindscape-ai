@@ -1,0 +1,47 @@
+INSERT INTO Users (id, username, email, password, typeOfLearner, studyProfTarget, isVerified, createdat, updatedat)
+VALUES 
+(1,'DelosReyes', 'delosReyes123@gmail.com', CONCAT('$2b$10$', SUBSTRING(MD5(RAND()) FROM 1 FOR 22)), 'Visual', 90, 1, '2024-02-24 09:15:42', '2024-03-14 18:37:56'),
+(2,'JamesMinoza', 'jamesMinoza456@gmail.com', CONCAT('$2b$10$', SUBSTRING(MD5(RAND()) FROM 1 FOR 22)), 'Kinesthetic', 95, 1, '2024-02-22 14:29:18', '2024-03-06 21:43:11'),
+(3,'Qrishun_Amik', 'qrishun_Amik789@gmail.com', CONCAT('$2b$10$', SUBSTRING(MD5(RAND()) FROM 1 FOR 22)), 'Auditory', 80, 1, '2024-02-26 17:50:03', '2024-03-11 10:55:27'),
+(4,'AndreiCapino012', 'andrei_Capino012@gmail.com', CONCAT('$2b$10$', SUBSTRING(MD5(RAND()) FROM 1 FOR 22)), 'Kinesthetic', 85, 1, '2024-02-28 10:04:57', '2024-03-02 07:12:41'),
+(5,'AhmadAquino', 'ahmadAquino345@gmail.com', CONCAT('$2b$10$', SUBSTRING(MD5(RAND()) FROM 1 FOR 22)), 'Auditory', 90, 1, '2024-02-27 08:37:22', '2024-03-16 09:21:34'),
+(6,'JohannSebastianPawaki678', 'johannSebastianPawaki678@gmail.com', CONCAT('$2b$10$', SUBSTRING(MD5(RAND()) FROM 1 FOR 22)), 'Visual', 80, 1, '2024-02-25 13:59:09', '2024-03-01 15:47:02'),
+(7,'AlecDominic_Pawaki901', 'alecDominicPawaki901@gmail.com', CONCAT('$2b$10$', SUBSTRING(MD5(RAND()) FROM 1 FOR 22)), 'Auditory', 85, 1, '2024-02-24 18:20:33', '2024-03-04 11:59:55'),
+(8,'MaryAgnesPawaki', 'maryAgnesPawaki234@gmail.com', CONCAT('$2b$10$', SUBSTRING(MD5(RAND()) FROM 1 FOR 22)), 'Kinesthetic', 100, 1, '2024-02-29 11:42:48', '2024-03-13 14:05:29'),
+(9,'JohnSamuel_Talaver567', 'johnSamuelTalaver567@gmail.com', CONCAT('$2b$10$', SUBSTRING(MD5(RAND()) FROM 1 FOR 22)), 'Visual', 80, 1, '2024-02-24 09:15:42', '2024-03-14 18:37:56'),
+(10,'DaniellaMicah_Talaver', 'daniellaMicahTalaver890@gmail.com', CONCAT('$2b$10$', SUBSTRING(MD5(RAND()) FROM 1 FOR 22)), 'Visual', 90, 1, '2024-02-24 09:15:42', '2024-03-14 18:37:56'),
+(11,'KenzyDuran', 'kenzyDuran123@gmail.com', CONCAT('$2b$10$', SUBSTRING(MD5(RAND()) FROM 1 FOR 22)), 'Visual', 90, 1, '2024-02-24 09:15:42', '2024-03-14 18:37:56'),
+(12,'KlyeGeenDuran456', 'klye_GeenDuran456@gmail.com', CONCAT('$2b$10$', SUBSTRING(MD5(RAND()) FROM 1 FOR 22)), 'Visual', 90, 1, '2024-02-24 09:15:42', '2024-03-14 18:37:56'),
+(13,'KenjoCamoro', 'kenjo_Camoro789@gmail.com', CONCAT('$2b$10$', SUBSTRING(MD5(RAND()) FROM 1 FOR 22)), 'Visual', 90, 1, '2024-02-24 09:15:42', '2024-03-14 18:37:56'),
+(14,'Karen_Catoy012', 'karenCatoy012@gmail.com', CONCAT('$2b$10$', SUBSTRING(MD5(RAND()) FROM 1 FOR 22)), 'Visual', 90, 1, '2024-02-24 09:15:42', '2024-03-14 18:37:56'),
+(15,'KuchiaoYee345', 'kuchiaoYee345@gmail.com', CONCAT('$2b$10$', SUBSTRING(MD5(RAND()) FROM 1 FOR 22)), 'Visual', 90, 1, '2024-02-24 09:15:42', '2024-03-14 18:37:56'),
+(16,'RuthDeniseTalaver', 'ruthDeniseTalaver678@gmail.com', CONCAT('$2b$10$', SUBSTRING(MD5(RAND()) FROM 1 FOR 22)), 'Visual', 90, 1, '2024-02-24 09:15:42', '2024-03-14 18:37:56'),
+(17,'Jaharah_Nawas901', 'jaharahNawas901@gmail.com', CONCAT('$2b$10$', SUBSTRING(MD5(RAND()) FROM 1 FOR 22)), 'Visual', 90, 1, '2024-02-24 09:15:42', '2024-03-14 18:37:56')
+
+
+
+
+
+
+
+
+INSERT INTO Tokens (token, createdAt, updatedAt, UserId) 
+VALUES 
+('b064d38d1b7e4c7709d00fe0f46abad354abf7dc8488915049ff0be2e9b39b4d', '2024-02-24 09:15:42', '2024-03-14 18:37:56', 1),
+('2e104cdd063ed4f21e97ac3f1731e72b774d692b49b00157631d54b2a24d3a8e', '2024-02-22 14:29:18', '2024-03-06 21:43:11', 2),
+('d831a10a7f111a52985860fb6382fc409d3e38a61d39dbf95b2f556a6f87985c', '2024-02-26 17:50:03', '2024-03-11 10:55:27', 3),
+('f4f3363e83152e021c28e4dfcba7b6b2a00d670849f8c8f8d8b9fe44010b1c5f', '2024-02-28 10:04:57', '2024-03-02 07:12:41', 4),
+('ac3d4877fc4995312e0e30fb205f4e1d40eb01a5a5a11fe073ce746c446e4f92', '2024-02-27 08:37:22', '2024-03-16 09:21:34', 5),
+('cdd06d2196ac34e0dca52a2b4c743b9d59e33c5fb3b1853061e60083202dd186', '2024-02-25 13:59:09', '2024-03-01 15:47:02', 6),
+('b5c5cc04a7d547b05b30d7b9a97250db6a39051f531d0956fcf314c7f625381f', '2024-02-24 18:20:33', '2024-03-04 11:59:55', 7),
+('c10a784fb034dc1a4a2aa0d8d52e8ee7ddc1766bc46d624cf8cc1979bc431b40', '2024-02-29 11:42:48', '2024-03-13 14:05:29', 8),
+('03af8e3b6ec58806b15a07da81b03d69d520ee8b75a4f9edc1d2642d8b4cc428', '2024-02-24 09:15:42', '2024-03-14 18:37:56', 9),
+('7c0372a905f18395e0e2ff3eb97ebc01a4a0a619fced0b6b71a2dc2244a2956d', '2024-02-24 09:15:42', '2024-03-14 18:37:56', 10),
+('a0d4e74de6c13d42524be3e868d5c7eabec9c4b2d7eb1f8d85e7e3cf16c32d2f', '2024-02-24 09:15:42', '2024-03-14 18:37:56', 11),
+('6bc7be0482d3480bb2c5a15a6950a31fba400c2d848c8e1707866b23b90ff4a2', '2024-02-24 09:15:42', '2024-03-14 18:37:56', 12),
+('6a39ed9c78897e7df091a92c76d60c7a3ef04a1c3a44d646675e330eb9242216', '2024-02-24 09:15:42', '2024-03-14 18:37:56', 13),
+('38c3d525f56e646e951a0861585d819db7c6f02cc9c670d97b80888200471a36', '2024-02-24 09:15:42', '2024-03-14 18:37:56', 14),
+('be2df78b24896a0383cc10a5052e3fc3c186139e18b7df53984d23d7ec1fb831', '2024-02-24 09:15:42', '2024-03-14 18:37:56', 15),
+('04b299dcb733a46001fe3b8fde8c0a37d0d7f3d3b9d5e800d0d576f407f290e1', '2024-02-24 09:15:42', '2024-03-14 18:37:56', 16),
+('8d92b2c026af20a853364bb57cd0f02e69b5ff8f9d3c1743e3c3d3b9d5e800ds2', '2024-02-24 09:15:42', '2024-03-14 18:37:56', 17)
+
