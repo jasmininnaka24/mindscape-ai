@@ -106,7 +106,7 @@ export const Login = () => {
     setSignInBtnClicked(true);
     setBtnMsg("Please wait...");
 
-    await axios.get(`${SERVER_URL}/users`);
+    await axios.get(`${SERVER_URL}/RenderTrig`);
 
     let userObject;
     try {

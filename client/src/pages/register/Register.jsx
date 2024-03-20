@@ -50,6 +50,7 @@ export const Register = () => {
 
     setEnableDisabled(true);
     setBtnMsg("Please wait...");
+    await axios.get(`${SERVER_URL}/RenderTrig`);
 
     try {
       await axios.post(`${SERVER_URL}/users/`, data).then((response) => {
