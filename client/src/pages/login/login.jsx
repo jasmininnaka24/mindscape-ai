@@ -193,7 +193,7 @@ export const Login = () => {
                 <p htmlFor="" className="font-medium">
                   Email<span className="text-red">*</span>
                 </p>
-                <div className="mb-4 mt-8 flex relative flex-relative">
+                <div className="mb-4 flex relative flex-relative">
                   <input
                     required
                     autoComplete="new-password" // 'no' may not be the best choice for accessibility
