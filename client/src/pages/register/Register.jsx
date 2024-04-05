@@ -142,11 +142,11 @@ export const Register = () => {
             Sign Up for an Account
           </h2>
 
-          <div className="my-5 w-full flex items-center justify-center w-full">
+          <div className="my-5 flex items-center justify-center w-full">
             <div className="w-full">
               <div className="my-3 w-full">
                 <p htmlFor="" className="font-medium">
-                  Username<span className="text-red">*</span>
+                  Username <span className="text-red">*</span>
                 </p>
                 <input
                   required
@@ -161,7 +161,7 @@ export const Register = () => {
 
               <div className="my-3 w-full">
                 <p htmlFor="" className="font-medium">
-                  Email<span className="text-red">*</span>
+                  Email <span className="text-red">*</span>
                 </p>
                 <input
                   required
@@ -176,7 +176,7 @@ export const Register = () => {
 
               <div className="my-3 w-full relative">
                 <p htmlFor="" className="font-medium">
-                  Password<span className="text-red">*</span>
+                  Password <span className="text-red">*</span>
                 </p>
                 <input
                   required

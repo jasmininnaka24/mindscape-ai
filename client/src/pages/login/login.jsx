@@ -172,7 +172,7 @@ export const Login = () => {
             <div className="line"></div>
           </div>
 
-          <div className="my-5 w-full flex items-center justify-center w-full">
+          <div className="my-5 w-full flex items-center justify-center">
             <div className="w-full">
               <div className="my-3 w-full">
                 <p htmlFor="" className="font-medium">
@@ -189,24 +189,29 @@ export const Login = () => {
                 />
               </div>
 
-              <div className="mb-4 mt-8 flex relative flex-relative">
-                <input
-                  required
-                  autoComplete="new-password" // 'no' may not be the best choice for accessibility
-                  placeholder="Enter your password..."
-                  type={showPassword ? "text" : "password"}
-                  className="bg-transparent w-full border-bottom-thin py-1 rounded-[5px] input-login"
-                  value={passwordLogVal}
-                  onChange={(event) => setPasswordLogVal(event.target.value)}
-                />
+              <div className="my-3 w-full">
+                <p htmlFor="" className="font-medium">
+                  Email<span className="text-red">*</span>
+                </p>
+                <div className="mb-4 mt-8 flex relative flex-relative">
+                  <input
+                    required
+                    autoComplete="new-password" // 'no' may not be the best choice for accessibility
+                    placeholder="Enter your password..."
+                    type={showPassword ? "text" : "password"}
+                    className="bg-transparent w-full border-bottom-thin py-1 rounded-[5px] input-login"
+                    value={passwordLogVal}
+                    onChange={(event) => setPasswordLogVal(event.target.value)}
+                  />
 
-                <button
-                  type="button"
-                  className="ml-2 focus:outline-none absolute right-0 mcolor-800"
-                  onClick={togglePasswordVisibility}
-                >
-                  {showPassword ? <VisibilityOffIcon /> : <VisibilityIcon />}
-                </button>
+                  <button
+                    type="button"
+                    className="ml-2 focus:outline-none absolute right-0 mcolor-800"
+                    onClick={togglePasswordVisibility}
+                  >
+                    {showPassword ? <VisibilityOffIcon /> : <VisibilityIcon />}
+                  </button>
+                </div>
               </div>
 
               <div className="w-full mb-5 font-medium mcolor-700">
