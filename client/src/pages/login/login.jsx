@@ -176,7 +176,7 @@ export const Login = () => {
             <div className="w-full">
               <div className="my-3 w-full">
                 <p htmlFor="" className="font-medium">
-                  Email<span className="text-red">*</span>
+                  Email <span className="text-red">*</span>
                 </p>
                 <input
                   required
@@ -191,7 +191,7 @@ export const Login = () => {
 
               <div className="my-3 w-full">
                 <p htmlFor="" className="font-medium">
-                  Email<span className="text-red">*</span>
+                  Password <span className="text-red">*</span>
                 </p>
                 <div className="mb-4 flex relative flex-relative">
                   <input
