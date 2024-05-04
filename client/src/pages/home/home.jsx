@@ -284,7 +284,7 @@ export const Home = () => {
           .
         </p>
         <p className="text-md text-center text-dark quicksand">
-          &copy; 2024{" | Coded and developed by "}
+          &copy; December 2023{" | Coded and developed by "}
           <span>
             <a
               href={"https://jasmininnaka.vercel.app/"}
