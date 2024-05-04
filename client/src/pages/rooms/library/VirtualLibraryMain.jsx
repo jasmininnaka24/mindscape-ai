@@ -1431,7 +1431,7 @@ export const VirtualLibraryMain = () => {
                         {enableBackButton && (
                           <button
                             disabled={buttonLoader || btnClicked}
-                            className="mbg-200 mcolor-900 rounded px-4 py-1 rounded border-thin-800"
+                            className="mbg-200 mcolor-900 px-4 py-1 rounded border-thin-800"
                             onClick={() => {
                               setShowMaterialDetails(false);
                               setShowPresentStudyMaterials(true);

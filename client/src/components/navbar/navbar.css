@@ -1,14 +1,14 @@
-.navbar{
+.navbar {
   z-index: 70;
   height: 1rem;
 }
 
-.ms-nav-links{
+.ms-nav-links {
   margin-left: -8.3rem;
 }
-.ms-nav-links a{
+.ms-nav-links a {
   font-size: 20px;
 }
-.ms-login{
+.ms-login {
   font-size: 20px;
 }
